@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_block_text_blocks",
+  "info": {
+    "displayName": "Text block"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "text"
+    },
+    "subtitle": {
+      "type": "string"
+    }
+  }
+}

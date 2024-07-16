@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_employer_home_fa_qs",
+  "info": {
+    "displayName": "FAQs"
+  },
+  "options": {},
+  "attributes": {
+    "faqs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "block.faq-card"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_block_features_cards",
+  "info": {
+    "displayName": "featuresCard",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

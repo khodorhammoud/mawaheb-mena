@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_block_featured_freelancer_cards",
+  "info": {
+    "displayName": "Featured freelancer card"
+  },
+  "options": {},
+  "attributes": {
+    "freelancerName": {
+      "type": "string"
+    },
+    "freelancerTitle": {
+      "type": "string"
+    },
+    "salary": {
+      "type": "string"
+    },
+    "experiences": {
+      "type": "json"
+    }
+  }
+}

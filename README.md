@@ -1,81 +1,67 @@
-# Turborepo starter
+# MawahebMena
 
-This is an official starter Turborepo.
+This project is built as a monorepo using [Turborepo](https://turbo.build). The projects inside consist of a [Remix run](https://remix.run/) app for the frontend, a [NestJS](https://nestjs.com/) app for the backend.
 
-## Using this example
+## Project Structure
 
-Run the following command:
+### The apps folder
+
+The projetc is an npm project built with turbo repo. The `apps` directory contains the Remix run and NExtJS apps. Running `npm install` from the root directory will install all the dependencies in the `apps` directory. Each package/app is 100% [TypeScript](https://www.typescriptlang.org/)
+
+## Getting started
+
+Firstly, make sure the project has all of its dependencies. From the root directory, run:
 
 ```sh
-npx create-turbo@latest
+npm install
 ```
 
-## What's inside?
+This would install all the project's and apps' dependencies. no need to go inside the apps directory
 
-This Turborepo includes the following packages/apps:
+To start dev mode, fron the root directory run:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```sh
+npm run dev
 ```
 
-### Develop
+## Frontend File structure
 
-To develop all apps and packages, run the following command:
+The bulk of the applicaiton code is present in the `routes` directory. Each file in this directory is a route itself, and each folder is a sub-route. All the components used by one route are present in thesame folder of that route, and the shared components are present in the `shared` folder outside the `routes`. This is indeed the [recommended Remix Run](https://remix.run/docs/en/main/file-conventions/routes#scaling) way.
 
-```
-cd my-turborepo
-pnpm dev
-```
+# The Database
 
-### Remote Caching
+`# TODO`
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+# Documentation
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+## User Documentation
 
-```
-cd my-turborepo
-npx turbo login
-```
+The `docs` folder is the full project's user manual. This explains how the app works. This is not a developer's documentation, rather it's about how the user would expect to interact with the full app. The code's documentation is separate.
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+The app docs are built with [Docusaurus](https://docusaurus.io/docs)
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+## Frontend Documentation
 
-```
-npx turbo link
-```
+Using [StoryBook](https://storybook.js.org/) for documenting react components
 
-## Useful Links
+`# TODO`
 
-Learn more about the power of Turborepo:
+Using JSDocs
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## API Documentation
+
+Using [OpenAPI Specification](https://swagger.io/specification/) (formerly Swagger)
+
+`# TODO`
+
+## Database Documentation
+
+The database is built with the ORM tool: [drizzle](https://orm.drizzle.team/).
+
+The DB diagraming is done with [dbdiagram.io](dbdiagram.io)
+
+`# TODO`
+
+# Testing
+
+`# TODO`

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_block_faq_cards",
+  "info": {
+    "displayName": "FAQ card"
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "text"
+    }
+  }
+}

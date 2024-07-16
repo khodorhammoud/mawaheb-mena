@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_employer_home_how_it_works",
+  "info": {
+    "displayName": "How it works"
+  },
+  "options": {},
+  "attributes": {
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "block.how-it-works-card"
+    }
+  }
+}

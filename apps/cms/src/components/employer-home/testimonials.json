@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_employer_home_testimonials",
+  "info": {
+    "displayName": "Testimonials"
+  },
+  "options": {},
+  "attributes": {
+    "testimonials": {
+      "type": "component",
+      "repeatable": true,
+      "component": "block.testimonial"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "kind": "singleType",
+  "collectionName": "homes_for_employers",
+  "info": {
+    "singularName": "home-for-employers",
+    "pluralName": "homes-for-employers",
+    "displayName": "Home for employers"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "hero": {
+      "type": "component",
+      "repeatable": false,
+      "component": "block.hero-section"
+    },
+    "features": {
+      "type": "component",
+      "repeatable": false,
+      "component": "employer-home.features"
+    },
+    "howItWorksTitle": {
+      "type": "component",
+      "repeatable": false,
+      "component": "block.text-block"
+    },
+    "howItWorks": {
+      "type": "component",
+      "repeatable": false,
+      "component": "employer-home.how-it-works"
+    },
+    "happyOfWork": {
+      "type": "component",
+      "repeatable": false,
+      "component": "block.text-block"
+    },
+    "whatTheySay": {
+      "type": "component",
+      "repeatable": false,
+      "component": "block.text-block"
+    },
+    "testimonials": {
+      "type": "component",
+      "repeatable": false,
+      "component": "employer-home.testimonials"
+    },
+    "whyWorkWithUs": {
+      "type": "component",
+      "repeatable": false,
+      "component": "block.text-block"
+    },
+    "faqs": {
+      "type": "component",
+      "repeatable": false,
+      "component": "employer-home.fa-qs"
+    },
+    "blogs": {
+      "type": "component",
+      "repeatable": false,
+      "component": "employer-home.blog-cards"
+    }
+  }
+}

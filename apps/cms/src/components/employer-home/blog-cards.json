@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_employer_home_blog_cards",
+  "info": {
+    "displayName": "Blog cards"
+  },
+  "options": {},
+  "attributes": {
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "blog.blog"
+    }
+  }
+}

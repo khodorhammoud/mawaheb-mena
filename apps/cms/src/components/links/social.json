@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_links_socials",
+  "info": {
+    "displayName": "Social"
+  },
+  "options": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "link": {
+      "type": "string",
+      "regex": "\\b((http|https):\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)\\b"
+    },
+    "Media": {
+      "type": "enumeration",
+      "enum": [
+        "Facebook",
+        "X",
+        "Linkedin",
+        "Instagram",
+        "Youtube"
+      ]
+    }
+  }
+}

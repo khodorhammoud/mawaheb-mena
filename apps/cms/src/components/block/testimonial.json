@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_block_testimonials",
+  "info": {
+    "displayName": "Testimonial"
+  },
+  "options": {},
+  "attributes": {
+    "logo": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "content": {
+      "type": "text"
+    },
+    "testifierName": {
+      "type": "string"
+    },
+    "testifierPosition": {
+      "type": "string"
+    },
+    "testifierImage": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

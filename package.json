@@ -8,8 +8,10 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "eslint-plugin-react-hooks": "^5.1.0-rc-8971381549-20240625",
     "prettier": "^3.2.5",
     "turbo": "^2.0.4",
+    "typedoc": "^0.26.2",
     "typescript": "^5.4.5"
   },
   "engines": {

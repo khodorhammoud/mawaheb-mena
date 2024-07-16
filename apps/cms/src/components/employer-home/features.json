@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_employer_home_features",
+  "info": {
+    "displayName": "Features"
+  },
+  "options": {},
+  "attributes": {
+    "card": {
+      "type": "component",
+      "repeatable": true,
+      "component": "block.features-card"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_block_trademarks",
+  "info": {
+    "displayName": "Trademark"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string"
+    }
+  }
+}
