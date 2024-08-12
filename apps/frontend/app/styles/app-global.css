@@ -5,16 +5,18 @@
 @tailwind utilities;
 
 @keyframes tilt-bounce {
-	0% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
 }
 
 .tilt-bounce {
-	@apply inline-block bg-gray-200 px-2;
-	animation: tilt-bounce 5s ease-in-out 1 2s;
+  @apply inline-block bg-gray-200 px-2;
+  animation: tilt-bounce 5s ease-in-out 1 2s;
 }
 
 a.active {
-	color: red;
+  color: red;
 }
+
+/* I wil start creating my own transitions here */

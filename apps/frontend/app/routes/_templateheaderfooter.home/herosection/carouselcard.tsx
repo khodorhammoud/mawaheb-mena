@@ -1,36 +1,43 @@
+// i shall work here, since that is an end point
+
 // interface CarouselCardProps {
 // 	title: string;
 
-export default function CarouselCard() {
-	return (
-		<div className="max-w-sm rounded-lg overflow-hidden shadow-lg bg-white">
-			<img
-				className="w-full h-48 object-cover"
-				src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-				alt="Ahmad Khoder"
-			/>
-			<div className="p-4">
-				<h2 className="text-xl font-bold">Ahmad Khoder</h2>
-				<p className="text-gray-600">JavaScript Developer</p>
-				<p className="mt-2">$20/hour</p>
-				<div className="mt-2 flex flex-wrap gap-2">
-					<span className="px-2 py-1 bg-gray-200 rounded-full text-sm">
-						Responsive design
-					</span>
-					<span className="px-2 py-1 bg-gray-200 rounded-full text-sm">
-						HTML5
-					</span>
-					<span className="px-2 py-1 bg-gray-200 rounded-full text-sm">
-						Node.js
-					</span>
-					<span className="px-2 py-1 bg-gray-200 rounded-full text-sm">
-						Agile
-					</span>
-					<span className="px-2 py-1 bg-gray-200 rounded-full text-sm">
-						Debugging
-					</span>
-				</div>
-			</div>
-		</div>
-	);
+import React from "react";
+
+interface CarouselCardProps {
+  image: string;
+  name: string;
+  role: string;
+  hourlyRate: string;
+  skills: string[];
+}
+
+export default function CarouselCard({
+  image,
+  name,
+  role,
+  hourlyRate,
+  skills,
+}: CarouselCardProps) {
+  return (
+    <div className=" font-['Switzer-Regular'] max-w-96 min-w-96 rounded-xl overflow-hidden shadow-sm border-2 border-slate-300 h-auto bg-slate-100">
+      <img className="w-full h-52 object-cover" src={image} alt={name} />
+      <div className="pt-6 pl-4 min-h-64">
+        <h2 className="text-xl">{name}</h2>
+        <p className="text-l text-gray-600">{role}</p>
+        <p className="my-6 text-gray-600">{hourlyRate}</p>
+        <div className="my-4 px-4 flex flex-wrap gap-2 text-xl">
+          {skills.map((skill, index) => (
+            <span
+              key={index}
+              className="px-3 py-2 bg-white rounded-full text-sm font-['Switzer-Regular']"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
