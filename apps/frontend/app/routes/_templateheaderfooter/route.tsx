@@ -22,6 +22,7 @@ export default function Layout() {
       {/* the above comment was for testing which route is gonna appear 👍 */}
       <Header />
       <Outlet />
+      {/* outlet is the content of the page, and the header and the footer are passed to all the page due to the naming 😎 */}
       <Footer />
     </div>
   );

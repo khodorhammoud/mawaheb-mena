@@ -56,7 +56,7 @@ export default function MainHeading(props: {
           // style={{ display: "inline" }}
         >
           {descriptionParts.map((part, index) => {
-            const startFadePosition = index * 200;
+            const startFadePosition = index * 250;
             const endFadePosition = startFadePosition + 400;
             const intensity =
               scrollPosition > startFadePosition
