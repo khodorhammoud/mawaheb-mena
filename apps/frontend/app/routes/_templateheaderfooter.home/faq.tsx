@@ -94,7 +94,7 @@ const FAQ = () => {
                 <div className="text-2xl font-bold text-green-600 justify-self-center pt-1">
                   {faq.id < 10 ? `0${faq.id}` : faq.id}
                 </div>
-                <CardTitle className="text-2xl font-medium flex justify-start items-center pl-2 whitespace-nowrap overflow-hidden">
+                <CardTitle className="text-2xl font-medium flex justify-start items-center pl-2 overflow-hidden">
                   {faq.question}
                 </CardTitle>
                 <div className="flex justify-end items-center pr-2">

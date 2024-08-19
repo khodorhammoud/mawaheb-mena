@@ -48,9 +48,9 @@ export default function FeaturesSection() {
 
   useEffect(() => {
     const observerOptions = [
-      { threshold: 0.6 }, // For the first line, triggers when 50% is visible
-      { threshold: 0.9 }, // For the second line, triggers when 80% is visible (more centered)
-      { threshold: 0.5 }, // For the third line, triggers when 50% is visible
+      { threshold: 0.8 },
+      { threshold: 1 },
+      { threshold: 0.4 },
     ];
 
     const observer1 = new IntersectionObserver((entries) => {
@@ -116,26 +116,25 @@ export default function FeaturesSection() {
   };
 
   return (
-    <section className="py-16 font-['Switzer-Variable']">
+    <section className="font-['Switzer-Variable'] sm:overflow-hidden mb-28">
+      {/* The overflow-hidden on the section will help prevent unwanted scrolling */}
       <MainHeading title="HOW IT WORKS" />
-      <div className="container mx-auto px-4">
-        <div className="relative -mt-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 mx-40 gap-y-20 relative place-items-center mt-40">
+      <div className="xl:px-6 lg:mt-0">
+        <div className="relative xl:-mt-20 lg:-mt-20">
+          <div className="sm:grid sm:grid-cols-1 sm:place-items-center flex flex-col w-36 sm:w-auto gap-y-10 relative mt-20 xl:grid-cols-2 xl:mx-48 xl:gap-y-20 lg:mt-28 lg:grid-cols-2 lg:gap-y-14">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="relative"
                 ref={index === 0 ? ref1 : index === 1 ? ref2 : ref3}
-                style={{
-                  marginTop:
-                    index < 2
-                      ? index % 2 === 0
-                        ? "-150px"
-                        : "120px"
-                      : index % 2 === 0
-                        ? "-230px"
-                        : "20px",
-                }}
+                className={`relative ${
+                  index === 0
+                    ? "lg:-mt-20 xl:-mt-12"
+                    : index === 1
+                      ? "lg:mt-32 xl:mt-40"
+                      : index === 2
+                        ? "lg:-mt-60 xl:-mt-64 lg:ml-[0px] md:ml-[400px]"
+                        : "lg:mt-20 xl:mt-10"
+                }`}
               >
                 <FeatureCard
                   step={feature.step}
@@ -145,10 +144,10 @@ export default function FeaturesSection() {
                 />
                 {index === 0 && (
                   <motion.svg
-                    width="160"
+                    width="350"
                     height="1"
-                    viewBox="0 0 160 1"
-                    className="absolute top-60 left-[375px] transform translate-y-1/2 rotate-45 -z-10 animated-line-1"
+                    viewBox="0 0 260 1"
+                    className="block rotate-90 transform absolute left-[25px] lg:top-60 xl:left-[275px] lg:left-[318px] lg:translate-y-1/2 lg:rotate-45 -z-10 md:animated-line-1"
                     initial="hidden"
                     animate={lineRevealed[0] ? "visible" : "hidden"}
                     variants={draw}
@@ -156,7 +155,7 @@ export default function FeaturesSection() {
                     <motion.line
                       x1="0"
                       y1="1"
-                      x2="160"
+                      x2="350"
                       y2="1"
                       stroke="gray"
                       strokeWidth="2"
@@ -165,10 +164,10 @@ export default function FeaturesSection() {
                 )}
                 {index === 1 && (
                   <motion.svg
-                    width="200"
+                    width="240"
                     height="1"
-                    viewBox="0 0 160 1"
-                    className="absolute top-[515px] left-[-150px] transform translate-y-1/2 -z-10 animated-line-2"
+                    viewBox="0 0 200 1"
+                    className="block rotate-90 absolute transform left-[80px] lg:top-[515px] xl:left-[-150px] lg:left-[-240px] lg:translate-y-1/2 -z-10 lg:animated-line-2 lg:rotate-0"
                     initial="hidden"
                     animate={lineRevealed[1] ? "visible" : "hidden"}
                     variants={draw}
@@ -176,7 +175,7 @@ export default function FeaturesSection() {
                     <motion.line
                       x1="0"
                       y1="1"
-                      x2="160"
+                      x2="240"
                       y2="1"
                       stroke="gray"
                       strokeWidth="2"
@@ -185,10 +184,11 @@ export default function FeaturesSection() {
                 )}
                 {index === 2 && (
                   <motion.svg
-                    width="1100"
+                    width="800"
                     height="1"
-                    viewBox="0 0 10 1"
-                    className="absolute top-[250px] left-[-150px] transform translate-y-1/2 -z-10 rotate-45 animated-line-3"
+                    viewBox="0 0 5 1"
+                    className="block rotate-90 absolute transform left-[-200px] md:block md:rotate-90 md:relative md:transform md:left-[-200px] lg:absolute lg:top-[180px] xl:left-[-100px] lg:left-[-50px] lg:transform lg:translate-y-1/2 -z-10 lg:rotate-45 lg:animated-line-3"
+                    // this have a special dealing, sice step 3 is not aligned as the others at md screens, so to make its line responsive at md, i make it md:relative not md:absolutr 👍⭐
                     initial="hidden"
                     animate={lineRevealed[2] ? "visible" : "hidden"}
                     variants={draw}
@@ -196,7 +196,7 @@ export default function FeaturesSection() {
                     <motion.line
                       x1="0"
                       y1="1"
-                      x2="165"
+                      x2="875"
                       y2="1"
                       stroke="gray"
                       strokeWidth="2"

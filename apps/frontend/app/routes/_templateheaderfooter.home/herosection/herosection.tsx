@@ -14,6 +14,7 @@ export default function HeroSection() {
         animate={{ y: 0 }} // Animate to its normal position
         transition={{ type: "spring", stiffness: 70, damping: 30 }} // Customize the animation
       >
+        {/* this is the animation that occurs to the second part of headline and the carousel to fit their correct places */}
         <Carousel />
       </motion.div>
     </div>

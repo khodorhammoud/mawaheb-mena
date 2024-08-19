@@ -5,6 +5,38 @@
 /* import "~/styles/wavy/wavy.css"; */
 /* Place it wherever you use any style from here */
 
+/* LINE AND BALL */
+/* LINE AND BALL */
+/* LINE AND BALL */
+@keyframes swing {
+  0% {
+    offset-distance: 0%;
+    transform: rotate(0deg);
+  }
+  25% {
+    offset-distance: 25%;
+    transform: rotate(10deg);
+  }
+  50% {
+    offset-distance: 50%;
+    transform: rotate(0deg);
+  }
+  75% {
+    offset-distance: 75%;
+    transform: rotate(-10deg);
+  }
+  100% {
+    offset-distance: 100%;
+    transform: rotate(0deg);
+  }
+}
+
+.swing-circle {
+  offset-path: path("M0 200 Q30 90 100 100 T200 40");
+  animation: swing 5s infinite ease-in-out;
+  offset-rotate: auto; /* Ensures the circle rotates according to the path's curve */
+}
+
 /* FOR BACKGROUND COLOR ROTATION ANIMATION */
 /* FOR BACKGROUND COLOR ROTATION ANIMATION */
 /* use inline-block with rotate */
@@ -12,6 +44,7 @@
 .rotation-animation {
   display: inline-block;
   animation: rotation-animation 3s ease-in-out forwards;
+  animation-delay: 3s;
 }
 
 @keyframes rotation-animation {
@@ -66,8 +99,30 @@
       #fff 60%,
       rgb(255, 255, 255) 100%
     );
+  transition: background 0.3s ease;
+  background-blend-mode: overlay;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
 
-  background-blend-mode: overlay; /* Adjust blend mode as needed */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #003366;
+  width: 20px; /* Smaller circle */
+  height: 20px; /* Smaller circle */
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 1;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(5);
+    opacity: 0;
+  }
 }
 
 /* HOVERING LINEAR GRADIENT */
@@ -94,3 +149,16 @@
   animation: gradientAnimation 3s ease infinite !important;
 }
 /* this is the one of the hover effect 👆 */
+
+/* NWE */
+/* NWE */
+
+/* Add this CSS to your global stylesheet, e.g., wavy.css */
+/* wavy.css */
+
+/* useEffect(() => {
+  const observerOptions = [
+    { threshold: 0.6 }, // For the first line, triggers when 60% is visible
+    { threshold: 0.9 }, // For the second line, triggers when 90% is visible (more centered)
+    { threshold: 0.5 }, // For the third line, triggers when 60% is visible
+  ]; */

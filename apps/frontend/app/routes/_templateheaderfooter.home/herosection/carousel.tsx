@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useSwipeable } from "react-swipeable";
+import { motion, AnimatePresence } from "framer-motion";
 import CarouselCard from "./carouselcard";
+
+// the name of the carousel is an anchor, and the anchor is implemmented in the carouselCard.tsx 💖
 
 const carouselData = [
   {
@@ -48,25 +51,32 @@ const carouselData = [
 
 const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [showFingerIcon, setShowFingerIcon] = useState<boolean>(true);
 
+  // Function to handle the next slide
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex < carouselData.length - 1 ? prevIndex + 1 : 0
     );
+    setShowFingerIcon(false); // Hide the icon after the first swipe
   };
 
+  // Function to handle the previous slide
   const handlePrev = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : carouselData.length - 1
     );
+    setShowFingerIcon(false); // Hide the icon after the first swipe
   };
 
+  // Handling swipe gestures using react-swipeable
   const handlers = useSwipeable({
     onSwipedLeft: handleNext,
     onSwipedRight: handlePrev,
     trackMouse: true, // Allows swipe with mouse for desktop users
   });
 
+  // Calculate the transformation style for each carousel item
   const getTransformStyle = (index: number) => {
     const relativeIndex =
       (index - currentIndex + carouselData.length) % carouselData.length;
@@ -110,10 +120,30 @@ const Carousel = () => {
   return (
     <div
       {...handlers}
-      className="relative w-full h-screen mx-auto overflow-hidden mt-10"
+      className="relative w-full h-screen mx-auto overflow-hidden mt-10 select-none"
     >
+      {/* Animated Finger Icon for Swiping Instruction */}
+      <AnimatePresence>
+        {showFingerIcon && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+          >
+            <motion.div
+              animate={{ rotate: [0, 30, 0] }} // Rotation animation from top to right
+              transition={{ repeat: Infinity, duration: 1 }} // Infinite loop
+              className="text-4xl"
+            >
+              👆 {/* You can replace this emoji with an SVG or an icon */}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="h-full flex justify-center items-center relative">
-        <div className="flex justify-center h-full transition-transform ease-in-out">
+        <div className="flex justify-center h-full transition-transform ease-in-out select-none">
           {carouselData.map((item, index) => (
             <div
               key={index}
@@ -122,7 +152,7 @@ const Carousel = () => {
                 ...getTransformStyle(index),
               }}
             >
-              <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="rounded-xl overflow-hidden shadow-lg pointer-events-none">
                 <CarouselCard
                   image={item.image}
                   name={item.name}

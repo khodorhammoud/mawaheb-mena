@@ -7,22 +7,14 @@ export default function Layout() {
         {/* First Row: Newsletter Signup */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <h4 className="text-2xl font-semibold">Join our newsletter</h4>
-          <div className="ml-[11%] col-span-2">
-            <div className="flex w-full">
+          <div className="lg:ml-[11%] col-span-2">
+            <div className="flex w-full gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none transition duration-200"
-                style={{ borderColor: "#D3D3D3", borderRadius: "10px" }}
+                className="flex-grow px-4 py-2 border rounded-[10px] border-gray-300  focus:outline-none transition duration-200"
               />
-              <button
-                className="px-6 py-2 text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300"
-                style={{
-                  color: "#yourPrimaryColor", // Replace with your primary color
-                  borderColor: "#D3D3D3",
-                  borderRadius: "10px",
-                }}
-              >
+              <button className="px-6 py-2 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300">
                 Subscribe
               </button>
             </div>

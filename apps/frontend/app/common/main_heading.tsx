@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 export default function MainHeading(props: {
   title: string;
   description?: string;
+  className?: string;
+  // measn that it is not needed to put description or a className
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -56,7 +58,7 @@ export default function MainHeading(props: {
           // style={{ display: "inline" }}
         >
           {descriptionParts.map((part, index) => {
-            const startFadePosition = index * 250;
+            const startFadePosition = index * 200;
             const endFadePosition = startFadePosition + 400;
             const intensity =
               scrollPosition > startFadePosition

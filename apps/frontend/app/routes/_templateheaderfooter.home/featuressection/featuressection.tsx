@@ -1,8 +1,8 @@
 // i used for it card.tsx that is in the components \ ui folder :) (THE MAIN ONE)
 // ❌ not the one inside _templateheaderfooter.home folder inside howitworks folder ❌
+import React, { useRef } from "react";
 import "~/styles/wavy/wavy.css";
 
-import React from "react";
 import {
   Card,
   CardHeader,
@@ -51,7 +51,7 @@ export default function FeaturesSection() {
   return (
     <section className="py-24 mt-[-100px] custom-gradient ">
       <div className="container mx-auto px-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-16">
           {features.map((feature, index) => (
             <Card
               key={index}
