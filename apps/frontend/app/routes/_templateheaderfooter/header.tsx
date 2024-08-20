@@ -1,8 +1,8 @@
 // Layout Component
 import { useTranslation } from "react-i18next";
 import _navigation from "~/constants/navigation";
-import { NavLink } from "@remix-run/react";
-import React, { useState } from "react";
+import { NavLink, useMatches } from "@remix-run/react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import "~/styles/wavy/wavy.css";
@@ -11,7 +11,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigation = _navigation(t);
   const [isOpen, setIsOpen] = useState(false);
-
+  const parentMatch = useMatches()[2]
   return (
     <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-2 pt-2 fixed top-0 left-0 w-full z-[1000]">
       <div className="container flex lg:gap-24 md:gap-8 gap-2 items-center py-4">
@@ -27,8 +27,10 @@ export default function Layout() {
                 <NavLink
                   key={navItem.label}
                   to={navItem.href}
-                  className={({ isActive }) =>
-                    clsx(
+                  className={({ isActive }) =>{
+                    if(parentMatch.pathname === "/" && navItem.href === "/for-employers")
+                      isActive =true;
+                    return clsx(
                       "text-primaryColor px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 rounded hover:bg-primaryColor gradient-box hover:text-white hover:rounded-[10px]",
                       {
                         "bg-primaryColor text-white not-active-gradient":
@@ -36,6 +38,7 @@ export default function Layout() {
                         "not-active-gradient": !isActive,
                       }
                     )
+                  }
                   }
                 >
                   {navItem.label}
@@ -89,9 +92,19 @@ export default function Layout() {
         {/* Action Buttons - Hidden on small screens */}
         <nav className="hidden md:flex xl:space-x-4 space-x-2 md:text-sm xl:text-base ml-auto">
           {navigation.map(
-            (navItem) =>
-              navItem.is_action && (
-                <NavLink
+            (navItem) => {
+              if(
+                // we're only showing the action buttons in this section
+                !navItem.is_action || 
+                // if we're on the for-freelancers page, we want to show the signup-freelancer button
+                ( parentMatch.pathname === "/for-freelancers" && navItem.href !== "/signup-freelancer") ||
+                // if we're on the for-employers page, we want to show the signup-employer button
+                ( parentMatch.pathname === "/for-employers" && navItem.href !== "/signup-employer") ||
+                // if we're on any other page, we want to show the signup-employer button
+                ( parentMatch.pathname !== "/for-freelancers" && navItem.href === "/signup-freelancer")
+              ) return <></>;
+              return (
+              <NavLink
                   key={navItem.label}
                   to={navItem.href}
                   className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end"
@@ -99,6 +112,7 @@ export default function Layout() {
                   {navItem.label}
                 </NavLink>
               )
+            }
           )}
         </nav>
       </div>
