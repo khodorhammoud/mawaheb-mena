@@ -1,45 +1,45 @@
 import { FormStrategy } from "remix-auth-form";
 import { Authenticator } from "remix-auth";
-import { registerUser, getUserByEmail } from "~/utils/user.server";
+import { registerUser, getUserByEmail } from "app/servers/user.server";
 import {
-	sessionStorage,
-	commitSession,
-	destroySession,
+  sessionStorage,
+  //   commitSession,
+  //   destroySession,
 } from "./session.server";
-import { compare, hash } from "bcrypt-ts";
-import { User } from "~/types/User";
-import { AuthenticationError } from "~/types/AuthenticationError";
+import { compare } from "bcrypt-ts";
+import { User } from "app/types/User";
+import { AuthenticationError } from "app/types/AuthenticationError";
 
-export let authenticator = new Authenticator(sessionStorage);
+export const authenticator = new Authenticator(sessionStorage);
 
 const loginStrategy = new FormStrategy(async ({ form }: any): Promise<User> => {
-	const email = form.get("email");
-	const password = form.get("password");
+  const email = form.get("email");
+  const password = form.get("password");
 
-	console.log({ email, password });
+  console.log({ email, password });
 
-	const user = await getUserByEmail(email);
+  const user = await getUserByEmail(email);
 
-	if (!user || !user.length || !(await compare(password, user[0].passHash!))) {
-		console.error("about to throw incorrect credentials error")
-		throw new AuthenticationError("Incorrect email/password combination");
-	}
-	return user[0];
+  if (!user || !user.length || !(await compare(password, user[0].passHash!))) {
+    console.error("about to throw incorrect credentials error");
+    throw new AuthenticationError("Incorrect email/password combination");
+  }
+  return user[0];
 });
 const registerationStrategy = new FormStrategy(
-	async ({ form }: any): Promise<User> => {
-		const email = form.get("email");
-		const password = form.get("password");
-		const firstName = form.get("firstName");
-		const lastName = form.get("lastName");
+  async ({ form }: any): Promise<User> => {
+    const email = form.get("email");
+    const password = form.get("password");
+    const firstName = form.get("firstName");
+    const lastName = form.get("lastName");
 
-		if (!password || !firstName || !lastName || !email)
-			throw new Error("Missing required fields for registration");
+    if (!password || !firstName || !lastName || !email)
+      throw new Error("Missing required fields for registration");
 
-		const user = await registerUser({ firstName, lastName, email, password });
+    const user = await registerUser({ firstName, lastName, email, password });
 
-		return user;
-	}
+    return user;
+  }
 );
 
 authenticator.use(loginStrategy, "login");
