@@ -1,8 +1,56 @@
 import LayoutContainer from "../../common/layout_container";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function SignUpEmployerPage() {
   const [userType, setUserType] = useState("personal");
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      image: "https://via.placeholder.com/300", // Replace with actual image URL
+      quote:
+        "Working with Mawaheb MENA has been a game-changer for our company. The platform provided us with access to a pool of highly skilled freelancers who delivered exceptional results on every job. From web development to graphic design, we found top-tier talent for all our needs.",
+      name: "Ahmad Ramal",
+      title: "CEO, Waxy",
+      rating: "562.21 x Hug (168)",
+    },
+    {
+      image: "https://via.placeholder.com/300", // Replace with actual image URL
+      quote:
+        "The platform not only provided me with access to a wide range of exciting jobs but also supported me every step of the way.",
+      name: "Layla Mourad",
+      title: "JavaScript Expert",
+      rating: "478.32 x Clap (200)",
+    },
+    // Add more slides as needed
+  ];
+
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction) => ({
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+    }),
+  };
+
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
   return (
     <LayoutContainer>
       return (
@@ -47,57 +95,41 @@ export default function SignUpEmployerPage() {
 
             <form className="space-y-4">
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label className="block text-sm font-medium text-gray-700">
                   Email Address
                 </label>
                 <input
                   type="email"
-                  id="email"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
               <div className="flex space-x-4">
                 <div className="w-1/2">
-                  <label
-                    htmlFor="firstname"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label className="block text-sm font-medium text-gray-700">
                     First Name
                   </label>
                   <input
                     type="text"
-                    id="firstname"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
                 <div className="w-1/2">
-                  <label
-                    htmlFor="lastname"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label className="block text-sm font-medium text-gray-700">
                     Last Name
                   </label>
                   <input
                     type="text"
-                    id="lastname"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="relative">
                   <input
                     type="password"
-                    id="password"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                   <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
@@ -142,7 +174,7 @@ export default function SignUpEmployerPage() {
             <div className="mt-6 grid grid-cols-1 gap-3">
               <div>
                 <a
-                  href="/"
+                  href="#"
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <span className="sr-only">Continue with Google</span>
@@ -165,7 +197,7 @@ export default function SignUpEmployerPage() {
               </div>
               <div>
                 <a
-                  href="/"
+                  href="#"
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <span className="sr-only">Continue with LinkedIn</span>
@@ -188,7 +220,7 @@ export default function SignUpEmployerPage() {
               </div>
               <div>
                 <a
-                  href="/"
+                  href="#"
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <span className="sr-only">Continue with Microsoft</span>
@@ -221,39 +253,64 @@ export default function SignUpEmployerPage() {
 
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600">
-                Already have an account?{" "}
-                <a
-                  href="/login-employer"
-                  className="text-blue-600 hover:text-blue-500"
-                >
-                  Login
+                Don't have an account?{" "}
+                <a href="#" className="text-blue-600 hover:text-blue-500">
+                  Sign Up
                 </a>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Image and Testimonial */}
+        {/* Right Side - Image and Testimonial Slider */}
         <div className="hidden md:block w-1/2 bg-gray-50 relative">
-          <div className="absolute inset-0 flex justify-center items-center">
-            <div className="max-w-md text-center p-4">
+          <div className="absolute inset-0 flex flex-col justify-center items-center">
+            <motion.div
+              className="max-w-md text-center p-4"
+              key={currentSlide}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+            >
               <img
-                src="https://via.placeholder.com/300" // Replace this with the actual image URL
+                src={slides[currentSlide].image}
                 alt="Testimonial"
                 className="mb-4 rounded-full w-48 h-48 mx-auto object-cover"
               />
               <p className="text-lg text-gray-800 font-medium mb-2">
-                Working with Mawaheb MENA has been an incredible experience. The
-                platform not only provided me with access to a wide range of
-                exciting jobs but also supported me every step of the way.
+                {slides[currentSlide].quote}
               </p>
-              <p className="text-sm text-gray-500">Ahmad Ramal</p>
-              <p className="text-sm text-gray-400">CEO, Waxy</p>
+              <p className="text-sm text-gray-500">
+                {slides[currentSlide].name}
+              </p>
+              <p className="text-sm text-gray-400">
+                {slides[currentSlide].title}
+              </p>
               <div className="flex justify-center mt-2">
                 <div className="text-blue-600 bg-gray-200 px-2 py-1 rounded-full text-xs">
-                  562.21 x Hug (168)
+                  {slides[currentSlide].rating}
                 </div>
               </div>
+            </motion.div>
+            <div className="flex mt-4">
+              <button
+                onClick={prevSlide}
+                className="mx-2 px-2 py-1 bg-gray-300 rounded-md hover:bg-gray-400"
+              >
+                Previous
+              </button>
+              <button
+                onClick={nextSlide}
+                className="mx-2 px-2 py-1 bg-gray-300 rounded-md hover:bg-gray-400"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
