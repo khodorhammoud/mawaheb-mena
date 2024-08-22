@@ -29,6 +29,12 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ CREATE TYPE "public"."employer_account_type" AS ENUM('personal', 'company');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  CREATE TYPE "public"."language" AS ENUM('Spanish', 'English', 'Italian', 'Arabic', 'French', 'Turkish', 'German', 'Portuguese', 'Russian');
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -73,6 +79,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 CREATE TABLE IF NOT EXISTS "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"accountId" integer,
+	"employerAccountType" "employer_account_type",
 	"companyName" varchar(100),
 	"employerName" varchar(100),
 	"companyEmail" varchar(150),

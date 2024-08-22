@@ -1,5 +1,5 @@
 {
-  "id": "a0cc8853-0783-497f-8815-a19dbc637c5b",
+  "id": "74a8992a-593f-4481-8c28-31042f7a344c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -247,6 +247,13 @@
         "accountId": {
           "name": "accountId",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "employerAccountType": {
+          "name": "employerAccountType",
+          "type": "employer_account_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -602,6 +609,14 @@
         "Friday",
         "Saturday",
         "Sunday"
+      ]
+    },
+    "public.employer_account_type": {
+      "name": "employer_account_type",
+      "schema": "public",
+      "values": [
+        "personal",
+        "company"
       ]
     },
     "public.language": {
