@@ -1,21 +1,47 @@
-import { useState } from "react";
-import { Form } from "@remix-run/react";
+import { useState, useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
+import { useActionData, useNavigate, Form } from "@remix-run/react";
 
 export default function SignupLeftComponent() {
+  const actionData = useActionData();
+  const navigate = useNavigate();
+
+  const redirectionFlag = useRef(false);
+
+  useEffect(() => {
+    if (!redirectionFlag.current && actionData?.success) {
+      redirectionFlag.current = true;
+      // Trigger redirect after 2 seconds
+      const timer = setTimeout(() => {
+        navigate("/success-page");
+      }, 2000);
+
+      // Cleanup the timeout if the component unmounts before the redirect
+      return () => clearTimeout(timer);
+    }
+  }, [actionData, navigate]);
+
   const [accountType, setAccountType] = useState("personal");
   return (
     <>
       <div className="w-full max-w-sm">
         <h1 className="text-4xl font-bold mb-6">Sign Up</h1>
+        {/* error message in case of error */}
+        {actionData?.error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline">{actionData.error.message}</span>
+          </div>
+        )}
         <p className="text-sm text-gray-600 mb-4">Select user type</p>
         <div className="flex mb-6 space-x-2">
           <button
             onClick={() => setAccountType("personal")}
-            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${accountType === "personal"
-              ? "bg-gray-100 border-gray-300"
-              : "border-gray-200"
-              }`}
+            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
+              accountType === "personal"
+                ? "bg-gray-100 border-gray-300"
+                : "border-gray-200"
+            }`}
           >
             <div className="flex flex-col items-center">
               <span>👤</span>
@@ -27,10 +53,11 @@ export default function SignupLeftComponent() {
           </button>
           <button
             onClick={() => setAccountType("company")}
-            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${accountType === "company"
-              ? "bg-gray-100 border-gray-300"
-              : "border-gray-200"
-              }`}
+            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
+              accountType === "company"
+                ? "bg-gray-100 border-gray-300"
+                : "border-gray-200"
+            }`}
           >
             <div className="flex flex-col items-center">
               <span>🏢</span>
@@ -59,29 +86,29 @@ export default function SignupLeftComponent() {
           <div className="flex space-x-4">
             <div className="w-1/2">
               <label
-                htmlFor="firstname"
+                htmlFor="firstName"
                 className="block text-sm font-medium text-gray-700"
               >
                 First Name
               </label>
               <input
                 type="text"
-                id="firstname"
-                name="firstname"
+                id="firstName"
+                name="firstName"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
             <div className="w-1/2">
               <label
-                htmlFor="lastname"
+                htmlFor="lastName"
                 className="block text-sm font-medium text-gray-700"
               >
                 Last Name
               </label>
               <input
                 type="text"
-                id="lastname"
-                name="lastname"
+                id="lastName"
+                name="lastName"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
@@ -127,6 +154,12 @@ export default function SignupLeftComponent() {
               Continue
             </button>
           </div>
+          {/* success message when all is done */}
+          {actionData?.success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+              <strong className="font-bold">✅</strong>
+            </div>
+          )}
         </Form>
         <div className="relative mt-6">
           <div className="absolute inset-0 flex items-center">

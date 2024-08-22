@@ -1,5 +1,5 @@
 {
-  "id": "74a8992a-593f-4481-8c28-31042f7a344c",
+  "id": "88cccf44-4d15-47cb-95f6-5609cc87d763",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -24,7 +24,7 @@
           "name": "lastName",
           "type": "varchar(80)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "email": {
           "name": "email",
@@ -50,13 +50,6 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_lastName_unique": {
-          "name": "users_lastName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "lastName"
-          ]
-        },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
@@ -487,8 +480,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.preferredWorkingTimes": {
-      "name": "preferredWorkingTimes",
+    "public.preferred_working_times": {
+      "name": "preferred_working_times",
       "schema": "",
       "columns": {
         "id": {
@@ -525,12 +518,74 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "preferredWorkingTimes_accountId_accounts_id_fk": {
-          "name": "preferredWorkingTimes_accountId_accounts_id_fk",
-          "tableFrom": "preferredWorkingTimes",
+        "preferred_working_times_accountId_accounts_id_fk": {
+          "name": "preferred_working_times_accountId_accounts_id_fk",
+          "tableFrom": "preferred_working_times",
           "tableTo": "accounts",
           "columnsFrom": [
             "accountId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.user_verification": {
+      "name": "user_verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expiry": {
+          "name": "expiry",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "isUsed": {
+          "name": "isUsed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_verification_userId_users_id_fk": {
+          "name": "user_verification_userId_users_id_fk",
+          "tableFrom": "user_verification",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
           ],
           "columnsTo": [
             "id"

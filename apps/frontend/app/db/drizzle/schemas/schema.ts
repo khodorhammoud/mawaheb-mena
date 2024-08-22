@@ -7,6 +7,7 @@ import {
   integer,
   text,
   time,
+  timestamp,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -36,7 +37,7 @@ import { sql } from "drizzle-orm";
 export const UsersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   firstName: varchar("firstName", { length: 80 }),
-  lastName: varchar("lastName", { length: 80 }).unique().notNull(),
+  lastName: varchar("lastName", { length: 80 }),
   email: varchar("email", { length: 150 }).unique().notNull(),
   passHash: varchar("passHash").notNull(),
   isVerified: boolean("isVerified").default(false),
@@ -78,7 +79,7 @@ export const accountsTable = pgTable("accounts", {
  * @property startTime - time
  * @property endTime - time
  */
-export const preferredWorkingTimesTable = pgTable("preferredWorkingTimes", {
+export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
   id: serial("id").primaryKey(),
   accountId: integer("accountId").references(() => accountsTable.id),
   dayOfWeek: dayOfWeekEnum("day"),
@@ -104,7 +105,7 @@ export const preferredWorkingTimesTable = pgTable("preferredWorkingTimes", {
  */
 export const freelancersTable = pgTable("freelancers", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references((): any => accountsTable.id),
+  accountId: integer("accountId").references(() => accountsTable.id),
   fieldsOfExpertise: text("fieldsOfExpertise")
     .array()
     .default(sql`'{}'::text[]`),
@@ -149,7 +150,7 @@ export const freelancersTable = pgTable("freelancers", {
  */
 export const employersTable = pgTable("employers", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references((): any => accountsTable.id),
+  accountId: integer("accountId").references(() => accountsTable.id),
   employerAccountType: employerAccountTypeEnum("employerAccountType"),
   companyName: varchar("companyName", { length: 100 }),
   employerName: varchar("employerName", { length: 100 }),
@@ -191,4 +192,25 @@ export const accountLanguagesTable = pgTable("account_languages", {
   id: serial("id").primaryKey(),
   accountId: integer("accountId").references(() => accountsTable.id),
   languageId: integer("languageId").references(() => languagesTable.id),
+});
+
+/**
+ * Define the userVerificationTable schema using PG Core types.
+ * used to store account verification tokens sent to users after registration
+ *
+ * @property id - serial primary key
+ * @property userId - integer referencing the UsersTable id
+ * @property token - varchar with length 256
+ * @property expiry - timestamp
+ * @property isUsed - boolean
+ * @property createdAt - timestamp
+ */
+
+export const userVerificationTable = pgTable("user_verification", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => UsersTable.id),
+  token: varchar("token", { length: 256 }),
+  expiry: timestamp("expiry"),
+  isUsed: boolean("isUsed").default(false),
+  createdAt: timestamp("createdAt").default(sql`now()`),
 });
