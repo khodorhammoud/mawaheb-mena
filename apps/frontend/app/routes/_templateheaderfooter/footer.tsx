@@ -14,7 +14,7 @@ export default function Layout() {
                 placeholder="Enter your email"
                 className="flex-grow px-4 py-2 border rounded-[10px] border-gray-300  focus:outline-none transition duration-200"
               />
-              <button className="px-6 py-2 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300">
+              <button className="px-6 py-2 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300 not-active-gradient">
                 Subscribe
               </button>
             </div>

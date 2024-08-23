@@ -79,19 +79,20 @@
 
 /* LINEAR GRADIENT */
 /* LINEAR GRADIENT */
+/* LINEAR GRADIENT */
 
 .custom-gradient {
   background: linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0) 40%,
       #27638a 40%,
-      hsl(203, 56%, 80%) 100%
+      hsl(204, 42%, 84%) 100%
     ),
     linear-gradient(
       to left,
       rgba(255, 255, 255, 0) 0%,
       #27638a 0%,
-      hsl(203, 56%, 80%) 100%
+      hsl(204, 42%, 84%) 100%
     ),
     linear-gradient(
       to top,
@@ -105,6 +106,71 @@
   position: relative;
   cursor: pointer;
 }
+
+.circle-grid {
+  position: absolute;
+  top: 40%; /* Ensure this covers the blue section */
+  left: 0;
+  width: 100%;
+  height: 60%; /* Ensure this covers the blue section */
+  display: grid;
+  row-gap: 10px;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(50, 1fr);
+  z-index: 3; /* Ensure this is behind the cards */
+}
+
+.circle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f1f9da;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.circle:hover::before {
+  animation: appear 0.5s forwards; /* Animation for appearing */
+}
+
+.circle::before {
+  animation: disappear 0.5s forwards; /* Animation for disappearing */
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* if */
+/* if */
+/* if */
 
 .ripple {
   position: absolute;
@@ -125,6 +191,7 @@
   }
 }
 
+/* HOVERING LINEAR GRADIENT */
 /* HOVERING LINEAR GRADIENT */
 /* HOVERING LINEAR GRADIENT */
 
@@ -153,12 +220,39 @@
 /* NWE */
 /* NWE */
 
-/* Add this CSS to your global stylesheet, e.g., wavy.css */
-/* wavy.css */
+/* FINGER ANIMATION */
+/* FINGER ANIMATION */
+/* FINGER ANIMATION */
 
-/* useEffect(() => {
-  const observerOptions = [
-    { threshold: 0.6 }, // For the first line, triggers when 60% is visible
-    { threshold: 0.9 }, // For the second line, triggers when 90% is visible (more centered)
-    { threshold: 0.5 }, // For the third line, triggers when 60% is visible
-  ]; */
+@keyframes fingerAnimation {
+  0% {
+    rotate: 0deg;
+  }
+  5% {
+    rotate: 0deg;
+  }
+  25% {
+    rotate: 100deg;
+  }
+  30% {
+    rotate: 100deg;
+  }
+  50% {
+    rotate: 0deg;
+  }
+  55% {
+    rotate: 0deg;
+  }
+  75% {
+    rotate: -80deg;
+  }
+  80% {
+    rotate: -80deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+.fingerAnimation {
+  animation: fingerAnimation 4s ease-in-out infinite;
+}
