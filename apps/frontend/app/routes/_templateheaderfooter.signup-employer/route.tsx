@@ -1,31 +1,26 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import SignUpEmployerPage from "./Signup";
 import {
   generateVerificationToken,
-  registerEmployer,
+  getUserIdFromEmployerId,
+  // registerEmployer,
 } from "../../servers/user.server";
-import { EmployerAccountType } from "../../types/User";
+// import { EmployerAccountType } from "../../types/User";
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
+import { authenticator } from "../../auth/auth.server";
 
 export async function action({ request }: ActionFunctionArgs) {
-  const body = await request.formData();
+  // holds the newly registered user object once registration is successful
   let newEmployer = null;
-  const email = body.get("email") as string;
-  const name = (
-    body.get("firstName") ? body.get("firstName") : body.get("lastName")
-  ) as string;
+  const clonedRequest = request.clone();
+
+  // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    newEmployer = await registerEmployer({
-      firstName: body.get("firstName") as string,
-      lastName: body.get("lastName") as string,
-      email: body.get("email") as string,
-      password: body.get("password") as string,
-      accountType: body.get("accountType") as EmployerAccountType,
-    });
+    newEmployer = await authenticator.authenticate("register", request);
   } catch (error) {
+    // handle registration errors
     if (error instanceof RegistrationError) {
-      console.error("Error registering employer:", error);
       return json({
         success: false,
         error: {
@@ -34,9 +29,10 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       });
     }
-    console.error("Error registering employer:", error);
+
     return json({ success: false, error });
   }
+  // if registration was not successful, return an error response
   if (!newEmployer)
     return json({
       success: false,
@@ -44,18 +40,40 @@ export async function action({ request }: ActionFunctionArgs) {
       message: "Failed to register user",
     });
 
-  const verificationToken = await generateVerificationToken(newEmployer.userId);
-  sendEmail({
-    type: "accountVerification",
-    email: email,
-    name: name,
-    data: {
-      verificationLink: `http://localhost:5173/verify-account?token=${verificationToken}`,
-    },
-  });
+  // send the account verification email
+  try {
+    const body = await clonedRequest.formData();
+
+    const email = body.get("email") as string;
+    const name = (
+      body.get("firstName") ? body.get("firstName") : body.get("lastName")
+    ) as string;
+    const userId = await getUserIdFromEmployerId(newEmployer.id);
+    const verificationToken = await generateVerificationToken(userId);
+    sendEmail({
+      type: "accountVerification",
+      email: email,
+      name: name,
+      data: {
+        // TODO: change the verification link to the actual production URL
+        verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    return json({ success: false, error });
+  }
 
   return json({ success: true, newEmployer });
 }
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // If the user is already authenticated redirect to /dashboard directly
+  return await authenticator.isAuthenticated(request, {
+    successRedirect: "/dashboard",
+  });
+}
+
 export default function Layout() {
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>

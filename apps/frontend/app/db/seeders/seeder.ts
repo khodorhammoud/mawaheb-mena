@@ -18,8 +18,6 @@ dotenv.config({
 
 // dotenv.config();
 
-console.log("process.env", process.env);
-
 async function seed() {
   // Seed Users
   for (let i = 0; i < 10; i++) {

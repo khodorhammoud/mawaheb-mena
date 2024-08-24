@@ -1,3 +1,4 @@
+import { Form } from "@remix-run/react";
 import LayoutContainer from "../../common/layout_container";
 
 export default function LoginFreelancerPage() {
@@ -8,7 +9,7 @@ export default function LoginFreelancerPage() {
         <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">
           <div className="w-full max-w-sm">
             <h1 className="text-4xl font-bold mb-6">Log In</h1>
-            <form className="space-y-6">
+            <Form method="post" className="space-y-6">
               <div>
                 <label
                   htmlFor="email"
@@ -19,6 +20,7 @@ export default function LoginFreelancerPage() {
                 <input
                   type="email"
                   id="email"
+                  name="email"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -32,6 +34,8 @@ export default function LoginFreelancerPage() {
                 <div className="relative">
                   <input
                     type="password"
+                    id="password"
+                    name="password"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                   <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
@@ -66,7 +70,7 @@ export default function LoginFreelancerPage() {
                   Continue
                 </button>
               </div>
-            </form>
+            </Form>
 
             <div className="relative mt-6">
               <div className="absolute inset-0 flex items-center">

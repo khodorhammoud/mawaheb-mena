@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"email" varchar(150) NOT NULL,
 	"passHash" varchar NOT NULL,
 	"isVerified" boolean DEFAULT false,
+	"isOnboarded" boolean DEFAULT false,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint

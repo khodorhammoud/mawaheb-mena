@@ -1,12 +1,17 @@
 export enum ErrorCode {
-  MISSING_FIELDS = "MISSING_FIELDS",
-  REGISTRATION_FAILED = "REGISTRATION_FAILED",
-  LOGIN_FAILED = "LOGNI_FAILED",
-  USER_NOT_FOUND = "USER_NOT_FOUND",
-  INVALID_PASSWORD = "INVALID_PASSWORD",
-  INVALID_EMAIL = "INVALID_EMAIL",
-  EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS",
-  USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS",
+  MISSING_FIELDS = "Missing fields",
+  REGISTRATION_FAILED = "Registration failed",
+  LOGIN_FAILED = "Login failed",
+  INCORRECT_CREDENTIALS = "Incorrect credentials",
+  USER_NOT_FOUND = "User not found",
+  INVALID_PASSWORD = "Invalid password",
+  INVALID_EMAIL = "Invalid email",
+  EMAIL_ALREADY_EXISTS = "Email already exists",
+  USER_ALREADY_EXISTS = "User already exists",
+  ACCOUNT_NOT_VERIFIED = "Account not verified",
+  INVALID_TOKEN = "Invalid token",
+  EXPIRED_TOKEN = "Expired token",
+  USED_TOKEN = "Token already used",
 }
 
 export class RegistrationError extends Error {

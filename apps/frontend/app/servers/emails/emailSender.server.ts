@@ -76,6 +76,7 @@ export async function sendEmailWithBrevo(mailOptions: MailOptions) {
     },
     function (error) {
       console.error(error);
+      throw new Error("Failed to send email with Brevo", error);
     }
   );
 }

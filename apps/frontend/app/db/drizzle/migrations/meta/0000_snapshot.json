@@ -1,5 +1,5 @@
 {
-  "id": "88cccf44-4d15-47cb-95f6-5609cc87d763",
+  "id": "ff9fc1e3-091c-4bd6-a130-478bd069f744",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -40,6 +40,13 @@
         },
         "isVerified": {
           "name": "isVerified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "isOnboarded": {
+          "name": "isOnboarded",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,

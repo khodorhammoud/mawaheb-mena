@@ -1,46 +1,55 @@
 import { FormStrategy } from "remix-auth-form";
-import { Authenticator } from "remix-auth";
-import { registerUser, getUserByEmail } from "app/servers/user.server";
-import {
-  sessionStorage,
-  //   commitSession,
-  //   destroySession,
-} from "./session.server";
+import { getUserByEmail, registerEmployer } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
-import { User } from "app/types/User";
-import { AuthenticationError } from "app/types/AuthenticationError";
+import { EmployerAccountType, User } from "../types/User";
 
-export const authenticator = new Authenticator(sessionStorage);
+export const loginStrategy = new FormStrategy(
+  async ({ form }): Promise<User> => {
+    let email = form.get("email") as string;
+    const password = form.get("password") as string;
+    email = email.toLowerCase().trim();
+    const user = await getUserByEmail(email);
 
-const loginStrategy = new FormStrategy(async ({ form }: any): Promise<User> => {
-  const email = form.get("email");
-  const password = form.get("password");
+    console.log("user", user);
 
-  console.log({ email, password });
-
-  const user = await getUserByEmail(email);
-
-  if (!user || !user.length || !(await compare(password, user[0].passHash!))) {
-    console.error("about to throw incorrect credentials error");
-    throw new AuthenticationError("Incorrect email/password combination");
-  }
-  return user[0];
-});
-const registerationStrategy = new FormStrategy(
-  async ({ form }: any): Promise<User> => {
-    const email = form.get("email");
-    const password = form.get("password");
-    const firstName = form.get("firstName");
-    const lastName = form.get("lastName");
-
-    if (!password || !firstName || !lastName || !email)
-      throw new Error("Missing required fields for registration");
-
-    const user = await registerUser({ firstName, lastName, email, password });
-
+    if (!user || !(await compare(password, user.passHash!))) {
+      console.error("about to throw incorrect credentials error");
+      throw new Error("Incorrect credentials");
+    }
+    if (!user.isVerified) throw new Error("Account not verified");
     return user;
   }
 );
 
-authenticator.use(loginStrategy, "login");
-authenticator.use(registerationStrategy, "register");
+export const registerationStrategy = new FormStrategy(
+  async ({ form }): Promise<User> => {
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
+    const firstName = form.get("firstName") as string;
+    const lastName = form.get("lastName") as string;
+    const registrationType = form.get("registrationType") as string;
+    const accountType = form.get("accountType") as EmployerAccountType;
+
+    let user = null;
+    if (!password || !firstName || !lastName || !email)
+      throw new Error("Missing required fields for registration");
+
+    switch (registrationType) {
+      case "employer":
+        user = await registerEmployer({
+          firstName: firstName.toLowerCase().trim(),
+          lastName: lastName.toLowerCase().trim(),
+          email: email.toLowerCase().trim(),
+          password,
+          accountType,
+        });
+        break;
+      case "freelancer":
+        // register freelancer
+        break;
+      default:
+        throw new Error("Invalid registration type");
+    }
+    return user;
+  }
+);

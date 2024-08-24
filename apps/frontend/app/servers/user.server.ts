@@ -11,17 +11,28 @@ import { LoggedInUser, User, Employer, Freelancer } from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
 
-export async function getUserByEmail(email: string): Promise<User[] | []> {
+export async function getUserByEmail(email: string): Promise<User | null> {
   const users = await db
     .select()
     .from(UsersTable)
     .where(eq(UsersTable.email, email));
   if (users.length > 0) {
-    return users as User[];
+    return users[0] as User;
   } else {
-    console.error("No User with this Email found");
-    return [];
+    console.log("No User with this Email found");
+    return null;
   }
+}
+
+export async function isUserOnboarded(user: User) {
+  const accounts = await db
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, user.id));
+  if (accounts.length > 0) {
+    return accounts[0].isOnboarded;
+  }
+  return false;
 }
 
 /**
@@ -64,7 +75,7 @@ export async function registerEmployer({
     accountId,
     accountType,
   };
-  console.log("creating employer", newEmployer);
+
   const result = (await db
     .insert(employersTable) // insert into employers table
     .values(newEmployer)
@@ -104,7 +115,7 @@ export async function registerFreelancer({
   const newFreelancer: NewFreelancer = {
     accountId,
   };
-  console.log("creating freelancer", newFreelancer);
+
   const result = (await db
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
@@ -128,9 +139,7 @@ export async function createAccount(
         ErrorCode.MISSING_FIELDS,
         "Missing required fields for registration: userInfo"
       );
-    console.log("creating user for account");
     const newUser = await registerUser(userInfo);
-    console.log("newUser", newUser);
     userId = newUser.id;
   }
   type NewAccount = typeof accountsTable.$inferInsert;
@@ -138,7 +147,7 @@ export async function createAccount(
     userId,
     accountType,
   };
-  console.log("creating account", newAccount);
+
   const result = (await db
     .insert(accountsTable)
     .values(newAccount)
@@ -167,8 +176,7 @@ export async function registerUser({
     password,
     process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
   );
-
-  console.log("creating user");
+  email = email.toLowerCase();
   // get the user type from the db schema
   type NewUser = typeof UsersTable.$inferInsert;
   const newUser: NewUser = {
@@ -191,7 +199,6 @@ export async function registerUser({
     .insert(UsersTable)
     .values(newUser)
     .returning()) as unknown as User;
-  console.log("user created", result);
   return result[0];
 }
 
@@ -202,6 +209,16 @@ export async function getUserById(id: number): Promise<LoggedInUser | null> {
     return loggedinUser;
   }
   return null;
+}
+
+export async function getUserIdFromEmployerId(employerId: number) {
+  // join the employers table with the accounts table to get the userId
+  const result = await db
+    .select({ userId: accountsTable.userId })
+    .from(employersTable)
+    .leftJoin(accountsTable, eq(employersTable.id, employerId));
+  if (result.length === 0) return null;
+  return result[0].userId;
 }
 
 export async function verifyPassword(password: string, passHash: string) {
@@ -231,4 +248,58 @@ export async function generateVerificationToken(userId: number) {
     .insert(userVerificationTable)
     .values({ userId, token, expiry: new Date(expiry.toISOString()) });
   return token;
+}
+
+/**
+ * update the user's verification status
+ *
+ * @param token: the token to verify
+ * @returns boolean: true if the token is valid, false otherwise
+ */
+export async function verifyUserRegistrationToken(token: string) {
+  if (!token)
+    return {
+      success: false,
+      message: ErrorCode.INVALID_TOKEN,
+    };
+  const tokenRecord = await db
+    .select()
+    .from(userVerificationTable)
+    .where(eq(userVerificationTable.token, token));
+  if (tokenRecord.length === 0)
+    return {
+      success: false,
+      message: ErrorCode.INVALID_TOKEN,
+    };
+  // check if the token is expired
+  const expiry = new Date(tokenRecord[0].expiry);
+  if (expiry < new Date())
+    return {
+      success: false,
+      message: ErrorCode.EXPIRED_TOKEN,
+    };
+  // check if the token is already used
+  if (tokenRecord[0].isUsed)
+    return {
+      success: false,
+      message: ErrorCode.USED_TOKEN,
+    };
+
+  // update the token to be used
+  await db
+    .update(userVerificationTable)
+    .set({ isUsed: true })
+    .where(eq(userVerificationTable.token, token));
+
+  // update the user to be verified
+  const userId = tokenRecord[0].userId;
+  const response = await db
+    .update(UsersTable)
+    .set({ isVerified: true })
+    .where(eq(UsersTable.id, userId));
+
+  return {
+    success: true,
+    message: "User verified successfully",
+  };
 }

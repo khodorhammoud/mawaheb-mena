@@ -5,3 +5,9 @@ export type registrationSlideData = {
   title: string;
   rating: number;
 };
+
+export type SuccessVerificationLoaderStatus = {
+  success: boolean;
+  error?: boolean;
+  message?: string;
+};

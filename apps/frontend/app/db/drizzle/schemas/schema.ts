@@ -41,6 +41,7 @@ export const UsersTable = pgTable("users", {
   email: varchar("email", { length: 150 }).unique().notNull(),
   passHash: varchar("passHash").notNull(),
   isVerified: boolean("isVerified").default(false),
+  isOnboarded: boolean("isOnboarded").default(false),
 });
 
 /**
