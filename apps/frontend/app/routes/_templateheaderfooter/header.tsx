@@ -11,7 +11,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigation = _navigation(t);
   const [isOpen, setIsOpen] = useState(false);
-  const parentMatch = useMatches()[2]
+  const parentMatch = useMatches()[2];
   return (
     <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-2 pt-2 fixed top-0 left-0 w-full z-[1000]">
       <div className="container flex lg:gap-24 md:gap-8 gap-2 items-center py-4">
@@ -27,9 +27,12 @@ export default function Layout() {
                 <NavLink
                   key={navItem.label}
                   to={navItem.href}
-                  className={({ isActive }) =>{
-                    if(parentMatch.pathname === "/" && navItem.href === "/for-employers")
-                      isActive =true;
+                  className={({ isActive }) => {
+                    if (
+                      parentMatch.pathname === "/" &&
+                      navItem.href === "/for-employers"
+                    )
+                      isActive = true;
                     return clsx(
                       "text-primaryColor px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 rounded hover:bg-primaryColor gradient-box hover:text-white hover:rounded-[10px]",
                       {
@@ -37,9 +40,8 @@ export default function Layout() {
                           isActive,
                         "not-active-gradient": !isActive,
                       }
-                    )
-                  }
-                  }
+                    );
+                  }}
                 >
                   {navItem.label}
                 </NavLink>
@@ -91,29 +93,40 @@ export default function Layout() {
 
         {/* Action Buttons - Hidden on small screens */}
         <nav className="hidden md:flex xl:space-x-4 space-x-2 md:text-sm xl:text-base ml-auto">
-          {navigation.map(
-            (navItem) => {
-              if(
-                // we're only showing the action buttons in this section
-                !navItem.is_action || 
-                // if we're on the for-freelancers page, we want to show the signup-freelancer button
-                ( parentMatch.pathname === "/for-freelancers" && navItem.href !== "/signup-freelancer") ||
-                // if we're on the for-employers page, we want to show the signup-employer button
-                ( parentMatch.pathname === "/for-employers" && navItem.href !== "/signup-employer") ||
-                // if we're on any other page, we want to show the signup-employer button
-                ( parentMatch.pathname !== "/for-freelancers" && navItem.href === "/signup-freelancer")
-              ) return <></>;
-              return (
+          {navigation.map((navItem) => {
+            if (
+              // we're only showing the action buttons in this section
+              !navItem.is_action ||
+              // if we're on the for-freelancers page, we want to show the signup-freelancer button
+              (parentMatch.pathname === "/for-freelancers" &&
+                navItem.href !== "/signup-freelancer") ||
+              // if we're on the for-employers page, we want to show the signup-employer button
+              (parentMatch.pathname === "/for-employers" &&
+                navItem.href !== "/signup-employer") ||
+              // if we're on sign up / login for freelancer page, we want to show the signup-freelancer button
+              (["/signup-freelancer", "/login-freelancer"].includes(
+                parentMatch.pathname
+              ) &&
+                navItem.href !== "/signup-freelancer") ||
+              // if we're on any other page, we want to show the signup-employer button
+              (![
+                "/signup-freelancer",
+                "/login-freelancer",
+                "/for-freelancers",
+              ].includes(parentMatch.pathname) &&
+                navItem.href === "/signup-freelancer")
+            )
+              return <></>;
+            return (
               <NavLink
-                  key={navItem.label}
-                  to={navItem.href}
-                  className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end"
-                >
-                  {navItem.label}
-                </NavLink>
-              )
-            }
-          )}
+                key={navItem.label}
+                to={navItem.href}
+                className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end"
+              >
+                {navItem.label}
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
 
