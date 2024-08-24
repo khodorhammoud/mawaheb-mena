@@ -84,6 +84,7 @@ const BlogCardsList: React.FC = () => {
           name={card.name}
           mins={card.mins}
           description={card.description}
+          link={card.link}
         />
       ))}
     </div>
