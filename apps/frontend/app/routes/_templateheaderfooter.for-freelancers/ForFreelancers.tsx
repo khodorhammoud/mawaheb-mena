@@ -13,6 +13,7 @@ import MainHeading from "~/common/main_heading";
 import FAQ from "../_templateheaderfooter.home/faq";
 import Topic from "./topic";
 import Jobs from "./jobs";
+import Achievements from "./achievements";
 
 export default function ForFreelancersPage() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function ForFreelancersPage() {
         <Topic />
       </div>
       <Jobs />
+      <div className="-mb-52">
+        <Achievements />
+      </div>
       <HowItWorks />
       <Segments />
       <Languages />
