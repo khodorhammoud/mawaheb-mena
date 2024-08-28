@@ -67,8 +67,6 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"userId" integer,
 	"accountType" "account_type",
-	"freelancerId" integer,
-	"employerId" integer,
 	"location" varchar(150),
 	"country" "country",
 	"region" varchar(100),
@@ -147,18 +145,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "accounts" ADD CONSTRAINT "accounts_freelancerId_freelancers_id_fk" FOREIGN KEY ("freelancerId") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "accounts" ADD CONSTRAINT "accounts_employerId_employers_id_fk" FOREIGN KEY ("employerId") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

@@ -11,8 +11,6 @@ export const loginStrategy = new FormStrategy(
     email = email.toLowerCase().trim();
     const user = await getUserByEmail(email);
 
-    console.log("user", user);
-
     if (user && await getUserAccountType(user.id!) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }
@@ -38,8 +36,6 @@ export const registerationStrategy = new FormStrategy(
 
     let user = null;
     if (!password || !firstName || !lastName || !email) {
-      console.log("error in registration in strategies.ts");
-      console.log(`password: ${password}, firstName: ${firstName}, lastName: ${lastName}, email: ${email}`);
       throw new Error("Missing required fields for registration");
     }
 
@@ -67,7 +63,6 @@ export const registerationStrategy = new FormStrategy(
           throw new Error("Invalid registration type");
       }
     } catch (error) {
-      console.log("error in registration in strategies.ts");
       console.error(error);
       throw new Error("Failed to register user");
     }

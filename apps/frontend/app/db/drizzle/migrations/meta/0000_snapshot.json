@@ -1,5 +1,5 @@
 {
-  "id": "24a8e2d2-768e-4cf4-8b2d-dbb73f05e8d2",
+  "id": "3c931060-07ab-4105-8e5b-0afda905609d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -144,18 +144,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "freelancerId": {
-          "name": "freelancerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "employerId": {
-          "name": "employerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "location": {
           "name": "location",
           "type": "varchar(150)",
@@ -197,32 +185,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "accounts_freelancerId_freelancers_id_fk": {
-          "name": "accounts_freelancerId_freelancers_id_fk",
-          "tableFrom": "accounts",
-          "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "accounts_employerId_employers_id_fk": {
-          "name": "accounts_employerId_employers_id_fk",
-          "tableFrom": "accounts",
-          "tableTo": "employers",
-          "columnsFrom": [
-            "employerId"
           ],
           "columnsTo": [
             "id"

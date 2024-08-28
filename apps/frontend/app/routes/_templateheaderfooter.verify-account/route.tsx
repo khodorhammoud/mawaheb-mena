@@ -49,7 +49,6 @@ export default function Layout() {
     if (!redirectionFlag.current && success) {
       redirectionFlag.current = true;
       const redirectionURl = data.accountType === "employer" ? "/login-employer" : "/login-freelancer";
-      console.log("redirectionURl", redirectionURl);
       // Trigger redirect after 2 seconds
       setTimeout(() => {
         navigate(redirectionURl);
