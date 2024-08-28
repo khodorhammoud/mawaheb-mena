@@ -19,6 +19,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     newEmployer = await authenticator.authenticate("register", request);
   } catch (error) {
+    console.error("Error registering user:", error);
     // handle registration errors
     if (error instanceof RegistrationError) {
       return json({
@@ -32,6 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return json({ success: false, error });
   }
+  console.log("newEmployer", newEmployer);
   // if registration was not successful, return an error response
   if (!newEmployer)
     return json({

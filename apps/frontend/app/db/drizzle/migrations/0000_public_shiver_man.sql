@@ -17,7 +17,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."country" AS ENUM('Albania', 'Algeria', 'Bahrain', 'Egypt', 'Iran', 'Iraq', 'Israel', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Oman', 'Palestine', 'Qatar', 'Saudi_Arabia', 'Syria', 'Tunisia', 'Turkey', 'United_Arab_Emirates', 'Yemen');
+ CREATE TYPE "public"."country" AS ENUM('Albania', 'Algeria', 'Bahrain', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Oman', 'Palestine', 'Qatar', 'Saudi_Arabia', 'Syria', 'Tunisia', 'Turkey', 'United_Arab_Emirates', 'Yemen');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -29,7 +29,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."employer_account_type" AS ENUM('personal', 'company');
+ CREATE TYPE "public"."eployer_account_type" AS ENUM('personal', 'company');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 CREATE TABLE IF NOT EXISTS "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"accountId" integer,
-	"employerAccountType" "employer_account_type",
+	"employerAccountType" "eployer_account_type",
 	"companyName" varchar(100),
 	"employerName" varchar(100),
 	"companyEmail" varchar(150),

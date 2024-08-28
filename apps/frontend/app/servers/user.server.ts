@@ -7,9 +7,10 @@ import {
   UsersTable,
   userVerificationTable,
 } from "../db/drizzle/schemas/schema";
-import { LoggedInUser, User, Employer, Freelancer } from "../types/User";
+import { LoggedInUser, User, Employer, Freelancer, UserAccount } from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
+import { AccountType } from "../types/enums";
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const users = await db
@@ -24,7 +25,25 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
-export async function isUserOnboarded(user: User) {
+/**
+ * Check if the provided user is an employee or a freelancer
+ * @param userId : the id of the user to check
+ * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
+ */
+
+export async function getUserAccountType(userId: number): Promise<AccountType | null> {
+  const accounts = await db
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, userId));
+  if (accounts.length > 0) {
+    return accounts[0].accountType;
+  }
+  return null;
+}
+
+
+export async function isUserOnboarded(user: User): Promise<boolean> {
   const accounts = await db
     .select()
     .from(accountsTable)
@@ -45,14 +64,15 @@ export async function registerEmployer({
   lastName,
   email,
   password,
-  accountType,
-}: Employer) {
-  if (!accountType)
+  employerAccountType,
+}: Employer): Promise<Employer> {
+  if (!employerAccountType)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration: accountType"
+      "Missing required fields for registration: employerAccountType"
     );
 
+  console.log("registerEmployer step 1, employerAccountType: ", employerAccountType);
   // create the user account
   const newAccount = (await createAccount(
     {
@@ -73,7 +93,7 @@ export async function registerEmployer({
   type NewEmployer = typeof employersTable.$inferInsert;
   const newEmployer: NewEmployer = {
     accountId,
-    accountType,
+    employerAccountType,
   };
 
   const result = (await db
@@ -82,6 +102,7 @@ export async function registerEmployer({
     .returning()) as unknown as Employer;
   return result[0];
 }
+
 
 /**
  * creates a new freelancer account. This creates a new account record first, which in turn creates a new user record, before finally adding a new freelancer record.
@@ -93,7 +114,7 @@ export async function registerFreelancer({
   lastName,
   email,
   password,
-}: Freelancer) {
+}: Freelancer): Promise<Freelancer> {
   // create the user account
   const newAccount = (await createAccount(
     {
@@ -131,7 +152,7 @@ export async function createAccount(
   { userId, accountType }: any,
   freshInsert: boolean = false,
   userInfo: User = null
-) {
+): Promise<UserAccount> {
   // if this is a fresh insert, we need to create a new user first
   if (freshInsert) {
     if (!userInfo)
@@ -165,7 +186,7 @@ export async function registerUser({
   lastName,
   email,
   password,
-}: User) {
+}: User): Promise<User> {
   if (!password)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
@@ -202,6 +223,11 @@ export async function registerUser({
   return result[0];
 }
 
+/**
+ * get the user by their id
+ * @param id : the id of the user to get
+ * @returns LoggedInUser: the user with the given id
+ */
 export async function getUserById(id: number): Promise<LoggedInUser | null> {
   const user = await db.select().from(UsersTable).where(eq(UsersTable.id, id));
   if (user[0]) {
@@ -211,7 +237,12 @@ export async function getUserById(id: number): Promise<LoggedInUser | null> {
   return null;
 }
 
-export async function getUserIdFromEmployerId(employerId: number) {
+/**
+ * get the userId from the employerId
+ * @param employerId : the id of the employer to get the userId for
+ * @returns number: the userId of the employer
+ */
+export async function getUserIdFromEmployerId(employerId: number): Promise<number | null> {
   // join the employers table with the accounts table to get the userId
   const result = await db
     .select({ userId: accountsTable.userId })
@@ -221,7 +252,31 @@ export async function getUserIdFromEmployerId(employerId: number) {
   return result[0].userId;
 }
 
-export async function verifyPassword(password: string, passHash: string) {
+/**
+ * get the userId from the freelancerId
+ * @param freelancerId : the id of the freelancer to get the userId for
+ * @returns number: the userId of the freelancer
+ */
+
+export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
+  // join the freelancers table with the accounts table to get the userId
+  const result = await db
+    .select({ userId: accountsTable.userId })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.id, freelancerId));
+  if (result.length === 0) return null;
+  return result[0].userId;
+
+}
+
+
+/**
+ * verify the user's password
+ * @param password: the password to verify
+ * @param passHash: the hash to verify the password against
+ * @returns boolean: true if the password is correct, false otherwise
+ */
+export async function verifyPassword(password: string, passHash: string): Promise<boolean> {
   return compare(password, passHash);
 }
 
@@ -231,11 +286,12 @@ export async function verifyPassword(password: string, passHash: string) {
  * @param userId: the id of the user to generate a verification token for
  * @returns string: the generated verification token
  */
-export async function generateVerificationToken(userId: number) {
+
+export async function generateVerificationToken(userId: number): Promise<string> {
   // generate the token hash
   const token = await hash(
     Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15),
+    Math.random().toString(36).substring(2, 15),
     process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
   );
   // set the expiry to be an hour from now
@@ -266,6 +322,7 @@ export async function verifyUserRegistrationToken(token: string) {
     .select()
     .from(userVerificationTable)
     .where(eq(userVerificationTable.token, token));
+  console.log("tokenRecord", tokenRecord);
   if (tokenRecord.length === 0)
     return {
       success: false,
@@ -297,9 +354,10 @@ export async function verifyUserRegistrationToken(token: string) {
     .update(UsersTable)
     .set({ isVerified: true })
     .where(eq(UsersTable.id, userId));
-
+  console.log("in verification", userId);
   return {
     success: true,
     message: "User verified successfully",
+    userId
   };
 }
