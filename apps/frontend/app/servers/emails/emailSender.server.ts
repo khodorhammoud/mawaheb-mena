@@ -46,7 +46,7 @@ export async function sendEmail(params: SendEmailParams) {
 
 // TODO change brevo API
 export async function sendEmailWithBrevo(mailOptions: MailOptions) {
-  console.log("Sending email with Brevo", mailOptions);
+
   const apiInstance = new brevo.TransactionalEmailsApi();
 
   const apiKey = apiInstance.authentications["apiKey"];
