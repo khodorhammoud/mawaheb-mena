@@ -13,11 +13,17 @@ export interface User {
   isVerified?: boolean;
 }
 
-export interface Employer extends User {
+export interface UserAccount {
+  userId: number;
   accountType: EmployerAccountType;
+  isOnboarded: boolean;
 }
 
-export interface Freelancer extends User {}
+export interface Employer extends User {
+  employerAccountType: EmployerAccountType;
+}
+
+export interface Freelancer extends User { }
 
 export interface LoggedInUser {
   id: number;

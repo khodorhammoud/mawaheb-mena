@@ -19,7 +19,7 @@ export default function LoginFormComponent() {
           </div>
         )}
         <Form method="post" className="space-y-6">
-          <input type="hidden" name="accountType" value="employer" />
+          <input type="hidden" name="accountType" value="freelancer" />
           <div>
             <label
               htmlFor="email"

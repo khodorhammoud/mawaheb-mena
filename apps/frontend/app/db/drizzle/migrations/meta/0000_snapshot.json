@@ -1,5 +1,5 @@
 {
-  "id": "ff9fc1e3-091c-4bd6-a130-478bd069f744",
+  "id": "24a8e2d2-768e-4cf4-8b2d-dbb73f05e8d2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -252,7 +252,7 @@
         },
         "employerAccountType": {
           "name": "employerAccountType",
-          "type": "employer_account_type",
+          "type": "eployer_account_type",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
@@ -643,7 +643,6 @@
         "Egypt",
         "Iran",
         "Iraq",
-        "Israel",
         "Jordan",
         "Kuwait",
         "Lebanon",
@@ -673,8 +672,8 @@
         "Sunday"
       ]
     },
-    "public.employer_account_type": {
-      "name": "employer_account_type",
+    "public.eployer_account_type": {
+      "name": "eployer_account_type",
       "schema": "public",
       "values": [
         "personal",
