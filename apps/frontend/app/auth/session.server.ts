@@ -24,11 +24,8 @@ export async function createUserSession(
   redirectTo: string
 ) {
   const session = await getSession(request.headers.get("cookie"));
-  console.log("fetchedsession", session);
   session.set("currentUser", user);
-  console.log("setsession", session);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-  console.log("headers", headers);
   if (isUserOnboarded(user)) return redirect(redirectTo, { headers });
   return redirect("/onboarding", { headers });
 }

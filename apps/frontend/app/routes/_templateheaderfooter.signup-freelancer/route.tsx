@@ -8,6 +8,7 @@ import {
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
+import { useLoaderData } from "@remix-run/react";
 
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -68,13 +69,14 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	// If the user is already authenticated redirect to /dashboard directly
+	// If the user is already authenticated redirect to / dashboard directly
 	return await authenticator.isAuthenticated(request, {
 		successRedirect: "/dashboard",
 	});
 }
 
 export default function Layout() {
+	const loaderData = useLoaderData();
 	return (
 		<div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
 			<SignUpFreelancerPage />

@@ -72,7 +72,6 @@ export async function registerEmployer({
       "Missing required fields for registration: employerAccountType"
     );
 
-  console.log("registerEmployer step 1, employerAccountType: ", employerAccountType);
   // create the user account
   const newAccount = (await createAccount(
     {
@@ -247,7 +246,7 @@ export async function getUserIdFromEmployerId(employerId: number): Promise<numbe
   const result = await db
     .select({ userId: accountsTable.userId })
     .from(employersTable)
-    .leftJoin(accountsTable, eq(employersTable.id, employerId));
+    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id)).where(eq(employersTable.id, employerId));
   if (result.length === 0) return null;
   return result[0].userId;
 }
@@ -263,10 +262,9 @@ export async function getUserIdFromFreelancerId(freelancerId: number): Promise<n
   const result = await db
     .select({ userId: accountsTable.userId })
     .from(freelancersTable)
-    .leftJoin(accountsTable, eq(freelancersTable.id, freelancerId));
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id)).where(eq(freelancersTable.id, freelancerId));
   if (result.length === 0) return null;
   return result[0].userId;
-
 }
 
 
@@ -322,7 +320,7 @@ export async function verifyUserRegistrationToken(token: string) {
     .select()
     .from(userVerificationTable)
     .where(eq(userVerificationTable.token, token));
-  console.log("tokenRecord", tokenRecord);
+
   if (tokenRecord.length === 0)
     return {
       success: false,
@@ -354,7 +352,7 @@ export async function verifyUserRegistrationToken(token: string) {
     .update(UsersTable)
     .set({ isVerified: true })
     .where(eq(UsersTable.id, userId));
-  console.log("in verification", userId);
+
   return {
     success: true,
     message: "User verified successfully",
