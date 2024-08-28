@@ -9,6 +9,7 @@ import {
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
+import { getCurrentUser } from "~/auth/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // holds the newly registered user object once registration is successful
@@ -19,6 +20,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     newEmployer = await authenticator.authenticate("register", request);
   } catch (error) {
+    console.error("Error registering user:", error);
     // handle registration errors
     if (error instanceof RegistrationError) {
       return json({
@@ -67,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return json({ success: true, newEmployer });
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {  // get current logged in user
   // If the user is already authenticated redirect to /dashboard directly
   return await authenticator.isAuthenticated(request, {
     successRedirect: "/dashboard",

@@ -21,7 +21,7 @@ export default function SignupLeftComponent() {
     }
   }, [actionData, navigate]);
 
-  const [accountType, setAccountType] = useState("personal");
+  const [employerAccountType, setEmployerAccountType] = useState("personal");
   return (
     <>
       <div className="w-full max-w-sm">
@@ -36,12 +36,11 @@ export default function SignupLeftComponent() {
         <p className="text-sm text-gray-600 mb-4">Select user type</p>
         <div className="flex mb-6 space-x-2">
           <button
-            onClick={() => setAccountType("personal")}
-            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
-              accountType === "personal"
-                ? "bg-gray-100 border-gray-300"
-                : "border-gray-200"
-            }`}
+            onClick={() => setEmployerAccountType("personal")}
+            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${employerAccountType === "personal"
+              ? "bg-gray-100 border-gray-300"
+              : "border-gray-200"
+              }`}
           >
             <div className="flex flex-col items-center">
               <span>👤</span>
@@ -52,12 +51,11 @@ export default function SignupLeftComponent() {
             </div>
           </button>
           <button
-            onClick={() => setAccountType("company")}
-            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
-              accountType === "company"
-                ? "bg-gray-100 border-gray-300"
-                : "border-gray-200"
-            }`}
+            onClick={() => setEmployerAccountType("company")}
+            className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${employerAccountType === "company"
+              ? "bg-gray-100 border-gray-300"
+              : "border-gray-200"
+              }`}
           >
             <div className="flex flex-col items-center">
               <span>🏢</span>
@@ -68,8 +66,8 @@ export default function SignupLeftComponent() {
         </div>
 
         <Form method="post" className="space-y-4">
-          <input type="hidden" name="registrationType" value="employer" />
-          <input type="hidden" name="accountType" value={accountType} />
+          <input type="hidden" name="accountType" value="employer" />
+          <input type="hidden" name="eployerAccountType" value={employerAccountType} />
           <div>
             <label
               htmlFor="email"

@@ -17,7 +17,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."country" AS ENUM('Albania', 'Algeria', 'Bahrain', 'Egypt', 'Iran', 'Iraq', 'Israel', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Oman', 'Palestine', 'Qatar', 'Saudi_Arabia', 'Syria', 'Tunisia', 'Turkey', 'United_Arab_Emirates', 'Yemen');
+ CREATE TYPE "public"."country" AS ENUM('Albania', 'Algeria', 'Bahrain', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Oman', 'Palestine', 'Qatar', 'Saudi_Arabia', 'Syria', 'Tunisia', 'Turkey', 'United_Arab_Emirates', 'Yemen');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -29,7 +29,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."employer_account_type" AS ENUM('personal', 'company');
+ CREATE TYPE "public"."eployer_account_type" AS ENUM('personal', 'company');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -67,8 +67,6 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"userId" integer,
 	"accountType" "account_type",
-	"freelancerId" integer,
-	"employerId" integer,
 	"location" varchar(150),
 	"country" "country",
 	"region" varchar(100),
@@ -79,7 +77,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 CREATE TABLE IF NOT EXISTS "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"accountId" integer,
-	"employerAccountType" "employer_account_type",
+	"employerAccountType" "eployer_account_type",
 	"companyName" varchar(100),
 	"employerName" varchar(100),
 	"companyEmail" varchar(150),
@@ -147,18 +145,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "accounts" ADD CONSTRAINT "accounts_freelancerId_freelancers_id_fk" FOREIGN KEY ("freelancerId") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "accounts" ADD CONSTRAINT "accounts_employerId_employers_id_fk" FOREIGN KEY ("employerId") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

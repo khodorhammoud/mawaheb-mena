@@ -1,5 +1,5 @@
 {
-  "id": "ff9fc1e3-091c-4bd6-a130-478bd069f744",
+  "id": "3c931060-07ab-4105-8e5b-0afda905609d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -144,18 +144,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "freelancerId": {
-          "name": "freelancerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "employerId": {
-          "name": "employerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "location": {
           "name": "location",
           "type": "varchar(150)",
@@ -203,32 +191,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "accounts_freelancerId_freelancers_id_fk": {
-          "name": "accounts_freelancerId_freelancers_id_fk",
-          "tableFrom": "accounts",
-          "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "accounts_employerId_employers_id_fk": {
-          "name": "accounts_employerId_employers_id_fk",
-          "tableFrom": "accounts",
-          "tableTo": "employers",
-          "columnsFrom": [
-            "employerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -252,7 +214,7 @@
         },
         "employerAccountType": {
           "name": "employerAccountType",
-          "type": "employer_account_type",
+          "type": "eployer_account_type",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
@@ -643,7 +605,6 @@
         "Egypt",
         "Iran",
         "Iraq",
-        "Israel",
         "Jordan",
         "Kuwait",
         "Lebanon",
@@ -673,8 +634,8 @@
         "Sunday"
       ]
     },
-    "public.employer_account_type": {
-      "name": "employer_account_type",
+    "public.eployer_account_type": {
+      "name": "eployer_account_type",
       "schema": "public",
       "values": [
         "personal",

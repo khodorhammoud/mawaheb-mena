@@ -1,5 +1,5 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
-import { verifyUserRegistrationToken } from "../../servers/user.server";
+import { getUserAccountType, verifyUserRegistrationToken } from "../../servers/user.server";
 import { SuccessVerificationLoaderStatus } from "../../types/misc";
 import { authenticator } from "../../auth/auth.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
@@ -27,13 +27,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
+  const accountType = await getUserAccountType(verificationResult.userId);
+
   return json({
     success: true,
+    data: {
+      accountType
+    }
   });
 }
 
 export default function Layout() {
-  const { success, error, message } =
+  const { data, success, error, message } =
     useLoaderData<SuccessVerificationLoaderStatus>();
 
   const navigate = useNavigate();
@@ -43,9 +48,10 @@ export default function Layout() {
   useEffect(() => {
     if (!redirectionFlag.current && success) {
       redirectionFlag.current = true;
+      const redirectionURl = data.accountType === "employer" ? "/login-employer" : "/login-freelancer";
       // Trigger redirect after 2 seconds
       setTimeout(() => {
-        navigate("/login-employer");
+        navigate(redirectionURl);
       }, 3000);
     }
   }, [navigate, success]);
