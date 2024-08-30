@@ -9,7 +9,8 @@ import {
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
-import { getCurrentUser } from "~/auth/session.server";
+import { getCurrentUser, getUserSession } from "~/auth/session.server";
+import { useLoaderData } from "@remix-run/react";
 
 export async function action({ request }: ActionFunctionArgs) {
   // holds the newly registered user object once registration is successful
@@ -71,12 +72,20 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export async function loader({ request }: LoaderFunctionArgs) {  // get current logged in user
   // If the user is already authenticated redirect to /dashboard directly
+  const user = await authenticator.isAuthenticated(request);
+  console.log("user", user);
+  const userSession = await getUserSession(request);
+  console.log("userSession", userSession.data);
+  return user;
   return await authenticator.isAuthenticated(request, {
     successRedirect: "/dashboard",
+    // failureRedirect: "/bla",
   });
 }
 
 export default function Layout() {
+  const loaderData = useLoaderData();
+  console.log("loaderData", loaderData);
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <SignUpEmployerPage />

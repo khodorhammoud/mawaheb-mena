@@ -3,15 +3,17 @@
 import { User } from "../types/User";
 
 import {
-  sessionStorage,
-  // createUserSession,
-  //   commitSession,
-  //   destroySession,
+	sessionStorage,
+	// createUserSession,
+	//   commitSession,
+	//   destroySession,
 } from "./session.server";
 import { Authenticator } from "remix-auth";
 import { registerationStrategy, loginStrategy } from "./strategies";
 
-export const authenticator = new Authenticator<User>(sessionStorage);
+export const authenticator = new Authenticator<User>(sessionStorage, {
+	sessionKey: "_session",
+});
 
 authenticator.use(loginStrategy, "login");
 authenticator.use(registerationStrategy, "register");
