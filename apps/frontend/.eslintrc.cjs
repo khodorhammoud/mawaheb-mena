@@ -64,6 +64,13 @@ module.exports = {
           typescript: {
             alwaysTryTypes: true,
           },
+
+          alias: {
+            map: [
+              ["~", "./app"], // or your root directory
+            ],
+            extensions: [".js", ".jsx", ".ts", ".tsx"], // adjust according to your file extensions
+          },
         },
       },
       extends: [

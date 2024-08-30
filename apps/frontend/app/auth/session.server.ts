@@ -1,11 +1,11 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { authenticator } from "./auth.server";
+// import { authenticator } from "./auth.server";
 import { User } from "../types/User";
 import { isUserOnboarded } from "../servers/user.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "_session",
+    name: "user",
     secure: false, //process.env.NODE_ENV === "production",
     // TODO: update with environment variables
     secrets: ["s3cret1"],

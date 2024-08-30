@@ -9,8 +9,9 @@ import {
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
-import { getCurrentUser, getUserSession } from "~/auth/session.server";
+// import { getCurrentUser, getUserSession } from "~/auth/session.server";
 import { useLoaderData } from "@remix-run/react";
+import { LOGGED_IN_REDIRECT } from "../../common/constants";
 
 export async function action({ request }: ActionFunctionArgs) {
   // holds the newly registered user object once registration is successful
@@ -70,15 +71,16 @@ export async function action({ request }: ActionFunctionArgs) {
   return json({ success: true, newEmployer });
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {  // get current logged in user
+export async function loader({ request }: LoaderFunctionArgs) {
+  // get current logged in user
   // If the user is already authenticated redirect to /dashboard directly
-  const user = await authenticator.isAuthenticated(request);
-  console.log("user", user);
-  const userSession = await getUserSession(request);
-  console.log("userSession", userSession.data);
-  return user;
+  // const user = await authenticator.isAuthenticated(request);
+  // console.log("user", user);
+  // const userSession = await getUserSession(request);
+  // console.log("userSession", userSession.data);
+  // return user;
   return await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
+    successRedirect: LOGGED_IN_REDIRECT,
     // failureRedirect: "/bla",
   });
 }

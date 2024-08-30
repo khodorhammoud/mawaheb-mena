@@ -4,6 +4,7 @@ import { authenticator } from "../../auth/auth.server";
 import { User } from "../../types/User";
 import { createUserSession } from "../../auth/session.server";
 import { AuthorizationError } from "remix-auth";
+import { LOGGED_IN_REDIRECT } from "../../common/constants";
 
 export async function action({ request }: ActionFunctionArgs) {
   let user: User = null;
@@ -31,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
   //
-  return await createUserSession(request, user, "/dashboard");
+  return await createUserSession(request, user, LOGGED_IN_REDIRECT);
 
   // return json({ success: true });
 }

@@ -1,9 +1,13 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
-import { getUserAccountType, verifyUserRegistrationToken } from "../../servers/user.server";
+import {
+  getUserAccountType,
+  verifyUserRegistrationToken,
+} from "../../servers/user.server";
 import { SuccessVerificationLoaderStatus } from "../../types/misc";
 import { authenticator } from "../../auth/auth.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useEffect, useRef } from "react";
+import { LOGGED_IN_REDIRECT } from "../../common/constants";
 
 // export async function action({ request }: ActionFunctionArgs) {
 
@@ -12,7 +16,7 @@ import { useEffect, useRef } from "react";
 export async function loader({ request }: LoaderFunctionArgs) {
   // If the user is already authenticated redirect to /dashboard directly
   await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
+    successRedirect: LOGGED_IN_REDIRECT,
   });
   // get verificqtion token from the url
   const url = new URL(request.url);
@@ -32,8 +36,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     success: true,
     data: {
-      accountType
-    }
+      accountType,
+    },
   });
 }
 
@@ -48,7 +52,10 @@ export default function Layout() {
   useEffect(() => {
     if (!redirectionFlag.current && success) {
       redirectionFlag.current = true;
-      const redirectionURl = data.accountType === "employer" ? "/login-employer" : "/login-freelancer";
+      const redirectionURl =
+        data.accountType === "employer"
+          ? "/login-employer"
+          : "/login-freelancer";
       // Trigger redirect after 2 seconds
       setTimeout(() => {
         navigate(redirectionURl);
