@@ -121,7 +121,7 @@ export default function FeaturesSection() {
       <MainHeading title="HOW IT WORKS" />
       <div className="xl:px-6 lg:mt-0">
         <div className="relative xl:-mt-20 lg:-mt-20">
-          <div className="sm:grid sm:grid-cols-1 sm:place-items-center flex flex-col w-36 sm:w-auto gap-y-10 relative mt-20 xl:grid-cols-2 xl:mx-48 xl:gap-y-20 lg:mt-28 lg:grid-cols-2 lg:gap-y-14">
+          <div className="sm:grid sm:grid-cols-1 sm:place-items-center flex flex-col w-36 sm:w-auto gap-y-10 relative mt-20 xl:grid-cols-2 xl:gap-x-20 xl:mx-48 xl:gap-y-20 lg:mt-28 lg:grid-cols-2 lg:gap-y-14">
             {features.map((feature, index) => (
               <div
                 key={index}

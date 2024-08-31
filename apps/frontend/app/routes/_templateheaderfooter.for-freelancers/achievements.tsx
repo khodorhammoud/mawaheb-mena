@@ -1,34 +1,35 @@
 import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "~/styles/wavy/wavy.css";
 
 type Achievement = {
   title: string;
-  count: string;
+  count: number;
   description: string;
 };
 
 const achievements: Achievement[] = [
   {
     title: "Open Jobs Opportunities",
-    count: "100",
+    count: 100,
     description:
       "Our platform currently offers a multitude of open job opportunities, connecting freelancers with diverse jobs and clients seeking their expertise.",
   },
   {
     title: "Jobs are done",
-    count: "40",
+    count: 40,
     description:
       "Our platform has facilitated over 40 successful jobs, delivering exceptional results for clients and freelancers alike.",
   },
   {
     title: "Jobs posted",
-    count: "50",
+    count: 50,
     description:
       "Over 200 jobs were posted via our platform, providing ample opportunities for freelancers to find work.",
   },
 ];
 
-const Achievements = () => {
+const Achievements: React.FC = () => {
   return (
     <div className="mx-4 flex flex-col mt-32">
       <h2 className="text-4xl font-bold mb-8 ml-2 font-['BespokeSerif-Regular']">
@@ -41,7 +42,7 @@ const Achievements = () => {
             className="bg-white border border-gray-200 shadow-xl p-6 flex flex-col rounded-xl"
           >
             <h3 className="text-lg font-bold mb-4">{achievement.title}</h3>
-            <AnimatedCount count={parseInt(achievement.count)} />
+            <AnimatedCount count={achievement.count} />
             <p className="text-sm text-gray-600 mt-6 pt-3 border-t-[2px]">
               {achievement.description}
             </p>
@@ -52,10 +53,14 @@ const Achievements = () => {
   );
 };
 
-const AnimatedCount: React.FC<{ count: number }> = ({ count }) => {
-  const [animatedCount, setAnimatedCount] = useState(0);
+interface AnimatedCountProps {
+  count: number;
+}
+
+const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
+  const [currentValue, setCurrentValue] = useState<number>(0);
+  const [hasAnimated, setHasAnimated] = useState<boolean>(false);
   const elementRef = useRef<HTMLDivElement | null>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -66,7 +71,7 @@ const AnimatedCount: React.FC<{ count: number }> = ({ count }) => {
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
 
     if (elementRef.current) {
@@ -82,30 +87,41 @@ const AnimatedCount: React.FC<{ count: number }> = ({ count }) => {
 
   useEffect(() => {
     if (hasAnimated) {
-      const start = 0;
-      const end = count;
-      const duration = 8000; // 8 seconds
-      const stepTime = Math.abs(Math.floor(duration / end));
+      let currentNumber = 0;
 
-      let current = start;
-      const step = () => {
-        current += 5;
-        setAnimatedCount(current);
-        if (current < end) {
-          setTimeout(step, stepTime);
+      const interval = setInterval(() => {
+        if (currentNumber < count) {
+          currentNumber += 10;
+          setCurrentValue(currentNumber);
+        } else {
+          clearInterval(interval);
         }
-      };
+      }, 300); // Faster animation
 
-      step();
+      return () => clearInterval(interval);
     }
   }, [hasAnimated, count]);
 
   return (
     <div
       ref={elementRef}
-      className="relative h-16 flex items-end justify-end text-5xl font-extrabold text-gray-800 mb-2 self-end"
+      className="relative h-16 overflow-hidden flex justify-end items-center text-7xl font-bold text-gray-800 ml-20"
     >
-      {animatedCount}+ {/* Add the + sign next to the animated number */}
+      <div className="flex items-center">
+        <AnimatePresence>
+          <motion.div
+            key={currentValue}
+            initial={{ y: "100%" }} // Start from below
+            animate={{ y: "0%" }} // Move to center
+            exit={{ y: "-100%" }} // Move straight up and fade out
+            transition={{ duration: 0.2, ease: "easeInOut" }} // Smooth transition
+            className="absolute left-0 right-14 text-right"
+          >
+            {currentValue}
+          </motion.div>
+        </AnimatePresence>
+        <p className="ml-20">+</p>
+      </div>
     </div>
   );
 };

@@ -1,38 +1,58 @@
 import { motion, useTransform, MotionValue } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import Testimonials from "./testimonials";
 
-// Define props interface
 interface WtsauProps {
   scrollY: MotionValue<number>;
+  fingerIconPosition?: {
+    top?: string;
+    left?: string;
+    right?: string;
+    bottom?: string;
+  };
 }
 
-const Wtsau: React.FC<WtsauProps> = ({ scrollY }) => {
-  const [showFingerIcon, setShowFingerIcon] = useState<boolean>(true);
+const Wtsau: React.FC<WtsauProps> = ({ scrollY, fingerIconPosition }) => {
+  const [showFingerIcon, setShowFingerIcon] = useState<boolean>(false);
 
-  // Transformations for different scales
   const zoomScaleP = useTransform(scrollY, [30, 200], [0.5, 1]);
   const zoomScaleTestimonials = useTransform(scrollY, [30, 200], [0.1, 0.3]);
+  const opacityTestimonials = useTransform(scrollY, [190, 200], [0, 1]);
 
-  // Handle swipe or scroll event to hide the finger icon
   const handleInteraction = () => {
     setShowFingerIcon(false);
   };
 
+  useEffect(() => {
+    scrollY.onChange((latest) => {
+      if (latest >= 190 && latest <= 300) {
+        setShowFingerIcon(true);
+      } else {
+        setShowFingerIcon(false);
+      }
+    });
+  }, [scrollY]);
+
   return (
     <div
-      className="flex flex-col items-center justify-between"
+      className="flex flex-col items-center justify-between overflow-visible min-h-screen"
       onScroll={handleInteraction}
     >
-      {/* Animated Finger Icon for Scrolling Instruction */}
       <AnimatePresence>
         {showFingerIcon && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute top-[355px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+            className="absolute z-10"
+            style={{
+              top: fingerIconPosition?.top || "473px",
+              left: fingerIconPosition?.left || "50%",
+              right: fingerIconPosition?.right,
+              bottom: fingerIconPosition?.bottom,
+              transform: "translate(-50%, -50%)", // Center the icon horizontally
+            }}
           >
             <motion.div className="text-4xl bg-slate-100 rounded-2xl scroll-pb-6 pl-2 pt-1 pr-1 fixed-background bg-opacity-70">
               <div className="inline-block fingerAnimation">
@@ -51,46 +71,41 @@ const Wtsau: React.FC<WtsauProps> = ({ scrollY }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={{ opacity: 1, scale: 0.9 }} //here
         transition={{ duration: 1.5 }}
-        className="flex flex-col items-center"
+        className="overflow-visible"
       >
-        {/* Zoom for "WHAT THEY SAY" */}
         <motion.p
           style={{
             scale: zoomScaleP,
-            marginBottom: "", // Ensure space below the text
-            transformOrigin: "center", // Scaling occurs from the center
+            transformOrigin: "center",
           }}
-          className="text-center mt-60 select-none"
+          className="text-center select-none mt-[320px]"
         >
           WHAT THEY SAY
         </motion.p>
 
-        {/* Zoom for Testimonials component */}
         <motion.div
           style={{
             scale: zoomScaleTestimonials,
-            width: "100%", // Ensures testimonials take up full width
+            opacity: opacityTestimonials,
+            width: "100%",
             display: "flex",
             justifyContent: "center",
           }}
-          className="text-center"
+          className="text-center -mt-48"
         >
-          <Testimonials onSwipe={handleInteraction} />
+          <Testimonials setShowFingerIcon={setShowFingerIcon} />
         </motion.div>
 
-        {/* Zoom for "ABOUT US" */}
         <motion.p
           style={{
             scale: zoomScaleP,
-            marginTop: "", // Ensure space above the text
-            transformOrigin: "center", // Scaling occurs from the center
+            transformOrigin: "center",
           }}
-          className="text-center mt-52 select-none"
+          className="text-center -mt-48 select-none"
         >
           ABOUT US
         </motion.p>

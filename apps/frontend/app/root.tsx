@@ -31,9 +31,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const loaderData = useRouteLoaderData<typeof loader>("root");
-  return ( // if loaderData is not null or empty, it will take the .locale property of the localeData
-           // but if it is empty, "en" will be provided :)
-    <html lang={loaderData?.locale ?? "en"}> 
+  return (
+    // if loaderData is not null or empty, it will take the .locale property of the localeData
+    // but if it is empty, "en" will be provided :)
+    <html lang={loaderData?.locale ?? "en"}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

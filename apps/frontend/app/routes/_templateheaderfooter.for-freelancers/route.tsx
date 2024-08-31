@@ -4,7 +4,7 @@ import ForFreelancersPage from "./ForFreelancers";
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif" }}>
+    <div className="container" style={{ fontFamily: "system-ui, sans-serif" }}>
       <ForFreelancersPage />
     </div>
   );

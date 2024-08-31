@@ -51,7 +51,7 @@ const Segments = () => {
       initial={{ opacity: 0, y: 50 }}
       animate={inView ? { opacity: 1, y: 50 } : { opacity: 0, y: 50 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center gap-8 text-7xl my-[200px] font-semibold font-['BespokeSerif-Variable']"
+      className="flex flex-col items-center justify-center gap-8 text-7xl mt-[200px] font-semibold font-['BespokeSerif-Variable']"
       style={{ minHeight: "calc(120vh - 400px)" }}
     >
       <p>SEGMENTS THAT WE</p>
