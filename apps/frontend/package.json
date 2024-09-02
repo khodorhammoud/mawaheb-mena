@@ -7,7 +7,7 @@
     "build": "remix vite:build",
     "dev": "remix vite:dev ",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx  app/db/migrator.ts",
+    "db:migrate": "tsx app/db/migrator.ts",
     "db:seed": "tsx app/db/seeders/seeder.ts",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
@@ -42,7 +42,14 @@
     "remix-auth-form": "^1.5.0",
     "remix-i18next": "^6.1.0",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "autoprefixer": "^10.4.20",
+    "framer-motion": "^11.3.24",
+    "postcss": "^8.4.40",
+    "react-intersection-observer": "^9.13.0",
+    "react-swipeable": "^7.0.1",
+    "swiper": "^11.1.9",
+    "dotenv": "*"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.9.2",

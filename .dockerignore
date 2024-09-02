@@ -1,0 +1,11 @@
+# files to ignore for building a docker node applocation
+node_modules/
+npm-debug.log
+Dockerfile
+docker-compose.yml
+.git
+.gitignore
+README.md
+LICENSE
+.vscode/
+.vscodeignore

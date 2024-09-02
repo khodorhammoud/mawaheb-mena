@@ -5,6 +5,8 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
+    "db:generate": "drizzle-kit generate --config=apps/frontend/drizzle.config.ts",
+    "db:migrate": "tsx frontend/app/db/migrator.ts",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {

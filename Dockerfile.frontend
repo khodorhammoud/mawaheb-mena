@@ -1,0 +1,54 @@
+# Stage 1: Build the application
+# FROM node:20-alpine as builder
+FROM node:20 AS builder
+# RUN apk add --no-cache autoconf automake libtool nasm make g++ pkgconfig
+
+
+# Set the working directory
+WORKDIR /app
+
+# Install dependencies
+COPY apps/frontend/package.json ./
+
+# ./frontend/package.json
+# COPY package.json ./
+# COPY package-lock.json ./
+# RUN npm install
+# COPY apps/frontend/package-lock.json ./
+
+RUN npm install
+# replace with this when building for testing
+# RUN npm ci --production=false --omit=dev
+
+# Copy the rest of the application code
+COPY apps/frontend/ .
+
+WORKDIR /app/frontend
+# Generate the database schema
+RUN npm run db:generate
+
+WORKDIR /app
+# Build the Remix app
+RUN npm run build
+
+# Remove dev dependencies
+RUN npm prune --production
+
+# Stage 2: Create the final image using distroless
+FROM node:20-alpine AS runner
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the build from the builder stage
+COPY --from=builder /app /app
+
+# Set environment variables for production
+ENV NODE_ENV=production
+ENV PORT=5173
+
+# Expose the port
+EXPOSE 5173
+
+# Start the Remix app
+CMD ["npm", "run", "start"]
