@@ -9,7 +9,7 @@ export default function Headline() {
     // Set a timeout to hide the SVG after the animation ends (2.8 seconds)
     const timeoutId = setTimeout(() => {
       setIsVisible(false); // Update state to hide the SVG
-    }, 2800); // Match the duration of the animation (2.8 seconds)
+    }, 1800); // Match the duration of the animation (2.8 seconds)
 
     return () => clearTimeout(timeoutId); // Cleanup timeout on unmount
   }, []);
@@ -48,8 +48,8 @@ export default function Headline() {
                       fill="freeze" // Stay visible after appearing
                     />
                     <animateMotion
-                      begin="0.1s" // Start the motion after the ball becomes visible
-                      dur="2.8s" // Set the duration to 2.8 seconds
+                      begin="0.05s" // Start the motion after the ball becomes visible
+                      dur="2.6s" // Set the duration to 2.8 seconds
                       repeatCount="1" // Make the animation run only once
                       keyPoints="1;0" // Reverse the direction of the animation
                       rotate="auto"
@@ -63,8 +63,8 @@ export default function Headline() {
                       attributeName="opacity"
                       from="1"
                       to="0"
-                      begin="2.9s" // Start just after the motion animation ends
-                      dur="0.1s" // Short duration to make it disappear
+                      begin="2.6s" // Start just after the motion animation ends
+                      dur="0.05s" // Short duration to make it disappear
                       fill="freeze" // Stay hidden after disappearing
                     />
                   </circle>
@@ -88,6 +88,7 @@ export default function Headline() {
             drive innovation, and achieve your business goals.
           </p>
         </motion.div>
+        {/* the above motion is for appearing the p elements from the bottom to there places */}
       </div>
     </section>
   );

@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Sample FAQ data
@@ -73,10 +78,10 @@ const FAQ = () => {
   };
 
   return (
-    <section className="py-16 mt-[100px]">
+    <section className="py-16">
       <div className="container mx-auto px-4">
         {/* Section Title */}
-        <h2 className="font-bold mb-20 text-6xl font-['BespokeSerif-Regular']">
+        <h2 className="font-bold mb-20 mt-40 text-6xl font-['BespokeSerif-Regular']">
           FAQS
         </h2>
         <div className="space-y-8">
@@ -91,7 +96,7 @@ const FAQ = () => {
                 className="grid grid-cols-[80px_auto_60px] items-center cursor-pointer col-span-2 border-b-[1px] border-slate-200 pb-8"
                 onClick={() => toggleFAQ(faq.id)}
               >
-                <div className="text-2xl font-bold text-green-600 justify-self-center pt-1">
+                <div className="text-2xl font-bold text-primaryColor justify-self-center pt-1">
                   {faq.id < 10 ? `0${faq.id}` : faq.id}
                 </div>
                 <CardTitle className="text-2xl font-medium flex justify-start items-center pl-2 overflow-hidden">
@@ -103,13 +108,13 @@ const FAQ = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
-                      className="w-7 h-7 text-green-600"
+                      className="w-7 h-7 text-primaryColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M12 4.5v15m7.5-7.5h-15"
                       />
                     </svg>
@@ -118,13 +123,13 @@ const FAQ = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
-                      className="w-7 h-7 text-green-600"
+                      className="w-7 h-7 text-primaryColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M5 12h14"
                       />
                     </svg>
@@ -143,7 +148,7 @@ const FAQ = () => {
                     className="overflow-hidden"
                   >
                     <CardContent className="col-start-2 col-end-3 pl-12 pr-10 py-9">
-                      <p className="text-gray-700 text-lg">{faq.answer}</p>
+                      <p className="text-gray-800 text-lg">{faq.answer}</p>
                     </CardContent>
                   </motion.div>
                 )}
