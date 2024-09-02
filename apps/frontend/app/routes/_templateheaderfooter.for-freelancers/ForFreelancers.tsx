@@ -4,6 +4,7 @@ import "~/styles/wavy/wavy.css";
 import { motion } from "framer-motion";
 import React from "react";
 import LayoutContainer from "../../common/layout_container";
+<<<<<<< HEAD
 import { useNavigate } from "@remix-run/react";
 import HowItWorks from "../_templateheaderfooter.home/howitworks/howitworks";
 import Segments from "../_templateheaderfooter.home/segments";
@@ -38,4 +39,15 @@ export default function ForFreelancersPage() {
       </div>
     </LayoutContainer>
   );
+=======
+
+export default function ForFreelancersPage() {
+	return (
+		<LayoutContainer>
+			<div className="text-left my-[100px]">
+				<h1>For freelancers content here</h1>
+			</div>
+		</LayoutContainer>
+	);
+>>>>>>> dev
 }
