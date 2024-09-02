@@ -1,7 +1,7 @@
 import { motion, useTransform, MotionValue } from "framer-motion";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import Testimonials from "./testimonials";
+import Testimonials from "./Testimonials";
 
 // Define props interface
 interface WtsauProps {

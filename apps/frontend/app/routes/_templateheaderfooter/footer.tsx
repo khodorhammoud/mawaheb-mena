@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function Layout() {
   return (
     <footer className="bg-white text-black py-10 border-t border-gray-200">
