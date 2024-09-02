@@ -45,7 +45,7 @@ export default function MainHeading(props: {
     : [];
 
   return (
-    <div ref={containerRef} className="text-left my-[60px]">
+    <div ref={containerRef} className="text-left mt-96">
       <motion.h1 className="text-6xl font-['BespokeSerif-Medium']">
         {props.title}
       </motion.h1>

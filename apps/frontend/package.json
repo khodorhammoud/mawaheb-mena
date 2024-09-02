@@ -42,7 +42,8 @@
     "remix-auth-form": "^1.5.0",
     "remix-i18next": "^6.1.0",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "framer-motion": "^11.3.31"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.9.2",

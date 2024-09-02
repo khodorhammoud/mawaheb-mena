@@ -1,11 +1,11 @@
-import { Button } from "~/components/ui/button";
+import { Button } from "../../components/ui/button";
 import { useNavigate } from "@remix-run/react";
 const ContactUs = () => {
   const navigate = useNavigate();
 
   // Assume isActive is always true for demonstration purposes
   // Replace this with your actual condition or state management
-  const isActive = false;
+  // const isActive = false;
 
   return (
     <div className="text-left mt-4 mb-16 ml-4">

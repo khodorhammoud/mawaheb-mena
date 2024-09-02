@@ -1,12 +1,15 @@
-import HeroSection from "./herosection/herosection";
+import HeroSection from "./herosection/Herosection";
 import LayoutContainer from "../../common/layout_container";
-import FeaturesSection from "./featuressection/featuressection";
-import HowItWorks from "./howitworks/howitworks";
-import MainHeading from "~/common/main_heading";
-import FAQ from "./faq";
-import ContactUs from "./contactus";
-import { motion } from "framer-motion";
-import "~/styles/wavy/wavy.css";
+import FeaturesSection from "./featuressection/FeaturesSection";
+import HowItWorks from "./howitworks/HowItWorks";
+import MainHeading from "../../common/MainHeading";
+import FAQ from "./FAQ";
+import ContactUs from "./ContactUs";
+import "../../styles/wavy/wavy.css";
+import Segments from "./Segments";
+import Languages from "./Languages";
+// import Wtsau from "./ZoomingText";
+import BlogCardsList from "./BlogCard";
 
 // To know more, press crtl + click on component you what to know about
 
@@ -24,6 +27,8 @@ export default function Home() {
       {/* this is the How it works section, that has 4 steps first, and the big header, besides the list of the coding languages, and ends by the what they say about us section that has  */}
 
       {/* Here, there should be a Header component that carries (SEGMENTS THAT WE ARE HAPPY OF WORK), and a List component let's say that carries the list of the coding languages, and ends with a Testimonials component by the what they say about us section that has */}
+      <Segments />
+      <Languages />
 
       <MainHeading
         title="WHY WORK WITH US?"
@@ -36,7 +41,8 @@ export default function Home() {
 
       <ContactUs />
       {/* this should be in a component in another folder and shall be called here as the other components */}
-      {/* i did that 👍 */}
+
+      <BlogCardsList />
     </LayoutContainer>
     // I've just noticed that this Component has a closing tag 👍
   );
