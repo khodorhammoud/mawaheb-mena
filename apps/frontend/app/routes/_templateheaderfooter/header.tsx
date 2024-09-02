@@ -9,7 +9,7 @@ import "~/styles/wavy/wavy.css";
 
 export default function Layout() {
   const { t } = useTranslation();
-  const navigation = _navigation(t);
+  const navigation = _navigation(t); // this is the place where i link the buttons i have to their pages // (routes)
   const [isOpen, setIsOpen] = useState(false);
 
   return (
