@@ -1,4 +1,4 @@
-import { integer } from 'drizzle-orm/pg-core';
+// import { integer } from 'drizzle-orm/pg-core';
 import { db } from '../drizzle/connector';
 import {
   UsersTable,
@@ -24,7 +24,7 @@ async function seed() {
   // Seed Users
   for (let i = 0; i < 10; i++) {
     await db.insert(UsersTable).values({
-      // @ts-ignore
+      // @ts-expect-error Description: Ignoring type error because faker.person.firstName() returns a string.
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
       email: faker.internet.email(),
@@ -68,7 +68,6 @@ async function seed() {
   // Seed Preferred Working Times
   for (let i = 0; i < 10; i++) {
     await db.insert(preferredWorkingTimesTable).values({
-      //@ts-ignore
       accountId: i + 1,
       dayOfWeek: faker.helpers.arrayElement([
         'Monday',
@@ -159,7 +158,6 @@ async function seed() {
     'Russian',
   ]) {
     await db.insert(languagesTable).values({
-      // @ts-ignore
       name: language,
     });
   }
