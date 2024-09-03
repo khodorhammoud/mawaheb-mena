@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { motion, AnimatePresence } from "framer-motion";
-import CarouselCard from "./carouselcard";
+import CarouselCard from "./CarouselCard";
 
 // the name of the carousel is an anchor, and the anchor is implemmented in the carouselCard.tsx 💖
 
@@ -81,40 +81,35 @@ const Carousel = () => {
     const relativeIndex =
       (index - currentIndex + carouselData.length) % carouselData.length;
     const scale = 1; // Set the same scale for all visible cards
-    const opacity = 1; // Set the same opacity for all visible cards
     const spacing = 80; // Space between items in pixels
-    const zIndex = 1; // Same z-index for all visible cards
     const downwardOffset = 60; // Pixels to move the left and right cards downward
+    let opacity = 1; // Set the same opacity for all visible cards
+    let zIndex = 1; // Same z-index for all visible cards
 
-    if (relativeIndex === 0) {
-      return {
-        transform: `translateX(0) scale(${scale}) rotate(0deg) translateY(0)`,
-        zIndex: zIndex,
-        opacity: opacity,
-        transition: "transform 0.7s ease, opacity 0.7s ease",
-      };
-    } else if (relativeIndex === 1) {
-      return {
-        transform: `translateX(calc(100% + ${spacing}px)) scale(${scale}) rotate(15deg) translateY(${downwardOffset}px)`,
-        zIndex: zIndex,
-        opacity: opacity,
-        transition: "transform 0.7s ease, opacity 0.7s ease",
-      };
-    } else if (relativeIndex === carouselData.length - 1) {
-      return {
-        transform: `translateX(calc(-100% - ${spacing}px)) scale(${scale}) rotate(-15deg) translateY(${downwardOffset}px)`,
-        zIndex: zIndex,
-        opacity: opacity,
-        transition: "transform 0.7s ease, opacity 0.7s ease",
-      };
-    } else {
-      return {
-        transform: `translateX(calc(200% + ${spacing * 2}px)) scale(0) rotate(0deg) translateY(0)`,
-        opacity: 0,
-        zIndex: 0,
-        transition: "transform 0.7s ease, opacity 0.7s ease",
-      };
+    let transform = "";
+
+    switch (relativeIndex) {
+      case 0:
+        transform = `translateX(0) scale(${scale}) rotate(0deg) translateY(0)`;
+        break;
+      case 1:
+        transform = `translateX(calc(100% + ${spacing}px)) scale(${scale}) rotate(15deg) translateY(${downwardOffset}px)`;
+        break;
+      case carouselData.length - 1:
+        transform = `translateX(calc(-100% - ${spacing}px)) scale(${scale}) rotate(-15deg) translateY(${downwardOffset}px)`;
+        break;
+      default:
+        transform = `translateX(calc(200% + ${spacing * 2}px)) scale(0) rotate(0deg) translateY(0)`;
+        opacity = 0;
+        zIndex = 0;
     }
+
+    return {
+      transform,
+      zIndex,
+      opacity,
+      transition: "transform 0.7s ease, opacity 0.7s ease",
+    };
   };
 
   return (

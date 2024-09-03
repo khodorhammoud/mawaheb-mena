@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Sample FAQ data
@@ -103,13 +108,13 @@ const FAQ = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="w-7 h-7 text-primaryColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M12 4.5v15m7.5-7.5h-15"
                       />
                     </svg>
@@ -118,13 +123,13 @@ const FAQ = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="w-7 h-7 text-primaryColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M5 12h14"
                       />
                     </svg>
