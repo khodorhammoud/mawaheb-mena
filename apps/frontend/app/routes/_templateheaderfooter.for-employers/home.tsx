@@ -1,4 +1,4 @@
-import HeroSection from "./herosection/Herosection";
+import HeroSection from "./herosection/HeroSection";
 import LayoutContainer from "../../common/layout_container";
 import FeaturesSection from "./featuressection/FeaturesSection";
 import HowItWorks from "./howitworks/HowItWorks";
