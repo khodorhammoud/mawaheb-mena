@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -21,6 +21,8 @@ const Topic = () => {
   // Determine the text color based on hover state
   const textColorClass = hoveredIndex !== null ? "text-white " : "text-black";
 
+  const isHovering =
+    hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2;
   return (
     <div className="relative mt-20 pb-12 pt-20 text-center overflow-hidden">
       {/* Animation of fading in and out */}
@@ -52,23 +54,15 @@ const Topic = () => {
               onMouseEnter={() => setHoveredIndex(0)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "border-white"
-                  : "border-primaryColor"
-              } ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "text-white"
-                  : "text-primaryColor"
-              }`}
+                isHovering ? "border-white" : "border-primaryColor"
+              } ${isHovering ? "text-white" : "text-primaryColor"}`}
             >
               Realms
             </em>
             {/* icon 1 ⬇️ */}
             <span
               className={`mx-3 px-4 rounded-[25px] ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "bg-white pb-2"
-                  : ""
+                isHovering ? "bg-white pb-2" : ""
               }`}
             >
               <FontAwesomeIcon
@@ -83,23 +77,15 @@ const Topic = () => {
               onMouseEnter={() => setHoveredIndex(1)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "border-white"
-                  : "border-primaryColor"
-              } ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "text-white"
-                  : "text-primaryColor"
-              }`}
+                isHovering ? "border-white" : "border-primaryColor"
+              } ${isHovering ? "text-white" : "text-primaryColor"}`}
             >
               Skill
             </em>
             {/* icon 2 ⬇️ */}
             <span
               className={`mx-3 px-4 rounded-[25px] ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "bg-white pb-2"
-                  : ""
+                isHovering ? "bg-white pb-2" : ""
               }`}
             >
               <FontAwesomeIcon
@@ -114,23 +100,15 @@ const Topic = () => {
               onMouseEnter={() => setHoveredIndex(2)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "border-white"
-                  : "border-primaryColor"
-              } ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "text-white"
-                  : "text-primaryColor"
-              }`}
+                isHovering ? "border-white" : "border-primaryColor"
+              } ${isHovering ? "text-white" : "text-primaryColor"}`}
             >
               Creativity
             </em>
             {/* icon 3 ⬇️ */}
             <span
               className={`mx-3 px-4 rounded-[25px] ${
-                hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2
-                  ? "bg-white pb-2"
-                  : ""
+                isHovering ? "bg-white pb-2" : ""
               }`}
             >
               <FontAwesomeIcon
