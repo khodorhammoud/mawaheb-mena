@@ -1,6 +1,6 @@
 import { motion, useTransform, useMotionValue } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import Wtsau from "./wtsau";
+import ZoomingText from "./ZoomingText";
 
 const Languages: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -13,7 +13,7 @@ const Languages: React.FC = () => {
   // Fading effect for the initial text
   const fadeOpacity = useTransform(scrollY, [0, 30], [1, 0]);
 
-  // Zoom effect for the Wtsau component
+  // Zoom effect for the ZoomingText component
   const zoomScale = useTransform(scrollY, [30, 200], [1.5, 2]);
   const zoomOpacity = useTransform(scrollY, [30, 200], [0, 1]);
 
@@ -119,7 +119,7 @@ const Languages: React.FC = () => {
           }}
           className="text-4xl font-['BespokeSerif-Variable']"
         >
-          <Wtsau scrollY={scrollY} />
+          <ZoomingText scrollY={scrollY} />
         </motion.div>
       </motion.div>
     </div>

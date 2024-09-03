@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import MainHeading from "../../../common/main_heading";
-import FeatureCard from "./card";
+import MainHeading from "../../../common/MainHeading";
+import FeatureCard from "./Card";
 import "../../../styles/wavy/wavy.css";
 
 const features = [
