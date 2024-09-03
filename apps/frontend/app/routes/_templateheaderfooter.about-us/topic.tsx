@@ -16,8 +16,8 @@ const Topic: React.FC = () => {
     const width = window.innerWidth;
 
     if (width < 640) {
-      setLineWidth(396);
-      setLineTop(20);
+      setLineWidth(378);
+      setLineTop(29.5);
       setNMoveDistance(-11);
       setCircleSize(8);
       setLineHeight(4);
@@ -26,8 +26,8 @@ const Topic: React.FC = () => {
       setExpandedLeft1Width(82);
       setFinalLineWidth(90);
     } else if (width < 768) {
-      setLineWidth(520);
-      setLineTop(25);
+      setLineWidth(496);
+      setLineTop(39.5);
       setNMoveDistance(-14);
       setCircleSize(12);
       setLineHeight(7);
@@ -37,8 +37,8 @@ const Topic: React.FC = () => {
       setFinalLineWidth(126);
       //done
     } else if (width < 1024) {
-      setLineWidth(640);
-      setLineTop(30.8);
+      setLineWidth(608);
+      setLineTop(49);
       setNMoveDistance(-17);
       setCircleSize(16);
       setLineHeight(8);
@@ -48,8 +48,8 @@ const Topic: React.FC = () => {
       setFinalLineWidth(163);
       //done
     } else if (width < 1280) {
-      setLineWidth(768);
-      setLineTop(37.5);
+      setLineWidth(728);
+      setLineTop(59);
       setNMoveDistance(-21);
       setCircleSize(18);
       setLineHeight(10);
@@ -59,8 +59,8 @@ const Topic: React.FC = () => {
       setFinalLineWidth(196);
       //done
     } else {
-      setLineWidth(1020);
-      setLineTop(49.5);
+      setLineWidth(970);
+      setLineTop(73.5);
       setNMoveDistance(-28);
       setCircleSize(22);
       setLineHeight(14);
@@ -113,10 +113,10 @@ const Topic: React.FC = () => {
   };
 
   return (
-    <div className="border-b-[1px] pb-20 mb-20 border-slate-300">
-      <div className="relative mt-36 text-4xl 2xl:text-9xl xl:text-8xl lg:text-7xl md:text-6xl sm:text-5xl font-['BespokeSerif-Regular'] font-semibold">
-        <div>
-          WE <span className="relative z-10">C</span>
+    <div className="border-b-[1px] pb-20 mb-28 border-slate-300">
+      <div className="relative mt-36 xl:text-8xl lg:text-7xl md:text-6xl sm:text-5xl text-4xl xl:w-[900px] lg:w-[700px] md:w-[600px] sm:w-[400px] w-[300px] font-['BespokeSerif-Regular'] font-semibold">
+        <div className="xl:leading-normal leading-relaxed">
+          We <span className="relative z-10">C</span>
           <span className="relative z-10">O</span>
           {/* Animated line */}
           <motion.div
@@ -191,24 +191,8 @@ const Topic: React.FC = () => {
           >
             T
           </motion.span>
-          <motion.span
-            initial="hidden"
-            animate="closer"
-            variants={nAndRightVariants}
-            className="relative z-10 inline-block"
-          >
-            E
-          </motion.span>
-          <motion.span
-            initial="hidden"
-            animate="closer"
-            variants={nAndRightVariants}
-            className="relative z-10 inline-block"
-          >
-            D
-          </motion.span>
         </div>
-        <span className="relative z-10 inline-block">
+        <span className="relative z-10 inline-block xl:leading-normal leading-relaxed">
           {" "}
           Talent To Drive Success
         </span>
