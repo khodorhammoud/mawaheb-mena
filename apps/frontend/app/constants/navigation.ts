@@ -11,7 +11,7 @@ const navigation = function (t: TFunction) {
   return [
     {
       label: t("navigationForEmployersLable"),
-      href: "/home",
+      href: "/for-employers",
     },
     {
       label: t("navigationForFreelancersLable"),
@@ -27,7 +27,12 @@ const navigation = function (t: TFunction) {
     },
     {
       label: t("navigationHireNowLable"),
-      href: "/hire-now",
+      href: "/signup-employer",
+      is_action: true,
+    },
+    {
+      label: t("navigationJoinOurTeamLable"),
+      href: "/signup-freelancer",
       is_action: true,
     },
   ];

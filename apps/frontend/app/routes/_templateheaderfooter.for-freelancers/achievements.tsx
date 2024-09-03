@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "~/styles/wavy/wavy.css";
+import "../../styles/wavy/wavy.css";
 
 type Achievement = {
   title: string;
