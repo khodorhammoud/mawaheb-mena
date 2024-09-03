@@ -89,36 +89,40 @@ const Languages: React.FC = () => {
   }, []);
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 1, y: 0 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center gap-8 text-3xl my-[200px] font-semibold font-['BespokeSerif-Variable']"
-      style={{ minHeight: "calc(120vh - 400px)", overflowX: "hidden" }} // Additional inline style
+    <div
+      style={{ overflow: "", position: "relative" }} // Ensure no overflow
     >
-      {/* Initial Text */}
       <motion.div
-        initial={{ opacity: 1 }}
-        style={{ opacity: fadeOpacity }}
+        ref={ref}
+        initial={{ opacity: 1, y: 0 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
         transition={{ duration: 0.5 }}
+        className="flex flex-col items-center justify-center gap-8 text-3xl my-[200px] font-semibold font-['BespokeSerif-Variable']"
+        style={{ minHeight: "calc(120vh - 300px)" }}
       >
-        <p>Python / Java / C# / C++ / Ruby / PHP / React /</p>
-        <p>Angular / Vue.js / Django / Ruby on Rails</p>
-      </motion.div>
+        {/* Initial Text */}
+        <motion.div
+          initial={{ opacity: 1 }}
+          style={{ opacity: fadeOpacity }}
+          transition={{ duration: 0.5 }}
+        >
+          <p>Python / Java / C# / C++ / Ruby / PHP / React /</p>
+          <p>Angular / Vue.js / Django / Ruby on Rails</p>
+        </motion.div>
 
-      {/* Wtsau Component */}
-      <motion.div
-        style={{
-          position: "absolute",
-          scale: zoomScale,
-          opacity: zoomOpacity,
-        }}
-        className="text-4xl font-['BespokeSerif-Variable']"
-      >
-        <ZoomingText scrollY={scrollY} />
+        {/* Wtsau Component */}
+        <motion.div
+          style={{
+            position: "absolute",
+            scale: zoomScale,
+            opacity: zoomOpacity,
+          }}
+          className="text-4xl font-['BespokeSerif-Variable']"
+        >
+          <ZoomingText scrollY={scrollY} />
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 
