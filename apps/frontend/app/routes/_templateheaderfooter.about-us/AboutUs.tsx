@@ -1,19 +1,11 @@
-import "~/styles/wavy/wavy.css";
-import { motion } from "framer-motion";
 import LayoutContainer from "../../common/layout_container";
-import Achievements from "../_templateheaderfooter.for-freelancers/achievements";
-import Topic from "./topic";
 
-export default function ForFreelancersPage() {
+export default function AboutUsPage() {
   return (
     <LayoutContainer>
-      <Topic />
-      {/* <MoreAboutMawaheb />
-      <Swiper />
-      <HowWeMakeDifference />
-      <Achievements />
-      <TheTeam />
-      <JoinUs /> */}
+      <div className="text-left my-[100px]">
+        <h1>About Us content here</h1>
+      </div>
     </LayoutContainer>
   );
 }

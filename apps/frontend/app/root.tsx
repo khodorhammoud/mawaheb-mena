@@ -22,11 +22,12 @@ import { useTranslation } from "react-i18next";
 export const handle = { i18n: ["translation"] };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const locale = await i18nServer.getLocale(request);
-  return json(
-    { locale },
-    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
-  );
+  // const locale = await i18nServer.getLocale(request);
+  // return json(
+  //   { locale },
+  //   { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
+  // );
+  return {};
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
