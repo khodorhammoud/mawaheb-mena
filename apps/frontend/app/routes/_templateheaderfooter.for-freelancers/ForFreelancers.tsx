@@ -1,23 +1,17 @@
 // i edit here and as the components i'll make in the comming days
 
-import "~/styles/wavy/wavy.css";
-import { motion } from "framer-motion";
-import React from "react";
+import "../../styles/wavy/wavy.css";
 import LayoutContainer from "../../common/layout_container";
-<<<<<<< HEAD
-import { useNavigate } from "@remix-run/react";
-import HowItWorks from "../_templateheaderfooter.home/howitworks/howitworks";
-import Segments from "../_templateheaderfooter.home/segments";
-import Languages from "../_templateheaderfooter.home/languages";
-import Wtsau from "../_templateheaderfooter.home/wtsau";
-import MainHeading from "~/common/main_heading";
-import FAQ from "../_templateheaderfooter.home/faq";
+import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/howitworks";
+import Segments from "../_templateheaderfooter.for-employers/segments";
+import Languages from "../_templateheaderfooter.for-employers/languages";
+import MainHeading from "../../common/main_heading";
+import FAQ from "../_templateheaderfooter.for-employers/faq";
 import Topic from "./topic";
 import Jobs from "./jobs";
 import Achievements from "./achievements";
 
 export default function ForFreelancersPage() {
-  const navigate = useNavigate();
   return (
     <LayoutContainer>
       <div className="-mx-4">
@@ -39,15 +33,4 @@ export default function ForFreelancersPage() {
       </div>
     </LayoutContainer>
   );
-=======
-
-export default function ForFreelancersPage() {
-	return (
-		<LayoutContainer>
-			<div className="text-left my-[100px]">
-				<h1>For freelancers content here</h1>
-			</div>
-		</LayoutContainer>
-	);
->>>>>>> dev
 }
