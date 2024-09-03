@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 
 type Job = {
   title: string;
@@ -33,7 +33,7 @@ const jobs: Job[] = [
   },
 ];
 
-const Jobs: React.FC = () => {
+const Jobs: FC = () => {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-12 gap-y-6 p-6 mt-16">
