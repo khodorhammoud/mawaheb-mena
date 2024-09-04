@@ -20,15 +20,3 @@ export default function AboutUsPage() {
     </LayoutContainer>
   );
 }
-
-// <motion.a
-//           href="mailto:apply@mawaheb.mena"
-//           className="w-52 h-52 bg-white text-primaryColor rounded-full flex items-center justify-center text-lg font-bold shadow-lg cursor-pointer"
-//           whileHover={{
-//             scale: 1.1,
-//             boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.3)",
-//           }}
-//           transition={{ duration: 0.3 }}
-//         >
-//           apply@mawaheb.mena
-//         </motion.a>

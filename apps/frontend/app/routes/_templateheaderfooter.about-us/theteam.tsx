@@ -29,9 +29,7 @@ const teamMembers: TeamMember[] = [
 ];
 
 const MeetTheTeam: React.FC = () => {
-  const [hoveredMember, setHoveredMember] = useState<TeamMember | null>(
-    teamMembers[0]
-  );
+  const [hoveredMember, setHoveredMember] = useState<TeamMember | null>(null);
 
   return (
     <section className="py-16 bg-white mt-40">
@@ -56,6 +54,7 @@ const MeetTheTeam: React.FC = () => {
                   key={index}
                   className="flex lg:justify-between items-center cursor-pointer py-4 border-b-[2px] border-gray-300 hover:bg-gray-100"
                   onMouseEnter={() => setHoveredMember(member)}
+                  onMouseLeave={() => setHoveredMember(null)} // Reset to default state on mouse leave
                 >
                   <span
                     className={`xl:text-3xl lg:text-2xl md:text-xl sm:text-lg text-base my-2 md:mr-20 mr-10 font-normal ${
@@ -77,8 +76,32 @@ const MeetTheTeam: React.FC = () => {
               ))}
             </ul>
           </div>
+
           <div>
-            {hoveredMember && (
+            {!hoveredMember ? (
+              // Blue blurred box (default state when no member is hovered)
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  rotate: -3,
+                  backgroundColor: "#27638a",
+                  filter: "blur(10px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  rotate: -3,
+                  backgroundColor: "#27638a",
+                  filter: "blur(10px)",
+                }}
+                exit={{
+                  opacity: 0,
+                  rotate: -3,
+                }}
+                transition={{ duration: 0.5 }}
+                className="h-80 w-[90%] object-cover rounded-xl shadow-2xl ml-[5%] md:w-[100%] sm:w-[60%] bg-[#27638a]"
+              />
+            ) : (
+              // Image of the hovered team member
               <motion.img
                 key={hoveredMember.name}
                 src={hoveredMember.imageSrc}
@@ -86,20 +109,17 @@ const MeetTheTeam: React.FC = () => {
                 initial={{
                   opacity: 0,
                   rotate: -3,
-                  backgroundColor: "#27638a",
                 }}
                 animate={{
                   opacity: 1,
                   rotate: -3,
-                  backgroundColor: "#27638a",
                 }}
                 exit={{
-                  opacity: 0,
+                  opacity: 0, // Fade-out effect
                   rotate: -3,
-                  backgroundColor: "#27638a",
                 }}
                 transition={{ duration: 0.5 }}
-                className="h-80 object-cover rounded-xl shadow-2xl ml-[5%] md:w-[100%] sm:w-[60%] w-[90%] "
+                className="h-80 object-cover rounded-xl shadow-2xl ml-[5%] md:w-[100%] sm:w-[60%] w-[90%]"
               />
             )}
           </div>
