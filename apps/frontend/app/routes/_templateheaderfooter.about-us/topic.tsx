@@ -123,7 +123,7 @@ const Topic: React.FC = () => {
             initial="hidden"
             animate="visible"
             variants={lineVariants}
-            className="absolute bg-primaryColor translate-y-[-50%]"
+            className="absolute bg-primaryColor translate-y-[-50%] z-20"
             style={{
               left: `${lineWidth * 0.275}px`,
               top: `${lineTop}px`,
@@ -163,7 +163,7 @@ const Topic: React.FC = () => {
             initial="hidden"
             animate="closer"
             variants={nAndRightVariants}
-            className="relative z-20 inline-block"
+            className="relative z-10 inline-block"
           >
             N
           </motion.span>
