@@ -11,7 +11,7 @@ type Achievement = {
 const achievements: Achievement[] = [
   {
     title: "Open Jobs Opportunities",
-    count: 100,
+    count: 90,
     description:
       "Our platform currently offers a multitude of open job opportunities, connecting freelancers with diverse jobs and clients seeking their expertise.",
   },

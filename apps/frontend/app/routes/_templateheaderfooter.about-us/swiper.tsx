@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 type ImageData = {
@@ -24,38 +24,41 @@ const images: ImageData[] = [
 ];
 
 const Swiper: React.FC = () => {
-  // Calculate the initial offset to center the first image
-  const imageWidth = 480;
-  const gap = 16; // Assuming mx-4 is equivalent to 16px
-  const containerWidth = window.innerWidth;
-  const initialXOffset = (containerWidth - imageWidth) / 2 - gap; // Offset to center the first image
+  const [initialXOffset, setInitialXOffset] = useState(1100); //a //to make the swiper have the 100% alignment, keep -> (a=b=c)
+
+  useEffect(() => {
+    const imageWidth = 480;
+    const containerWidth = window.innerWidth;
+    const offset = 1100; // This offset will push the first image partially off-screen to the left //b
+    setInitialXOffset(offset);
+  }, []);
 
   return (
-    <div className="overflow-hidden w-full h-screen flex items-center justify-center select-none">
+    <div className="overflow-hidden md:w-full md:h-screen flex items-center justify-center select-none mt-40">
       <motion.div
         className="flex cursor-grab"
         drag="x"
         dragConstraints={{
-          left: -((images.length - 1) * (imageWidth + gap) - 1232), // the big nb is the margin of the swiper to the right
-          right: 1000, // the big nb is the margin of the swiper to the left
+          left: -((images.length - 1) * (480 + 16) - 1232), // the big nb is the margin of the swiper to the right
+          right: 1100, // the big nb is the margin of the swiper to the left //c
         }}
         dragElastic={0.1}
         whileTap={{ cursor: "grabbing" }}
-        initial={{ x: initialXOffset }} // Center the first image
+        initial={{ x: initialXOffset }}
       >
         {images.map((image, index) => (
           <motion.div
             key={index}
-            className="ml-96 flex-none object-cover rounded-xl"
+            className="flex-none object-cover rounded-xl"
             style={{
-              width: `${imageWidth}px`,
-              marginLeft: index === 0 ? `${gap}px` : "2%",
-            }} // Set a gap for the first image
+              width: "480px",
+              marginLeft: index === 0 ? `0px` : "2%", // The first image has no margin, the rest have a 16px gap
+            }}
           >
             <img
               src={image.src}
               alt={`Slide ${index + 1}`}
-              className="w-full h-[450px] rounded-xl select-none pointer-events-none"
+              className="md:w-full md:h-[450px] sm:w-[460px] sm:h-[460px] w-[280px] h-[300px] rounded-xl select-none pointer-events-none"
               draggable="false"
             />
           </motion.div>
