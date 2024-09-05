@@ -1,15 +1,15 @@
-import HeroSection from "./herosection/HeroSection";
+import HeroSection from "./herosection/herosection";
 import LayoutContainer from "../../common/layout_container";
-import FeaturesSection from "./featuressection/FeaturesSection";
-import HowItWorks from "./howitworks/HowItWorks";
+import FeaturesSection from "./featuressection/featuressection";
+import HowItWorks from "./howitworks/howitworks";
 import MainHeading from "../../common/MainHeading";
-import FAQ from "./FAQ";
-import ContactUs from "./ContactUs";
+import FAQ from "./faq";
+import ContactUs from "./contactus";
 import "../../styles/wavy/wavy.css";
-import Segments from "./Segments";
-import Languages from "./Languages";
+import Segments from "./segments";
+import Languages from "./languages";
 // import Wtsau from "./ZoomingText";
-import BlogCardsList from "./BlogCard";
+import BlogCardsList from "./blogCard";
 
 // To know more, press crtl + click on component you what to know about
 

@@ -1,5 +1,5 @@
-import Headline from "./Headline";
-import Carousel from "./Carousel";
+import Headline from "./headline";
+import Carousel from "./carousel";
 import { motion } from "framer-motion";
 
 export default function HeroSection() {
