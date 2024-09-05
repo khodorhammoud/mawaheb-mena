@@ -1,5 +1,5 @@
 import LayoutContainer from "../../common/layout_container";
-import Achievements from "../_templateheaderfooter.for-freelancers/achievements";
+import Achievements from "../_templateheaderfooter.for-freelancers/Achievements";
 import Topic from "./topic";
 import MoreAboutMawaheb from "./moreaboutmawaheb";
 import Swiper from "./swiper";
