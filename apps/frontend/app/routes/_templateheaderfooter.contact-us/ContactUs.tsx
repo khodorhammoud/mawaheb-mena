@@ -1,11 +1,12 @@
 import LayoutContainer from "../../common/layout_container";
+import Form from "./form";
+import Location from "./location";
 
 export default function ContactUsPage() {
-	return (
-		<LayoutContainer>
-			<div className="text-left my-[100px]">
-				<h1>Contact Us content here</h1>
-			</div>
-		</LayoutContainer>
-	);
+  return (
+    <LayoutContainer>
+      <Form />
+      <Location />
+    </LayoutContainer>
+  );
 }
