@@ -1,11 +1,11 @@
 import LayoutContainer from "../../common/layout_container";
-import Achievements from "../_templateheaderfooter.for-freelancers/achievements";
-import Topic from "./topic";
-import MoreAboutMawaheb from "./moreaboutmawaheb";
-import Swiper from "./swiper";
-import HowWeMakeDifference from "./howwemakedifference";
-import TheTeam from "./theteam";
-import JoinUs from "./joinus";
+import Achievements from "../_templateheaderfooter.for-freelancers/Achievements";
+import Topic from "./Topic";
+import MoreAboutMawaheb from "./MoreAboutMawaheb";
+import Swiper from "./Swiper";
+import HowWeMakeDifference from "./HowWeMakeDifference";
+import TheTeam from "./TheTeam";
+import JoinUs from "./JoinUs";
 
 export default function AboutUsPage() {
   return (
