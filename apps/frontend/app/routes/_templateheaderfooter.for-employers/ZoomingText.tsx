@@ -7,7 +7,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { useState, useEffect } from "react";
-import Testimonials from "./testimonials";
+import Testimonials from "./Testimonials";
 
 interface WtsauProps {
   scrollY: MotionValue<number>;
