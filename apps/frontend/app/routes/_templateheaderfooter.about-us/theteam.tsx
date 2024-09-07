@@ -54,7 +54,7 @@ const MeetTheTeam: React.FC = () => {
                   key={index}
                   className="flex lg:justify-between items-center cursor-pointer py-4 border-b-[2px] border-gray-300 hover:bg-gray-100"
                   onMouseEnter={() => setHoveredMember(member)}
-                  onMouseLeave={() => setHoveredMember(null)} // Reset to default state on mouse leave
+                  // onMouseLeave={() => setHoveredMember(null)} // Reset to default state on mouse leave
                 >
                   <span
                     className={`xl:text-3xl lg:text-2xl md:text-xl sm:text-lg text-base my-2 md:mr-20 mr-10 font-normal ${
