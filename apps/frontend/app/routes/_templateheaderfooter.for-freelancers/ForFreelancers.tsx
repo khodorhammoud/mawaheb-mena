@@ -2,15 +2,15 @@
 
 import "../../styles/wavy/wavy.css";
 import LayoutContainer from "../../common/layout_container";
-import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/howitworks";
-import Segments from "../_templateheaderfooter.for-employers/segments";
-import Languages from "../_templateheaderfooter.for-employers/languages";
+import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItWorks";
+import Segments from "../_templateheaderfooter.for-employers/Segments";
+import Languages from "../_templateheaderfooter.for-employers/Languages";
 import MainHeading from "../../common/MainHeading";
 // import FAQ from "../_templateheaderfooter.for-employers/FAG";
-import FAQ from "../_templateheaderfooter.for-employers/faq";
-import Topic from "./topic";
-import Jobs from "./jobs";
-import Achievements from "./achievements";
+import FAQ from "../_templateheaderfooter.for-employers/FAQ";
+import Topic from "./Topic";
+import Jobs from "./Jobs";
+import Achievements from "./Achievements";
 
 export default function ForFreelancersPage() {
   return (
