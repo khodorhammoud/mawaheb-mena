@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { motion, AnimatePresence } from "framer-motion";
-import CarouselCard from "./CarouselCard";
+import CarouselCard from "./carouselcard";
 
 // the name of the carousel is an anchor, and the anchor is implemmented in the carouselCard.tsx 💖
 
