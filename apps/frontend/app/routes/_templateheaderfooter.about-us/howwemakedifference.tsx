@@ -94,7 +94,7 @@ const HowWeMakeDifference: React.FC = () => {
   return (
     <section className="font-['Switzer-Regular'] mb-40 mt-24">
       <div>
-        <p className="text-6xl leading-relaxed font-['BespokeSerif-Regular'] font-bold md:w-[650px] sm:w-[450px] w-[250px]">
+        <p className="text-6xl leading-relaxed font-['BespokeSerif-Regular'] font-bold md:w-[650px] sm:w-[450px] w-[250px] mt-0">
           HERE'S HOW WE MAKE A DIFFERENCE
         </p>
       </div>
@@ -110,7 +110,7 @@ const HowWeMakeDifference: React.FC = () => {
           We believe in ...
         </p>
 
-        <div className="overflow-hidden -ml-10 md:w-full md:h-screen flex items-center justify-center select-none">
+        <div className="overflow-hidden lg:-ml-10 md:w-full md:h-screen flex items-center justify-center select-none -mt-12 sm:-mt-12  md:-mt-12 lg:-mt-12 xl:mt-0">
           <motion.div
             className="flex cursor-grab"
             drag="x"
@@ -125,7 +125,7 @@ const HowWeMakeDifference: React.FC = () => {
             {valueBoxes.map((box, index) => (
               <motion.div
                 key={box.id}
-                className={`flex-none rounded-xl text-white p-10 mr-10 lg:mr-0 xl:h-[525px] xl:w-[495px] lg:h-[450px] lg:w-[425px] md:h-[450px] md:w-[360px] h-[400px] w-[300px]`}
+                className={`flex-none rounded-xl text-white p-10 mr-10 lg:mr-0 xl:h-[525px] xl:w-[483px] lg:h-[420px] lg:w-[425px] md:h-[420px] md:w-[360px] h-[400px] w-[300px]`}
                 style={{
                   backgroundColor: lightenColor(primaryColor, index * 10),
                   marginLeft: index === 0 ? "-250px" : "1%",
@@ -137,7 +137,7 @@ const HowWeMakeDifference: React.FC = () => {
                   </p>
                   <i className={`text-4xl ${box.icon}`}></i>
                 </div>
-                <div className="h-[60%]">
+                <div className="h-[65%]">
                   <h3 className="xl:text-5xl lg:text-4xl md:text-3xl text-2xl xl:leading-snug md:leading-snug leading-tight my-4 w-[200px]">
                     {box.title}
                   </h3>

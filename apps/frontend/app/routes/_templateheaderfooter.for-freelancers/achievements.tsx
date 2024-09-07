@@ -29,6 +29,8 @@ const achievements: Achievement[] = [
   },
 ];
 
+const TOTAL_DURATION = 1500; // 1.5 seconds total animation duration
+
 const Achievements: React.FC = () => {
   return (
     <div className="mx-4 flex flex-col mt-32">
@@ -60,8 +62,10 @@ interface AnimatedCountProps {
 const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
   const [currentValue, setCurrentValue] = useState<number>(0);
   const [hasAnimated, setHasAnimated] = useState<boolean>(false);
+  const [triggerBounce, setTriggerBounce] = useState<boolean>(false); // State to control the bounce effect
   const elementRef = useRef<HTMLDivElement | null>(null);
 
+  // Set up intersection observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -71,7 +75,7 @@ const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0 }
     );
 
     if (elementRef.current) {
@@ -85,18 +89,22 @@ const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
     };
   }, [hasAnimated]);
 
+  // Calculate interval and control animation
   useEffect(() => {
     if (hasAnimated) {
-      let currentNumber = 0;
+      const totalSteps = Math.ceil(count / 10); // Total number of steps needed (increments of 10)
+      const stepDuration = TOTAL_DURATION / totalSteps; // Duration per step to finish at the same time
 
+      let currentNumber = 0;
       const interval = setInterval(() => {
         if (currentNumber < count) {
-          currentNumber += 10;
-          setCurrentValue(currentNumber);
+          currentNumber += 10; // Always increment by 10
+          setCurrentValue(currentNumber > count ? count : currentNumber); // Ensure no overshoot
         } else {
-          clearInterval(interval);
+          clearInterval(interval); // Stop animation when count is reached
+          setTriggerBounce(true); // Trigger bounce effect after final number
         }
-      }, 300); // Faster animation
+      }, stepDuration); // Adjust speed based on the total number of steps
 
       return () => clearInterval(interval);
     }
@@ -105,17 +113,24 @@ const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
   return (
     <div
       ref={elementRef}
-      className="relative h-16 overflow-hidden flex justify-end items-center text-7xl font-bold text-gray-800 ml-20"
+      className="relative h-16 overflow-hidden flex justify-end items-center text-7xl font-bold text-gray-800"
     >
       <div className="flex items-center">
         <AnimatePresence>
           <motion.div
             key={currentValue}
-            initial={{ y: "100%" }} // Start from below
-            animate={{ y: "0%" }} // Move to center
-            exit={{ y: "-100%" }} // Move straight up and fade out
-            transition={{ duration: 0.2, ease: "easeInOut" }} // Smooth transition
-            className="absolute left-0 right-14 text-right"
+            initial={{ y: "100%", opacity: 0.5 }} // Start from below
+            animate={{ y: "0%", opacity: 1 }} // Move to center
+            exit={{ y: "-100%", opacity: 0.5 }} // Move up and disappear
+            transition={{ duration: 0.25, ease: "easeInOut" }} // Use a more flexible easing
+            onAnimationComplete={() => {
+              if (currentValue === count) {
+                setTriggerBounce(true); // Trigger bounce after the final number has reached the center
+              }
+            }}
+            className={`absolute left-0 right-14 text-right ${
+              triggerBounce ? "bounce-center" : ""
+            }`} // Apply bounce animation on final number
           >
             {currentValue}
           </motion.div>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 
 const JoinUs: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [link, setLink] = useState("mailto:apply@mawaheb.mena"); // You can modify this link dynamically
 
   return (
     <div className="min-h-[80vh] bg-gradient-to-r px-10 from-primaryColor to-blue-200 flex items-center justify-center font-['Switzer-Regular'] my-40">
@@ -26,9 +27,10 @@ const JoinUs: React.FC = () => {
       >
         {/* Button */}
         <motion.a
-          href="mailto:apply@mawaheb.mena"
+          href="/contact-us" // Dynamic link
           className="w-56 h-56 bg-slate-100 text-primaryColor rounded-full flex items-center justify-center text-lg font-bold shadow-lg cursor-pointer relative overflow-hidden "
           transition={{ duration: 0.3 }}
+          style={{ cursor: "pointer" }} // Ensure the pointer appears when hovering over the button
         >
           apply@mawaheb.mena
           {/* Dynamic Bubbles Animation - Only on Hover */}
@@ -107,6 +109,14 @@ const JoinUs: React.FC = () => {
           }}
         />
       </div>
+      {/* <a
+        href="/contact-us"
+        className="w-56 h-56 bg-slate-100 text-primaryColor rounded-full flex items-center justify-center text-lg font-bold shadow-lg cursor-pointer relative overflow-hidden"
+        style={{ cursor: "pointer" }}
+      >
+        apply@mawaheb.mena
+      </a> */}
+      {/* when i am using this anchor, it is working normally, and that anchor is taking mew to the /contact-us page */}
     </div>
   );
 };
