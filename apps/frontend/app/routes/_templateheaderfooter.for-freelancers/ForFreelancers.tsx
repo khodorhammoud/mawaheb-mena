@@ -6,7 +6,6 @@ import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItW
 import Segments from "../_templateheaderfooter.for-employers/Segments";
 import Languages from "../_templateheaderfooter.for-employers/Languages";
 import MainHeading from "../../common/MainHeading";
-// import FAQ from "../_templateheaderfooter.for-employers/FAG";
 import FAQ from "../_templateheaderfooter.for-employers/FAQ";
 import Topic from "./Topic";
 import Jobs from "./Jobs";

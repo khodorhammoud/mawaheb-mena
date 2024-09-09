@@ -110,7 +110,7 @@ const Languages: React.FC = () => {
           <p>Angular / Vue.js / Django / Ruby on Rails</p>
         </motion.div>
 
-        {/* Wtsau Component */}
+        {/* Zooming Text Component */}
         <motion.div
           style={{
             position: "absolute",
