@@ -9,7 +9,7 @@ import MainHeading from "../../common/MainHeading";
 import FAQ from "../_templateheaderfooter.for-employers/FAQ";
 import Topic from "./Topic";
 import Jobs from "./Jobs";
-import Achievements from "./achievements";
+import Achievements from "./Achievements";
 
 export default function ForFreelancersPage() {
   return (

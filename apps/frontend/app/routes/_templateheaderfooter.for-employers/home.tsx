@@ -8,7 +8,6 @@ import ContactUs from "./ContactUs";
 import "../../styles/wavy/wavy.css";
 import Segments from "./Segments";
 import Languages from "./Languages";
-// import Wtsau from "./ZoomingText";
 import BlogCardsList from "./BlogCard";
 
 // To know more, press crtl + click on component you what to know about
