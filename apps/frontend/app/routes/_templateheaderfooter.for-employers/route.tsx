@@ -1,6 +1,6 @@
 // that route.tsx calls home :)
 
-import Home from "./home";
+import Home from "./Home";
 export default function Layout() {
   return (
     <div

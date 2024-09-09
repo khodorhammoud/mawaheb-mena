@@ -7,7 +7,7 @@ import {
 import { useState, useEffect } from "react";
 import Testimonials from "./Testimonials";
 
-interface WtsauProps {
+interface ZoomingTextProps {
   scrollY: MotionValue<number>;
   fingerIconPosition?: {
     top?: string;
@@ -17,7 +17,10 @@ interface WtsauProps {
   };
 }
 
-const Wtsau: React.FC<WtsauProps> = ({ scrollY, fingerIconPosition }) => {
+const ZoomingText: React.FC<ZoomingTextProps> = ({
+  scrollY,
+  fingerIconPosition,
+}) => {
   const [showFingerIcon, setShowFingerIcon] = useState<boolean>(false);
 
   const zoomScaleP = useTransform(scrollY, [30, 200], [0.5, 1]);
@@ -118,4 +121,4 @@ const Wtsau: React.FC<WtsauProps> = ({ scrollY, fingerIconPosition }) => {
   );
 };
 
-export default Wtsau;
+export default ZoomingText;
