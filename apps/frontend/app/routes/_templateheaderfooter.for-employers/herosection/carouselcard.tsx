@@ -3,8 +3,6 @@
 // interface CarouselCardProps {
 // 	title: string;
 
-import React from "react";
-
 interface CarouselCardProps {
   image: string;
   name: string;

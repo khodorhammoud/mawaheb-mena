@@ -260,3 +260,26 @@
 /* NUMBER ANIMATION */
 /* NUMBER ANIMATION */
 /* NUMBER ANIMATION */
+
+/* Bounce effect for the final number */
+@keyframes bounce-center {
+  0% {
+    transform: translateY(0%);
+  }
+  20% {
+    transform: translateY(-30%);
+  }
+  50% {
+    transform: translateY(0%);
+  }
+  60% {
+    transform: translateY(-5%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.bounce-center {
+  animation: bounce-center 1s ease-out; /* Duration should match the transition duration */
+}
