@@ -7,10 +7,18 @@ import {
   UsersTable,
   userVerificationTable,
 } from "../db/drizzle/schemas/schema";
-import { LoggedInUser, User, Employer, Freelancer, UserAccount } from "../types/User";
+import {
+  LoggedInUser,
+  User,
+  Employer,
+  Freelancer,
+  UserAccount,
+} from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
 import { AccountType } from "../types/enums";
+import { LoaderFunctionArgs } from "@remix-run/node";
+import { authenticator } from "~/auth/auth.server";
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const users = await db
@@ -31,7 +39,9 @@ export async function getUserByEmail(email: string): Promise<User | null> {
  * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
  */
 
-export async function getUserAccountType(userId: number): Promise<AccountType | null> {
+export async function getUserAccountType(
+  userId: number
+): Promise<AccountType | null> {
   const accounts = await db
     .select()
     .from(accountsTable)
@@ -41,7 +51,6 @@ export async function getUserAccountType(userId: number): Promise<AccountType | 
   }
   return null;
 }
-
 
 export async function isUserOnboarded(user: User): Promise<boolean> {
   const accounts = await db
@@ -101,7 +110,6 @@ export async function registerEmployer({
     .returning()) as unknown as Employer;
   return result[0];
 }
-
 
 /**
  * creates a new freelancer account. This creates a new account record first, which in turn creates a new user record, before finally adding a new freelancer record.
@@ -241,12 +249,15 @@ export async function getUserById(id: number): Promise<LoggedInUser | null> {
  * @param employerId : the id of the employer to get the userId for
  * @returns number: the userId of the employer
  */
-export async function getUserIdFromEmployerId(employerId: number): Promise<number | null> {
+export async function getUserIdFromEmployerId(
+  employerId: number
+): Promise<number | null> {
   // join the employers table with the accounts table to get the userId
   const result = await db
     .select({ userId: accountsTable.userId })
     .from(employersTable)
-    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id)).where(eq(employersTable.id, employerId));
+    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
+    .where(eq(employersTable.id, employerId));
   if (result.length === 0) return null;
   return result[0].userId;
 }
@@ -257,16 +268,18 @@ export async function getUserIdFromEmployerId(employerId: number): Promise<numbe
  * @returns number: the userId of the freelancer
  */
 
-export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
+export async function getUserIdFromFreelancerId(
+  freelancerId: number
+): Promise<number | null> {
   // join the freelancers table with the accounts table to get the userId
   const result = await db
     .select({ userId: accountsTable.userId })
     .from(freelancersTable)
-    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id)).where(eq(freelancersTable.id, freelancerId));
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .where(eq(freelancersTable.id, freelancerId));
   if (result.length === 0) return null;
   return result[0].userId;
 }
-
 
 /**
  * verify the user's password
@@ -274,7 +287,10 @@ export async function getUserIdFromFreelancerId(freelancerId: number): Promise<n
  * @param passHash: the hash to verify the password against
  * @returns boolean: true if the password is correct, false otherwise
  */
-export async function verifyPassword(password: string, passHash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  passHash: string
+): Promise<boolean> {
   return compare(password, passHash);
 }
 
@@ -285,11 +301,13 @@ export async function verifyPassword(password: string, passHash: string): Promis
  * @returns string: the generated verification token
  */
 
-export async function generateVerificationToken(userId: number): Promise<string> {
+export async function generateVerificationToken(
+  userId: number
+): Promise<string> {
   // generate the token hash
   const token = await hash(
     Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15),
+      Math.random().toString(36).substring(2, 15),
     process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
   );
   // set the expiry to be an hour from now
@@ -356,6 +374,31 @@ export async function verifyUserRegistrationToken(token: string) {
   return {
     success: true,
     message: "User verified successfully",
-    userId
+    userId,
   };
+}
+
+let currentUser: User | null = null;
+
+export async function getCurrentUser(request: Request): Promise<User | null> {
+  if (currentUser) return currentUser;
+  const user = await authenticator.isAuthenticated(request);
+  console.log("user", user);
+  if (!user) return null;
+  currentUser = user as User;
+  return currentUser;
+}
+
+/**
+ * check if the current user is an employer or a freelancer
+ * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
+ */
+export async function getCurrentUserAccountType(
+  request: Request
+): Promise<AccountType | null> {
+  // get the current user id from the session
+  const currentUser = await getCurrentUser(request);
+  if (!currentUser) return null;
+  const userId = currentUser.id;
+  return await getUserAccountType(userId);
 }
