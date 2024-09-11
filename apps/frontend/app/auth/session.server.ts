@@ -5,7 +5,7 @@ import { isUserOnboarded } from "../servers/user.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "__session",
+    name: "user",
     secure: false, //process.env.NODE_ENV === "production",
     // TODO: update with environment variables
     secrets: ["s3cret1"],
@@ -24,7 +24,7 @@ export async function createUserSession(
   redirectTo: string
 ) {
   const session = await getSession(request.headers.get("cookie"));
-  session.set("currentUser", user);
+  session.set("user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
   if (isUserOnboarded(user)) return redirect(redirectTo, { headers });
   return redirect("/onboarding", { headers });
@@ -36,6 +36,6 @@ export async function getUserSession(request: Request) {
 
 export async function getCurrentUser(request: Request) {
   const session = await getUserSession(request);
-  const user = session.get("currentUser");
+  const user = session.get("user");
   return user || null;
 }
