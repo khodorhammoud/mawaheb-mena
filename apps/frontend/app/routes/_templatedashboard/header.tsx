@@ -19,88 +19,21 @@ export default function Layout() {
           {t("siteTitle")}
         </div>
 
-        {/* Regular Navigation - Hidden on small screens */}
-        <nav className="hidden md:flex xl:space-x-4 space-x-2 md:text-sm xl:text-base">
-          {navigation.map(
-            (navItem) =>
-              !navItem.is_action && (
-                <NavLink
-                  key={navItem.label}
-                  to={navItem.href}
-                  className={({ isActive }) =>
-                    clsx(
-                      "text-primaryColor px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 rounded hover:bg-primaryColor gradient-box hover:text-white hover:rounded-[10px]",
-                      {
-                        "bg-primaryColor text-white not-active-gradient":
-                          isActive,
-                        "not-active-gradient": !isActive,
-                      }
-                    )
-                  }
-                >
-                  {navItem.label}
-                </NavLink>
-              )
-          )}
-        </nav>
-
-        {/* Burger Icon - Visible on small screens */}
-        <div className="md:hidden ml-auto">
-          <motion.button
-            onClick={() => setIsOpen(!isOpen)}
-            className="focus:outline-none"
-            animate={{ rotate: isOpen ? -90 : 0 }} // Reversed rotation
-            transition={{ duration: 0.2 }} // Duration of the rotation
-          >
-            {isOpen ? (
-              <motion.svg
-                className="w-6 h-6 text-black"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <motion.path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></motion.path>
-              </motion.svg>
-            ) : (
-              <motion.svg
-                className="w-6 h-6 text-primaryColor"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <motion.path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></motion.path>
-              </motion.svg>
-            )}
-          </motion.button>
+        {/* search box */}
+        <div className="flex items-center">
+          <input
+            type="text"
+            placeholder="hinted search text"
+            className="border border-gray-300 p-2 rounded-[10px] focus:outline-none"
+          />
+          <button className="bg-primaryColor text-white px-2 py-1 rounded-[10px] ml-2">
+            Search
+          </button>
         </div>
 
-        {/* Action Buttons - Hidden on small screens */}
-        <nav className="hidden md:flex xl:space-x-4 space-x-2 md:text-sm xl:text-base ml-auto">
-          {navigation.map(
-            (navItem) =>
-              navItem.is_action && (
-                <NavLink
-                  key={navItem.label}
-                  to={navItem.href}
-                  className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end"
-                >
-                  {navItem.label}
-                </NavLink>
-              )
-          )}
-        </nav>
+        <button className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end">
+          Post Job
+        </button>
       </div>
 
       {/* Mobile Menu - Framer Motion */}

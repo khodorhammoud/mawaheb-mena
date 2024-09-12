@@ -11,7 +11,9 @@ export default function Layout() {
       {/* <p>yahh</p> */}
       {/* the above comment was for testing which route is gonna appear 👍 */}
       <Header />
-      <Outlet />
+      <div className="mt-[100px]">
+        <Outlet />
+      </div>
       {/* outlet is the content of the page */}
     </div>
   );
