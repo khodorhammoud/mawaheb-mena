@@ -20,12 +20,6 @@ export default function Layout() {
   const { accountType } = useLoaderData<{ accountType: AccountType }>();
   return (
     <div>
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
       {accountType === "employer" ? (
         <EmployerDashboard />
       ) : (
