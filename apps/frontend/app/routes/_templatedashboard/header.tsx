@@ -1,6 +1,6 @@
 // Layout Component
 import { useTranslation } from "react-i18next";
-import _navigation from "~/constants/navigation";
+import { navigation } from "~/constants/navigation";
 import { NavLink } from "@remix-run/react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -9,7 +9,7 @@ import "~/styles/wavy/wavy.css";
 
 export default function Layout() {
   const { t } = useTranslation();
-  const navigation = _navigation(t); // this is the place where i link the buttons i have to their pages // (routes)
+  const menuNavigation = navigation(t); // this is the place where i link the buttons i have to their pages // (routes)
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -48,7 +48,7 @@ export default function Layout() {
           animate={{ opacity: isOpen ? 1 : 0 }} // Animate opacity based on the menu state
           className="flex flex-col space-y-2 px-4 py-2"
         >
-          {navigation.map((navItem) => (
+          {menuNavigation.map((navItem) => (
             <NavLink
               key={navItem.label}
               to={navItem.href}

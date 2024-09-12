@@ -7,7 +7,7 @@ For Freelancers
 About Us
 Contact Us
 Hire Now */
-const navigation = function (t: TFunction) {
+export const navigation = function (t: TFunction) {
   return [
     {
       label: t("navigationForEmployersLable"),
@@ -38,4 +38,51 @@ const navigation = function (t: TFunction) {
   ];
 };
 
-export default navigation;
+
+
+export const sidebarEmployerNav = function (t: TFunction) {
+  return [
+    {
+      label: t("dashboardEmployerDashboardLable"),
+      href: "/for-employers",
+    },
+    {
+      label: t("dashboardEmployerManageJobsLable"),
+      href: "/for-freelancers",
+    },
+    {
+      label: t("dashboardEmployerTimeSheetLable"),
+      href: "/for-freelancers",
+    },
+    {
+      label: t("dashboardEmployerSettingsLable"),
+      href: "/for-freelancers",
+    },
+  ];
+};
+
+export const sidebarEmployeeNav = function (t: TFunction) {
+  return [
+    {
+      label: t("dashboardEmployeeDashboardLable"),
+      href: "/for-employers",
+    },
+    {
+      label: t("dashboardEmployeeBrowseJobsLable"),
+      href: "/for-employers",
+    },
+    {
+      label: t("dashboardEmployeeTimeSheetLable"),
+      href: "/for-freelancers",
+    },
+    {
+      label: t("dashboardEmployeeReportsLable"),
+      href: "/for-freelancers",
+    },
+    {
+      label: t("dashboardEmployeeSettingsLable"),
+      href: "/for-freelancers",
+    },
+  ];
+};
+

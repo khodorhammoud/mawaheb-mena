@@ -1,20 +1,20 @@
 import Header from "./header";
-import { Outlet } from "@remix-run/react";
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { Outlet, useLoaderData } from "@remix-run/react";
+// import Sidebar from "./Sidebar";
+// import { LoaderFunctionArgs, json } from "@remix-run/node";
+// import { getCurrentUserAccountType } from "~/servers/user.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  return json({});
-}
+// export async function loader({ request }: LoaderFunctionArgs) {
+//   const accountType = getCurrentUserAccountType(request);
+//   return json({ accountType });
+// }
 export default function Layout() {
   return (
     <div>
-      {/* <p>yahh</p> */}
-      {/* the above comment was for testing which route is gonna appear 👍 */}
       <Header />
       <div className="mt-[100px]">
         <Outlet />
       </div>
-      {/* outlet is the content of the page */}
     </div>
   );
 }
