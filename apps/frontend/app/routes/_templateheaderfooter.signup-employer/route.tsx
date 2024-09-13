@@ -2,21 +2,26 @@ import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import SignUpEmployerPage from "./Signup";
 import {
   generateVerificationToken,
+  getEmployerFreelancerInfo,
   // registerEmployer,
 } from "../../servers/user.server";
 // import { EmployerAccountType } from "../../types/User";
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
+import { Employer } from "../../types/User";
 
 export async function action({ request }: ActionFunctionArgs) {
   // holds the newly registered user object once registration is successful
-  let newEmployer = null;
+  let newEmployer: Employer = null;
   const clonedRequest = request.clone();
 
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    newEmployer = await authenticator.authenticate("register", request);
+    const user = await authenticator.authenticate("register", request);
+    newEmployer = (await getEmployerFreelancerInfo({
+      userId: user.id,
+    })) as Employer;
   } catch (error) {
     console.error("Error registering user:", error);
     // handle registration errors
@@ -48,7 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const name = (
       body.get("firstName") ? body.get("firstName") : body.get("lastName")
     ) as string;
-    const userId = await getUserIdFromEmployerId(newEmployer.id);
+    const userId = newEmployer.account?.user?.id;
     const verificationToken = await generateVerificationToken(userId);
     sendEmail({
       type: "accountVerification",

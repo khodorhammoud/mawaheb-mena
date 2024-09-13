@@ -1,6 +1,6 @@
 // import { json } from "@remix-run/node";
 // import { getUserByEmail, verifyPassword } from "~/utils/user.server";
-import { User } from "../types/User";
+import { Employer, Freelancer } from "../types/User";
 
 import {
   sessionStorage,
@@ -11,7 +11,9 @@ import {
 import { Authenticator } from "remix-auth";
 import { registerationStrategy, loginStrategy } from "./strategies";
 
-export const authenticator = new Authenticator<User>(sessionStorage);
+export const authenticator = new Authenticator<Employer | Freelancer>(
+  sessionStorage
+);
 
 authenticator.use(loginStrategy, "login");
 authenticator.use(registerationStrategy, "register");
