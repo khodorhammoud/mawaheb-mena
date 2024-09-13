@@ -3,7 +3,7 @@ import SignUpFreelancerPage from "./Signup";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import {
   generateVerificationToken,
-  getEployerFreelancerInfo,
+  getEmployerFreelancerInfo,
 } from "../../servers/user.server";
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
@@ -18,13 +18,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    const user = await authenticator.authenticate("register", request);
-    newFreelancer = (await getEployerFreelancerInfo({
-      userId: user.id,
+    const employerFreelancer = await authenticator.authenticate(
+      "register",
+      request
+    );
+    newFreelancer = (await getEmployerFreelancerInfo({
+      userId: employerFreelancer.account.user.id,
     })) as Freelancer;
   } catch (error) {
     // handle registration errors
     if (error instanceof RegistrationError) {
+      console.error("Registration error:", error);
       return json({
         success: false,
         error: {
@@ -33,6 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       });
     }
+    console.error("Error registering user:", error);
 
     return json({ success: false, error });
   }
@@ -54,6 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
     ) as string;
     const userId = newFreelancer.account?.user?.id;
     const verificationToken = await generateVerificationToken(userId);
+
     sendEmail({
       type: "accountVerification",
       email: email,

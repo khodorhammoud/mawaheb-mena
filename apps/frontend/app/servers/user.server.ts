@@ -8,7 +8,7 @@ import {
   userVerificationsTable,
 } from "../db/drizzle/schemas/schema";
 import {
-  LoggedInUser,
+  // LoggedInUser,
   User,
   Employer,
   Freelancer,
@@ -76,9 +76,8 @@ export async function getCurrentUser(
 ): Promise<User | null> {
   if (!currentUser) {
     const user = await authenticator.isAuthenticated(request);
-    console.log("user", user);
     if (!user) return null;
-    currentUser = user;
+    currentUser = user.account.user;
   }
   if (!withPassword) return { ...currentUser, passHash: undefined };
   return currentUser;
@@ -98,7 +97,7 @@ export async function getUserAccountInfo(
   withPassword = false
 ): Promise<UserAccount | null> {
   let user: User = null;
-  let account: any = null;
+  let account = null;
   if (accountId) {
     account = await db
       .select()
@@ -154,16 +153,16 @@ type EmployerFreelancerIdentifier = {
   employerId?: number;
   freelancerId?: number;
 };
-export async function getEployerFreelancerInfo(
+export async function getEmployerFreelancerInfo(
   identifier: {
     [K in keyof EmployerFreelancerIdentifier]: {
       [P in K]: EmployerFreelancerIdentifier[P];
     };
   }[keyof EmployerFreelancerIdentifier]
 ): Promise<Employer | Freelancer | null> {
-  let account: any = null;
-  let employer: any = null;
-  let freelancer: any = null;
+  let account = null;
+  let employer = null;
+  let freelancer = null;
 
   // if the employerId or freelancerId are provided, get the full info from the employer/freelancer
   if ("employerId" in identifier || "freelancerId" in identifier) {
@@ -176,6 +175,12 @@ export async function getEployerFreelancerInfo(
       if (employer.length === 0) return null;
       employer = employer[0];
       accountId = employer.accountId;
+      const userAccount = await getUserAccountInfo({ accountId });
+      if (!userAccount) return null;
+      return {
+        account: userAccount,
+        ...employer,
+      } as Employer;
     }
     if ("freelancerId" in identifier) {
       freelancer = await db
@@ -185,9 +190,14 @@ export async function getEployerFreelancerInfo(
       if (freelancer.length === 0) return null;
       freelancer = freelancer[0];
       accountId = freelancer.accountId;
+      const userAccount = await getUserAccountInfo({ accountId });
+      if (!userAccount) return null;
+      return {
+        account: userAccount,
+        ...freelancer,
+      } as Freelancer;
     }
-    const userAccount = await getUserAccountInfo({ accountId });
-    if (!userAccount) return null;
+    return null;
   }
 
   // if the  userId, userEmail, or accountId are provided, get the full info from the user/account
@@ -215,7 +225,7 @@ export async function getEployerFreelancerInfo(
       freelancer = freelancer[0];
     }
     return {
-      ...account,
+      account,
       ...(employer || freelancer),
     } as Employer | Freelancer;
   }
@@ -229,7 +239,7 @@ export async function getCurrentEployerFreelancerInfo(
   if (!currentEployerFreelancer) {
     const user = await getCurrentUser(request);
     if (!user) return null;
-    currentEployerFreelancer = await getEployerFreelancerInfo({
+    currentEployerFreelancer = await getEmployerFreelancerInfo({
       userId: user.id,
     });
   }
@@ -387,7 +397,9 @@ export async function registerEmployer({
     .insert(employersTable) // insert into employers table
     .values(newEmployer)
     .returning()) as unknown as Employer;
-  return result[0];
+  return (await getEmployerFreelancerInfo({
+    employerId: result[0].id,
+  })) as Employer;
 }
 
 /**
@@ -431,7 +443,10 @@ export async function registerFreelancer({
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
     .returning()) as unknown as Freelancer;
-  return result[0];
+
+  return (await getEmployerFreelancerInfo({
+    freelancerId: result[0].id,
+  })) as Freelancer;
 }
 
 /**
@@ -439,7 +454,7 @@ export async function registerFreelancer({
  * @returns NewAccount: the newly created account
  */
 export async function createUserAccount(
-  { userId, accountType }: any,
+  { userId, accountType },
   freshInsert: boolean = false,
   userInfo: User = null
 ): Promise<UserAccount> {
@@ -599,16 +614,25 @@ export async function verifyUserVerificationToken(token: string) {
 
   // update the user to be verified
   const userId = tokenRecord[0].userId;
-  const response = await db
-    .update(UsersTable)
-    //@ts-expect-error this is correct syntax 🙂
-    .set({ isVerified: true })
-    .where(eq(UsersTable.id, userId));
-  if (response.length === 0)
+  try {
+    const response = await db
+      .update(UsersTable)
+      // @ts-expect-error this is correct syntax 🙂
+      .set({ isVerified: true })
+      .where(eq(UsersTable.id, userId))
+      .returning({ updatedId: UsersTable.id });
+    if (response.length === 0)
+      return {
+        success: false,
+        message: ErrorCode.INTERNAL_ERROR,
+      };
+  } catch (e) {
+    console.error("Error verifying user:", e);
     return {
       success: false,
       message: ErrorCode.INTERNAL_ERROR,
     };
+  }
   return {
     success: true,
     message: "User verified successfully",

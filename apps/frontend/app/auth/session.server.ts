@@ -1,5 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { User } from "../types/User";
+import { Employer, Freelancer } from "../types/User";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -18,13 +18,13 @@ export const { getSession, commitSession, destroySession } = sessionStorage;
 
 export async function createUserSession(
   request,
-  user: User,
+  user: Employer | Freelancer,
   redirectTo: string
 ) {
   const session = await getSession(request.headers.get("cookie"));
   session.set("user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-  if (user.isOnboarded) return redirect(redirectTo, { headers });
+  if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
   return redirect("/onboarding", { headers });
 }
 
@@ -32,7 +32,9 @@ export async function getUserSession(request: Request) {
   return getSession(request.headers.get("Cookie"));
 }
 
-export async function getCurrentUser(request: Request) {
+export async function getCurrentUser(
+  request: Request
+): Promise<Employer | Freelancer> {
   const session = await getUserSession(request);
   const user = session.get("user");
   return user || null;
