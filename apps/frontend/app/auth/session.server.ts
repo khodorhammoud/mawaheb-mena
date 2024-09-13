@@ -1,7 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { authenticator } from "./auth.server";
 import { User } from "../types/User";
-import { isUserOnboarded } from "../servers/user.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -26,7 +24,7 @@ export async function createUserSession(
   const session = await getSession(request.headers.get("cookie"));
   session.set("user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-  if (isUserOnboarded(user)) return redirect(redirectTo, { headers });
+  if (user.isOnboarded) return redirect(redirectTo, { headers });
   return redirect("/onboarding", { headers });
 }
 

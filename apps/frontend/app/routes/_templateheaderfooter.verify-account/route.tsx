@@ -1,7 +1,7 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import {
   getUserAccountType,
-  verifyUserRegistrationToken,
+  verifyUserVerificationToken,
 } from "../../servers/user.server";
 import { SuccessVerificationLoaderStatus } from "../../types/misc";
 import { authenticator } from "../../auth/auth.server";
@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const verificationToken = url.searchParams.get("token") as string;
   const verificationResult =
-    await verifyUserRegistrationToken(verificationToken);
+    await verifyUserVerificationToken(verificationToken);
   if (!verificationResult.success) {
     return json({
       success: false,

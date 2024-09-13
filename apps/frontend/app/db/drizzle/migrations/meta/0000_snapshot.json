@@ -1,5 +1,5 @@
 {
-  "id": "3c931060-07ab-4105-8e5b-0afda905609d",
+  "id": "24b27f8c-c88f-4770-971a-e18f465e573b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,14 +14,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "firstName": {
-          "name": "firstName",
+        "first_name": {
+          "name": "first_name",
           "type": "varchar(80)",
           "primaryKey": false,
           "notNull": false
         },
-        "lastName": {
-          "name": "lastName",
+        "last_name": {
+          "name": "last_name",
           "type": "varchar(80)",
           "primaryKey": false,
           "notNull": false
@@ -32,21 +32,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "passHash": {
-          "name": "passHash",
+        "password_hash": {
+          "name": "password_hash",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "isVerified": {
-          "name": "isVerified",
+        "is_verified": {
+          "name": "is_verified",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
         },
-        "isOnboarded": {
-          "name": "isOnboarded",
+        "is_onboarded": {
+          "name": "is_onboarded",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -76,14 +76,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "accountId": {
-          "name": "accountId",
+        "account_id": {
+          "name": "account_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "languageId": {
-          "name": "languageId",
+        "language_id": {
+          "name": "language_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -91,12 +91,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "account_languages_accountId_accounts_id_fk": {
-          "name": "account_languages_accountId_accounts_id_fk",
+        "account_languages_account_id_accounts_id_fk": {
+          "name": "account_languages_account_id_accounts_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "accounts",
           "columnsFrom": [
-            "accountId"
+            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -104,12 +104,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "account_languages_languageId_languages_id_fk": {
-          "name": "account_languages_languageId_languages_id_fk",
+        "account_languages_language_id_languages_id_fk": {
+          "name": "account_languages_language_id_languages_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "languages",
           "columnsFrom": [
-            "languageId"
+            "language_id"
           ],
           "columnsTo": [
             "id"
@@ -131,14 +131,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "accountType": {
-          "name": "accountType",
+        "account_type": {
+          "name": "account_type",
           "type": "account_type",
           "typeSchema": "public",
           "primaryKey": false,
@@ -163,8 +163,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "accountStatus": {
-          "name": "accountStatus",
+        "account_status": {
+          "name": "account_status",
           "type": "account_status",
           "typeSchema": "public",
           "primaryKey": false,
@@ -175,16 +175,23 @@
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_creation_complete": {
+          "name": "is_creation_complete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "accounts_userId_users_id_fk": {
-          "name": "accounts_userId_users_id_fk",
+        "accounts_user_id_users_id_fk": {
+          "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -206,8 +213,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "accountId": {
-          "name": "accountId",
+        "account_id": {
+          "name": "account_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -219,86 +226,86 @@
           "primaryKey": false,
           "notNull": false
         },
-        "companyName": {
-          "name": "companyName",
+        "company_name": {
+          "name": "company_name",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },
-        "employerName": {
-          "name": "employerName",
+        "employer_name": {
+          "name": "employer_name",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },
-        "companyEmail": {
-          "name": "companyEmail",
+        "company_email": {
+          "name": "company_email",
           "type": "varchar(150)",
           "primaryKey": false,
           "notNull": false
         },
-        "industrySector": {
-          "name": "industrySector",
+        "industry_sector": {
+          "name": "industry_sector",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "companyRepName": {
-          "name": "companyRepName",
+        "company_rep_name": {
+          "name": "company_rep_name",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },
-        "companyRepEmail": {
-          "name": "companyRepEmail",
+        "company_rep_email": {
+          "name": "company_rep_email",
           "type": "varchar(150)",
           "primaryKey": false,
           "notNull": false
         },
-        "companyRepPosition": {
-          "name": "companyRepPosition",
+        "company_rep_position": {
+          "name": "company_rep_position",
           "type": "varchar(60)",
           "primaryKey": false,
           "notNull": false
         },
-        "companyRepPhone": {
-          "name": "companyRepPhone",
+        "company_rep_phone": {
+          "name": "company_rep_phone",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
         },
-        "taxIdNumber": {
-          "name": "taxIdNumber",
+        "tax_id_number": {
+          "name": "tax_id_number",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "taxIdDocumentLink": {
-          "name": "taxIdDocumentLink",
+        "tax_id_document_link": {
+          "name": "tax_id_document_link",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "businessLicenseLink": {
-          "name": "businessLicenseLink",
+        "business_license_link": {
+          "name": "business_license_link",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "certificationOfIncorporationLink": {
-          "name": "certificationOfIncorporationLink",
+        "certification_of_incorporation_link": {
+          "name": "certification_of_incorporation_link",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "WebsiteURL": {
-          "name": "WebsiteURL",
+        "website_url": {
+          "name": "website_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "socialMediaLinks": {
-          "name": "socialMediaLinks",
+        "social_media_links": {
+          "name": "social_media_links",
           "type": "text[]",
           "primaryKey": false,
           "notNull": false,
@@ -307,12 +314,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "employers_accountId_accounts_id_fk": {
-          "name": "employers_accountId_accounts_id_fk",
+        "employers_account_id_accounts_id_fk": {
+          "name": "employers_account_id_accounts_id_fk",
           "tableFrom": "employers",
           "tableTo": "accounts",
           "columnsFrom": [
-            "accountId"
+            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -334,14 +341,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "accountId": {
-          "name": "accountId",
+        "account_id": {
+          "name": "account_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "fieldsOfExpertise": {
-          "name": "fieldsOfExpertise",
+        "fields_of_expertise": {
+          "name": "fields_of_expertise",
           "type": "text[]",
           "primaryKey": false,
           "notNull": false,
@@ -354,33 +361,33 @@
           "notNull": false,
           "default": "'{}'::text[]"
         },
-        "portfolioDescription": {
-          "name": "portfolioDescription",
+        "portfolio_description": {
+          "name": "portfolio_description",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "cvLink": {
-          "name": "cvLink",
+        "cv_link": {
+          "name": "cv_link",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "videoLink": {
-          "name": "videoLink",
+        "video_link": {
+          "name": "video_link",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "certificatesLinks": {
-          "name": "certificatesLinks",
+        "certificates_links": {
+          "name": "certificates_links",
           "type": "text[]",
           "primaryKey": false,
           "notNull": false,
           "default": "'{}'::text[]"
         },
-        "yearsOfExperience": {
-          "name": "yearsOfExperience",
+        "years_of_experience": {
+          "name": "years_of_experience",
           "type": "varchar(80)",
           "primaryKey": false,
           "notNull": false
@@ -392,15 +399,15 @@
           "notNull": false,
           "default": "ARRAY[]::language[]"
         },
-        "preferredProjectTypes": {
-          "name": "preferredProjectTypes",
+        "preferred_project_types": {
+          "name": "preferred_project_types",
           "type": "project_type[]",
           "primaryKey": false,
           "notNull": false,
           "default": "ARRAY[]::project_type[]"
         },
-        "compensationType": {
-          "name": "compensationType",
+        "compensation_type": {
+          "name": "compensation_type",
           "type": "compensation_type",
           "typeSchema": "public",
           "primaryKey": false,
@@ -409,12 +416,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "freelancers_accountId_accounts_id_fk": {
-          "name": "freelancers_accountId_accounts_id_fk",
+        "freelancers_account_id_accounts_id_fk": {
+          "name": "freelancers_account_id_accounts_id_fk",
           "tableFrom": "freelancers",
           "tableTo": "accounts",
           "columnsFrom": [
-            "accountId"
+            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -459,8 +466,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "accountId": {
-          "name": "accountId",
+        "account_id": {
+          "name": "account_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -472,14 +479,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "startTime": {
-          "name": "startTime",
+        "start_time": {
+          "name": "start_time",
           "type": "time",
           "primaryKey": false,
           "notNull": false
         },
-        "endTime": {
-          "name": "endTime",
+        "end_time": {
+          "name": "end_time",
           "type": "time",
           "primaryKey": false,
           "notNull": false
@@ -487,12 +494,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "preferred_working_times_accountId_accounts_id_fk": {
-          "name": "preferred_working_times_accountId_accounts_id_fk",
+        "preferred_working_times_account_id_accounts_id_fk": {
+          "name": "preferred_working_times_account_id_accounts_id_fk",
           "tableFrom": "preferred_working_times",
           "tableTo": "accounts",
           "columnsFrom": [
-            "accountId"
+            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -504,8 +511,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.user_verification": {
-      "name": "user_verification",
+    "public.user_verifications": {
+      "name": "user_verifications",
       "schema": "",
       "columns": {
         "id": {
@@ -514,8 +521,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -532,15 +539,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "isUsed": {
-          "name": "isUsed",
+        "is_used": {
+          "name": "is_used",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
@@ -549,12 +556,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_verification_userId_users_id_fk": {
-          "name": "user_verification_userId_users_id_fk",
-          "tableFrom": "user_verification",
+        "user_verifications_user_id_users_id_fk": {
+          "name": "user_verifications_user_id_users_id_fk",
+          "tableFrom": "user_verifications",
           "tableTo": "users",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"

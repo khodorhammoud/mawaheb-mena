@@ -28,145 +28,145 @@ import { sql } from "drizzle-orm";
  * Definition of the Users table.
  *
  * @property {serial} id - Primary key, serial identifier
- * @property {varchar(80)} firstName - User's first name
- * @property {varchar(80)} lastName - User's last name
+ * @property {varchar(80)} first_name - User's first name
+ * @property {varchar(80)} last_name - User's last name
  * @property {varchar(150)} email - Unique email address (not null)
- * @property {varchar} passHash - Password hash (not null)
- * @property {boolean} isVerified - Verification status of the user account
+ * @property {varchar} password_hash - Password hash (not null)
+ * @property {boolean} is_verified - Verification status of the user account
+ * @property {boolean} is_onboarded - Onboarding status of the user account
  */
 export const UsersTable = pgTable("users", {
   id: serial("id").primaryKey(),
-  firstName: varchar("firstName", { length: 80 }),
-  lastName: varchar("lastName", { length: 80 }),
+  firstName: varchar("first_name", { length: 80 }),
+  lastName: varchar("last_name", { length: 80 }),
   email: varchar("email", { length: 150 }).unique().notNull(),
-  passHash: varchar("passHash").notNull(),
-  isVerified: boolean("isVerified").default(false),
-  isOnboarded: boolean("isOnboarded").default(false),
+  passHash: varchar("password_hash").notNull(),
+  isVerified: boolean("is_verified").default(false),
+  isOnboarded: boolean("is_onboarded").default(false),
 });
 
 /**
  * Define the accountsTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property userId - integer referencing the UsersTable id
- * @property accountType - accountTypeEnum
- * @property freelancerId - integer referencing the freelancersTable id
- * @property employerId - integer referencing the employersTable id
+ * @property user_id - integer referencing the UsersTable id
+ * @property account_type - accountTypeEnum (freelancer or employer)
  * @property location - varchar with length 150
  * @property country - countryEnum
  * @property region - varchar with length 100
- * @property accountStatus - accountStatusEnum
+ * @property account_status - accountStatusEnum
  * @property phone - varchar with length 20
  */
 export const accountsTable = pgTable("accounts", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").references(() => UsersTable.id),
-  accountType: accountTypeEnum("accountType"),
+  userId: integer("user_id").references(() => UsersTable.id),
+  accountType: accountTypeEnum("account_type"),
   // freelancerId: integer("freelancerId").references(() => freelancersTable.id),
   // employerId: integer("employerId").references(() => employersTable.id),
   location: varchar("location", { length: 150 }),
   country: countryEnum("country"),
   region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("accountStatus"),
+  accountStatus: accountStatusEnum("account_status"),
   phone: varchar("phone", { length: 20 }),
+  isCreationComplete: boolean("is_creation_complete").default(false),
 });
 
 /**
  * Define the preferredWorkingTimesTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property accountId - integer referencing the accountsTable id
+ * @property account_id - integer referencing the accountsTable id
  * @property dayOfWeek - dayOfWeekEnum
- * @property startTime - time
- * @property endTime - time
+ * @property start_time - time
+ * @property end_time - time
  */
 export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references(() => accountsTable.id),
+  accountId: integer("account_id").references(() => accountsTable.id),
   dayOfWeek: dayOfWeekEnum("day"),
-  startTime: time("startTime"),
-  endTime: time("endTime"),
+  startTime: time("start_time"),
+  endTime: time("end_time"),
 });
 
 /**
  * Define the freelancersTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property accountId - integer referencing the accountsTable id
- * @property fieldsOfExpertise - text array with default ''
+ * @property account_id - integer referencing the accountsTable id
+ * @property fields_of_expertise - text array with default ''
  * @property portfolio - text array with default ''
- * @property portfolioDescription - text
- * @property cvLink - text
- * @property videoLink - text
- * @property certificatesLinks - text array with default ''
- * @property yearsOfExperience - varchar with length 80
+ * @property portfolio_description - text
+ * @property cv_link - text
+ * @property video_link - text
+ * @property certificates_links - text array with default ''
+ * @property years_of_experience - varchar with length 80
  * @property languagesSpoken - languageEnum array with default ''
- * @property preferredProjectTypes - projectTypeEnum array with default ''
- * @property compensationType - compensationTypeEnum
+ * @property preferred_project_types - projectTypeEnum array with default ''
+ * @property compensation_type - compensationTypeEnum
  */
 export const freelancersTable = pgTable("freelancers", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references(() => accountsTable.id),
-  fieldsOfExpertise: text("fieldsOfExpertise")
+  accountId: integer("account_id").references(() => accountsTable.id),
+  fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
   portfolio: text("portfolio")
     .array()
     .default(sql`'{}'::text[]`),
-  portfolioDescription: text("portfolioDescription"),
-  cvLink: text("cvLink"),
-  videoLink: text("videoLink"),
-  certificatesLinks: text("certificatesLinks")
+  portfolioDescription: text("portfolio_description"),
+  cvLink: text("cv_link"),
+  videoLink: text("video_link"),
+  certificatesLinks: text("certificates_links")
     .array()
     .default(sql`'{}'::text[]`),
-  yearsOfExperience: varchar("yearsOfExperience", { length: 80 }),
+  yearsOfExperience: varchar("years_of_experience", { length: 80 }),
   languagesSpoken: languageEnum("language")
     .array()
     .default(sql`ARRAY[]::language[]`),
-  preferredProjectTypes: projectTypeEnum("preferredProjectTypes")
+  preferredProjectTypes: projectTypeEnum("preferred_project_types")
     .array()
     .default(sql`ARRAY[]::project_type[]`),
-  compensationType: compensationTypeEnum("compensationType"),
+  compensationType: compensationTypeEnum("compensation_type"),
 });
 
 /**
  * Define the employersTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property accountId - integer referencing the accountsTable id
- * @property companyName - varchar with length 100
- * @property employerName - varchar with length 100
- * @property companyEmail - varchar with length 150
- * @property industrySector - text
- * @property companyRepName - varchar with length 100
- * @property companyRepEmail - varchar with length 150
- * @property companyRepPosition - varchar with length 60
- * @property companyRepPhone - varchar with length 20
- * @property taxIdNumber - varchar
- * @property taxIdDocumentLink - text
- * @property businessLicenseLink - text
- * @property certificationOfIncorporationLink - text
- * @property WebsiteURL - text
- * @property socialMediaLinks - text array with default ''
+ * @property account_id - integer referencing the accountsTable id
+ * @property company_name - varchar with length 100
+ * @property employer_name - varchar with length 100
+ * @property company_email - varchar with length 150
+ * @property industry_sector - text
+ * @property company_rep_name - varchar with length 100
+ * @property company_rep_email - varchar with length 150
+ * @property company_rep_position - varchar with length 60
+ * @property company_rep_phone - varchar with length 20
+ * @property tax_id_number - varchar
+ * @property tax_id_document_link - text
+ * @property business_license_link - text
+ * @property certification_of_incorporation_link - text
+ * @property website_url - text
+ * @property social_media_links - text array with default ''
  */
 export const employersTable = pgTable("employers", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references(() => accountsTable.id),
+  accountId: integer("account_id").references(() => accountsTable.id),
   employerAccountType: employerAccountTypeEnum("employerAccountType"),
-  companyName: varchar("companyName", { length: 100 }),
-  employerName: varchar("employerName", { length: 100 }),
-  companyEmail: varchar("companyEmail", { length: 150 }),
-  industrySector: text("industrySector"),
-  companyRepName: varchar("companyRepName", { length: 100 }),
-  companyRepEmail: varchar("companyRepEmail", { length: 150 }),
-  companyRepPosition: varchar("companyRepPosition", { length: 60 }),
-  companyRepPhone: varchar("companyRepPhone", { length: 20 }),
-  taxIdNumber: varchar("taxIdNumber"),
-  taxIdDocumentLink: text("taxIdDocumentLink"),
-  businessLicenseLink: text("businessLicenseLink"),
-  certificationOfIncorporationLink: text("certificationOfIncorporationLink"),
-  WebsiteURL: text("WebsiteURL"),
-  socialMediaLinks: text("socialMediaLinks")
+  companyName: varchar("company_name", { length: 100 }),
+  employerName: varchar("employer_name", { length: 100 }),
+  companyEmail: varchar("company_email", { length: 150 }),
+  industrySector: text("industry_sector"),
+  companyRepName: varchar("company_rep_name", { length: 100 }),
+  companyRepEmail: varchar("company_rep_email", { length: 150 }),
+  companyRepPosition: varchar("company_rep_position", { length: 60 }),
+  companyRepPhone: varchar("company_rep_phone", { length: 20 }),
+  taxIdNumber: varchar("tax_id_number"),
+  taxIdDocumentLink: text("tax_id_document_link"),
+  businessLicenseLink: text("business_license_link"),
+  certificationOfIncorporationLink: text("certification_of_incorporation_link"),
+  WebsiteURL: text("website_url"),
+  socialMediaLinks: text("social_media_links")
     .array()
     .default(sql`'{}'::text[]`),
 });
@@ -186,13 +186,13 @@ export const languagesTable = pgTable("languages", {
  * Define the accountLanguagesTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property accountId - integer referencing the accountsTable id
- * @property languageId - integer referencing the languagesTable id
+ * @property account_id - integer referencing the accountsTable id
+ * @property language_id - integer referencing the languagesTable id
  */
 export const accountLanguagesTable = pgTable("account_languages", {
   id: serial("id").primaryKey(),
-  accountId: integer("accountId").references(() => accountsTable.id),
-  languageId: integer("languageId").references(() => languagesTable.id),
+  accountId: integer("account_id").references(() => accountsTable.id),
+  languageId: integer("language_id").references(() => languagesTable.id),
 });
 
 /**
@@ -200,18 +200,18 @@ export const accountLanguagesTable = pgTable("account_languages", {
  * used to store account verification tokens sent to users after registration
  *
  * @property id - serial primary key
- * @property userId - integer referencing the UsersTable id
+ * @property user_id - integer referencing the UsersTable id
  * @property token - varchar with length 256
  * @property expiry - timestamp
- * @property isUsed - boolean
- * @property createdAt - timestamp
+ * @property is_used - boolean
+ * @property created_at - timestamp
  */
 
-export const userVerificationTable = pgTable("user_verification", {
+export const userVerificationsTable = pgTable("user_verifications", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").references(() => UsersTable.id),
+  userId: integer("user_id").references(() => UsersTable.id),
   token: varchar("token", { length: 256 }),
   expiry: timestamp("expiry"),
-  isUsed: boolean("isUsed").default(false),
-  createdAt: timestamp("createdAt").default(sql`now()`),
+  isUsed: boolean("is_used").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
 });
