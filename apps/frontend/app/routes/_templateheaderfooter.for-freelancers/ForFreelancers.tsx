@@ -2,7 +2,7 @@
 
 import "../../styles/wavy/wavy.css";
 import LayoutContainer from "../../common/layout_container";
-import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItWorks";
+import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItwWorks";
 import Segments from "../_templateheaderfooter.for-employers/Segments";
 import Languages from "../_templateheaderfooter.for-employers/Languages";
 import MainHeading from "../../common/MainHeading";
