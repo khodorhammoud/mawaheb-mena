@@ -3,108 +3,75 @@ import { motion } from "framer-motion";
 import MainHeading from "../../../common/MainHeading";
 import FeatureCard from "./Card";
 import "../../../styles/wavy/wavy.css";
-
-const features = [
-  {
-    step: "Step 01",
-    title: "Get in Touch",
-    description:
-      "Start by reaching out to our team to begin the process. Whether you have a clear vision or need guidance, we're here to assist you every step of the way.",
-    imageUrl:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  },
-  {
-    step: "Step 02",
-    title: "Define Your Vision",
-    description:
-      "Let's delve into the specifics of your jobs. Share your objectives, requirements, and any preferences you have regarding the skill set or experience of the freelancer you're looking for.",
-    imageUrl:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  },
-  {
-    step: "Step 03",
-    title: "AI-Powered Matchmaking",
-    description:
-      "Our cutting-edge AI matching tool will analyze your job details and match you with the most suitable freelancer from our talented pool. With precision and efficiency, we ensure you're paired with the perfect match.",
-    imageUrl:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  },
-  {
-    step: "Step 04",
-    title: "Unlock Success",
-    description:
-      "Once the match is made, you're on your way to success. Leverage the expertise of your matched freelancer as they bring your jobs to life. From development to delivery, we're dedicated to ensuring your satisfaction and the success of your jobs.",
-    imageUrl:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  },
-];
+import { GET_HOW_IT_WORKS_QUERY } from "../../../../../cms/graphql/queries";
 
 export default function FeaturesSection() {
-  const [lineRevealed, setLineRevealed] = useState([false, false, false]);
+  const [features, setFeatures] = useState([]); // Dynamic features array
+  const [lineRevealed, setLineRevealed] = useState([]); // Dynamic line reveal state
 
-  const ref1 = useRef(null);
-  const ref2 = useRef(null);
-  const ref3 = useRef(null);
+  const featureRefs = useRef([]); // Create refs for all feature items
 
+  // Fetch the HowItWorks data using the GET_HOW_IT_WORKS_QUERY
   useEffect(() => {
-    const observerOptions = [
-      { threshold: 0.8 },
-      { threshold: 1 },
-      { threshold: 0.4 },
-    ];
-
-    const observer1 = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        setLineRevealed((prev) => {
-          const updatedState = [...prev];
-          if (entry.isIntersecting) {
-            updatedState[0] = true;
-          } else if (entry.boundingClientRect.top >= 0) {
-            updatedState[0] = false;
-          }
-          return updatedState;
+    async function fetchHowItWorks() {
+      try {
+        const response = await fetch("http://localhost:3000/api/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: GET_HOW_IT_WORKS_QUERY,
+          }),
         });
-      });
-    }, observerOptions[0]);
 
-    const observer2 = new IntersectionObserver((entries) => {
+        const { data } = await response.json();
+        console.log("Fetched data: ", data);
+        if (data) {
+          const sortedData = data.howItWorksItems.sort(
+            (a, b) => parseInt(a.stepNb) - parseInt(b.stepNb)
+          );
+          setFeatures(sortedData);
+          setLineRevealed(Array(sortedData.length).fill(false)); // Initialize lineRevealed based on features count
+        }
+      } catch (error) {
+        console.error("Error fetching HowItWorks data:", error);
+      }
+    }
+
+    fetchHowItWorks();
+  }, []);
+
+  // Create IntersectionObserver to handle line reveal
+  useEffect(() => {
+    const observerOptions = { threshold: 0.5 }; // Adjust threshold if necessary
+
+    const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        setLineRevealed((prev) => {
-          const updatedState = [...prev];
-          if (entry.isIntersecting) {
-            updatedState[1] = true;
-          } else if (entry.boundingClientRect.top >= 0) {
-            updatedState[1] = false;
-          }
-          return updatedState;
-        });
+        const index = featureRefs.current.indexOf(entry.target);
+        if (entry.isIntersecting) {
+          setLineRevealed((prev) => {
+            const updated = [...prev];
+            updated[index] = true;
+            return updated;
+          });
+        } else {
+          setLineRevealed((prev) => {
+            const updated = [...prev];
+            updated[index] = false;
+            return updated;
+          });
+        }
       });
-    }, observerOptions[1]);
+    }, observerOptions);
 
-    const observer3 = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        setLineRevealed((prev) => {
-          const updatedState = [...prev];
-          if (entry.isIntersecting) {
-            updatedState[2] = true;
-          } else if (entry.boundingClientRect.top >= 0) {
-            updatedState[2] = false;
-          }
-          return updatedState;
-        });
-      });
-    }, observerOptions[2]);
-
-    if (ref1.current) observer1.observe(ref1.current);
-    if (ref2.current) observer2.observe(ref2.current);
-    if (ref3.current) observer3.observe(ref3.current);
+    // Observe each feature card
+    featureRefs.current.forEach((ref) => ref && observer.observe(ref));
 
     return () => {
-      observer1.disconnect();
-      observer2.disconnect();
-      observer3.disconnect();
+      featureRefs.current.forEach((ref) => ref && observer.unobserve(ref));
     };
-  }, []);
+  }, [features]); // Re-run observer setup when features change
 
   const draw = {
     hidden: { pathLength: 0, opacity: 0 },
@@ -117,7 +84,6 @@ export default function FeaturesSection() {
 
   return (
     <section className="font-['Switzer-Variable'] sm:overflow-hidden mb-28">
-      {/* The overflow-hidden on the section will help prevent unwanted scrolling */}
       <MainHeading title="HOW IT WORKS" />
       <div className="xl:px-6 lg:mt-0">
         <div className="relative xl:-mt-20 lg:-mt-20">
@@ -125,7 +91,7 @@ export default function FeaturesSection() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                ref={index === 0 ? ref1 : index === 1 ? ref2 : ref3}
+                ref={(el) => (featureRefs.current[index] = el)} // Assign ref dynamically
                 className={`relative ${
                   index === 0
                     ? "lg:-mt-20 xl:-mt-12"
@@ -137,10 +103,10 @@ export default function FeaturesSection() {
                 }`}
               >
                 <FeatureCard
-                  step={feature.step}
+                  step={`Step ${feature.stepNb < 10 ? `0${feature.stepNb}` : feature.stepNb}`}
                   title={feature.title}
                   description={feature.description}
-                  imageUrl={feature.imageUrl}
+                  imageUrl={feature.imageURL || "https://default-image-url.com"}
                 />
                 {index === 0 && (
                   <motion.svg
@@ -149,7 +115,7 @@ export default function FeaturesSection() {
                     viewBox="0 0 260 1"
                     className="block rotate-90 transform absolute left-[25px] lg:top-60 xl:left-[275px] lg:left-[318px] lg:translate-y-1/2 lg:rotate-45 -z-10 md:animated-line-1"
                     initial="hidden"
-                    animate={lineRevealed[0] ? "visible" : "hidden"}
+                    animate={lineRevealed[index] ? "visible" : "hidden"} // Dynamic line reveal
                     variants={draw}
                   >
                     <motion.line
@@ -167,9 +133,9 @@ export default function FeaturesSection() {
                     width="240"
                     height="1"
                     viewBox="0 0 200 1"
-                    className="block rotate-90 absolute transform left-[80px] lg:top-[515px] xl:left-[-150px] lg:left-[-240px] lg:translate-y-1/2 -z-10 lg:animated-line-2 lg:rotate-0"
+                    className="block rotate-90 absolute transform left-[80px] lg:top-[515px] xl:left-[-190px] lg:left-[-240px] lg:translate-y-1/2 -z-10 lg:animated-line-2 lg:rotate-0"
                     initial="hidden"
-                    animate={lineRevealed[1] ? "visible" : "hidden"}
+                    animate={lineRevealed[index] ? "visible" : "hidden"} // Dynamic line reveal
                     variants={draw}
                   >
                     <motion.line
@@ -188,9 +154,8 @@ export default function FeaturesSection() {
                     height="1"
                     viewBox="0 0 5 1"
                     className="block rotate-90 absolute transform left-[-200px] md:block md:rotate-90 md:relative md:transform md:left-[-200px] lg:absolute lg:top-[180px] xl:left-[-100px] lg:left-[-50px] lg:transform lg:translate-y-1/2 -z-10 lg:rotate-45 lg:animated-line-3"
-                    // this have a special dealing, sice step 3 is not aligned as the others at md screens, so to make its line responsive at md, i make it md:relative not md:absolutr 👍⭐
                     initial="hidden"
-                    animate={lineRevealed[2] ? "visible" : "hidden"}
+                    animate={lineRevealed[index] ? "visible" : "hidden"} // Dynamic line reveal
                     variants={draw}
                   >
                     <motion.line

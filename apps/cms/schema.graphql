@@ -260,6 +260,142 @@ input TagCreateInput {
   posts: PostRelateToManyForCreateInput
 }
 
+type Feature {
+  id: ID!
+  title: String
+  description: String
+}
+
+input FeatureWhereUniqueInput {
+  id: ID
+}
+
+input FeatureWhereInput {
+  AND: [FeatureWhereInput!]
+  OR: [FeatureWhereInput!]
+  NOT: [FeatureWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  description: StringFilter
+}
+
+input FeatureOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+}
+
+input FeatureUpdateInput {
+  title: String
+  description: String
+}
+
+input FeatureUpdateArgs {
+  where: FeatureWhereUniqueInput!
+  data: FeatureUpdateInput!
+}
+
+input FeatureCreateInput {
+  title: String
+  description: String
+}
+
+type ForFreelancersSubHeadline {
+  id: ID!
+  content: String
+}
+
+input ForFreelancersSubHeadlineWhereUniqueInput {
+  id: ID
+}
+
+input ForFreelancersSubHeadlineWhereInput {
+  AND: [ForFreelancersSubHeadlineWhereInput!]
+  OR: [ForFreelancersSubHeadlineWhereInput!]
+  NOT: [ForFreelancersSubHeadlineWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input ForFreelancersSubHeadlineOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input ForFreelancersSubHeadlineUpdateInput {
+  content: String
+}
+
+input ForFreelancersSubHeadlineUpdateArgs {
+  where: ForFreelancersSubHeadlineWhereUniqueInput!
+  data: ForFreelancersSubHeadlineUpdateInput!
+}
+
+input ForFreelancersSubHeadlineCreateInput {
+  content: String
+}
+
+type HowItWorks {
+  id: ID!
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
+input HowItWorksWhereUniqueInput {
+  id: ID
+}
+
+input HowItWorksWhereInput {
+  AND: [HowItWorksWhereInput!]
+  OR: [HowItWorksWhereInput!]
+  NOT: [HowItWorksWhereInput!]
+  id: IDFilter
+  stepNb: IntFilter
+  title: StringFilter
+  description: StringFilter
+  imageURL: StringFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input HowItWorksOrderByInput {
+  id: OrderDirection
+  stepNb: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+  imageURL: OrderDirection
+}
+
+input HowItWorksUpdateInput {
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
+input HowItWorksUpdateArgs {
+  where: HowItWorksWhereUniqueInput!
+  data: HowItWorksUpdateInput!
+}
+
+input HowItWorksCreateInput {
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -284,6 +420,24 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  createFeature(data: FeatureCreateInput!): Feature
+  createFeatures(data: [FeatureCreateInput!]!): [Feature]
+  updateFeature(where: FeatureWhereUniqueInput!, data: FeatureUpdateInput!): Feature
+  updateFeatures(data: [FeatureUpdateArgs!]!): [Feature]
+  deleteFeature(where: FeatureWhereUniqueInput!): Feature
+  deleteFeatures(where: [FeatureWhereUniqueInput!]!): [Feature]
+  createForFreelancersSubHeadline(data: ForFreelancersSubHeadlineCreateInput!): ForFreelancersSubHeadline
+  createForFreelancersSubHeadlines(data: [ForFreelancersSubHeadlineCreateInput!]!): [ForFreelancersSubHeadline]
+  updateForFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!, data: ForFreelancersSubHeadlineUpdateInput!): ForFreelancersSubHeadline
+  updateForFreelancersSubHeadlines(data: [ForFreelancersSubHeadlineUpdateArgs!]!): [ForFreelancersSubHeadline]
+  deleteForFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!): ForFreelancersSubHeadline
+  deleteForFreelancersSubHeadlines(where: [ForFreelancersSubHeadlineWhereUniqueInput!]!): [ForFreelancersSubHeadline]
+  createHowItWorks(data: HowItWorksCreateInput!): HowItWorks
+  createHowItWorksItems(data: [HowItWorksCreateInput!]!): [HowItWorks]
+  updateHowItWorks(where: HowItWorksWhereUniqueInput!, data: HowItWorksUpdateInput!): HowItWorks
+  updateHowItWorksItems(data: [HowItWorksUpdateArgs!]!): [HowItWorks]
+  deleteHowItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
+  deleteHowItWorksItems(where: [HowItWorksWhereUniqueInput!]!): [HowItWorks]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -316,6 +470,15 @@ type Query {
   tag(where: TagWhereUniqueInput!): Tag
   tags(where: TagWhereInput! = {}, orderBy: [TagOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TagWhereUniqueInput): [Tag!]
   tagsCount(where: TagWhereInput! = {}): Int
+  feature(where: FeatureWhereUniqueInput!): Feature
+  features(where: FeatureWhereInput! = {}, orderBy: [FeatureOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FeatureWhereUniqueInput): [Feature!]
+  featuresCount(where: FeatureWhereInput! = {}): Int
+  forFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!): ForFreelancersSubHeadline
+  forFreelancersSubHeadlines(where: ForFreelancersSubHeadlineWhereInput! = {}, orderBy: [ForFreelancersSubHeadlineOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ForFreelancersSubHeadlineWhereUniqueInput): [ForFreelancersSubHeadline!]
+  forFreelancersSubHeadlinesCount(where: ForFreelancersSubHeadlineWhereInput! = {}): Int
+  howItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
+  howItWorksItems(where: HowItWorksWhereInput! = {}, orderBy: [HowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: HowItWorksWhereUniqueInput): [HowItWorks!]
+  howItWorksItemsCount(where: HowItWorksWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
