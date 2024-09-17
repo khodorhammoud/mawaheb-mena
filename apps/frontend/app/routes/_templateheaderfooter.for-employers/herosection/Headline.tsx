@@ -1,17 +1,57 @@
-// Headline Component
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { GET_SUBHEADLINE_QUERY } from "../../../../../cms/graphql/queries";
+
+// Define the type for a subheadline
+interface SubHeadline {
+  content: string;
+}
+
+// Define the type for the GraphQL response
+interface SubHeadlineResponse {
+  data: {
+    forFreelancersSubHeadlines: SubHeadline[]; // This should be an array
+  };
+}
 
 export default function Headline() {
   const [isVisible, setIsVisible] = useState(true);
+  const [subHeadlineContent, setSubHeadlineContent] = useState<string>("");
 
   useEffect(() => {
-    // Set a timeout to hide the SVG after the animation ends (2.8 seconds)
-    const timeoutId = setTimeout(() => {
-      setIsVisible(false); // Update state to hide the SVG
-    }, 1800); // Match the duration of the animation (2.8 seconds)
+    async function fetchSubHeadline() {
+      try {
+        const res = await fetch("http://localhost:3000/api/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: GET_SUBHEADLINE_QUERY, // No need for variables, since we're fetching all
+          }),
+        });
 
-    return () => clearTimeout(timeoutId); // Cleanup timeout on unmount
+        const json = await res.json();
+        console.log(json); // Log the full response
+
+        if (json.data && json.data.forFreelancersSubHeadlines.length > 0) {
+          const fetchedContent =
+            json.data.forFreelancersSubHeadlines[0].content;
+          setSubHeadlineContent(fetchedContent);
+        } else {
+          console.error("No subheadline found in response");
+        }
+      } catch (error) {
+        console.error("Error fetching subheadline:", error);
+      }
+    }
+
+    fetchSubHeadline();
+    const timeoutId = setTimeout(() => {
+      setIsVisible(false);
+    }, 1800);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -38,34 +78,32 @@ export default function Headline() {
                     fill="none"
                   />
                   <circle r="10" fill="black" opacity="0">
-                    {/* Make the ball appear right before the animation starts */}
                     <animate
                       attributeName="opacity"
                       from="0"
                       to="1"
-                      begin="0.1s" // Start the appearance right before the motion
-                      dur="0.1s" // Short duration to make it appear
-                      fill="freeze" // Stay visible after appearing
+                      begin="0.1s"
+                      dur="0.1s"
+                      fill="freeze"
                     />
                     <animateMotion
-                      begin="0.05s" // Start the motion after the ball becomes visible
-                      dur="2.6s" // Set the duration to 2.8 seconds
-                      repeatCount="1" // Make the animation run only once
-                      keyPoints="1;0" // Reverse the direction of the animation
+                      begin="0.05s"
+                      dur="2.6s"
+                      repeatCount="1"
+                      keyPoints="1;0"
                       rotate="auto"
                       keyTimes="0;1"
                       calcMode="linear"
                     >
                       <mpath href="#swingPath" />
                     </animateMotion>
-                    {/* Hide the ball right after the animation ends */}
                     <animate
                       attributeName="opacity"
                       from="1"
                       to="0"
-                      begin="2.6s" // Start just after the motion animation ends
-                      dur="0.05s" // Short duration to make it disappear
-                      fill="freeze" // Stay hidden after disappearing
+                      begin="2.6s"
+                      dur="0.05s"
+                      fill="freeze"
                     />
                   </circle>
                 </svg>
@@ -82,13 +120,10 @@ export default function Headline() {
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 70, damping: 20 }}
         >
-          <p className="pt-7 text-lg mt-4 text-black font-['Switzer-Regular']">
-            Mawaheb MENA a platform where you can find top talent,
-            <br />
-            drive innovation, and achieve your business goals.
+          <p className="pt-7 text-lg mt-4 text-black font-['Switzer-Regular'] max-w-[500px] mx-auto text-center">
+            {subHeadlineContent}
           </p>
         </motion.div>
-        {/* the above motion is for appearing the p elements from the bottom to there places */}
       </div>
     </section>
   );
