@@ -1,3 +1,5 @@
+const path = require("path");
+
 /**
  * This is intended to be a basic starting point for linting in your app.
  * It relies on recommended configs out of the box for simplicity, but you can
@@ -46,6 +48,16 @@ module.exports = {
         ],
         "import/resolver": {
           typescript: {},
+          alias: {
+            map: [
+              ["~", path.resolve(__dirname, "app")],
+              /* ["~components", path.resolve(__dirname, "src/components")],
+              ["~hooks", path.resolve(__dirname, "src/hooks")],
+              ["~pages", path.resolve(__dirname, "src/pages")],
+              ["~utils", path.resolve(__dirname, "src/utils")], */
+            ],
+            extensions: [".js", ".jsx", ".ts", ".tsx", ".json"], // Add any file extensions you use
+          },
         },
       },
     },
