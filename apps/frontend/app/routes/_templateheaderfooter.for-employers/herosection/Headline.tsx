@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { GET_SUBHEADLINE_QUERY } from "../../../../../cms/graphql/queries";
+import { GET_SUBHEADLINE_QUERY } from "../../../../../shared/cms-queries";
 
 // Define the type for a subheadline
 interface SubHeadline {
