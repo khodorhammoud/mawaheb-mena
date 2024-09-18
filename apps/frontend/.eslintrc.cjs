@@ -81,4 +81,7 @@ module.exports = {
       },
     },
   ],
+  rules: {
+    "@typescript-eslint/no-explicit-any": "warn", // Allow "any" type but show a warning
+  },
 };

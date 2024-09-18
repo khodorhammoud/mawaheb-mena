@@ -1,4 +1,4 @@
-/* export const GET_FEATURES_QUERY = `
+export const GET_FEATURES_QUERY = `
   query {
     features {
       title
@@ -25,4 +25,3 @@ export const GET_HOW_IT_WORKS_QUERY = `
     }
   }
 `;
- */
