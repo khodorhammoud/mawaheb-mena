@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import {
   // getCurrentUser,
   getCurrentUserAccountType,
@@ -9,6 +9,13 @@ import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "../../types/enums";
 // import { getCurrentEmployerAccountInfo } from "../../servers/employer.server";
 
+export async function action({ request }: ActionFunctionArgs) {
+  console.log("submitting form");
+  const formdata = await request.formData();
+  console.log(JSON.stringify(Object.fromEntries(formdata)));
+  return json(Object.fromEntries(formdata));
+  // return json({ success: true });
+}
 export async function loader({ request }: LoaderFunctionArgs) {
   // check if the current user is an employer or a freelancer
   // if the current user is an employer, redirect to the employer dashboard

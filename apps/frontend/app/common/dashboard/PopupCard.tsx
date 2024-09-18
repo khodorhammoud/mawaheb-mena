@@ -11,17 +11,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { BsCurrencyDollar } from "react-icons/bs";
-import { ActionFunctionArgs, json } from "@remix-run/node";
-import { useActionData, Form } from "@remix-run/react";
-
-/* export async function action({ request }: ActionFunctionArgs) {
-  console.log("submitting form");
-  return json({ success: true });
-} */
 
 export default function CardComponent() {
-  const actionData = useActionData();
-
   const [open, setOpen] = useState(false); // Dialog state
   const [budget, setBudget] = useState<string | null>(null); // To store the inputted budget
   const [inputValue, setInputValue] = useState(""); // To control input field
@@ -50,22 +41,8 @@ export default function CardComponent() {
           </DialogTrigger>
           <DialogContent className="bg-white">
             <DialogHeader>
-              <DialogTitle>
-                Add Average Budgetscdscds
-                {JSON.stringify(actionData)}
-              </DialogTitle>
+              <DialogTitle>Add Average Budget</DialogTitle>
             </DialogHeader>
-            <Form method="post" className="space-y-6">
-              <Input
-                placeholder="Enter amount"
-                type="text"
-                value={inputValue}
-                name="ha"
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-              <button type="submit">ssssave</button>
-            </Form>
-
             <Input
               placeholder="Enter amount"
               type="text"
