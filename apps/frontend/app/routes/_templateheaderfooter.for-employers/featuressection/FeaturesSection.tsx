@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardContent,
 } from "../../../components/ui/card";
-import { GET_FEATURES_QUERY } from "../../../../../cms/graphql/queries";
+import { GET_FEATURES_QUERY } from "../../../../../shared/cms-queries";
 
 // Step 1: Define the type for a feature
 interface Feature {

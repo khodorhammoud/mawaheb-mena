@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import MainHeading from "../../../common/MainHeading";
+import MainHeading from "~/common/MainHeading"; //"~/  common/MainHeading";
 import FeatureCard from "./Card";
-import "../../../styles/wavy/wavy.css";
-import { GET_HOW_IT_WORKS_QUERY } from "../../../../../cms/graphql/queries";
+import "~/styles/wavy/wavy.css";
+import { GET_HOW_IT_WORKS_QUERY } from "../../../../../shared/cms-queries";
+import { fetchCMSData } from "~/api/fetch-cms-data.server";
 
 export default function FeaturesSection() {
   const [features, setFeatures] = useState([]); // Dynamic features array
@@ -15,18 +16,20 @@ export default function FeaturesSection() {
   useEffect(() => {
     async function fetchHowItWorks() {
       try {
-        const response = await fetch("http://localhost:3000/api/graphql", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: GET_HOW_IT_WORKS_QUERY,
-          }),
-        });
+        const response = await fetch(
+          `${process.env.CMS_BASE_URL}/api/graphql`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              query: GET_HOW_IT_WORKS_QUERY,
+            }),
+          }
+        );
 
-        const { data } = await response.json();
-        console.log("Fetched data: ", data);
+        const data = await fetchCMSData(GET_HOW_IT_WORKS_QUERY);
         if (data) {
           const sortedData = data.howItWorksItems.sort(
             (a, b) => parseInt(a.stepNb) - parseInt(b.stepNb)
@@ -38,8 +41,6 @@ export default function FeaturesSection() {
         console.error("Error fetching HowItWorks data:", error);
       }
     }
-
-    fetchHowItWorks();
   }, []);
 
   // Create IntersectionObserver to handle line reveal
