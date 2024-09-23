@@ -1,6 +1,6 @@
 {
-  "id": "ed0d0716-d1c8-4c21-8a93-a93d1a4a3b91",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "7abb367e-d157-4ebd-9125-bb377440c392",
+  "prevId": "ed0d0716-d1c8-4c21-8a93-a93d1a4a3b91",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -192,6 +192,89 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.employer_industries": {
+      "name": "employer_industries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "employer_id": {
+          "name": "employer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "industry_id": {
+          "name": "industry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "employer_industries_employer_id_employers_id_fk": {
+          "name": "employer_industries_employer_id_employers_id_fk",
+          "tableFrom": "employer_industries",
+          "tableTo": "employers",
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "employer_industries_industry_id_industries_id_fk": {
+          "name": "employer_industries_industry_id_industries_id_fk",
+          "tableFrom": "employer_industries",
+          "tableTo": "industries",
+          "columnsFrom": [
+            "industry_id"
           ],
           "columnsTo": [
             "id"

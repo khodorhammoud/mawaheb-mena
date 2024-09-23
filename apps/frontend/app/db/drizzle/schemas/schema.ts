@@ -8,6 +8,7 @@ import {
   text,
   time,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -55,7 +56,7 @@ export const UsersTable = pgTable("users", {
  * @property country - countryEnum
  * @property region - varchar with length 100
  * @property account_status - accountStatusEnum
- * @property phone - varchar with length 20
+ * @property phone - varchar with length 30
  */
 export const accountsTable = pgTable("accounts", {
   id: serial("id").primaryKey(),
@@ -67,7 +68,7 @@ export const accountsTable = pgTable("accounts", {
   country: countryEnum("country"),
   region: varchar("region", { length: 100 }),
   accountStatus: accountStatusEnum("account_status"),
-  phone: varchar("phone", { length: 20 }),
+  phone: varchar("phone", { length: 30 }),
   isCreationComplete: boolean("is_creation_complete").default(false),
 });
 
@@ -141,7 +142,7 @@ export const freelancersTable = pgTable("freelancers", {
  * @property company_rep_name - varchar with length 100
  * @property company_rep_email - varchar with length 150
  * @property company_rep_position - varchar with length 60
- * @property company_rep_phone - varchar with length 20
+ * @property company_rep_phone - varchar with length 30
  * @property tax_id_number - varchar
  * @property tax_id_document_link - text
  * @property business_license_link - text
@@ -157,18 +158,17 @@ export const employersTable = pgTable("employers", {
   employerName: varchar("employer_name", { length: 100 }),
   companyEmail: varchar("company_email", { length: 150 }),
   industrySector: text("industry_sector"),
+  yearsInBusiness: integer("years_in_business"),
   companyRepName: varchar("company_rep_name", { length: 100 }),
   companyRepEmail: varchar("company_rep_email", { length: 150 }),
   companyRepPosition: varchar("company_rep_position", { length: 60 }),
-  companyRepPhone: varchar("company_rep_phone", { length: 20 }),
+  companyRepPhone: varchar("company_rep_phone", { length: 30 }),
   taxIdNumber: varchar("tax_id_number"),
   taxIdDocumentLink: text("tax_id_document_link"),
   businessLicenseLink: text("business_license_link"),
   certificationOfIncorporationLink: text("certification_of_incorporation_link"),
-  WebsiteURL: text("website_url"),
-  socialMediaLinks: text("social_media_links")
-    .array()
-    .default(sql`'{}'::text[]`),
+  websiteURL: text("website_url"),
+  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
 });
 
 /**
@@ -214,4 +214,32 @@ export const userVerificationsTable = pgTable("user_verifications", {
   expiry: timestamp("expiry"),
   isUsed: boolean("is_used").default(false),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+/**
+ * Define the industries schema using PG Core types.
+ *
+ * @property id - serial primary key
+ * @property label - string with length 50 saves the industry name
+ * @property metadata - list of strings, saves the industry metadata which are other search labels for the industry
+ */
+export const industriesTable = pgTable("industries", {
+  id: serial("id").primaryKey(),
+  label: text("label").unique(),
+  metadata: text("metadata").array(),
+});
+
+/**
+ * Define the relation between employers and industries where each employer can have zero to many insudries
+ *
+ * @property id - serial primary key
+ * @property employer_id - integer referencing the employersTable id
+ * @property industry_id - integer referencing the industriesTable id
+ * @property timestamp - timestamp
+ */
+export const employerIndustriesTable = pgTable("employer_industries", {
+  id: serial("id").primaryKey(),
+  employerId: integer("employer_id").references(() => employersTable.id),
+  industryId: integer("industry_id").references(() => industriesTable.id),
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });

@@ -8,6 +8,7 @@ import {
   employersTable,
   languagesTable,
   accountLanguagesTable,
+  industriesTable,
 } from "../drizzle/schemas/schema"; // adjust the import path accordingly
 import { faker } from "@faker-js/faker";
 
@@ -45,7 +46,6 @@ async function seed() {
         "Egypt",
         "Iran",
         "Iraq",
-        "Israel",
         "Jordan",
         "Kuwait",
         "Lebanon",
@@ -58,7 +58,7 @@ async function seed() {
         "closed",
         "suspended",
       ]),
-      phone: faker.phone.number(),
+      phone: faker.phone.number().substring(0, 20),
     });
   }
 
@@ -75,8 +75,8 @@ async function seed() {
         "Saturday",
         "Sunday",
       ]),
-      startTime: faker.date.recent(),
-      endTime: faker.date.future(),
+      startTime: faker.date.recent().toISOString().substring(11, 19),
+      endTime: faker.date.future().toISOString().substring(11, 19),
     });
   }
 
@@ -129,7 +129,7 @@ async function seed() {
       companyRepName: faker.person.fullName(),
       companyRepEmail: faker.internet.email(),
       companyRepPosition: faker.person.jobTitle(),
-      companyRepPhone: faker.phone.number(),
+      companyRepPhone: faker.phone.number().substring(0, 20),
       taxIdNumber: faker.string.uuid(),
       taxIdDocumentLink: faker.internet.url(),
       businessLicenseLink: faker.internet.url(),
@@ -166,9 +166,160 @@ async function seed() {
       languageId: faker.datatype.number({ min: 1, max: 9 }),
     });
   }
+
+  // seed industries
+  const industries = [
+    {
+      label: "Accounting",
+      metadata: [
+        "accounting",
+        "banking",
+        "capital markets",
+        "financial services",
+        "insurance",
+        "investment banking",
+        "investment management",
+      ],
+    },
+    {
+      label: "Data Engineering",
+      metadata: [
+        "data engineering",
+        "data science",
+        "data analysis",
+        "data visualization",
+        "data warehousing",
+        "data mining",
+        "big data",
+        "business intelligence",
+        "data analytics",
+        "data management",
+        "data quality",
+        "data governance",
+        "data modeling",
+        "data architecture",
+        "data integration",
+        "data migration",
+        "data transformation",
+      ],
+    },
+    {
+      label: "Data Science",
+      metadata: [
+        "data science",
+        "data analysis",
+        "data visualization",
+        "data warehousing",
+        "data mining",
+        "big data",
+        "business intelligence",
+        "data analytics",
+        "data management",
+        "data quality",
+        "data governance",
+        "data modeling",
+        "data architecture",
+        "data integration",
+        "data migration",
+        "data transformation",
+      ],
+    },
+    {
+      label: "Design",
+      metadata: [
+        "design",
+        "graphic design",
+        "web design",
+        "ui/ux design",
+        "product design",
+        "industrial design",
+        "interior design",
+        "fashion design",
+        "design thinking",
+        "design research",
+        "design management",
+        "design strategy",
+        "design systems",
+        "design ops",
+        "design leadership",
+        "design education",
+        "design ethics",
+        "design psychology",
+        "design philosophy",
+        "design history",
+        "design theory",
+        "design criticism",
+        "design culture",
+        "design technology",
+        "design tools",
+        "design software",
+        "design hardware",
+        "design process",
+      ],
+    },
+    {
+      label: "Data Security",
+      metadata: [
+        "data security",
+        "cybersecurity",
+        "information security",
+        "network security",
+        "cloud security",
+        "application security",
+        "endpoint security",
+        "data protection",
+        "data privacy",
+        "data encryption",
+        "data loss prevention",
+        "data recovery",
+        "data backup",
+        "data breach",
+        "data leak",
+        "data theft",
+      ],
+    },
+    {
+      label: "Digital Marketing",
+      metadata: [
+        "digital marketing",
+        "social media marketing",
+        "content marketing",
+        "email marketing",
+        "influencer marketing",
+        "affiliate marketing",
+        "search engine marketing",
+        "search engine optimization",
+        "pay-per-click",
+        "display advertising",
+        "retargeting",
+        "remarketing",
+        "lead generation",
+        "conversion rate optimization",
+        "customer acquisition",
+        "customer retention",
+        "customer loyalty",
+        "customer engagement",
+        "customer experience",
+        "customer journey",
+        "customer relationship management",
+        "customer satisfaction",
+      ],
+    },
+  ];
+
+  for (const industry of industries) {
+    await db.insert(industriesTable).values({
+      label: industry.label,
+      metadata: industry.metadata,
+    });
+  }
 }
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+seed()
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  })
+  .finally(() => {
+    process.exit(0);
+  });

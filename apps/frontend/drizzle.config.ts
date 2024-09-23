@@ -19,7 +19,7 @@ if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID) {
 }
 
 export default defineConfig({
-  schema: "./app/db/drizzle/schemas/*.ts",
+  schema: "./app/db/drizzle/schemas/schema.ts",
   out: "./app/db/drizzle/migrations",
   dialect: "postgresql",
   dbCredentials: {

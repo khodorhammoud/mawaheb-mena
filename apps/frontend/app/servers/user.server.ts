@@ -69,16 +69,16 @@ export async function getUser(
  * @param withPassword : boolean to determine if the password hash should be included in the response
  * @returns User | null : the current user from the session or null if the user is not logged in
  */
-let currentUser: User = null;
+
 export async function getCurrentUser(
   request: Request,
   withPassword = false
 ): Promise<User | null> {
-  if (!currentUser) {
-    const user = await authenticator.isAuthenticated(request);
-    if (!user) return null;
-    currentUser = user.account.user;
-  }
+  const user = await authenticator.isAuthenticated(request);
+  console.log("user is authenticated", user);
+  if (!user) return null;
+  const currentUser = user.account.user;
+
   if (!withPassword) return { ...currentUser, passHash: undefined };
   return currentUser;
 }
@@ -150,8 +150,8 @@ type EmployerFreelancerIdentifier = {
   userId?: number;
   userEmail?: string;
   accountId?: number;
-  employerId?: number;
-  freelancerId?: number;
+  // employerId?: number;
+  // freelancerId?: number;
 };
 export async function getEmployerFreelancerInfo(
   identifier: {
@@ -164,7 +164,7 @@ export async function getEmployerFreelancerInfo(
   let employer = null;
   let freelancer = null;
 
-  // if the employerId or freelancerId are provided, get the full info from the employer/freelancer
+  /* // if the employerId or freelancerId are provided, get the full info from the employer/freelancer
   if ("employerId" in identifier || "freelancerId" in identifier) {
     let accountId = 0;
     if ("employerId" in identifier) {
@@ -198,7 +198,7 @@ export async function getEmployerFreelancerInfo(
       } as Freelancer;
     }
     return null;
-  }
+  } */
 
   // if the  userId, userEmail, or accountId are provided, get the full info from the user/account
   if (
@@ -232,18 +232,17 @@ export async function getEmployerFreelancerInfo(
   return null;
 }
 
-let currentEployerFreelancer: Employer | Freelancer = null;
 export async function getCurrentEployerFreelancerInfo(
   request: Request
 ): Promise<Employer | Freelancer | null> {
-  if (!currentEployerFreelancer) {
-    const user = await getCurrentUser(request);
-    if (!user) return null;
-    currentEployerFreelancer = await getEmployerFreelancerInfo({
+  const user = await getCurrentUser(request);
+  if (!user) return null;
+  const currentEmployerFreelancer: Employer | Freelancer =
+    await getEmployerFreelancerInfo({
       userId: user.id,
     });
-  }
-  return currentEployerFreelancer;
+
+  return currentEmployerFreelancer;
 }
 
 /**
@@ -397,8 +396,10 @@ export async function registerEmployer({
     .insert(employersTable) // insert into employers table
     .values(newEmployer)
     .returning()) as unknown as Employer;
+  console.log("employer inserted: ", result);
   return (await getEmployerFreelancerInfo({
-    employerId: result[0].id,
+    accountId,
+    // employerId: result[0].id,
   })) as Employer;
 }
 
@@ -443,9 +444,10 @@ export async function registerFreelancer({
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
     .returning()) as unknown as Freelancer;
-
+  console.log("freelancer inserted: ", result);
   return (await getEmployerFreelancerInfo({
-    freelancerId: result[0].id,
+    // freelancerId: result[0].id,
+    accountId,
   })) as Freelancer;
 }
 

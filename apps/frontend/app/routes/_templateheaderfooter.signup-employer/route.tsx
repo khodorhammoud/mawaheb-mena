@@ -19,8 +19,9 @@ export async function action({ request }: ActionFunctionArgs) {
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
     const user = await authenticator.authenticate("register", request);
+    console.log("get user being called", user);
     newEmployer = (await getEmployerFreelancerInfo({
-      userId: user.id,
+      userId: user.account.user.id,
     })) as Employer;
   } catch (error) {
     console.error("Error registering user:", error);
@@ -38,12 +39,14 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ success: false, error });
   }
   // if registration was not successful, return an error response
-  if (!newEmployer)
+  if (!newEmployer) {
+    console.error("Failed to register user", newEmployer);
     return json({
       success: false,
       error: false,
       message: "Failed to register user",
     });
+  }
 
   // send the account verification email
   try {
@@ -68,6 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
     console.error("Error sending verification email:", error);
     return json({ success: false, error });
   }
+
+  console.log("New employer registered:", newEmployer);
 
   return json({ success: true, newEmployer });
 }
