@@ -51,7 +51,7 @@ export default function CardComponent() {
           <DialogContent className="bg-white">
             <DialogHeader>
               <DialogTitle>
-                Add Average Budgetscdscds
+                Add Average Budget
                 {JSON.stringify(actionData)}
               </DialogTitle>
             </DialogHeader>

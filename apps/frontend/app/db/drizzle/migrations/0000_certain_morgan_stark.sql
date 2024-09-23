@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"country" "country",
 	"region" varchar(100),
 	"account_status" "account_status",
-	"phone" varchar(20),
+	"phone" varchar(30),
 	"is_creation_complete" boolean DEFAULT false
 );
 --> statement-breakpoint
@@ -86,13 +86,13 @@ CREATE TABLE IF NOT EXISTS "employers" (
 	"company_rep_name" varchar(100),
 	"company_rep_email" varchar(150),
 	"company_rep_position" varchar(60),
-	"company_rep_phone" varchar(20),
+	"company_rep_phone" varchar(30),
 	"tax_id_number" varchar,
 	"tax_id_document_link" text,
 	"business_license_link" text,
 	"certification_of_incorporation_link" text,
 	"website_url" text,
-	"social_media_links" text[] DEFAULT '{}'::text[]
+	"social_media_links" jsonb DEFAULT '{}'::jsonb
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "freelancers" (
@@ -108,6 +108,13 @@ CREATE TABLE IF NOT EXISTS "freelancers" (
 	"language" language[] DEFAULT ARRAY[]::language[],
 	"preferred_project_types" project_type[] DEFAULT ARRAY[]::project_type[],
 	"compensation_type" "compensation_type"
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "industries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"label" text,
+	"metadata" text[],
+	CONSTRAINT "industries_label_unique" UNIQUE("label")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "languages" (

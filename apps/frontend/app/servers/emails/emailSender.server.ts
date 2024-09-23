@@ -41,6 +41,8 @@ export async function sendEmail(params: SendEmailParams) {
     subject: params.subject,
     html: htmlContent,
   };
+
+  console.log("Sending email with Brevo", mailOptions);
   await sendEmailWithBrevo(mailOptions);
 }
 

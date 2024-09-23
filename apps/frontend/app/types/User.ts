@@ -40,6 +40,13 @@ export interface UserAccount {
   user: User;
 }
 
+export interface EmployerSocialMediaLinks {
+  linkedin: string;
+  github: string;
+  gitlab: string;
+  dribbble: string;
+  stackoverflow: string;
+}
 export interface Employer {
   id?: number;
   employerAccountType: EmployerAccountType;
@@ -48,6 +55,7 @@ export interface Employer {
   employerName?: string;
   companyEmail?: string;
   industrySector?: string;
+  yearsInBusiness?: number;
   companyRepName?: string;
   companyRepEmail?: string;
   companyRepPosition?: string;
@@ -57,7 +65,7 @@ export interface Employer {
   businessLicenseLink?: string;
   certificationOfIncorporationLink?: string;
   WebsiteURL?: string;
-  socialMediaLinks?: string[];
+  socialMediaLinks?: EmployerSocialMediaLinks;
   account?: UserAccount;
 }
 
@@ -82,4 +90,18 @@ export interface LoggedInUser {
   firstName: string;
   lastName: string;
   email: string;
+}
+
+export interface EmployerBio {
+  firstName: string;
+  lastName: string;
+  location: string;
+  socialMediaLinks: EmployerSocialMediaLinks;
+  websiteURL: string;
+}
+
+export interface Industry {
+  id: number;
+  label: string;
+  metadata: string[];
 }

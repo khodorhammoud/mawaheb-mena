@@ -4,11 +4,8 @@ import Sidebar from "~/routes/_templatedashboard/Sidebar";
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 // import { getCurrentUser } from "~/servers/user.server";
 import { useLoaderData } from "@remix-run/react";
-import OnboardingScreen from "./onboarding-screen"
-import DashboardScreen from "./dashboard-screen"
-
-
-
+import OnboardingScreen from "./onboarding-screen";
+import DashboardScreen from "./dashboard-screen";
 
 // import { BsCurrencyDollar } from "react-icons/bs";
 // import { Button } from "../../../components/ui/button"
@@ -22,7 +19,6 @@ import DashboardScreen from "./dashboard-screen"
 //   CardTitle,
 // } from "../../../components/ui/card";
 
-
 // loader function
 // export async function loader({ request }: LoaderFunctionArgs) {
 //   // const currentUser = await getCurrentUser(request);
@@ -34,21 +30,15 @@ export default function Dashboard() {
   const { accountOnboarded } = useLoaderData<{ accountOnboarded: boolean }>();
 
   return (
-
     <div>
       <div className="flex">
         <Sidebar accountType="employer" />
 
         {/* Main Content */}
         <div className="flex-1 p-6">
-
-
-
           {accountOnboarded ? <DashboardScreen /> : <OnboardingScreen />}
-
         </div>
       </div>
     </div>
-
   );
 }
