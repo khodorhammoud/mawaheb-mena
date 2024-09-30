@@ -112,4 +112,24 @@ export const lists = {
       plural: "HowItWorksItems", // Or any plural form that makes sense for your data
     },
   }),
+
+  PostHowItWorks: list({
+    access: allowAll,
+    fields: {
+      content: text({ validation: { isRequired: true } }),
+    },
+    graphql: {
+      plural: "PostHowItWorksSection", // This needs to be different from the list name
+    },
+  }),
+
+  PreWhatTheySayAboutUs: list({
+    access: allowAll,
+    fields: {
+      content: text({ validation: { isRequired: true } }),
+    },
+    graphql: {
+      plural: "PreWhatTheySayAboutUsSection", // different also
+    },
+  }),
 } satisfies Lists;

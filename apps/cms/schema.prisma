@@ -55,3 +55,13 @@ model HowItWorks {
   description String @default("")
   imageURL    String @default("")
 }
+
+model PostHowItWorks {
+  id      String @id @default(uuid()) @postgresql.Uuid
+  content String @default("")
+}
+
+model PreWhatTheySayAboutUs {
+  id      String @id @default(uuid()) @postgresql.Uuid
+  content String @default("")
+}

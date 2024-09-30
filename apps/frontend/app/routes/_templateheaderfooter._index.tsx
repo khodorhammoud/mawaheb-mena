@@ -3,57 +3,90 @@ import Home from "~/routes/_templateheaderfooter.for-employers/Home";
 import { fetchCMSData } from "~/api/fetch-cms-data.server";
 import {
   GET_FEATURES_QUERY,
-  GET_SUBHEADLINE_QUERY, // Add this to fetch the subheadline
+  GET_FOREMPLOYERSSUBHEADLINE_QUERY,
   GET_HOW_IT_WORKS_QUERY,
+  GET_POSTHOWITWORKS_QUERY,
+  GET_PREWHATTHEYSAYABOUTUS_QUERY,
 } from "../../../shared/cms-queries";
 
-// Define TypeScript types for the loader data structure
 interface HowItWorksItem {
   stepNb: number;
   title: string;
   description: string;
-  imageUrl?: string; // Optional, in case the image is missing
+  imageUrl?: string;
 }
 
 interface SubHeadline {
   content: string;
 }
 
-// Define the overall data structure returned by the loader
+interface Feature {
+  title: string;
+  description: string;
+}
+
+interface PostHowItWorksItem {
+  content: string;
+}
+
+interface PreWhatTheySayAboutUs {
+  content: string;
+}
+
 interface LoaderData {
-  subHeadline: SubHeadline; // Add the subheadline type
+  subHeadline: SubHeadline;
   howItWorksItems: HowItWorksItem[];
+  features: Feature[];
+  postHowItWorks: PostHowItWorksItem;
+  preWhatTheySayAboutUs: PreWhatTheySayAboutUs;
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const dataResponse = await fetchCMSData([
     GET_FEATURES_QUERY,
-    GET_SUBHEADLINE_QUERY, // Fetch the subheadline
+    GET_FOREMPLOYERSSUBHEADLINE_QUERY,
     GET_HOW_IT_WORKS_QUERY,
+    GET_POSTHOWITWORKS_QUERY,
+    GET_PREWHATTHEYSAYABOUTUS_QUERY,
   ]);
 
-  // Log the full data response
   console.log(
     "Full Data Response from CMS:",
     JSON.stringify(dataResponse, null, 2)
   );
 
-  // Extract the subheadline from the array
   const subHeadline: SubHeadline = dataResponse[1]?.data
     ?.forEmployersSubHeadlines?.[0] || {
-    content: "Default subheadline content",
+    content: "Default forEmployersSubheadline content",
   };
 
   const howItWorksItems: HowItWorksItem[] =
     dataResponse[2]?.data?.howItWorksItems || [];
+  const features: Feature[] = dataResponse[0]?.data?.features || [];
 
-  // Log the extracted subheadline to verify correctness
-  console.log("Extracted Subheadline:", subHeadline);
+  // Use the correct fields as suggested by GraphQL playground
+  const postHowItWorks: PostHowItWorksItem = dataResponse[3]?.data
+    ?.postHowItWorksSection?.[0] || {
+    content: "Default PostHowItWorks content",
+  };
 
-  // Return the data in JSON format to the component
+  const preWhatTheySayAboutUs: PreWhatTheySayAboutUs = dataResponse[4]?.data
+    ?.preWhatTheySayAboutUsSection?.[0] || {
+    content: "Default PreWhatTheySayAboutUs content",
+  };
+
+  console.log("Extracted For Employers Subheadline:", subHeadline);
+  console.log("Extracted How It Works Items:", howItWorksItems);
+  console.log("Extracted Features:", features);
+  console.log("Extracted Post How It Works:", postHowItWorks);
+  console.log("Extracted Pre What They Say About Us:", preWhatTheySayAboutUs);
+
   return json<LoaderData>({
-    subHeadline, // Now using the correct field and first array item
+    subHeadline,
     howItWorksItems,
+    features,
+    postHowItWorks,
+    preWhatTheySayAboutUs,
   });
 };
 

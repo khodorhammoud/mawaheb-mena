@@ -396,6 +396,76 @@ input HowItWorksCreateInput {
   imageURL: String
 }
 
+type PostHowItWorks {
+  id: ID!
+  content: String
+}
+
+input PostHowItWorksWhereUniqueInput {
+  id: ID
+}
+
+input PostHowItWorksWhereInput {
+  AND: [PostHowItWorksWhereInput!]
+  OR: [PostHowItWorksWhereInput!]
+  NOT: [PostHowItWorksWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input PostHowItWorksOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input PostHowItWorksUpdateInput {
+  content: String
+}
+
+input PostHowItWorksUpdateArgs {
+  where: PostHowItWorksWhereUniqueInput!
+  data: PostHowItWorksUpdateInput!
+}
+
+input PostHowItWorksCreateInput {
+  content: String
+}
+
+type PreWhatTheySayAboutUs {
+  id: ID!
+  content: String
+}
+
+input PreWhatTheySayAboutUsWhereUniqueInput {
+  id: ID
+}
+
+input PreWhatTheySayAboutUsWhereInput {
+  AND: [PreWhatTheySayAboutUsWhereInput!]
+  OR: [PreWhatTheySayAboutUsWhereInput!]
+  NOT: [PreWhatTheySayAboutUsWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input PreWhatTheySayAboutUsOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input PreWhatTheySayAboutUsUpdateInput {
+  content: String
+}
+
+input PreWhatTheySayAboutUsUpdateArgs {
+  where: PreWhatTheySayAboutUsWhereUniqueInput!
+  data: PreWhatTheySayAboutUsUpdateInput!
+}
+
+input PreWhatTheySayAboutUsCreateInput {
+  content: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -438,6 +508,18 @@ type Mutation {
   updateHowItWorksItems(data: [HowItWorksUpdateArgs!]!): [HowItWorks]
   deleteHowItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
   deleteHowItWorksItems(where: [HowItWorksWhereUniqueInput!]!): [HowItWorks]
+  createPostHowItWorks(data: PostHowItWorksCreateInput!): PostHowItWorks
+  createPostHowItWorksSection(data: [PostHowItWorksCreateInput!]!): [PostHowItWorks]
+  updatePostHowItWorks(where: PostHowItWorksWhereUniqueInput!, data: PostHowItWorksUpdateInput!): PostHowItWorks
+  updatePostHowItWorksSection(data: [PostHowItWorksUpdateArgs!]!): [PostHowItWorks]
+  deletePostHowItWorks(where: PostHowItWorksWhereUniqueInput!): PostHowItWorks
+  deletePostHowItWorksSection(where: [PostHowItWorksWhereUniqueInput!]!): [PostHowItWorks]
+  createPreWhatTheySayAboutUs(data: PreWhatTheySayAboutUsCreateInput!): PreWhatTheySayAboutUs
+  createPreWhatTheySayAboutUsSection(data: [PreWhatTheySayAboutUsCreateInput!]!): [PreWhatTheySayAboutUs]
+  updatePreWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!, data: PreWhatTheySayAboutUsUpdateInput!): PreWhatTheySayAboutUs
+  updatePreWhatTheySayAboutUsSection(data: [PreWhatTheySayAboutUsUpdateArgs!]!): [PreWhatTheySayAboutUs]
+  deletePreWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
+  deletePreWhatTheySayAboutUsSection(where: [PreWhatTheySayAboutUsWhereUniqueInput!]!): [PreWhatTheySayAboutUs]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -479,6 +561,12 @@ type Query {
   howItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
   howItWorksItems(where: HowItWorksWhereInput! = {}, orderBy: [HowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: HowItWorksWhereUniqueInput): [HowItWorks!]
   howItWorksItemsCount(where: HowItWorksWhereInput! = {}): Int
+  postHowItWorks(where: PostHowItWorksWhereUniqueInput!): PostHowItWorks
+  postHowItWorksSection(where: PostHowItWorksWhereInput! = {}, orderBy: [PostHowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostHowItWorksWhereUniqueInput): [PostHowItWorks!]
+  postHowItWorksSectionCount(where: PostHowItWorksWhereInput! = {}): Int
+  preWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
+  preWhatTheySayAboutUsSection(where: PreWhatTheySayAboutUsWhereInput! = {}, orderBy: [PreWhatTheySayAboutUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreWhatTheySayAboutUsWhereUniqueInput): [PreWhatTheySayAboutUs!]
+  preWhatTheySayAboutUsSectionCount(where: PreWhatTheySayAboutUsWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
