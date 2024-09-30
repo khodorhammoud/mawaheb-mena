@@ -1,35 +1,60 @@
-// that route.tsx calls home :)
-
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import Home from "~/routes/_templateheaderfooter.for-employers/Home";
 import { fetchCMSData } from "~/api/fetch-cms-data.server";
 import {
   GET_FEATURES_QUERY,
-  GET_SUBHEADLINE_QUERY,
+  GET_SUBHEADLINE_QUERY, // Add this to fetch the subheadline
   GET_HOW_IT_WORKS_QUERY,
 } from "../../../shared/cms-queries";
 
-/* 
-we use this function to fetch the data for the entire page, and pass it to the Layout component
-*/
+// Define TypeScript types for the loader data structure
+interface HowItWorksItem {
+  stepNb: number;
+  title: string;
+  description: string;
+  imageUrl?: string; // Optional, in case the image is missing
+}
+
+interface SubHeadline {
+  content: string;
+}
+
+// Define the overall data structure returned by the loader
+interface LoaderData {
+  subHeadline: SubHeadline; // Add the subheadline type
+  howItWorksItems: HowItWorksItem[];
+}
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  console.log("Loading data for freelancers home");
   const dataResponse = await fetchCMSData([
     GET_FEATURES_QUERY,
-    GET_SUBHEADLINE_QUERY,
+    GET_SUBHEADLINE_QUERY, // Fetch the subheadline
     GET_HOW_IT_WORKS_QUERY,
   ]);
-  if (!dataResponse.length) {
-    return json({ error: "Error fetching data" }, { status: 500 });
-  }
-  console.log("Data response: ", dataResponse);
-  const data = {
-    features: dataResponse[0]?.data?.features,
-    forFreelancersSubHeadlines:
-      dataResponse[1]?.data?.forFreelancersSubHeadline,
-    howItWorksItems: dataResponse[2]?.data?.howItWorksItems,
+
+  // Log the full data response
+  console.log(
+    "Full Data Response from CMS:",
+    JSON.stringify(dataResponse, null, 2)
+  );
+
+  // Extract the subheadline from the array
+  const subHeadline: SubHeadline = dataResponse[1]?.data
+    ?.forEmployersSubHeadlines?.[0] || {
+    content: "Default subheadline content",
   };
-  return json(data);
+
+  const howItWorksItems: HowItWorksItem[] =
+    dataResponse[2]?.data?.howItWorksItems || [];
+
+  // Log the extracted subheadline to verify correctness
+  console.log("Extracted Subheadline:", subHeadline);
+
+  // Return the data in JSON format to the component
+  return json<LoaderData>({
+    subHeadline, // Now using the correct field and first array item
+    howItWorksItems,
+  });
 };
 
 export default function Layout() {

@@ -300,38 +300,38 @@ input FeatureCreateInput {
   description: String
 }
 
-type ForFreelancersSubHeadline {
+type forEmployersSubHeadline {
   id: ID!
   content: String
 }
 
-input ForFreelancersSubHeadlineWhereUniqueInput {
+input forEmployersSubHeadlineWhereUniqueInput {
   id: ID
 }
 
-input ForFreelancersSubHeadlineWhereInput {
-  AND: [ForFreelancersSubHeadlineWhereInput!]
-  OR: [ForFreelancersSubHeadlineWhereInput!]
-  NOT: [ForFreelancersSubHeadlineWhereInput!]
+input forEmployersSubHeadlineWhereInput {
+  AND: [forEmployersSubHeadlineWhereInput!]
+  OR: [forEmployersSubHeadlineWhereInput!]
+  NOT: [forEmployersSubHeadlineWhereInput!]
   id: IDFilter
   content: StringFilter
 }
 
-input ForFreelancersSubHeadlineOrderByInput {
+input forEmployersSubHeadlineOrderByInput {
   id: OrderDirection
   content: OrderDirection
 }
 
-input ForFreelancersSubHeadlineUpdateInput {
+input forEmployersSubHeadlineUpdateInput {
   content: String
 }
 
-input ForFreelancersSubHeadlineUpdateArgs {
-  where: ForFreelancersSubHeadlineWhereUniqueInput!
-  data: ForFreelancersSubHeadlineUpdateInput!
+input forEmployersSubHeadlineUpdateArgs {
+  where: forEmployersSubHeadlineWhereUniqueInput!
+  data: forEmployersSubHeadlineUpdateInput!
 }
 
-input ForFreelancersSubHeadlineCreateInput {
+input forEmployersSubHeadlineCreateInput {
   content: String
 }
 
@@ -426,12 +426,12 @@ type Mutation {
   updateFeatures(data: [FeatureUpdateArgs!]!): [Feature]
   deleteFeature(where: FeatureWhereUniqueInput!): Feature
   deleteFeatures(where: [FeatureWhereUniqueInput!]!): [Feature]
-  createForFreelancersSubHeadline(data: ForFreelancersSubHeadlineCreateInput!): ForFreelancersSubHeadline
-  createForFreelancersSubHeadlines(data: [ForFreelancersSubHeadlineCreateInput!]!): [ForFreelancersSubHeadline]
-  updateForFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!, data: ForFreelancersSubHeadlineUpdateInput!): ForFreelancersSubHeadline
-  updateForFreelancersSubHeadlines(data: [ForFreelancersSubHeadlineUpdateArgs!]!): [ForFreelancersSubHeadline]
-  deleteForFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!): ForFreelancersSubHeadline
-  deleteForFreelancersSubHeadlines(where: [ForFreelancersSubHeadlineWhereUniqueInput!]!): [ForFreelancersSubHeadline]
+  createforEmployersSubHeadline(data: forEmployersSubHeadlineCreateInput!): forEmployersSubHeadline
+  createForEmployersSubHeadlines(data: [forEmployersSubHeadlineCreateInput!]!): [forEmployersSubHeadline]
+  updateforEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!, data: forEmployersSubHeadlineUpdateInput!): forEmployersSubHeadline
+  updateForEmployersSubHeadlines(data: [forEmployersSubHeadlineUpdateArgs!]!): [forEmployersSubHeadline]
+  deleteforEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!): forEmployersSubHeadline
+  deleteForEmployersSubHeadlines(where: [forEmployersSubHeadlineWhereUniqueInput!]!): [forEmployersSubHeadline]
   createHowItWorks(data: HowItWorksCreateInput!): HowItWorks
   createHowItWorksItems(data: [HowItWorksCreateInput!]!): [HowItWorks]
   updateHowItWorks(where: HowItWorksWhereUniqueInput!, data: HowItWorksUpdateInput!): HowItWorks
@@ -473,9 +473,9 @@ type Query {
   feature(where: FeatureWhereUniqueInput!): Feature
   features(where: FeatureWhereInput! = {}, orderBy: [FeatureOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FeatureWhereUniqueInput): [Feature!]
   featuresCount(where: FeatureWhereInput! = {}): Int
-  forFreelancersSubHeadline(where: ForFreelancersSubHeadlineWhereUniqueInput!): ForFreelancersSubHeadline
-  forFreelancersSubHeadlines(where: ForFreelancersSubHeadlineWhereInput! = {}, orderBy: [ForFreelancersSubHeadlineOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ForFreelancersSubHeadlineWhereUniqueInput): [ForFreelancersSubHeadline!]
-  forFreelancersSubHeadlinesCount(where: ForFreelancersSubHeadlineWhereInput! = {}): Int
+  forEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!): forEmployersSubHeadline
+  forEmployersSubHeadlines(where: forEmployersSubHeadlineWhereInput! = {}, orderBy: [forEmployersSubHeadlineOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: forEmployersSubHeadlineWhereUniqueInput): [forEmployersSubHeadline!]
+  forEmployersSubHeadlinesCount(where: forEmployersSubHeadlineWhereInput! = {}): Int
   howItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
   howItWorksItems(where: HowItWorksWhereInput! = {}, orderBy: [HowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: HowItWorksWhereUniqueInput): [HowItWorks!]
   howItWorksItemsCount(where: HowItWorksWhereInput! = {}): Int

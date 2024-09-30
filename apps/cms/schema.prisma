@@ -43,7 +43,7 @@ model Feature {
   description String @default("")
 }
 
-model ForFreelancersSubHeadline {
+model forEmployersSubHeadline {
   id      String @id @default(uuid()) @postgresql.Uuid
   content String @default("")
 }

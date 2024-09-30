@@ -5,74 +5,29 @@ import FeatureCard from "./Card";
 import "../../../styles/wavy/wavy.css";
 import { useLoaderData } from "@remix-run/react";
 
-export default function FeaturesSection() {
-  // const [features, setFeatures] = useState([]); // Dynamic features array
-  const [lineRevealed, setLineRevealed] = useState([]); // Dynamic line reveal state
+export default function HowItWorks() {
+  const [lineRevealed, setLineRevealed] = useState<boolean[]>([]); // Dynamic line reveal state
+  const featureRefs = useRef<HTMLDivElement[]>([]); // Create refs for all feature items
 
-  const featureRefs = useRef([]); // Create refs for all feature items
-
-  /* 
-  here we are using the loader in routes/_templateheaderfooter.for-employers/route.tsx
-  to fetch the data and pass it to the component using useLoaderData
-  */
-  const pageData = useLoaderData() as {
-    features: any[];
-    forFreelancersSubHeadlines: any[];
+  const pageData = useLoaderData<{
     howItWorksItems: any[];
-  };
+  }>();
 
-  console.log("pageData how it works: ", pageData);
-
-  /* // Fetch the HowItWorks data using the GET_HOW_IT_WORKS_QUERY
   useEffect(() => {
-    async function fetchHowItWorks() {
-      try {
-        const response = await fetch("http://localhost:3000/api/graphql", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: GET_HOW_IT_WORKS_QUERY,
-          }),
-        });
+    // Initialize the revealed state
+    setLineRevealed(Array(pageData.howItWorksItems.length).fill(false));
 
-        const { data } = await response.json();
-        console.log("Fetched data: ", data);
-        if (data) {
-          const sortedData = data.howItWorksItems.sort(
-            (a, b) => parseInt(a.stepNb) - parseInt(b.stepNb)
-          );
-          setFeatures(sortedData);
-          setLineRevealed(Array(sortedData.length).fill(false)); // Initialize lineRevealed based on features count
-        }
-      } catch (error) {
-        console.error("Error fetching HowItWorks data:", error);
-      }
-    }
-
-    fetchHowItWorks();
-  }, []); */
-
-  // Create IntersectionObserver to handle line reveal
-  useEffect(() => {
-    setLineRevealed(Array(pageData.features.length).fill(false));
-
-    const observerOptions = { threshold: 0.5 }; // Adjust threshold if necessary
-
+    // Set up the IntersectionObserver
+    const observerOptions = { threshold: 0.5 };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const index = featureRefs.current.indexOf(entry.target);
-        if (entry.isIntersecting) {
+        const index = featureRefs.current.indexOf(
+          entry.target as HTMLDivElement
+        );
+        if (index >= 0) {
           setLineRevealed((prev) => {
             const updated = [...prev];
-            updated[index] = true;
-            return updated;
-          });
-        } else {
-          setLineRevealed((prev) => {
-            const updated = [...prev];
-            updated[index] = false;
+            updated[index] = entry.isIntersecting;
             return updated;
           });
         }
@@ -85,7 +40,7 @@ export default function FeaturesSection() {
     return () => {
       featureRefs.current.forEach((ref) => ref && observer.unobserve(ref));
     };
-  }, []); // Re-run observer setup when features change
+  }, [pageData.howItWorksItems]);
 
   const draw = {
     hidden: { pathLength: 0, opacity: 0 },
@@ -102,8 +57,8 @@ export default function FeaturesSection() {
       <div className="xl:px-6 lg:mt-0">
         <div className="relative xl:-mt-20 lg:-mt-20">
           <div className="sm:grid sm:grid-cols-1 sm:place-items-center flex flex-col w-36 sm:w-auto gap-y-10 relative mt-20 xl:grid-cols-2 xl:gap-x-20 xl:mx-48 xl:gap-y-20 lg:mt-28 lg:grid-cols-2 lg:gap-y-14">
-            {pageData.features &&
-              pageData.features.map((feature, index) => (
+            {pageData.howItWorksItems &&
+              pageData.howItWorksItems.map((feature, index) => (
                 <div
                   key={index}
                   ref={(el) => (featureRefs.current[index] = el)} // Assign ref dynamically
@@ -132,7 +87,7 @@ export default function FeaturesSection() {
                       viewBox="0 0 260 1"
                       className="block rotate-90 transform absolute left-[25px] lg:top-60 xl:left-[275px] lg:left-[318px] lg:translate-y-1/2 lg:rotate-45 -z-10 md:animated-line-1"
                       initial="hidden"
-                      animate={lineRevealed[index] ? "visible" : "hidden"} // Dynamic line reveal
+                      animate={lineRevealed[index] ? "visible" : "hidden"}
                       variants={draw}
                     >
                       <motion.line
