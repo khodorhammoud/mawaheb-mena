@@ -89,7 +89,7 @@ export const lists = {
     },
   }),
 
-  ForFreelancersSubHeadline: list({
+  forEmployersSubHeadline: list({
     access: allowAll,
     fields: {
       content: text({ validation: { isRequired: true } }),

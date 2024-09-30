@@ -9,19 +9,19 @@ export const GET_FEATURES_QUERY = `
 
 export const GET_SUBHEADLINE_QUERY = `
   query {
-    forFreelancersSubHeadline {
+    forEmployersSubHeadlines {
       content
     }
   }
 `;
 
 export const GET_HOW_IT_WORKS_QUERY = `
-  query {
-    howItWorksItems {
-      stepNb
-      title
-      description
-      imageURL
+    query {
+      howItWorksItems {
+        stepNb
+        title
+        description
+        imageURL
+      }
     }
-  }
-`;
+  `;
