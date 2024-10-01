@@ -132,4 +132,18 @@ export const lists = {
       plural: "PreWhatTheySayAboutUsSection", // different also
     },
   }),
+
+  WhyWorkWithUs: list({
+    access: allowAll,
+    fields: {
+      title: text({ validation: { isRequired: true } }),
+      description: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    graphql: {
+      plural: "whyWorkWithUsSection", // Custom plural name for the GraphQL API
+    },
+  }),
 } satisfies Lists;

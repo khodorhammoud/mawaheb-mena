@@ -35,11 +35,20 @@ export const GET_POSTHOWITWORKS_QUERY = `
 `;
 
 // the first name is same as the name of the list in the schima
-// the second name is same as the one of the query lets say for now :)
+// the second name idk same as what :)
 export const GET_PREWHATTHEYSAYABOUTUS_QUERY = `
   query {
     preWhatTheySayAboutUsSection {
       content
     }
   }
+`;
+
+export const GET_WHYWORKWITHUS_QUERY = `
+  query {
+      whyWorkWithUsSection{
+        title
+        description
+      }
+    }
 `;
