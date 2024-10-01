@@ -1,8 +1,21 @@
 import { motion, useTransform, useMotionValue } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import { useLoaderData } from "@remix-run/react"; // Import to access loader data
 import ZoomingText from "./ZoomingText";
 
+// Define the type for PreWhatTheySayAboutUs
+interface PreWhatTheySayAboutUs {
+  content: string;
+}
+
+interface LoaderData {
+  preWhatTheySayAboutUs: PreWhatTheySayAboutUs;
+}
+
 const Languages: React.FC = () => {
+  // Access the loader data
+  const { preWhatTheySayAboutUs } = useLoaderData<LoaderData>();
+
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [isCentered, setIsCentered] = useState(false); // To track if the element is centered
@@ -89,25 +102,27 @@ const Languages: React.FC = () => {
   }, []);
 
   return (
-    <div
-      style={{ overflow: "", position: "relative" }} // Ensure no overflow
-    >
+    <div style={{ overflow: "", position: "relative" }}>
       <motion.div
         ref={ref}
         initial={{ opacity: 1, y: 0 }}
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center gap-8 text-3xl my-[200px] font-semibold font-['BespokeSerif-Variable']"
+        className="flex flex-col items-center justify-center gap-8 lg:text-3xl text-2xl my-[200px] font-semibold font-['BespokeSerif-Variable'] lg:w-[650px] mx-auto"
         style={{ minHeight: "calc(120vh - 300px)" }}
       >
-        {/* Initial Text */}
-        <motion.div
-          initial={{ opacity: 1 }}
-          style={{ opacity: fadeOpacity }}
-          transition={{ duration: 0.5 }}
-        >
-          <p>Python / Java / C# / C++ / Ruby / PHP / React /</p>
-          <p>Angular / Vue.js / Django / Ruby on Rails</p>
+        {/* Use content from PreWhatTheySayAboutUs */}
+        <motion.div initial={{ opacity: 1 }} style={{ opacity: fadeOpacity }}>
+          {/* Use the content from PostHowItWorks */}
+          {/* First Line Centered */}
+          <p className="text-center">
+            {preWhatTheySayAboutUs.content.split("\n")[0]}
+          </p>
+
+          {/* Second Line Centered */}
+          <p className="text-center">
+            {preWhatTheySayAboutUs.content.split("\n")[1]}
+          </p>
         </motion.div>
 
         {/* Zooming Text Component */}
