@@ -1,18 +1,27 @@
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import { useLoaderData } from "@remix-run/react"; // Import to access loader data
+
+// Define the type for PostHowItWorksItem
+interface PostHowItWorksItem {
+  content: string;
+}
+
+interface LoaderData {
+  postHowItWorks: PostHowItWorksItem;
+}
 
 const Segments = () => {
+  // Access the loader data
+  const { postHowItWorks } = useLoaderData<LoaderData>();
+
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-        } else {
-          setInView(false);
-        }
+        setInView(entry.isIntersecting);
       },
       {
         threshold: 0.2,
@@ -51,11 +60,15 @@ const Segments = () => {
       initial={{ opacity: 0, y: 50 }}
       animate={inView ? { opacity: 1, y: 50 } : { opacity: 0, y: 50 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center gap-8 text-7xl mt-[200px] font-semibold font-['BespokeSerif-Variable']"
+      className="flex flex-col items-center justify-center gap-8 mt-[200px] lg:text-7xl text-5xl font-semibold font-['BespokeSerif-Variable'] lg:w-[850px] mx-auto"
       style={{ minHeight: "calc(120vh - 400px)" }}
     >
-      <p>SEGMENTS THAT WE</p>
-      <p>ARE HAPPY OF WORK</p>
+      {/* Use the content from PostHowItWorks */}
+      {/* First Line Centered */}
+      <p className="text-center">{postHowItWorks.content.split("\n")[0]}</p>
+
+      {/* Second Line Centered */}
+      <p className="text-center">{postHowItWorks.content.split("\n")[1]}</p>
     </motion.div>
   );
 };

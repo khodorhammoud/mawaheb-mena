@@ -36,3 +36,32 @@ model Tag {
   name  String @default("")
   posts Post[] @relation("Post_tags")
 }
+
+model Feature {
+  id          String @id @default(uuid()) @postgresql.Uuid
+  title       String @default("")
+  description String @default("")
+}
+
+model forEmployersSubHeadline {
+  id      String @id @default(uuid()) @postgresql.Uuid
+  content String @default("")
+}
+
+model HowItWorks {
+  id          String @id @default(uuid()) @postgresql.Uuid
+  stepNb      Int
+  title       String @default("")
+  description String @default("")
+  imageURL    String @default("")
+}
+
+model PostHowItWorks {
+  id      String @id @default(uuid()) @postgresql.Uuid
+  content String @default("")
+}
+
+model PreWhatTheySayAboutUs {
+  id      String @id @default(uuid()) @postgresql.Uuid
+  content String @default("")
+}

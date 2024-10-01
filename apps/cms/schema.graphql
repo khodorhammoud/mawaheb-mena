@@ -260,6 +260,212 @@ input TagCreateInput {
   posts: PostRelateToManyForCreateInput
 }
 
+type Feature {
+  id: ID!
+  title: String
+  description: String
+}
+
+input FeatureWhereUniqueInput {
+  id: ID
+}
+
+input FeatureWhereInput {
+  AND: [FeatureWhereInput!]
+  OR: [FeatureWhereInput!]
+  NOT: [FeatureWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  description: StringFilter
+}
+
+input FeatureOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+}
+
+input FeatureUpdateInput {
+  title: String
+  description: String
+}
+
+input FeatureUpdateArgs {
+  where: FeatureWhereUniqueInput!
+  data: FeatureUpdateInput!
+}
+
+input FeatureCreateInput {
+  title: String
+  description: String
+}
+
+type forEmployersSubHeadline {
+  id: ID!
+  content: String
+}
+
+input forEmployersSubHeadlineWhereUniqueInput {
+  id: ID
+}
+
+input forEmployersSubHeadlineWhereInput {
+  AND: [forEmployersSubHeadlineWhereInput!]
+  OR: [forEmployersSubHeadlineWhereInput!]
+  NOT: [forEmployersSubHeadlineWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input forEmployersSubHeadlineOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input forEmployersSubHeadlineUpdateInput {
+  content: String
+}
+
+input forEmployersSubHeadlineUpdateArgs {
+  where: forEmployersSubHeadlineWhereUniqueInput!
+  data: forEmployersSubHeadlineUpdateInput!
+}
+
+input forEmployersSubHeadlineCreateInput {
+  content: String
+}
+
+type HowItWorks {
+  id: ID!
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
+input HowItWorksWhereUniqueInput {
+  id: ID
+}
+
+input HowItWorksWhereInput {
+  AND: [HowItWorksWhereInput!]
+  OR: [HowItWorksWhereInput!]
+  NOT: [HowItWorksWhereInput!]
+  id: IDFilter
+  stepNb: IntFilter
+  title: StringFilter
+  description: StringFilter
+  imageURL: StringFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input HowItWorksOrderByInput {
+  id: OrderDirection
+  stepNb: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+  imageURL: OrderDirection
+}
+
+input HowItWorksUpdateInput {
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
+input HowItWorksUpdateArgs {
+  where: HowItWorksWhereUniqueInput!
+  data: HowItWorksUpdateInput!
+}
+
+input HowItWorksCreateInput {
+  stepNb: Int
+  title: String
+  description: String
+  imageURL: String
+}
+
+type PostHowItWorks {
+  id: ID!
+  content: String
+}
+
+input PostHowItWorksWhereUniqueInput {
+  id: ID
+}
+
+input PostHowItWorksWhereInput {
+  AND: [PostHowItWorksWhereInput!]
+  OR: [PostHowItWorksWhereInput!]
+  NOT: [PostHowItWorksWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input PostHowItWorksOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input PostHowItWorksUpdateInput {
+  content: String
+}
+
+input PostHowItWorksUpdateArgs {
+  where: PostHowItWorksWhereUniqueInput!
+  data: PostHowItWorksUpdateInput!
+}
+
+input PostHowItWorksCreateInput {
+  content: String
+}
+
+type PreWhatTheySayAboutUs {
+  id: ID!
+  content: String
+}
+
+input PreWhatTheySayAboutUsWhereUniqueInput {
+  id: ID
+}
+
+input PreWhatTheySayAboutUsWhereInput {
+  AND: [PreWhatTheySayAboutUsWhereInput!]
+  OR: [PreWhatTheySayAboutUsWhereInput!]
+  NOT: [PreWhatTheySayAboutUsWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input PreWhatTheySayAboutUsOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input PreWhatTheySayAboutUsUpdateInput {
+  content: String
+}
+
+input PreWhatTheySayAboutUsUpdateArgs {
+  where: PreWhatTheySayAboutUsWhereUniqueInput!
+  data: PreWhatTheySayAboutUsUpdateInput!
+}
+
+input PreWhatTheySayAboutUsCreateInput {
+  content: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -284,6 +490,36 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  createFeature(data: FeatureCreateInput!): Feature
+  createFeatures(data: [FeatureCreateInput!]!): [Feature]
+  updateFeature(where: FeatureWhereUniqueInput!, data: FeatureUpdateInput!): Feature
+  updateFeatures(data: [FeatureUpdateArgs!]!): [Feature]
+  deleteFeature(where: FeatureWhereUniqueInput!): Feature
+  deleteFeatures(where: [FeatureWhereUniqueInput!]!): [Feature]
+  createforEmployersSubHeadline(data: forEmployersSubHeadlineCreateInput!): forEmployersSubHeadline
+  createForEmployersSubHeadlines(data: [forEmployersSubHeadlineCreateInput!]!): [forEmployersSubHeadline]
+  updateforEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!, data: forEmployersSubHeadlineUpdateInput!): forEmployersSubHeadline
+  updateForEmployersSubHeadlines(data: [forEmployersSubHeadlineUpdateArgs!]!): [forEmployersSubHeadline]
+  deleteforEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!): forEmployersSubHeadline
+  deleteForEmployersSubHeadlines(where: [forEmployersSubHeadlineWhereUniqueInput!]!): [forEmployersSubHeadline]
+  createHowItWorks(data: HowItWorksCreateInput!): HowItWorks
+  createHowItWorksItems(data: [HowItWorksCreateInput!]!): [HowItWorks]
+  updateHowItWorks(where: HowItWorksWhereUniqueInput!, data: HowItWorksUpdateInput!): HowItWorks
+  updateHowItWorksItems(data: [HowItWorksUpdateArgs!]!): [HowItWorks]
+  deleteHowItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
+  deleteHowItWorksItems(where: [HowItWorksWhereUniqueInput!]!): [HowItWorks]
+  createPostHowItWorks(data: PostHowItWorksCreateInput!): PostHowItWorks
+  createPostHowItWorksSection(data: [PostHowItWorksCreateInput!]!): [PostHowItWorks]
+  updatePostHowItWorks(where: PostHowItWorksWhereUniqueInput!, data: PostHowItWorksUpdateInput!): PostHowItWorks
+  updatePostHowItWorksSection(data: [PostHowItWorksUpdateArgs!]!): [PostHowItWorks]
+  deletePostHowItWorks(where: PostHowItWorksWhereUniqueInput!): PostHowItWorks
+  deletePostHowItWorksSection(where: [PostHowItWorksWhereUniqueInput!]!): [PostHowItWorks]
+  createPreWhatTheySayAboutUs(data: PreWhatTheySayAboutUsCreateInput!): PreWhatTheySayAboutUs
+  createPreWhatTheySayAboutUsSection(data: [PreWhatTheySayAboutUsCreateInput!]!): [PreWhatTheySayAboutUs]
+  updatePreWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!, data: PreWhatTheySayAboutUsUpdateInput!): PreWhatTheySayAboutUs
+  updatePreWhatTheySayAboutUsSection(data: [PreWhatTheySayAboutUsUpdateArgs!]!): [PreWhatTheySayAboutUs]
+  deletePreWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
+  deletePreWhatTheySayAboutUsSection(where: [PreWhatTheySayAboutUsWhereUniqueInput!]!): [PreWhatTheySayAboutUs]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -316,6 +552,21 @@ type Query {
   tag(where: TagWhereUniqueInput!): Tag
   tags(where: TagWhereInput! = {}, orderBy: [TagOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TagWhereUniqueInput): [Tag!]
   tagsCount(where: TagWhereInput! = {}): Int
+  feature(where: FeatureWhereUniqueInput!): Feature
+  features(where: FeatureWhereInput! = {}, orderBy: [FeatureOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FeatureWhereUniqueInput): [Feature!]
+  featuresCount(where: FeatureWhereInput! = {}): Int
+  forEmployersSubHeadline(where: forEmployersSubHeadlineWhereUniqueInput!): forEmployersSubHeadline
+  forEmployersSubHeadlines(where: forEmployersSubHeadlineWhereInput! = {}, orderBy: [forEmployersSubHeadlineOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: forEmployersSubHeadlineWhereUniqueInput): [forEmployersSubHeadline!]
+  forEmployersSubHeadlinesCount(where: forEmployersSubHeadlineWhereInput! = {}): Int
+  howItWorks(where: HowItWorksWhereUniqueInput!): HowItWorks
+  howItWorksItems(where: HowItWorksWhereInput! = {}, orderBy: [HowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: HowItWorksWhereUniqueInput): [HowItWorks!]
+  howItWorksItemsCount(where: HowItWorksWhereInput! = {}): Int
+  postHowItWorks(where: PostHowItWorksWhereUniqueInput!): PostHowItWorks
+  postHowItWorksSection(where: PostHowItWorksWhereInput! = {}, orderBy: [PostHowItWorksOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostHowItWorksWhereUniqueInput): [PostHowItWorks!]
+  postHowItWorksSectionCount(where: PostHowItWorksWhereInput! = {}): Int
+  preWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
+  preWhatTheySayAboutUsSection(where: PreWhatTheySayAboutUsWhereInput! = {}, orderBy: [PreWhatTheySayAboutUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreWhatTheySayAboutUsWhereUniqueInput): [PreWhatTheySayAboutUs!]
+  preWhatTheySayAboutUsSectionCount(where: PreWhatTheySayAboutUsWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
