@@ -466,6 +466,46 @@ input PreWhatTheySayAboutUsCreateInput {
   content: String
 }
 
+type WhyWorkWithUs {
+  id: ID!
+  title: String
+  description: String
+}
+
+input WhyWorkWithUsWhereUniqueInput {
+  id: ID
+}
+
+input WhyWorkWithUsWhereInput {
+  AND: [WhyWorkWithUsWhereInput!]
+  OR: [WhyWorkWithUsWhereInput!]
+  NOT: [WhyWorkWithUsWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  description: StringFilter
+}
+
+input WhyWorkWithUsOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+}
+
+input WhyWorkWithUsUpdateInput {
+  title: String
+  description: String
+}
+
+input WhyWorkWithUsUpdateArgs {
+  where: WhyWorkWithUsWhereUniqueInput!
+  data: WhyWorkWithUsUpdateInput!
+}
+
+input WhyWorkWithUsCreateInput {
+  title: String
+  description: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -520,6 +560,12 @@ type Mutation {
   updatePreWhatTheySayAboutUsSection(data: [PreWhatTheySayAboutUsUpdateArgs!]!): [PreWhatTheySayAboutUs]
   deletePreWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
   deletePreWhatTheySayAboutUsSection(where: [PreWhatTheySayAboutUsWhereUniqueInput!]!): [PreWhatTheySayAboutUs]
+  createWhyWorkWithUs(data: WhyWorkWithUsCreateInput!): WhyWorkWithUs
+  createwhyWorkWithUsSection(data: [WhyWorkWithUsCreateInput!]!): [WhyWorkWithUs]
+  updateWhyWorkWithUs(where: WhyWorkWithUsWhereUniqueInput!, data: WhyWorkWithUsUpdateInput!): WhyWorkWithUs
+  updatewhyWorkWithUsSection(data: [WhyWorkWithUsUpdateArgs!]!): [WhyWorkWithUs]
+  deleteWhyWorkWithUs(where: WhyWorkWithUsWhereUniqueInput!): WhyWorkWithUs
+  deletewhyWorkWithUsSection(where: [WhyWorkWithUsWhereUniqueInput!]!): [WhyWorkWithUs]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -567,6 +613,9 @@ type Query {
   preWhatTheySayAboutUs(where: PreWhatTheySayAboutUsWhereUniqueInput!): PreWhatTheySayAboutUs
   preWhatTheySayAboutUsSection(where: PreWhatTheySayAboutUsWhereInput! = {}, orderBy: [PreWhatTheySayAboutUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreWhatTheySayAboutUsWhereUniqueInput): [PreWhatTheySayAboutUs!]
   preWhatTheySayAboutUsSectionCount(where: PreWhatTheySayAboutUsWhereInput! = {}): Int
+  whyWorkWithUs(where: WhyWorkWithUsWhereUniqueInput!): WhyWorkWithUs
+  whyWorkWithUsSection(where: WhyWorkWithUsWhereInput! = {}, orderBy: [WhyWorkWithUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: WhyWorkWithUsWhereUniqueInput): [WhyWorkWithUs!]
+  whyWorkWithUsSectionCount(where: WhyWorkWithUsWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
