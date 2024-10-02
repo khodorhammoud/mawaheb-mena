@@ -52,3 +52,36 @@ export const GET_WHYWORKWITHUS_QUERY = `
       }
     }
 `;
+
+export const GET_FAQS_QUERY = `
+  query {
+    faqSection {
+      faqNb
+      faqQuestion
+      faqAnswer
+    }
+  }
+`;
+
+export const GET_TESTIMONIALS_QUERY = `
+  query {
+    testimonialsSection {
+      iconSVG
+      comment
+      imageURL
+      name
+      role
+    }
+  }
+`;
+
+export const GET_BLOG_CARDS_QUERY = `
+  query {
+    blogCardSection {
+      imageURL
+      name
+      readFrom
+      content
+    }
+  }
+`;

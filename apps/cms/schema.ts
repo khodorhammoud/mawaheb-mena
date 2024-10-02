@@ -146,4 +146,54 @@ export const lists = {
       plural: "whyWorkWithUsSection", // Custom plural name for the GraphQL API
     },
   }),
+
+  FAQs: list({
+    access: allowAll,
+    fields: {
+      faqNb: integer({ validation: { isRequired: true } }),
+      faqQuestion: text({ validation: { isRequired: true } }),
+      faqAnswer: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    graphql: {
+      plural: "faqSection", // this name should be same as the one created in the loader
+    },
+  }),
+
+  Testimonials: list({
+    access: allowAll,
+    fields: {
+      iconSVG: text({ validation: { isRequired: false } }),
+      comment: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+      imageURL: text({ validation: { isRequired: false } }),
+      name: text({ validation: { isRequired: true } }),
+      role: text({ validation: { isRequired: true } }),
+    },
+    // Specify the plural name for GraphQL queries to avoid conflict
+    graphql: {
+      plural: "testimonialsSection", // Or any plural form that makes sense for your data
+    },
+  }),
+
+  BlogCards: list({
+    access: allowAll,
+    fields: {
+      imageURL: text({ validation: { isRequired: false } }),
+      name: text({ validation: { isRequired: false } }),
+      readFrom: text({ validation: { isRequired: true } }),
+      content: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    // Specify the plural name for GraphQL queries to avoid conflict
+    graphql: {
+      plural: "blogCardSection", // Or any plural form that makes sense for your data
+    },
+  }),
 } satisfies Lists;
