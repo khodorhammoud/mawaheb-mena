@@ -506,6 +506,156 @@ input WhyWorkWithUsCreateInput {
   description: String
 }
 
+type FAQs {
+  id: ID!
+  faqNb: Int
+  faqQuestion: String
+  faqAnswer: String
+}
+
+input FAQsWhereUniqueInput {
+  id: ID
+}
+
+input FAQsWhereInput {
+  AND: [FAQsWhereInput!]
+  OR: [FAQsWhereInput!]
+  NOT: [FAQsWhereInput!]
+  id: IDFilter
+  faqNb: IntFilter
+  faqQuestion: StringFilter
+  faqAnswer: StringFilter
+}
+
+input FAQsOrderByInput {
+  id: OrderDirection
+  faqNb: OrderDirection
+  faqQuestion: OrderDirection
+  faqAnswer: OrderDirection
+}
+
+input FAQsUpdateInput {
+  faqNb: Int
+  faqQuestion: String
+  faqAnswer: String
+}
+
+input FAQsUpdateArgs {
+  where: FAQsWhereUniqueInput!
+  data: FAQsUpdateInput!
+}
+
+input FAQsCreateInput {
+  faqNb: Int
+  faqQuestion: String
+  faqAnswer: String
+}
+
+type Testimonials {
+  id: ID!
+  iconSVG: String
+  comment: String
+  imageURL: String
+  name: String
+  role: String
+}
+
+input TestimonialsWhereUniqueInput {
+  id: ID
+}
+
+input TestimonialsWhereInput {
+  AND: [TestimonialsWhereInput!]
+  OR: [TestimonialsWhereInput!]
+  NOT: [TestimonialsWhereInput!]
+  id: IDFilter
+  iconSVG: StringFilter
+  comment: StringFilter
+  imageURL: StringFilter
+  name: StringFilter
+  role: StringFilter
+}
+
+input TestimonialsOrderByInput {
+  id: OrderDirection
+  iconSVG: OrderDirection
+  comment: OrderDirection
+  imageURL: OrderDirection
+  name: OrderDirection
+  role: OrderDirection
+}
+
+input TestimonialsUpdateInput {
+  iconSVG: String
+  comment: String
+  imageURL: String
+  name: String
+  role: String
+}
+
+input TestimonialsUpdateArgs {
+  where: TestimonialsWhereUniqueInput!
+  data: TestimonialsUpdateInput!
+}
+
+input TestimonialsCreateInput {
+  iconSVG: String
+  comment: String
+  imageURL: String
+  name: String
+  role: String
+}
+
+type BlogCards {
+  id: ID!
+  imageURL: String
+  name: String
+  readFrom: String
+  content: String
+}
+
+input BlogCardsWhereUniqueInput {
+  id: ID
+}
+
+input BlogCardsWhereInput {
+  AND: [BlogCardsWhereInput!]
+  OR: [BlogCardsWhereInput!]
+  NOT: [BlogCardsWhereInput!]
+  id: IDFilter
+  imageURL: StringFilter
+  name: StringFilter
+  readFrom: StringFilter
+  content: StringFilter
+}
+
+input BlogCardsOrderByInput {
+  id: OrderDirection
+  imageURL: OrderDirection
+  name: OrderDirection
+  readFrom: OrderDirection
+  content: OrderDirection
+}
+
+input BlogCardsUpdateInput {
+  imageURL: String
+  name: String
+  readFrom: String
+  content: String
+}
+
+input BlogCardsUpdateArgs {
+  where: BlogCardsWhereUniqueInput!
+  data: BlogCardsUpdateInput!
+}
+
+input BlogCardsCreateInput {
+  imageURL: String
+  name: String
+  readFrom: String
+  content: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -566,6 +716,24 @@ type Mutation {
   updatewhyWorkWithUsSection(data: [WhyWorkWithUsUpdateArgs!]!): [WhyWorkWithUs]
   deleteWhyWorkWithUs(where: WhyWorkWithUsWhereUniqueInput!): WhyWorkWithUs
   deletewhyWorkWithUsSection(where: [WhyWorkWithUsWhereUniqueInput!]!): [WhyWorkWithUs]
+  createFAQs(data: FAQsCreateInput!): FAQs
+  createfaqSection(data: [FAQsCreateInput!]!): [FAQs]
+  updateFAQs(where: FAQsWhereUniqueInput!, data: FAQsUpdateInput!): FAQs
+  updatefaqSection(data: [FAQsUpdateArgs!]!): [FAQs]
+  deleteFAQs(where: FAQsWhereUniqueInput!): FAQs
+  deletefaqSection(where: [FAQsWhereUniqueInput!]!): [FAQs]
+  createTestimonials(data: TestimonialsCreateInput!): Testimonials
+  createtestimonialsSection(data: [TestimonialsCreateInput!]!): [Testimonials]
+  updateTestimonials(where: TestimonialsWhereUniqueInput!, data: TestimonialsUpdateInput!): Testimonials
+  updatetestimonialsSection(data: [TestimonialsUpdateArgs!]!): [Testimonials]
+  deleteTestimonials(where: TestimonialsWhereUniqueInput!): Testimonials
+  deletetestimonialsSection(where: [TestimonialsWhereUniqueInput!]!): [Testimonials]
+  createBlogCards(data: BlogCardsCreateInput!): BlogCards
+  createblogCardSection(data: [BlogCardsCreateInput!]!): [BlogCards]
+  updateBlogCards(where: BlogCardsWhereUniqueInput!, data: BlogCardsUpdateInput!): BlogCards
+  updateblogCardSection(data: [BlogCardsUpdateArgs!]!): [BlogCards]
+  deleteBlogCards(where: BlogCardsWhereUniqueInput!): BlogCards
+  deleteblogCardSection(where: [BlogCardsWhereUniqueInput!]!): [BlogCards]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -616,6 +784,15 @@ type Query {
   whyWorkWithUs(where: WhyWorkWithUsWhereUniqueInput!): WhyWorkWithUs
   whyWorkWithUsSection(where: WhyWorkWithUsWhereInput! = {}, orderBy: [WhyWorkWithUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: WhyWorkWithUsWhereUniqueInput): [WhyWorkWithUs!]
   whyWorkWithUsSectionCount(where: WhyWorkWithUsWhereInput! = {}): Int
+  fAQs(where: FAQsWhereUniqueInput!): FAQs
+  faqSection(where: FAQsWhereInput! = {}, orderBy: [FAQsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FAQsWhereUniqueInput): [FAQs!]
+  faqSectionCount(where: FAQsWhereInput! = {}): Int
+  testimonials(where: TestimonialsWhereUniqueInput!): Testimonials
+  testimonialsSection(where: TestimonialsWhereInput! = {}, orderBy: [TestimonialsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TestimonialsWhereUniqueInput): [Testimonials!]
+  testimonialsSectionCount(where: TestimonialsWhereInput! = {}): Int
+  blogCards(where: BlogCardsWhereUniqueInput!): BlogCards
+  blogCardSection(where: BlogCardsWhereInput! = {}, orderBy: [BlogCardsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogCardsWhereUniqueInput): [BlogCards!]
+  blogCardSectionCount(where: BlogCardsWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

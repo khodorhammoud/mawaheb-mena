@@ -31,6 +31,7 @@ export default function Home() {
 
       <WhyWorkWithUs />
       {/* this is a MainHeading that has a props inside it 💖, and it represents the (WHY WORK WITH US) section */}
+      {/* i moved the MainHeading to the WhyWorkWithUs.tsx file ❤️ */}
 
       <FAQ />
       {/* this is the FAQ component that uses Card Component that is in the component \ ui folder in the common folder 💖 */}
