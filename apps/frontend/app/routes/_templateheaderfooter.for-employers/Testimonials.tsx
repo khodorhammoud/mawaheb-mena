@@ -1,45 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
+import { useLoaderData } from "@remix-run/react"; // Import useLoaderData to fetch data from the loader
 
-const testimonialsData = [
-  {
-    icon: `<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 48 48" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><mask id="ipTMaslowPyramids0"><g fill="none" stroke="#fff" stroke-width="4"><path fill="#555" fill-rule="evenodd" stroke-linejoin="round" d="m24 4l-9 15.98h18L24 4Z" clip-rule="evenodd"/><path stroke-linecap="round" d="M24 19.98L24.008 44"/><path stroke-linecap="round" stroke-linejoin="round" d="M11.347 25.975L2 42h15.005"/><path stroke-linecap="round" d="M9.1 30.995h7.904"/><path stroke-linecap="round" stroke-linejoin="round" d="M36.748 25.975L46.094 42H31"/><path stroke-linecap="round" d="M39.094 30.995H31.1"/></g></mask><path fill="currentColor" d="M0 0h48v48H0z" mask="url(#ipTMaslowPyramids0)"/></g></svg></svg>`,
-    opinion: `"Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text"`,
-    img: "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    name: "Rachelle Assad",
-    role: "CEO, Asaad for Construction",
-  },
-  {
-    icon: `<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 48 48" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m24 15.94l-3.5 3.5h-4.94v4.95l-3.5 3.5l3.5 3.49v4.95h4.94l3.5 3.5l3.5-3.5h4.94v-4.95l3.5-3.49l-3.5-3.5v-4.95H27.5Zm14.36-9.75h-1.07a1.79 1.79 0 0 0-3.57 0H14.3a1.79 1.79 0 0 0-3.57 0H9.66A2.88 2.88 0 0 0 6.76 9v3.68h34.48V9.06a2.87 2.87 0 0 0-2.86-2.87Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M41.24 12.71H6.76v28a2.85 2.85 0 0 0 2.86 2.86h28.74a2.86 2.86 0 0 0 2.88-2.85h0Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M28.47 30.9A5.39 5.39 0 0 0 24 22.5m-4.47 2.37A5.4 5.4 0 0 0 24 33.28"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M24 23.33v2.03l-2.79-2.79L24 19.79h0v3.54zm0 9.11v-2.02l2.79 2.78L24 35.99v-3.55z"/></g></svg></svg>`,
-    opinion: `"There are many variations of passages of Lorem Ipsum available, but the majority have injected humour"`,
-    img: "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    name: "Sarah Johnson",
-    role: "CEO, Tech Innovators Inc",
-  },
-  {
-    icon: `<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 24 24" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 19a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5ZM10 5l2-2m-4.5 7a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5Zm.5 6l8-8M5.5 21a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5Zm13-13a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5ZM12 21l2-2"/></g></svg></svg>`,
-    opinion: `"Various desktop publishing packages and web page editors now use Lorem Ipsum as their default model text."`,
-    img: "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    name: "Michael Scott",
-    role: "Regional Manager, Dunder Mifflin",
-  },
-];
+interface Testimonial {
+  iconSVG?: string;
+  comment: string;
+  imageURL?: string;
+  name: string;
+  role: string;
+}
+
+interface LoaderData {
+  testimonialsSection: Testimonial[];
+}
 
 interface TestimonialsProps {
   setShowFingerIcon: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
+  const { testimonialsSection } = useLoaderData<LoaderData>(); // Fetch the testimonials from the loader
   const [currentIndex, setCurrentIndex] = useState(0);
   const x = useMotionValue(0);
   const [maxScroll, setMaxScroll] = useState(0);
 
   useEffect(() => {
-    // Calculate the maximum scroll when the component mounts or window resizes
     const updateMaxScroll = () => {
       const containerWidth =
         document.querySelector(".testimonial-container")?.clientWidth || 0;
-      const totalWidth = (testimonialsData.length - 1) * (containerWidth + 400);
+      const totalWidth =
+        (testimonialsSection.length - 1) * (containerWidth + 400);
       setMaxScroll(totalWidth);
     };
 
@@ -49,7 +39,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
     return () => {
       window.removeEventListener("resize", updateMaxScroll);
     };
-  }, []);
+  }, [testimonialsSection.length]); // Update maxScroll when testimonialsSection length changes
 
   const handleDragStart = () => {
     setShowFingerIcon(false);
@@ -58,14 +48,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
   const handleDragEnd = (event: any, info: any) => {
     const dragDistance = info.offset.x;
 
-    if (dragDistance < -150 && currentIndex < testimonialsData.length - 1) {
+    if (dragDistance < -150 && currentIndex < testimonialsSection.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else if (dragDistance > 150 && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
 
-    // Adjust the position based on the current index
-    x.set(-currentIndex * (maxScroll / (testimonialsData.length - 1)));
+    x.set(-currentIndex * (maxScroll / (testimonialsSection.length - 1)));
   };
 
   return (
@@ -74,30 +63,35 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
         className="flex testimonial-container"
         drag="x"
         style={{ x }}
-        onDragStart={handleDragStart} // Hide icon on drag start
+        onDragStart={handleDragStart}
         dragConstraints={{
-          left: -maxScroll, // Prevent scrolling past the last testimonial centered
+          left: -maxScroll,
           right: 0,
         }}
-        dragElastic={0.2} // Smoother drag experience
+        dragElastic={0.2}
         onDragEnd={handleDragEnd}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }} // Smooth spring animation
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {testimonialsData.map((testimonial, index) => (
+        {testimonialsSection.map((testimonial, index) => (
           <div
             key={index}
             className="min-w-full flex-shrink-0 p-4"
-            style={{ marginRight: "400px" }} // Larger gap between testimonials
+            style={{ marginRight: "400px" }}
           >
             <div className="w-28 h-28 text-black mb-16 flex items-center justify-center mx-auto">
-              <div dangerouslySetInnerHTML={{ __html: testimonial.icon }} />
+              <div
+                dangerouslySetInnerHTML={{ __html: testimonial.iconSVG || "" }}
+              />
             </div>
             <p className="text-black font-light text-3xl tracking-wide mb-20 w-[800px] mx-auto h-28">
-              {testimonial.opinion}
+              {testimonial.comment}
             </p>
             <div className="flex gap-8 w-[300px] md:w-[600px] lg:w-[700px] mx-auto h-40">
               <img
-                src={testimonial.img}
+                src={
+                  testimonial.imageURL ||
+                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                }
                 alt={testimonial.name}
                 className="w-32 h-32 rounded-full"
               />
@@ -115,7 +109,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
                 <div
                   className="absolute top-0 left-0 h-full bg-blue-500"
                   style={{
-                    width: `${((index + 1) / testimonialsData.length) * 100}%`,
+                    width: `${((index + 1) / testimonialsSection.length) * 100}%`,
                   }}
                 />
               </div>

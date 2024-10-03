@@ -8,6 +8,9 @@ import {
   GET_POSTHOWITWORKS_QUERY,
   GET_PREWHATTHEYSAYABOUTUS_QUERY,
   GET_WHYWORKWITHUS_QUERY,
+  GET_FAQS_QUERY,
+  GET_TESTIMONIALS_QUERY,
+  GET_BLOG_CARDS_QUERY, // Add the Blog Cards query here
 } from "../../../shared/cms-queries";
 
 interface HowItWorksItem {
@@ -39,13 +42,37 @@ interface WhyWorkWithUs {
   description: string;
 }
 
+interface FAQ {
+  faqNb: number;
+  faqQuestion: string;
+  faqAnswer: string;
+}
+
+interface Testimonial {
+  iconSVG?: string;
+  comment: string;
+  imageURL?: string;
+  name: string;
+  role: string;
+}
+
+interface BlogCard {
+  imageURL?: string;
+  name?: string;
+  readFrom: string;
+  content: string;
+}
+
 interface LoaderData {
   subHeadline: SubHeadline;
   howItWorksItems: HowItWorksItem[];
   features: Feature[];
   postHowItWorks: PostHowItWorksItem;
   preWhatTheySayAboutUs: PreWhatTheySayAboutUs;
-  whyWorkWithUsSection: WhyWorkWithUs[]; // the first name should be same as the name inside the query, and the second represent the interface created up here
+  whyWorkWithUsSection: WhyWorkWithUs[];
+  faqSection: FAQ[];
+  testimonialsSection: Testimonial[];
+  blogCardSection: BlogCard[]; // Add blog cards to the loader data
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -56,6 +83,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     GET_POSTHOWITWORKS_QUERY,
     GET_PREWHATTHEYSAYABOUTUS_QUERY,
     GET_WHYWORKWITHUS_QUERY,
+    GET_FAQS_QUERY,
+    GET_TESTIMONIALS_QUERY,
+    GET_BLOG_CARDS_QUERY, // Fetch blog cards data as well
   ]);
 
   console.log(
@@ -87,6 +117,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const whyWorkWithUsSection: WhyWorkWithUs[] =
     dataResponse[5]?.data?.whyWorkWithUsSection || [];
 
+  // Extract FAQs from the response
+  const faqSection: FAQ[] = dataResponse[6]?.data?.faqSection || [];
+
+  // Extract testimonials from the response
+  const testimonialsSection: Testimonial[] =
+    dataResponse[7]?.data?.testimonialsSection || [];
+
+  // Extract blog cards from the response
+  const blogCardSection: BlogCard[] =
+    dataResponse[8]?.data?.blogCardSection || []; // Ensure it's an array
+
   // Log extracted data for debugging
   console.log("Extracted For Employers Subheadline:", subHeadline);
   console.log("Extracted How It Works Items:", howItWorksItems);
@@ -94,6 +135,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log("Extracted Post How It Works:", postHowItWorks);
   console.log("Extracted Pre What They Say About Us:", preWhatTheySayAboutUs);
   console.log("Extracted Why Work With Us:", whyWorkWithUsSection);
+  console.log("Extracted FAQs:", faqSection);
+  console.log("Extracted Testimonials:", testimonialsSection);
+  console.log("Extracted Blog Cards:", blogCardSection);
 
   // Return all the extracted data
   return json<LoaderData>({
@@ -103,6 +147,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     postHowItWorks,
     preWhatTheySayAboutUs,
     whyWorkWithUsSection,
+    faqSection,
+    testimonialsSection,
+    blogCardSection, // Add blog cards to the return data
   });
 };
 

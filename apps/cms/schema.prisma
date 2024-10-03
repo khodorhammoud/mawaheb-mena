@@ -71,3 +71,27 @@ model WhyWorkWithUs {
   title       String @default("")
   description String @default("")
 }
+
+model FAQs {
+  id          String @id @default(uuid()) @postgresql.Uuid
+  faqNb       Int
+  faqQuestion String @default("")
+  faqAnswer   String @default("")
+}
+
+model Testimonials {
+  id       String @id @default(uuid()) @postgresql.Uuid
+  iconSVG  String @default("")
+  comment  String @default("")
+  imageURL String @default("")
+  name     String @default("")
+  role     String @default("")
+}
+
+model BlogCards {
+  id       String @id @default(uuid()) @postgresql.Uuid
+  imageURL String @default("")
+  name     String @default("")
+  readFrom String @default("")
+  content  String @default("")
+}
