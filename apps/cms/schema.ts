@@ -8,6 +8,7 @@ import {
   relationship,
   password,
   timestamp,
+  json,
 } from "@keystone-6/core/fields";
 import { Lists } from ".keystone/types";
 
@@ -194,6 +195,63 @@ export const lists = {
     // Specify the plural name for GraphQL queries to avoid conflict
     graphql: {
       plural: "blogCardSection", // Or any plural form that makes sense for your data
+    },
+  }),
+
+  Skill: list({
+    access: allowAll,
+    fields: {
+      name: text({ validation: { isRequired: true } }),
+    },
+    ui: {
+      isHidden: true,
+      listView: {
+        initialColumns: ["name"],
+      },
+    },
+  }),
+
+  Job: list({
+    access: allowAll,
+    fields: {
+      jobTitle: text({ validation: { isRequired: false } }),
+      postedFrom: integer({ validation: { isRequired: true } }),
+      priceAmout: integer({ validation: { isRequired: true } }),
+      priceType: text({ validation: { isRequired: true } }),
+      levelRequired: text({ validation: { isRequired: true } }),
+      jobDesc: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+      // Define a relationship with the Skill model
+      jobSkills: relationship({
+        ref: "Skill",
+        many: true, // This allows selecting multiple skills
+        ui: {
+          displayMode: "cards", // Makes it visually appealing
+          cardFields: ["name"], // Display skill name in the card
+          inlineCreate: { fields: ["name"] }, // Allow creating new skills directly
+          inlineEdit: { fields: ["name"] }, // Allow editing skills inline
+        },
+      }),
+    },
+    graphql: {
+      plural: "jobSection",
+    },
+  }),
+
+  Achievement: list({
+    access: allowAll,
+    fields: {
+      title: text({ validation: { isRequired: false } }),
+      count: integer({ validation: { isRequired: true } }),
+      desc: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    graphql: {
+      plural: "achievementSection", // same as the query inner name ❤️
     },
   }),
 } satisfies Lists;

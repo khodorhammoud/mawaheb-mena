@@ -656,6 +656,169 @@ input BlogCardsCreateInput {
   content: String
 }
 
+type Skill {
+  id: ID!
+  name: String
+}
+
+input SkillWhereUniqueInput {
+  id: ID
+}
+
+input SkillWhereInput {
+  AND: [SkillWhereInput!]
+  OR: [SkillWhereInput!]
+  NOT: [SkillWhereInput!]
+  id: IDFilter
+  name: StringFilter
+}
+
+input SkillOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+}
+
+input SkillUpdateInput {
+  name: String
+}
+
+input SkillUpdateArgs {
+  where: SkillWhereUniqueInput!
+  data: SkillUpdateInput!
+}
+
+input SkillCreateInput {
+  name: String
+}
+
+type Job {
+  id: ID!
+  jobTitle: String
+  postedFrom: Int
+  priceAmout: Int
+  priceType: String
+  levelRequired: String
+  jobDesc: String
+  jobSkills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
+  jobSkillsCount(where: SkillWhereInput! = {}): Int
+}
+
+input JobWhereUniqueInput {
+  id: ID
+}
+
+input JobWhereInput {
+  AND: [JobWhereInput!]
+  OR: [JobWhereInput!]
+  NOT: [JobWhereInput!]
+  id: IDFilter
+  jobTitle: StringFilter
+  postedFrom: IntFilter
+  priceAmout: IntFilter
+  priceType: StringFilter
+  levelRequired: StringFilter
+  jobDesc: StringFilter
+  jobSkills: SkillManyRelationFilter
+}
+
+input SkillManyRelationFilter {
+  every: SkillWhereInput
+  some: SkillWhereInput
+  none: SkillWhereInput
+}
+
+input JobOrderByInput {
+  id: OrderDirection
+  jobTitle: OrderDirection
+  postedFrom: OrderDirection
+  priceAmout: OrderDirection
+  priceType: OrderDirection
+  levelRequired: OrderDirection
+  jobDesc: OrderDirection
+}
+
+input JobUpdateInput {
+  jobTitle: String
+  postedFrom: Int
+  priceAmout: Int
+  priceType: String
+  levelRequired: String
+  jobDesc: String
+  jobSkills: SkillRelateToManyForUpdateInput
+}
+
+input SkillRelateToManyForUpdateInput {
+  disconnect: [SkillWhereUniqueInput!]
+  set: [SkillWhereUniqueInput!]
+  create: [SkillCreateInput!]
+  connect: [SkillWhereUniqueInput!]
+}
+
+input JobUpdateArgs {
+  where: JobWhereUniqueInput!
+  data: JobUpdateInput!
+}
+
+input JobCreateInput {
+  jobTitle: String
+  postedFrom: Int
+  priceAmout: Int
+  priceType: String
+  levelRequired: String
+  jobDesc: String
+  jobSkills: SkillRelateToManyForCreateInput
+}
+
+input SkillRelateToManyForCreateInput {
+  create: [SkillCreateInput!]
+  connect: [SkillWhereUniqueInput!]
+}
+
+type Achievement {
+  id: ID!
+  title: String
+  count: Int
+  desc: String
+}
+
+input AchievementWhereUniqueInput {
+  id: ID
+}
+
+input AchievementWhereInput {
+  AND: [AchievementWhereInput!]
+  OR: [AchievementWhereInput!]
+  NOT: [AchievementWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  count: IntFilter
+  desc: StringFilter
+}
+
+input AchievementOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  count: OrderDirection
+  desc: OrderDirection
+}
+
+input AchievementUpdateInput {
+  title: String
+  count: Int
+  desc: String
+}
+
+input AchievementUpdateArgs {
+  where: AchievementWhereUniqueInput!
+  data: AchievementUpdateInput!
+}
+
+input AchievementCreateInput {
+  title: String
+  count: Int
+  desc: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -734,6 +897,24 @@ type Mutation {
   updateblogCardSection(data: [BlogCardsUpdateArgs!]!): [BlogCards]
   deleteBlogCards(where: BlogCardsWhereUniqueInput!): BlogCards
   deleteblogCardSection(where: [BlogCardsWhereUniqueInput!]!): [BlogCards]
+  createSkill(data: SkillCreateInput!): Skill
+  createSkills(data: [SkillCreateInput!]!): [Skill]
+  updateSkill(where: SkillWhereUniqueInput!, data: SkillUpdateInput!): Skill
+  updateSkills(data: [SkillUpdateArgs!]!): [Skill]
+  deleteSkill(where: SkillWhereUniqueInput!): Skill
+  deleteSkills(where: [SkillWhereUniqueInput!]!): [Skill]
+  createJob(data: JobCreateInput!): Job
+  createjobSection(data: [JobCreateInput!]!): [Job]
+  updateJob(where: JobWhereUniqueInput!, data: JobUpdateInput!): Job
+  updatejobSection(data: [JobUpdateArgs!]!): [Job]
+  deleteJob(where: JobWhereUniqueInput!): Job
+  deletejobSection(where: [JobWhereUniqueInput!]!): [Job]
+  createAchievement(data: AchievementCreateInput!): Achievement
+  createachievementSection(data: [AchievementCreateInput!]!): [Achievement]
+  updateAchievement(where: AchievementWhereUniqueInput!, data: AchievementUpdateInput!): Achievement
+  updateachievementSection(data: [AchievementUpdateArgs!]!): [Achievement]
+  deleteAchievement(where: AchievementWhereUniqueInput!): Achievement
+  deleteachievementSection(where: [AchievementWhereUniqueInput!]!): [Achievement]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -793,6 +974,15 @@ type Query {
   blogCards(where: BlogCardsWhereUniqueInput!): BlogCards
   blogCardSection(where: BlogCardsWhereInput! = {}, orderBy: [BlogCardsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogCardsWhereUniqueInput): [BlogCards!]
   blogCardSectionCount(where: BlogCardsWhereInput! = {}): Int
+  skill(where: SkillWhereUniqueInput!): Skill
+  skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
+  skillsCount(where: SkillWhereInput! = {}): Int
+  job(where: JobWhereUniqueInput!): Job
+  jobSection(where: JobWhereInput! = {}, orderBy: [JobOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: JobWhereUniqueInput): [Job!]
+  jobSectionCount(where: JobWhereInput! = {}): Int
+  achievement(where: AchievementWhereUniqueInput!): Achievement
+  achievementSection(where: AchievementWhereInput! = {}, orderBy: [AchievementOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AchievementWhereUniqueInput): [Achievement!]
+  achievementSectionCount(where: AchievementWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
