@@ -85,3 +85,31 @@ export const GET_BLOG_CARDS_QUERY = `
     }
   }
 `;
+
+export const GET_ALL_JOBS_QUERY = `
+  query {
+    jobSection {
+      id
+      jobTitle
+      postedFrom
+      priceAmout
+      priceType
+      levelRequired
+      jobDesc
+      jobSkills {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const GET_ACHIEVEMENTS_QUERY = `
+  query {
+    achievementSection {
+      title
+      count
+      desc
+    }
+  }
+`;

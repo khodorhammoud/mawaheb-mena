@@ -5,7 +5,7 @@ import LayoutContainer from "../../common/layout_container";
 import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItWorks";
 import Segments from "../_templateheaderfooter.for-employers/Segments";
 import Languages from "../_templateheaderfooter.for-employers/Languages";
-import MainHeading from "../../common/MainHeading";
+import WhyWorkWithUs from "../_templateheaderfooter.for-employers/WhyWorkWithUs";
 import FAQ from "../_templateheaderfooter.for-employers/FAQ";
 import Topic from "./Topic";
 import Jobs from "./Jobs";
@@ -22,12 +22,8 @@ export default function ForFreelancersPage() {
         <Achievements />
       </div>
       <HowItWorks />
-      <Segments />
       <Languages />
-      <MainHeading
-        title="WHY WORK WITH US?"
-        description="At Mawaheb we understand the complexities involved in hiring freelancers. That's why we've streamlined the process to make it as effortless as possible for our clients. From handling all regulatory and legal obligations to ensuring compliance with industry standards, we take care of every detail so you can focus on your business goals. Trust us to navigate the intricacies of hiring, allowing you to enjoy a hassle-free experience from start to finish."
-      />
+      <WhyWorkWithUs />
       <div className="mb-20">
         <FAQ />
       </div>
