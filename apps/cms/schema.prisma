@@ -95,3 +95,27 @@ model BlogCards {
   readFrom String @default("")
   content  String @default("")
 }
+
+model Skill {
+  id                 String @id @default(uuid()) @postgresql.Uuid
+  name               String @default("")
+  from_Job_jobSkills Job[]  @relation("Job_jobSkills")
+}
+
+model Job {
+  id            String  @id @default(uuid()) @postgresql.Uuid
+  jobTitle      String  @default("")
+  postedFrom    Int
+  priceAmout    Int
+  priceType     String  @default("")
+  levelRequired String  @default("")
+  jobDesc       String  @default("")
+  jobSkills     Skill[] @relation("Job_jobSkills")
+}
+
+model Achievement {
+  id    String @id @default(uuid()) @postgresql.Uuid
+  title String @default("")
+  count Int
+  desc  String @default("")
+}

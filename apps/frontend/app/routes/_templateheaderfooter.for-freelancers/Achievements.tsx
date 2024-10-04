@@ -1,44 +1,30 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLoaderData } from "@remix-run/react";
 import "../../styles/wavy/wavy.css";
 
+// Define the Achievement type matching the data structure from the CMS
 type Achievement = {
   title: string;
   count: number;
-  description: string;
+  desc: string; // `desc` instead of `description` to match CMS field names
 };
-
-const achievements: Achievement[] = [
-  {
-    title: "Open Jobs Opportunities",
-    count: 90,
-    description:
-      "Our platform currently offers a multitude of open job opportunities, connecting freelancers with diverse jobs and clients seeking their expertise.",
-  },
-  {
-    title: "Jobs are done",
-    count: 40,
-    description:
-      "Our platform has facilitated over 40 successful jobs, delivering exceptional results for clients and freelancers alike.",
-  },
-  {
-    title: "Jobs posted",
-    count: 50,
-    description:
-      "Over 200 jobs were posted via our platform, providing ample opportunities for freelancers to find work.",
-  },
-];
 
 const TOTAL_DURATION = 1500; // 1.5 seconds total animation duration
 
 const Achievements: React.FC = () => {
+  // Fetch achievementSection from the loader data
+  const { achievementSection } = useLoaderData<{
+    achievementSection: Achievement[];
+  }>();
+
   return (
     <div className="mx-4 flex flex-col mt-32">
       <h2 className="text-4xl font-bold mb-8 ml-2 font-['BespokeSerif-Regular']">
         ACHIEVEMENTS
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {achievements.map((achievement, index) => (
+        {achievementSection.map((achievement, index) => (
           <div
             key={index}
             className="bg-white border border-gray-200 shadow-xl p-6 flex flex-col rounded-xl"
@@ -46,7 +32,7 @@ const Achievements: React.FC = () => {
             <h3 className="text-lg font-bold mb-4">{achievement.title}</h3>
             <AnimatedCount count={achievement.count} />
             <p className="text-sm text-gray-600 mt-6 pt-3 border-t-[2px]">
-              {achievement.description}
+              {achievement.desc}
             </p>
           </div>
         ))}

@@ -10,7 +10,9 @@ import {
   GET_WHYWORKWITHUS_QUERY,
   GET_FAQS_QUERY,
   GET_TESTIMONIALS_QUERY,
-  GET_BLOG_CARDS_QUERY, // Add the Blog Cards query here
+  GET_BLOG_CARDS_QUERY,
+  GET_ALL_JOBS_QUERY,
+  GET_ACHIEVEMENTS_QUERY,
 } from "../../../shared/cms-queries";
 
 interface HowItWorksItem {
@@ -63,6 +65,23 @@ interface BlogCard {
   content: string;
 }
 
+interface Job {
+  id: string;
+  jobTitle: string;
+  postedFrom: number;
+  priceAmout: number;
+  priceType: string;
+  levelRequired: string;
+  jobDesc: string;
+  jobSkills: { id: string; name: string };
+}
+
+interface Achievement {
+  title: string;
+  count: number;
+  desc: string;
+}
+
 interface LoaderData {
   subHeadline: SubHeadline;
   howItWorksItems: HowItWorksItem[];
@@ -73,6 +92,8 @@ interface LoaderData {
   faqSection: FAQ[];
   testimonialsSection: Testimonial[];
   blogCardSection: BlogCard[]; // Add blog cards to the loader data
+  jobSection: Job[];
+  achievementSection: Achievement[];
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -85,13 +106,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     GET_WHYWORKWITHUS_QUERY,
     GET_FAQS_QUERY,
     GET_TESTIMONIALS_QUERY,
-    GET_BLOG_CARDS_QUERY, // Fetch blog cards data as well
+    GET_BLOG_CARDS_QUERY,
+    GET_ALL_JOBS_QUERY,
+    GET_ACHIEVEMENTS_QUERY,
   ]);
-
-  console.log(
-    "Full Data Response from CMS:",
-    JSON.stringify(dataResponse, null, 2)
-  );
 
   // Extract each field from the data response, providing a default value if not found
   const subHeadline: SubHeadline = dataResponse[1]?.data
@@ -128,6 +146,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const blogCardSection: BlogCard[] =
     dataResponse[8]?.data?.blogCardSection || []; // Ensure it's an array
 
+  const jobSection: Job[] = dataResponse[9]?.data?.JobSection || [];
+
+  const achievementSection: Achievement[] =
+    dataResponse[10]?.data?.achievementSection || [];
+
+  console.log(
+    "Full Data Response from CMS:",
+    JSON.stringify(dataResponse, null, 2)
+  );
   // Log extracted data for debugging
   console.log("Extracted For Employers Subheadline:", subHeadline);
   console.log("Extracted How It Works Items:", howItWorksItems);
@@ -138,6 +165,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log("Extracted FAQs:", faqSection);
   console.log("Extracted Testimonials:", testimonialsSection);
   console.log("Extracted Blog Cards:", blogCardSection);
+  console.log("Extracted Job Data:", jobSection);
+  console.log("index");
 
   // Return all the extracted data
   return json<LoaderData>({
@@ -150,6 +179,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     faqSection,
     testimonialsSection,
     blogCardSection, // Add blog cards to the return data
+    jobSection,
+    achievementSection,
   });
 };
 
