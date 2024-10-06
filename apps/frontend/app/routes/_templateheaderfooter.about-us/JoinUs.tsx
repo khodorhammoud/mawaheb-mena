@@ -1,7 +1,32 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useLoaderData } from "@remix-run/react";
+
+// Define the interface for the loader data
+interface WantToJoinUsSection {
+  title: string;
+  subHeadline: {
+    content: string;
+  };
+  emailbutton: string;
+}
+
+interface LoaderData {
+  wantToJoinUsSection: WantToJoinUsSection[];
+}
 
 const JoinUs: React.FC = () => {
+  // Fetch data from the loader
+  const { wantToJoinUsSection } = useLoaderData<LoaderData>();
+
+  // Extract data or use fallback values
+  const title = wantToJoinUsSection[0]?.title || "WANT TO JOIN US";
+  const subHeadline =
+    wantToJoinUsSection[0]?.subHeadline?.content ||
+    "We're on a mission to revolutionize the freelance industry. If you're ready to be part of an innovative team that's making a real impact, we want to hear from you. Let's create change together.";
+  const emailButton =
+    wantToJoinUsSection[0]?.emailbutton || "apply@mawaheb.mena";
+
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -9,13 +34,9 @@ const JoinUs: React.FC = () => {
       {/* Left section: Title and Paragraph */}
       <div className="w-1/2 pr-10">
         <h1 className="text-6xl font-semibold text-white font-['BespokeSerif-Regular'] mb-12">
-          WANT TO JOIN US
+          {title}
         </h1>
-        <p className="text-lg text-white font-sans w-[95%]">
-          We're on a mission to revolutionize the freelance industry. If you're
-          ready to be part of an innovative team that's making a real impact, we
-          want to hear from you. Let's create change together.
-        </p>
+        <p className="text-lg text-white font-sans w-[95%]">{subHeadline}</p>
       </div>
 
       {/* Right section: Circular Button with Hover Animation */}
@@ -35,7 +56,7 @@ const JoinUs: React.FC = () => {
           }}
           transition={{ duration: 0.3 }}
         >
-          apply@mawaheb.mena
+          {emailButton}
           {/* Conditionally render the bubbles and animation on hover */}
           {isHovered && (
             <>

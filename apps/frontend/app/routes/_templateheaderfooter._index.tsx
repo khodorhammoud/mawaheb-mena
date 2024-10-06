@@ -13,8 +13,14 @@ import {
   GET_BLOG_CARDS_QUERY,
   GET_ALL_JOBS_QUERY,
   GET_ACHIEVEMENTS_QUERY,
+  GET_MAWAHEB_QUERY,
+  GET_IMAGE_SWIPER_QUERY,
+  GET_HOW_WE_MAKE_DIFF_QUERY,
+  GET_MEET_THE_TEAM_QUERY, // Adding the MeetTheTeam query here
+  GET_WANT_TO_JOIN_US_QUERY, // Adding the WantToJoinUs query here
 } from "../../../shared/cms-queries";
 
+// Define interfaces for the fetched data
 interface HowItWorksItem {
   stepNb: number;
   title: string;
@@ -82,6 +88,52 @@ interface Achievement {
   desc: string;
 }
 
+interface MawahebTopic {
+  topic: string;
+}
+
+interface MawahebDescription {
+  description: string;
+}
+
+interface Mawaheb {
+  mawahebTopics: MawahebTopic[];
+  mawahebDescription: MawahebDescription[];
+}
+
+interface ImageSwiper {
+  imageURL: string;
+}
+
+interface HowWeMakeDiff {
+  id: number;
+  title: string;
+  description: string;
+  iconSVG?: string;
+  belongingText: string;
+}
+
+// Define MeetTheTeam interface
+interface TeamMember {
+  name: string;
+  position: string;
+  role: string;
+  imageURL: string;
+}
+
+interface MeetTheTeam {
+  subHeadline: SubHeadline;
+  members: TeamMember[];
+}
+
+interface WantToJoinUs {
+  title: string;
+  subHeadline: {
+    content: string;
+  };
+  emailbutton: string;
+}
+
 interface LoaderData {
   subHeadline: SubHeadline;
   howItWorksItems: HowItWorksItem[];
@@ -91,9 +143,14 @@ interface LoaderData {
   whyWorkWithUsSection: WhyWorkWithUs[];
   faqSection: FAQ[];
   testimonialsSection: Testimonial[];
-  blogCardSection: BlogCard[]; // Add blog cards to the loader data
+  blogCardSection: BlogCard[];
   jobSection: Job[];
   achievementSection: Achievement[];
+  mawahebSection: Mawaheb[];
+  imageSwiperSection: ImageSwiper[];
+  howWeMakeDiffSection: HowWeMakeDiff[];
+  meetTheTeamSection: MeetTheTeam[];
+  wantToJoinUsSection: WantToJoinUs[]; // Adding WantToJoinUs section
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -109,9 +166,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     GET_BLOG_CARDS_QUERY,
     GET_ALL_JOBS_QUERY,
     GET_ACHIEVEMENTS_QUERY,
+    GET_MAWAHEB_QUERY,
+    GET_IMAGE_SWIPER_QUERY,
+    GET_HOW_WE_MAKE_DIFF_QUERY,
+    GET_MEET_THE_TEAM_QUERY, // Fetching the MeetTheTeam query
+    GET_WANT_TO_JOIN_US_QUERY, // Fetching the WantToJoinUs query
   ]);
 
-  // Extract each field from the data response, providing a default value if not found
+  // Extract data or provide default values
   const subHeadline: SubHeadline = dataResponse[1]?.data
     ?.forEmployersSubHeadlines?.[0] || {
     content: "Default forEmployersSubheadline content",
@@ -120,43 +182,50 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const howItWorksItems: HowItWorksItem[] =
     dataResponse[2]?.data?.howItWorksItems || [];
   const features: Feature[] = dataResponse[0]?.data?.features || [];
-
   const postHowItWorks: PostHowItWorksItem = dataResponse[3]?.data
     ?.postHowItWorksSection?.[0] || {
     content: "Default PostHowItWorks content",
   };
-
   const preWhatTheySayAboutUs: PreWhatTheySayAboutUs = dataResponse[4]?.data
     ?.preWhatTheySayAboutUsSection?.[0] || {
     content: "Default PreWhatTheySayAboutUs content",
   };
-
-  // Corrected path to access the correct field: whyWorkWithUsSection
   const whyWorkWithUsSection: WhyWorkWithUs[] =
     dataResponse[5]?.data?.whyWorkWithUsSection || [];
-
-  // Extract FAQs from the response
   const faqSection: FAQ[] = dataResponse[6]?.data?.faqSection || [];
-
-  // Extract testimonials from the response
   const testimonialsSection: Testimonial[] =
     dataResponse[7]?.data?.testimonialsSection || [];
-
-  // Extract blog cards from the response
   const blogCardSection: BlogCard[] =
-    dataResponse[8]?.data?.blogCardSection || []; // Ensure it's an array
-
-  const jobSection: Job[] = dataResponse[9]?.data?.JobSection || [];
-
+    dataResponse[8]?.data?.blogCardSection || [];
+  const jobSection: Job[] = dataResponse[9]?.data?.jobSection || [];
   const achievementSection: Achievement[] =
     dataResponse[10]?.data?.achievementSection || [];
+
+  const mawahebSection: Mawaheb[] =
+    dataResponse[11]?.data?.mawahebSection?.map((item: any) => ({
+      mawahebTopics: item.mawahebTopics || [],
+      mawahebDescription: item.mawahebDescription || [],
+    })) || [];
+
+  const imageSwiperSection: ImageSwiper[] =
+    dataResponse[12]?.data?.imageSwiperSection || [];
+
+  const howWeMakeDiffSection: HowWeMakeDiff[] =
+    dataResponse[13]?.data?.howWeMakeDiffSection || [];
+
+  const meetTheTeamSection: MeetTheTeam[] =
+    dataResponse[14]?.data?.meetTheTeamSection || [];
+
+  const wantToJoinUsSection: WantToJoinUs[] =
+    dataResponse[15]?.data?.wantToJoinUsSection || [];
 
   console.log(
     "Full Data Response from CMS:",
     JSON.stringify(dataResponse, null, 2)
   );
-  // Log extracted data for debugging
-  console.log("Extracted For Employers Subheadline:", subHeadline);
+
+  // Log individual extracted data for debugging
+  console.log("Extracted Subheadline:", subHeadline);
   console.log("Extracted How It Works Items:", howItWorksItems);
   console.log("Extracted Features:", features);
   console.log("Extracted Post How It Works:", postHowItWorks);
@@ -166,7 +235,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log("Extracted Testimonials:", testimonialsSection);
   console.log("Extracted Blog Cards:", blogCardSection);
   console.log("Extracted Job Data:", jobSection);
-  console.log("index");
+  console.log("Extracted Achievements:", achievementSection);
+  console.log("Extracted Mawaheb Data:", mawahebSection);
+  console.log("Extracted ImageSwiper Data:", imageSwiperSection);
+  console.log("Extracted HowWeMakeDiff Data:", howWeMakeDiffSection);
+  console.log("Extracted MeetTheTeam Data:", meetTheTeamSection);
+  console.log("Extracted WantToJoinUs Data:", wantToJoinUsSection);
 
   // Return all the extracted data
   return json<LoaderData>({
@@ -178,9 +252,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     whyWorkWithUsSection,
     faqSection,
     testimonialsSection,
-    blogCardSection, // Add blog cards to the return data
+    blogCardSection,
     jobSection,
     achievementSection,
+    mawahebSection,
+    imageSwiperSection,
+    howWeMakeDiffSection,
+    meetTheTeamSection, // Return MeetTheTeam data
+    wantToJoinUsSection, // Return WantToJoinUs data
   });
 };
 
