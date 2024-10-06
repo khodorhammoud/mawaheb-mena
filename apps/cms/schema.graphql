@@ -819,6 +819,439 @@ input AchievementCreateInput {
   desc: String
 }
 
+type MawahebTopic {
+  id: ID!
+  topic: String
+}
+
+input MawahebTopicWhereUniqueInput {
+  id: ID
+}
+
+input MawahebTopicWhereInput {
+  AND: [MawahebTopicWhereInput!]
+  OR: [MawahebTopicWhereInput!]
+  NOT: [MawahebTopicWhereInput!]
+  id: IDFilter
+  topic: StringFilter
+}
+
+input MawahebTopicOrderByInput {
+  id: OrderDirection
+  topic: OrderDirection
+}
+
+input MawahebTopicUpdateInput {
+  topic: String
+}
+
+input MawahebTopicUpdateArgs {
+  where: MawahebTopicWhereUniqueInput!
+  data: MawahebTopicUpdateInput!
+}
+
+input MawahebTopicCreateInput {
+  topic: String
+}
+
+type MawahebDescription {
+  id: ID!
+  description: String
+}
+
+input MawahebDescriptionWhereUniqueInput {
+  id: ID
+}
+
+input MawahebDescriptionWhereInput {
+  AND: [MawahebDescriptionWhereInput!]
+  OR: [MawahebDescriptionWhereInput!]
+  NOT: [MawahebDescriptionWhereInput!]
+  id: IDFilter
+  description: StringFilter
+}
+
+input MawahebDescriptionOrderByInput {
+  id: OrderDirection
+  description: OrderDirection
+}
+
+input MawahebDescriptionUpdateInput {
+  description: String
+}
+
+input MawahebDescriptionUpdateArgs {
+  where: MawahebDescriptionWhereUniqueInput!
+  data: MawahebDescriptionUpdateInput!
+}
+
+input MawahebDescriptionCreateInput {
+  description: String
+}
+
+type Mawaheb {
+  id: ID!
+  mawahebTopics(where: MawahebTopicWhereInput! = {}, orderBy: [MawahebTopicOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MawahebTopicWhereUniqueInput): [MawahebTopic!]
+  mawahebTopicsCount(where: MawahebTopicWhereInput! = {}): Int
+  mawahebDescription(where: MawahebDescriptionWhereInput! = {}, orderBy: [MawahebDescriptionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MawahebDescriptionWhereUniqueInput): [MawahebDescription!]
+  mawahebDescriptionCount(where: MawahebDescriptionWhereInput! = {}): Int
+}
+
+input MawahebWhereUniqueInput {
+  id: ID
+}
+
+input MawahebWhereInput {
+  AND: [MawahebWhereInput!]
+  OR: [MawahebWhereInput!]
+  NOT: [MawahebWhereInput!]
+  id: IDFilter
+  mawahebTopics: MawahebTopicManyRelationFilter
+  mawahebDescription: MawahebDescriptionManyRelationFilter
+}
+
+input MawahebTopicManyRelationFilter {
+  every: MawahebTopicWhereInput
+  some: MawahebTopicWhereInput
+  none: MawahebTopicWhereInput
+}
+
+input MawahebDescriptionManyRelationFilter {
+  every: MawahebDescriptionWhereInput
+  some: MawahebDescriptionWhereInput
+  none: MawahebDescriptionWhereInput
+}
+
+input MawahebOrderByInput {
+  id: OrderDirection
+}
+
+input MawahebUpdateInput {
+  mawahebTopics: MawahebTopicRelateToManyForUpdateInput
+  mawahebDescription: MawahebDescriptionRelateToManyForUpdateInput
+}
+
+input MawahebTopicRelateToManyForUpdateInput {
+  disconnect: [MawahebTopicWhereUniqueInput!]
+  set: [MawahebTopicWhereUniqueInput!]
+  create: [MawahebTopicCreateInput!]
+  connect: [MawahebTopicWhereUniqueInput!]
+}
+
+input MawahebDescriptionRelateToManyForUpdateInput {
+  disconnect: [MawahebDescriptionWhereUniqueInput!]
+  set: [MawahebDescriptionWhereUniqueInput!]
+  create: [MawahebDescriptionCreateInput!]
+  connect: [MawahebDescriptionWhereUniqueInput!]
+}
+
+input MawahebUpdateArgs {
+  where: MawahebWhereUniqueInput!
+  data: MawahebUpdateInput!
+}
+
+input MawahebCreateInput {
+  mawahebTopics: MawahebTopicRelateToManyForCreateInput
+  mawahebDescription: MawahebDescriptionRelateToManyForCreateInput
+}
+
+input MawahebTopicRelateToManyForCreateInput {
+  create: [MawahebTopicCreateInput!]
+  connect: [MawahebTopicWhereUniqueInput!]
+}
+
+input MawahebDescriptionRelateToManyForCreateInput {
+  create: [MawahebDescriptionCreateInput!]
+  connect: [MawahebDescriptionWhereUniqueInput!]
+}
+
+type ImageSwiper {
+  id: ID!
+  imageURL: String
+}
+
+input ImageSwiperWhereUniqueInput {
+  id: ID
+}
+
+input ImageSwiperWhereInput {
+  AND: [ImageSwiperWhereInput!]
+  OR: [ImageSwiperWhereInput!]
+  NOT: [ImageSwiperWhereInput!]
+  id: IDFilter
+  imageURL: StringFilter
+}
+
+input ImageSwiperOrderByInput {
+  id: OrderDirection
+  imageURL: OrderDirection
+}
+
+input ImageSwiperUpdateInput {
+  imageURL: String
+}
+
+input ImageSwiperUpdateArgs {
+  where: ImageSwiperWhereUniqueInput!
+  data: ImageSwiperUpdateInput!
+}
+
+input ImageSwiperCreateInput {
+  imageURL: String
+}
+
+type HowWeMakeDiff {
+  id: ID!
+  boxId: Int
+  title: String
+  description: String
+  iconSVG: String
+  belongingText: String
+}
+
+input HowWeMakeDiffWhereUniqueInput {
+  id: ID
+}
+
+input HowWeMakeDiffWhereInput {
+  AND: [HowWeMakeDiffWhereInput!]
+  OR: [HowWeMakeDiffWhereInput!]
+  NOT: [HowWeMakeDiffWhereInput!]
+  id: IDFilter
+  boxId: IntFilter
+  title: StringFilter
+  description: StringFilter
+  iconSVG: StringFilter
+  belongingText: StringFilter
+}
+
+input HowWeMakeDiffOrderByInput {
+  id: OrderDirection
+  boxId: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+  iconSVG: OrderDirection
+  belongingText: OrderDirection
+}
+
+input HowWeMakeDiffUpdateInput {
+  boxId: Int
+  title: String
+  description: String
+  iconSVG: String
+  belongingText: String
+}
+
+input HowWeMakeDiffUpdateArgs {
+  where: HowWeMakeDiffWhereUniqueInput!
+  data: HowWeMakeDiffUpdateInput!
+}
+
+input HowWeMakeDiffCreateInput {
+  boxId: Int
+  title: String
+  description: String
+  iconSVG: String
+  belongingText: String
+}
+
+type SubHeadline {
+  id: ID!
+  content: String
+}
+
+input SubHeadlineWhereUniqueInput {
+  id: ID
+}
+
+input SubHeadlineWhereInput {
+  AND: [SubHeadlineWhereInput!]
+  OR: [SubHeadlineWhereInput!]
+  NOT: [SubHeadlineWhereInput!]
+  id: IDFilter
+  content: StringFilter
+}
+
+input SubHeadlineOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+}
+
+input SubHeadlineUpdateInput {
+  content: String
+}
+
+input SubHeadlineUpdateArgs {
+  where: SubHeadlineWhereUniqueInput!
+  data: SubHeadlineUpdateInput!
+}
+
+input SubHeadlineCreateInput {
+  content: String
+}
+
+type AddAMember {
+  id: ID!
+  name: String
+  position: String
+  role: String
+  imageURL: String
+}
+
+input AddAMemberWhereUniqueInput {
+  id: ID
+}
+
+input AddAMemberWhereInput {
+  AND: [AddAMemberWhereInput!]
+  OR: [AddAMemberWhereInput!]
+  NOT: [AddAMemberWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  position: StringFilter
+  role: StringFilter
+  imageURL: StringFilter
+}
+
+input AddAMemberOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  position: OrderDirection
+  role: OrderDirection
+  imageURL: OrderDirection
+}
+
+input AddAMemberUpdateInput {
+  name: String
+  position: String
+  role: String
+  imageURL: String
+}
+
+input AddAMemberUpdateArgs {
+  where: AddAMemberWhereUniqueInput!
+  data: AddAMemberUpdateInput!
+}
+
+input AddAMemberCreateInput {
+  name: String
+  position: String
+  role: String
+  imageURL: String
+}
+
+type MeetTheTeam {
+  id: ID!
+  subHeadline: SubHeadline
+  members(where: AddAMemberWhereInput! = {}, orderBy: [AddAMemberOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AddAMemberWhereUniqueInput): [AddAMember!]
+  membersCount(where: AddAMemberWhereInput! = {}): Int
+}
+
+input MeetTheTeamWhereUniqueInput {
+  id: ID
+}
+
+input MeetTheTeamWhereInput {
+  AND: [MeetTheTeamWhereInput!]
+  OR: [MeetTheTeamWhereInput!]
+  NOT: [MeetTheTeamWhereInput!]
+  id: IDFilter
+  subHeadline: SubHeadlineWhereInput
+  members: AddAMemberManyRelationFilter
+}
+
+input AddAMemberManyRelationFilter {
+  every: AddAMemberWhereInput
+  some: AddAMemberWhereInput
+  none: AddAMemberWhereInput
+}
+
+input MeetTheTeamOrderByInput {
+  id: OrderDirection
+}
+
+input MeetTheTeamUpdateInput {
+  subHeadline: SubHeadlineRelateToOneForUpdateInput
+  members: AddAMemberRelateToManyForUpdateInput
+}
+
+input SubHeadlineRelateToOneForUpdateInput {
+  create: SubHeadlineCreateInput
+  connect: SubHeadlineWhereUniqueInput
+  disconnect: Boolean
+}
+
+input AddAMemberRelateToManyForUpdateInput {
+  disconnect: [AddAMemberWhereUniqueInput!]
+  set: [AddAMemberWhereUniqueInput!]
+  create: [AddAMemberCreateInput!]
+  connect: [AddAMemberWhereUniqueInput!]
+}
+
+input MeetTheTeamUpdateArgs {
+  where: MeetTheTeamWhereUniqueInput!
+  data: MeetTheTeamUpdateInput!
+}
+
+input MeetTheTeamCreateInput {
+  subHeadline: SubHeadlineRelateToOneForCreateInput
+  members: AddAMemberRelateToManyForCreateInput
+}
+
+input SubHeadlineRelateToOneForCreateInput {
+  create: SubHeadlineCreateInput
+  connect: SubHeadlineWhereUniqueInput
+}
+
+input AddAMemberRelateToManyForCreateInput {
+  create: [AddAMemberCreateInput!]
+  connect: [AddAMemberWhereUniqueInput!]
+}
+
+type WantToJoinUs {
+  id: ID!
+  title: String
+  subHeadline: SubHeadline
+  emailbutton: String
+}
+
+input WantToJoinUsWhereUniqueInput {
+  id: ID
+}
+
+input WantToJoinUsWhereInput {
+  AND: [WantToJoinUsWhereInput!]
+  OR: [WantToJoinUsWhereInput!]
+  NOT: [WantToJoinUsWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  subHeadline: SubHeadlineWhereInput
+  emailbutton: StringFilter
+}
+
+input WantToJoinUsOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  emailbutton: OrderDirection
+}
+
+input WantToJoinUsUpdateInput {
+  title: String
+  subHeadline: SubHeadlineRelateToOneForUpdateInput
+  emailbutton: String
+}
+
+input WantToJoinUsUpdateArgs {
+  where: WantToJoinUsWhereUniqueInput!
+  data: WantToJoinUsUpdateInput!
+}
+
+input WantToJoinUsCreateInput {
+  title: String
+  subHeadline: SubHeadlineRelateToOneForCreateInput
+  emailbutton: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -915,6 +1348,60 @@ type Mutation {
   updateachievementSection(data: [AchievementUpdateArgs!]!): [Achievement]
   deleteAchievement(where: AchievementWhereUniqueInput!): Achievement
   deleteachievementSection(where: [AchievementWhereUniqueInput!]!): [Achievement]
+  createMawahebTopic(data: MawahebTopicCreateInput!): MawahebTopic
+  createMawahebTopics(data: [MawahebTopicCreateInput!]!): [MawahebTopic]
+  updateMawahebTopic(where: MawahebTopicWhereUniqueInput!, data: MawahebTopicUpdateInput!): MawahebTopic
+  updateMawahebTopics(data: [MawahebTopicUpdateArgs!]!): [MawahebTopic]
+  deleteMawahebTopic(where: MawahebTopicWhereUniqueInput!): MawahebTopic
+  deleteMawahebTopics(where: [MawahebTopicWhereUniqueInput!]!): [MawahebTopic]
+  createMawahebDescription(data: MawahebDescriptionCreateInput!): MawahebDescription
+  createMawahebDescriptions(data: [MawahebDescriptionCreateInput!]!): [MawahebDescription]
+  updateMawahebDescription(where: MawahebDescriptionWhereUniqueInput!, data: MawahebDescriptionUpdateInput!): MawahebDescription
+  updateMawahebDescriptions(data: [MawahebDescriptionUpdateArgs!]!): [MawahebDescription]
+  deleteMawahebDescription(where: MawahebDescriptionWhereUniqueInput!): MawahebDescription
+  deleteMawahebDescriptions(where: [MawahebDescriptionWhereUniqueInput!]!): [MawahebDescription]
+  createMawaheb(data: MawahebCreateInput!): Mawaheb
+  createmawahebSection(data: [MawahebCreateInput!]!): [Mawaheb]
+  updateMawaheb(where: MawahebWhereUniqueInput!, data: MawahebUpdateInput!): Mawaheb
+  updatemawahebSection(data: [MawahebUpdateArgs!]!): [Mawaheb]
+  deleteMawaheb(where: MawahebWhereUniqueInput!): Mawaheb
+  deletemawahebSection(where: [MawahebWhereUniqueInput!]!): [Mawaheb]
+  createImageSwiper(data: ImageSwiperCreateInput!): ImageSwiper
+  createimageSwiperSection(data: [ImageSwiperCreateInput!]!): [ImageSwiper]
+  updateImageSwiper(where: ImageSwiperWhereUniqueInput!, data: ImageSwiperUpdateInput!): ImageSwiper
+  updateimageSwiperSection(data: [ImageSwiperUpdateArgs!]!): [ImageSwiper]
+  deleteImageSwiper(where: ImageSwiperWhereUniqueInput!): ImageSwiper
+  deleteimageSwiperSection(where: [ImageSwiperWhereUniqueInput!]!): [ImageSwiper]
+  createHowWeMakeDiff(data: HowWeMakeDiffCreateInput!): HowWeMakeDiff
+  createHowWeMakeDiffSection(data: [HowWeMakeDiffCreateInput!]!): [HowWeMakeDiff]
+  updateHowWeMakeDiff(where: HowWeMakeDiffWhereUniqueInput!, data: HowWeMakeDiffUpdateInput!): HowWeMakeDiff
+  updateHowWeMakeDiffSection(data: [HowWeMakeDiffUpdateArgs!]!): [HowWeMakeDiff]
+  deleteHowWeMakeDiff(where: HowWeMakeDiffWhereUniqueInput!): HowWeMakeDiff
+  deleteHowWeMakeDiffSection(where: [HowWeMakeDiffWhereUniqueInput!]!): [HowWeMakeDiff]
+  createSubHeadline(data: SubHeadlineCreateInput!): SubHeadline
+  createsubHeadlines(data: [SubHeadlineCreateInput!]!): [SubHeadline]
+  updateSubHeadline(where: SubHeadlineWhereUniqueInput!, data: SubHeadlineUpdateInput!): SubHeadline
+  updatesubHeadlines(data: [SubHeadlineUpdateArgs!]!): [SubHeadline]
+  deleteSubHeadline(where: SubHeadlineWhereUniqueInput!): SubHeadline
+  deletesubHeadlines(where: [SubHeadlineWhereUniqueInput!]!): [SubHeadline]
+  createAddAMember(data: AddAMemberCreateInput!): AddAMember
+  createteamMembers(data: [AddAMemberCreateInput!]!): [AddAMember]
+  updateAddAMember(where: AddAMemberWhereUniqueInput!, data: AddAMemberUpdateInput!): AddAMember
+  updateteamMembers(data: [AddAMemberUpdateArgs!]!): [AddAMember]
+  deleteAddAMember(where: AddAMemberWhereUniqueInput!): AddAMember
+  deleteteamMembers(where: [AddAMemberWhereUniqueInput!]!): [AddAMember]
+  createMeetTheTeam(data: MeetTheTeamCreateInput!): MeetTheTeam
+  createmeetTheTeamSection(data: [MeetTheTeamCreateInput!]!): [MeetTheTeam]
+  updateMeetTheTeam(where: MeetTheTeamWhereUniqueInput!, data: MeetTheTeamUpdateInput!): MeetTheTeam
+  updatemeetTheTeamSection(data: [MeetTheTeamUpdateArgs!]!): [MeetTheTeam]
+  deleteMeetTheTeam(where: MeetTheTeamWhereUniqueInput!): MeetTheTeam
+  deletemeetTheTeamSection(where: [MeetTheTeamWhereUniqueInput!]!): [MeetTheTeam]
+  createWantToJoinUs(data: WantToJoinUsCreateInput!): WantToJoinUs
+  createwantToJoinUsSection(data: [WantToJoinUsCreateInput!]!): [WantToJoinUs]
+  updateWantToJoinUs(where: WantToJoinUsWhereUniqueInput!, data: WantToJoinUsUpdateInput!): WantToJoinUs
+  updatewantToJoinUsSection(data: [WantToJoinUsUpdateArgs!]!): [WantToJoinUs]
+  deleteWantToJoinUs(where: WantToJoinUsWhereUniqueInput!): WantToJoinUs
+  deletewantToJoinUsSection(where: [WantToJoinUsWhereUniqueInput!]!): [WantToJoinUs]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -983,6 +1470,33 @@ type Query {
   achievement(where: AchievementWhereUniqueInput!): Achievement
   achievementSection(where: AchievementWhereInput! = {}, orderBy: [AchievementOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AchievementWhereUniqueInput): [Achievement!]
   achievementSectionCount(where: AchievementWhereInput! = {}): Int
+  mawahebTopic(where: MawahebTopicWhereUniqueInput!): MawahebTopic
+  mawahebTopics(where: MawahebTopicWhereInput! = {}, orderBy: [MawahebTopicOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MawahebTopicWhereUniqueInput): [MawahebTopic!]
+  mawahebTopicsCount(where: MawahebTopicWhereInput! = {}): Int
+  mawahebDescription(where: MawahebDescriptionWhereUniqueInput!): MawahebDescription
+  mawahebDescriptions(where: MawahebDescriptionWhereInput! = {}, orderBy: [MawahebDescriptionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MawahebDescriptionWhereUniqueInput): [MawahebDescription!]
+  mawahebDescriptionsCount(where: MawahebDescriptionWhereInput! = {}): Int
+  mawaheb(where: MawahebWhereUniqueInput!): Mawaheb
+  mawahebSection(where: MawahebWhereInput! = {}, orderBy: [MawahebOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MawahebWhereUniqueInput): [Mawaheb!]
+  mawahebSectionCount(where: MawahebWhereInput! = {}): Int
+  imageSwiper(where: ImageSwiperWhereUniqueInput!): ImageSwiper
+  imageSwiperSection(where: ImageSwiperWhereInput! = {}, orderBy: [ImageSwiperOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ImageSwiperWhereUniqueInput): [ImageSwiper!]
+  imageSwiperSectionCount(where: ImageSwiperWhereInput! = {}): Int
+  howWeMakeDiff(where: HowWeMakeDiffWhereUniqueInput!): HowWeMakeDiff
+  howWeMakeDiffSection(where: HowWeMakeDiffWhereInput! = {}, orderBy: [HowWeMakeDiffOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: HowWeMakeDiffWhereUniqueInput): [HowWeMakeDiff!]
+  howWeMakeDiffSectionCount(where: HowWeMakeDiffWhereInput! = {}): Int
+  subHeadline(where: SubHeadlineWhereUniqueInput!): SubHeadline
+  subHeadlines(where: SubHeadlineWhereInput! = {}, orderBy: [SubHeadlineOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SubHeadlineWhereUniqueInput): [SubHeadline!]
+  subHeadlinesCount(where: SubHeadlineWhereInput! = {}): Int
+  addAMember(where: AddAMemberWhereUniqueInput!): AddAMember
+  teamMembers(where: AddAMemberWhereInput! = {}, orderBy: [AddAMemberOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AddAMemberWhereUniqueInput): [AddAMember!]
+  teamMembersCount(where: AddAMemberWhereInput! = {}): Int
+  meetTheTeam(where: MeetTheTeamWhereUniqueInput!): MeetTheTeam
+  meetTheTeamSection(where: MeetTheTeamWhereInput! = {}, orderBy: [MeetTheTeamOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MeetTheTeamWhereUniqueInput): [MeetTheTeam!]
+  meetTheTeamSectionCount(where: MeetTheTeamWhereInput! = {}): Int
+  wantToJoinUs(where: WantToJoinUsWhereUniqueInput!): WantToJoinUs
+  wantToJoinUsSection(where: WantToJoinUsWhereInput! = {}, orderBy: [WantToJoinUsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: WantToJoinUsWhereUniqueInput): [WantToJoinUs!]
+  wantToJoinUsSectionCount(where: WantToJoinUsWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

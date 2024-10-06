@@ -113,3 +113,64 @@ export const GET_ACHIEVEMENTS_QUERY = `
     }
   }
 `;
+
+export const GET_MAWAHEB_QUERY = `
+  query {
+    mawahebSection {
+      mawahebTopics {
+        topic
+      }
+      mawahebDescription {
+        description
+      }
+    }
+  }
+`;
+
+export const GET_IMAGE_SWIPER_QUERY = `
+  query {
+    imageSwiperSection {
+      imageURL
+    }
+  }
+`;
+
+export const GET_HOW_WE_MAKE_DIFF_QUERY = `
+  query {
+    howWeMakeDiffSection {
+      id
+      title
+      description
+      iconSVG
+      belongingText
+    }
+  }
+`;
+
+export const GET_MEET_THE_TEAM_QUERY = `
+  query {
+    meetTheTeamSection {
+      subHeadline {
+        content
+      }
+      members {
+        name
+        position
+        role
+        imageURL
+      }
+    }
+  }
+`;
+
+export const GET_WANT_TO_JOIN_US_QUERY = `
+  query {
+    wantToJoinUsSection {
+      title
+      subHeadline {
+        content
+      }
+      emailbutton
+    }
+  }
+`;
