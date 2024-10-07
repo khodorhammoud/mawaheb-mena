@@ -325,6 +325,7 @@ export const lists = {
       plural: "imageSwiperSection", // GraphQL plural name for Mawaheb
     },
   }),
+
   HowWeMakeDiff: list({
     access: allowAll,
     fields: {
@@ -345,8 +346,6 @@ export const lists = {
     },
   }),
 
-  // Define SubHeadline data model
-  // Define SubHeadline data model
   SubHeadline: list({
     access: allowAll,
     fields: {
@@ -363,7 +362,6 @@ export const lists = {
     },
   }),
 
-  // Define AddAMember data model
   AddAMember: list({
     access: allowAll,
     fields: {
@@ -383,7 +381,6 @@ export const lists = {
     },
   }),
 
-  // Define MeetTheTeam data model
   MeetTheTeam: list({
     access: allowAll,
     fields: {
@@ -435,11 +432,6 @@ export const lists = {
       }),
       emailbutton: text({ validation: { isRequired: true } }),
     },
-    // ui: {
-    //   listView: {
-    //     initialColumns: ["subHeadline"], // Display subHeadline and members in list view
-    //   },
-    // },
     graphql: {
       plural: "wantToJoinUsSection", // Custom plural name for GraphQL API
     },

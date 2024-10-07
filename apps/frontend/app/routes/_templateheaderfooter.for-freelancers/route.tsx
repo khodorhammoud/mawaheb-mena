@@ -3,65 +3,23 @@ import { json, LoaderFunctionArgs } from "@remix-run/node";
 import ForFreelancersPage from "./ForFreelancers";
 import { fetchCMSData } from "~/api/fetch-cms-data.server";
 import {
-  GET_FEATURES_QUERY,
-  GET_FOREMPLOYERSSUBHEADLINE_QUERY,
   GET_HOW_IT_WORKS_QUERY,
-  GET_POSTHOWITWORKS_QUERY,
   GET_PREWHATTHEYSAYABOUTUS_QUERY,
   GET_WHYWORKWITHUS_QUERY,
   GET_FAQS_QUERY,
   GET_TESTIMONIALS_QUERY,
-  GET_BLOG_CARDS_QUERY,
   GET_ALL_JOBS_QUERY,
   GET_ACHIEVEMENTS_QUERY,
 } from "../../../../shared/cms-queries"; // the problem here is that i cant delete anything in the loader here eventhough i dont need the subheadline or features or blogCards
-
-interface HowItWorksItem {
-  stepNb: number;
-  title: string;
-  description: string;
-  imageUrl?: string;
-}
-
-interface PreWhatTheySayAboutUs {
-  content: string;
-}
-
-interface WhyWorkWithUs {
-  title: string;
-  description: string;
-}
-
-interface FAQ {
-  faqNb: number;
-  faqQuestion: string;
-  faqAnswer: string;
-}
-
-interface Testimonial {
-  iconSVG?: string;
-  comment: string;
-  imageURL?: string;
-  name: string;
-  role: string;
-}
-
-interface Job {
-  id: string;
-  jobTitle: string;
-  postedFrom: number;
-  priceAmout: number;
-  priceType: string;
-  levelRequired: string;
-  jobDesc: string;
-  jobSkills: { id: string; name: string };
-}
-
-interface Achievement {
-  title: string;
-  count: number;
-  desc: string;
-}
+import {
+  HowItWorksItem,
+  PreWhatTheySayAboutUs,
+  WhyWorkWithUs,
+  FAQ,
+  Testimonial,
+  Job,
+  Achievement,
+} from "../../types/PageContent";
 
 interface LoaderData {
   howItWorksItems: HowItWorksItem[];
@@ -75,15 +33,11 @@ interface LoaderData {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const dataResponse = await fetchCMSData([
-    GET_FEATURES_QUERY,
-    GET_FOREMPLOYERSSUBHEADLINE_QUERY,
     GET_HOW_IT_WORKS_QUERY,
-    GET_POSTHOWITWORKS_QUERY,
     GET_PREWHATTHEYSAYABOUTUS_QUERY,
     GET_WHYWORKWITHUS_QUERY,
     GET_FAQS_QUERY,
     GET_TESTIMONIALS_QUERY,
-    GET_BLOG_CARDS_QUERY,
     GET_ALL_JOBS_QUERY,
     GET_ACHIEVEMENTS_QUERY,
   ]);

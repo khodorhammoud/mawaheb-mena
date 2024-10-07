@@ -12,56 +12,17 @@ import {
   GET_TESTIMONIALS_QUERY,
   GET_BLOG_CARDS_QUERY,
 } from "../../../../shared/cms-queries";
-
-interface HowItWorksItem {
-  stepNb: number;
-  title: string;
-  description: string;
-  imageUrl?: string;
-}
-
-interface SubHeadline {
-  content: string;
-}
-
-interface Feature {
-  title: string;
-  description: string;
-}
-
-interface PostHowItWorksItem {
-  content: string;
-}
-
-interface PreWhatTheySayAboutUs {
-  content: string;
-}
-
-interface WhyWorkWithUs {
-  title: string;
-  description: string;
-}
-
-interface FAQ {
-  faqNb: number;
-  faqQuestion: string;
-  faqAnswer: string;
-}
-
-interface Testimonial {
-  iconSVG?: string;
-  comment: string;
-  imageURL?: string;
-  name: string;
-  role: string;
-}
-
-interface BlogCard {
-  imageURL?: string;
-  name?: string;
-  readFrom: string;
-  content: string;
-}
+import {
+  HowItWorksItem,
+  SubHeadline,
+  Feature,
+  PostHowItWorksItem,
+  PreWhatTheySayAboutUs,
+  WhyWorkWithUs,
+  FAQ,
+  Testimonial,
+  BlogCard,
+} from "../../types/PageContent";
 
 interface LoaderData {
   subHeadline: SubHeadline;
@@ -88,7 +49,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     GET_BLOG_CARDS_QUERY,
   ]);
 
-  // extracting the data fetched from the dataResponse, and making or null if there is an error in fetching
   const subHeadline: SubHeadline = dataResponse[1]?.data
     ?.forEmployersSubHeadlines?.[0] || {
     content: "Default forEmployersSubheadline content",
@@ -97,29 +57,22 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const howItWorksItems: HowItWorksItem[] =
     dataResponse[2]?.data?.howItWorksItems || [];
   const features: Feature[] = dataResponse[0]?.data?.features || [];
-
   const postHowItWorks: PostHowItWorksItem = dataResponse[3]?.data
     ?.postHowItWorksSection?.[0] || {
     content: "Default PostHowItWorks content",
   };
-
   const preWhatTheySayAboutUs: PreWhatTheySayAboutUs = dataResponse[4]?.data
     ?.preWhatTheySayAboutUsSection?.[0] || {
     content: "Default PreWhatTheySayAboutUs content",
   };
-
   const whyWorkWithUsSection: WhyWorkWithUs[] =
     dataResponse[5]?.data?.whyWorkWithUsSection || [];
-
   const faqSection: FAQ[] = dataResponse[6]?.data?.faqSection || [];
-
   const testimonialsSection: Testimonial[] =
     dataResponse[7]?.data?.testimonialsSection || [];
-
   const blogCardSection: BlogCard[] =
     dataResponse[8]?.data?.blogCardSection || [];
 
-  // Return all the data
   return json<LoaderData>({
     subHeadline,
     howItWorksItems,
