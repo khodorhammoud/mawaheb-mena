@@ -16,11 +16,10 @@ import {
   GET_MAWAHEB_QUERY,
   GET_IMAGE_SWIPER_QUERY,
   GET_HOW_WE_MAKE_DIFF_QUERY,
-  GET_MEET_THE_TEAM_QUERY, // Adding the MeetTheTeam query here
-  GET_WANT_TO_JOIN_US_QUERY, // Adding the WantToJoinUs query here
+  GET_MEET_THE_TEAM_QUERY,
+  GET_WANT_TO_JOIN_US_QUERY,
 } from "../../../shared/cms-queries";
 
-// Define interfaces for the fetched data
 interface HowItWorksItem {
   stepNb: number;
   title: string;
@@ -113,7 +112,6 @@ interface HowWeMakeDiff {
   belongingText: string;
 }
 
-// Define MeetTheTeam interface
 interface TeamMember {
   name: string;
   position: string;
@@ -169,11 +167,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     GET_MAWAHEB_QUERY,
     GET_IMAGE_SWIPER_QUERY,
     GET_HOW_WE_MAKE_DIFF_QUERY,
-    GET_MEET_THE_TEAM_QUERY, // Fetching the MeetTheTeam query
-    GET_WANT_TO_JOIN_US_QUERY, // Fetching the WantToJoinUs query
+    GET_MEET_THE_TEAM_QUERY,
+    GET_WANT_TO_JOIN_US_QUERY,
   ]);
 
-  // Extract data or provide default values
   const subHeadline: SubHeadline = dataResponse[1]?.data
     ?.forEmployersSubHeadlines?.[0] || {
     content: "Default forEmployersSubheadline content",
@@ -219,30 +216,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const wantToJoinUsSection: WantToJoinUs[] =
     dataResponse[15]?.data?.wantToJoinUsSection || [];
 
-  console.log(
-    "Full Data Response from CMS:",
-    JSON.stringify(dataResponse, null, 2)
-  );
-
-  // Log individual extracted data for debugging
-  console.log("Extracted Subheadline:", subHeadline);
-  console.log("Extracted How It Works Items:", howItWorksItems);
-  console.log("Extracted Features:", features);
-  console.log("Extracted Post How It Works:", postHowItWorks);
-  console.log("Extracted Pre What They Say About Us:", preWhatTheySayAboutUs);
-  console.log("Extracted Why Work With Us:", whyWorkWithUsSection);
-  console.log("Extracted FAQs:", faqSection);
-  console.log("Extracted Testimonials:", testimonialsSection);
-  console.log("Extracted Blog Cards:", blogCardSection);
-  console.log("Extracted Job Data:", jobSection);
-  console.log("Extracted Achievements:", achievementSection);
-  console.log("Extracted Mawaheb Data:", mawahebSection);
-  console.log("Extracted ImageSwiper Data:", imageSwiperSection);
-  console.log("Extracted HowWeMakeDiff Data:", howWeMakeDiffSection);
-  console.log("Extracted MeetTheTeam Data:", meetTheTeamSection);
-  console.log("Extracted WantToJoinUs Data:", wantToJoinUsSection);
-
-  // Return all the extracted data
   return json<LoaderData>({
     subHeadline,
     howItWorksItems,
@@ -258,8 +231,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     mawahebSection,
     imageSwiperSection,
     howWeMakeDiffSection,
-    meetTheTeamSection, // Return MeetTheTeam data
-    wantToJoinUsSection, // Return WantToJoinUs data
+    meetTheTeamSection,
+    wantToJoinUsSection,
   });
 };
 
