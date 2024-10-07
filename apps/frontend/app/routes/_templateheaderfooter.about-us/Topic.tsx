@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 
+// code of the animation of the word is till the line 74 (or till line 114)
 const Topic: React.FC = () => {
   const [lineWidth, setLineWidth] = useState(400); // Base width for large screens
   const [expandedRight1Width, setExpandedRight1Width] = useState(420); // Width after first expansion
