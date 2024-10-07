@@ -10,7 +10,7 @@ import {
   GET_TESTIMONIALS_QUERY,
   GET_ALL_JOBS_QUERY,
   GET_ACHIEVEMENTS_QUERY,
-} from "../../../../shared/cms-queries"; // the problem here is that i cant delete anything in the loader here eventhough i dont need the subheadline or features or blogCards
+} from "../../../../shared/cms-queries"; // the problem here is that i cant delete anything in the loader here eventhough i dont need the subheadline or features or blogCard
 import {
   HowItWorksItem,
   PreWhatTheySayAboutUs,
@@ -43,25 +43,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   ]);
 
   const howItWorksItems: HowItWorksItem[] =
-    dataResponse[2]?.data?.howItWorksItems || [];
+    dataResponse[0]?.data?.howItWorksItems || [];
 
-  const preWhatTheySayAboutUs: PreWhatTheySayAboutUs = dataResponse[4]?.data
+  const preWhatTheySayAboutUs: PreWhatTheySayAboutUs = dataResponse[1]?.data
     ?.preWhatTheySayAboutUsSection?.[0] || {
     content: "Default PreWhatTheySayAboutUs content",
   };
 
   const whyWorkWithUsSection: WhyWorkWithUs[] =
-    dataResponse[5]?.data?.whyWorkWithUsSection || [];
+    dataResponse[2]?.data?.whyWorkWithUsSection || [];
 
-  const faqSection: FAQ[] = dataResponse[6]?.data?.faqSection || [];
+  const faqSection: FAQ[] = dataResponse[3]?.data?.faqSection || [];
 
   const testimonialsSection: Testimonial[] =
-    dataResponse[7]?.data?.testimonialsSection || [];
+    dataResponse[4]?.data?.testimonialsSection || [];
 
-  const jobSection: Job[] = dataResponse[9]?.data?.jobSection || [];
+  const jobSection: Job[] = dataResponse[5]?.data?.jobSection || [];
 
   const achievementSection: Achievement[] =
-    dataResponse[10]?.data?.achievementSection || [];
+    dataResponse[6]?.data?.achievementSection || [];
 
   return json<LoaderData>({
     howItWorksItems,

@@ -38,25 +38,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   ]);
 
   const achievementSection: Achievement[] =
-    dataResponse[10]?.data?.achievementSection || [];
+    dataResponse[0]?.data?.achievementSection || [];
 
   const mawahebSection: Mawaheb[] =
-    dataResponse[11]?.data?.mawahebSection?.map((item: any) => ({
+    dataResponse[1]?.data?.mawahebSection?.map((item: any) => ({
       mawahebTopics: item.mawahebTopics || [],
       mawahebDescription: item.mawahebDescription || [],
     })) || [];
 
   const imageSwiperSection: ImageSwiper[] =
-    dataResponse[12]?.data?.imageSwiperSection || [];
+    dataResponse[2]?.data?.imageSwiperSection || [];
 
   const howWeMakeDiffSection: HowWeMakeDiff[] =
-    dataResponse[13]?.data?.howWeMakeDiffSection || [];
+    dataResponse[3]?.data?.howWeMakeDiffSection || [];
 
   const meetTheTeamSection: MeetTheTeam[] =
-    dataResponse[14]?.data?.meetTheTeamSection || [];
+    dataResponse[4]?.data?.meetTheTeamSection || [];
 
   const wantToJoinUsSection: WantToJoinUs[] =
-    dataResponse[15]?.data?.wantToJoinUsSection || [];
+    dataResponse[5]?.data?.wantToJoinUsSection || [];
 
   return json<LoaderData>({
     achievementSection,
