@@ -1,34 +1,37 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useLoaderData } from "@remix-run/react";
 
+// Interface for the dynamic team members fetched from CMS
 interface TeamMember {
   name: string;
+  position: string;
   role: string;
-  imageSrc: string;
+  imageURL: string;
 }
 
-const teamMembers: TeamMember[] = [
-  {
-    name: "Samir Awarkeh (Founder)",
-    role: "Executive Creative Director",
-    imageSrc:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg", // Replace with the correct image path
-  },
-  {
-    name: "Ibrahim Ammar (Founder)",
-    role: "Managing Director & CTO",
-    imageSrc:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg", // Replace with the correct image path
-  },
-  {
-    name: "Khodor Hammoud (Founder)",
-    role: "Operations Director",
-    imageSrc:
-      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg", // Replace with the correct image path
-  },
-];
+interface LoaderData {
+  meetTheTeamSection: {
+    subHeadline: {
+      content: string;
+    };
+    members: TeamMember[];
+  }[];
+}
 
 const MeetTheTeam: React.FC = () => {
+  // Fetch data using the useLoaderData hook
+  const { meetTheTeamSection } = useLoaderData<LoaderData>();
+
+  // Safety check: Make sure meetTheTeamSections is not empty
+  if (!meetTheTeamSection || meetTheTeamSection.length === 0) {
+    return <p>No team data available.</p>; // Show fallback message if no data is available
+  }
+
+  // Extract the subheadline and team members from the loader data
+  const subHeadline = meetTheTeamSection[0]?.subHeadline?.content || "";
+  const teamMembers = meetTheTeamSection[0]?.members || [];
+
   const [hoveredMember, setHoveredMember] = useState<TeamMember | null>(null);
 
   return (
@@ -39,10 +42,7 @@ const MeetTheTeam: React.FC = () => {
             MEET THE TEAM
           </h2>
           <p className="mt-10 mb-10 max-w-xl md:text-lg text-base text-black">
-            At Mawaheb MENA, our team is the heart and soul of our organization.
-            Comprised of passionate individuals with diverse backgrounds and
-            expertise, we're united by our shared commitment to empowering
-            freelancers and driving success for our clients.
+            {subHeadline}
           </p>
         </div>
 
@@ -54,7 +54,6 @@ const MeetTheTeam: React.FC = () => {
                   key={index}
                   className="flex lg:justify-between items-center cursor-pointer py-4 border-b-[2px] border-gray-300 hover:bg-gray-100"
                   onMouseEnter={() => setHoveredMember(member)}
-                  // onMouseLeave={() => setHoveredMember(null)} // Reset to default state on mouse leave
                 >
                   <span
                     className={`xl:text-3xl lg:text-2xl md:text-xl sm:text-lg text-base my-2 md:mr-20 mr-10 font-normal ${
@@ -104,7 +103,7 @@ const MeetTheTeam: React.FC = () => {
               // Image of the hovered team member
               <motion.img
                 key={hoveredMember.name}
-                src={hoveredMember.imageSrc}
+                src={hoveredMember.imageURL}
                 alt={hoveredMember.name}
                 initial={{
                   opacity: 0,

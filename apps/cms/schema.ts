@@ -243,7 +243,7 @@ export const lists = {
   Achievement: list({
     access: allowAll,
     fields: {
-      title: text({ validation: { isRequired: false } }),
+      title: text({ validation: { isRequired: true } }),
       count: integer({ validation: { isRequired: true } }),
       desc: text({
         ui: { displayMode: "textarea" },
@@ -252,6 +252,188 @@ export const lists = {
     },
     graphql: {
       plural: "achievementSection", // same as the query inner name ❤️
+    },
+  }),
+
+  MawahebTopic: list({
+    access: allowAll,
+    fields: {
+      topic: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    ui: {
+      isHidden: true,
+      listView: {
+        initialColumns: ["topic"],
+      },
+    },
+  }),
+
+  MawahebDescription: list({
+    access: allowAll,
+    fields: {
+      description: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    ui: {
+      isHidden: true,
+      listView: {
+        initialColumns: ["description"],
+      },
+    },
+  }),
+
+  Mawaheb: list({
+    access: allowAll,
+    fields: {
+      mawahebTopics: relationship({
+        ref: "MawahebTopic", // Relates to MawahebTopic
+        many: true, // Allows multiple topics to be added
+        ui: {
+          displayMode: "cards",
+          cardFields: ["topic"], // Show topic name on card
+          inlineCreate: { fields: ["topic"] }, // Allow creating new topics inline
+          inlineEdit: { fields: ["topic"] }, // Allow editing topics inline
+        },
+      }),
+      mawahebDescription: relationship({
+        ref: "MawahebDescription", // Relates to MawahebDescription
+        many: true, // Allows multiple descriptions to be added
+        ui: {
+          displayMode: "cards",
+          cardFields: ["description"], // Show description on card
+          inlineCreate: { fields: ["description"] }, // Allow creating new descriptions inline
+          inlineEdit: { fields: ["description"] }, // Allow editing descriptions inline
+        },
+      }),
+    },
+    graphql: {
+      plural: "mawahebSection", // GraphQL plural name for Mawaheb
+    },
+  }),
+
+  ImageSwiper: list({
+    access: allowAll,
+    fields: {
+      imageURL: text({ validation: { isRequired: true } }),
+    },
+    graphql: {
+      plural: "imageSwiperSection", // GraphQL plural name for Mawaheb
+    },
+  }),
+
+  HowWeMakeDiff: list({
+    access: allowAll,
+    fields: {
+      boxId: integer({ validation: { isRequired: true } }),
+      title: text({ validation: { isRequired: true } }),
+      description: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+      iconSVG: text({ validation: { isRequired: false } }),
+      belongingText: text({
+        ui: { displayMode: "textarea" },
+        validation: { isRequired: true },
+      }),
+    },
+    graphql: {
+      plural: "HowWeMakeDiffSection",
+    },
+  }),
+
+  SubHeadline: list({
+    access: allowAll,
+    fields: {
+      content: text({
+        ui: { displayMode: "textarea" }, // This will be a textarea field
+        validation: { isRequired: true },
+      }),
+    },
+    ui: {
+      isHidden: true, // Hide from the admin UI main page
+    },
+    graphql: {
+      plural: "subHeadlines", // GraphQL API plural name
+    },
+  }),
+
+  AddAMember: list({
+    access: allowAll,
+    fields: {
+      name: text({ validation: { isRequired: true } }), // Member name
+      position: text({ validation: { isRequired: true } }), // Member position
+      role: text({ validation: { isRequired: true } }), // Member role
+      imageURL: text({ validation: { isRequired: true } }), // Member profile picture
+    },
+    ui: {
+      isHidden: true, // Hide from the admin UI main page
+      listView: {
+        initialColumns: ["name", "position", "role"], // Display key fields in the list view
+      },
+    },
+    graphql: {
+      plural: "teamMembers", // Custom plural name for the GraphQL API
+    },
+  }),
+
+  MeetTheTeam: list({
+    access: allowAll,
+    fields: {
+      // Set up a relationship field to the SubHeadline model
+      subHeadline: relationship({
+        ref: "SubHeadline", // Reference the SubHeadline model
+        ui: {
+          displayMode: "cards", // Display as cards for better UI
+          cardFields: ["content"], // Show the content of SubHeadline on the card
+          inlineCreate: { fields: ["content"] }, // Allow inline creation of SubHeadline
+          inlineEdit: { fields: ["content"] }, // Allow inline editing of SubHeadline
+        },
+      }),
+      // Add the relationship to AddAMember data model
+      members: relationship({
+        ref: "AddAMember", // Reference the AddAMember model
+        many: true, // I can add so many members
+        ui: {
+          displayMode: "cards", // Display members as cards
+          cardFields: ["name", "position", "role", "imageURL"], // Display these fields on the card
+          inlineCreate: { fields: ["name", "position", "role", "imageURL"] }, // Allow creating new members inline
+          inlineEdit: { fields: ["name", "position", "role", "imageURL"] }, // Allow editing members inline
+        },
+      }),
+    },
+    ui: {
+      listView: {
+        initialColumns: ["subHeadline", "members"], // Display subHeadline and members in list view
+      },
+    },
+    graphql: {
+      plural: "meetTheTeamSection", // Custom plural name for GraphQL API
+    },
+  }),
+
+  WantToJoinUs: list({
+    access: allowAll,
+    fields: {
+      title: text({ validation: { isRequired: true } }),
+      // Set up a relationship field to the SubHeadline model
+      subHeadline: relationship({
+        ref: "SubHeadline", // Reference the SubHeadline model
+        ui: {
+          displayMode: "cards", // Display as cards for better UI
+          cardFields: ["content"], // Show the content of SubHeadline on the card
+          inlineCreate: { fields: ["content"] }, // Allow inline creation of SubHeadline
+          inlineEdit: { fields: ["content"] }, // Allow inline editing of SubHeadline
+        },
+      }),
+      emailbutton: text({ validation: { isRequired: true } }),
+    },
+    graphql: {
+      plural: "wantToJoinUsSection", // Custom plural name for GraphQL API
     },
   }),
 } satisfies Lists;
