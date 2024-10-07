@@ -7,10 +7,8 @@ import "../../styles/wavy/wavy.css";
 type Achievement = {
   title: string;
   count: number;
-  desc: string; // `desc` instead of `description` to match CMS field names
+  desc: string;
 };
-
-const TOTAL_DURATION = 1500; // 1.5 seconds total animation duration
 
 const Achievements: React.FC = () => {
   // Fetch achievementSection from the loader data
@@ -78,6 +76,7 @@ const AnimatedCount: React.FC<AnimatedCountProps> = ({ count }) => {
   // Calculate interval and control animation
   useEffect(() => {
     if (hasAnimated) {
+      const TOTAL_DURATION = 12.5 * count; // Calculate total duration based on count
       const totalSteps = Math.ceil(count / 10); // Total number of steps needed (increments of 10)
       const stepDuration = TOTAL_DURATION / totalSteps; // Duration per step to finish at the same time
 
