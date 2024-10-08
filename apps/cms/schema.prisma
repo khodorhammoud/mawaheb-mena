@@ -153,10 +153,11 @@ model HowWeMakeDiff {
 }
 
 model SubHeadline {
-  id                            String         @id @default(uuid()) @postgresql.Uuid
-  content                       String         @default("")
-  from_MeetTheTeam_subHeadline  MeetTheTeam[]  @relation("MeetTheTeam_subHeadline")
-  from_WantToJoinUs_subHeadline WantToJoinUs[] @relation("WantToJoinUs_subHeadline")
+  id                             String          @id @default(uuid()) @postgresql.Uuid
+  content                        String          @default("")
+  from_MeetTheTeam_subHeadline   MeetTheTeam[]   @relation("MeetTheTeam_subHeadline")
+  from_WantToJoinUs_subHeadline  WantToJoinUs[]  @relation("WantToJoinUs_subHeadline")
+  from_ContactUsForm_subHeadline ContactUsForm[] @relation("ContactUsForm_subHeadline")
 }
 
 model AddAMember {
@@ -185,4 +186,24 @@ model WantToJoinUs {
   emailbutton   String       @default("")
 
   @@index([subHeadlineId])
+}
+
+model ContactUsForm {
+  id            String       @id @default(uuid()) @postgresql.Uuid
+  title         String       @default("")
+  subHeadline   SubHeadline? @relation("ContactUsForm_subHeadline", fields: [subHeadlineId], references: [id])
+  subHeadlineId String?      @map("subHeadline") @postgresql.Uuid
+
+  @@index([subHeadlineId])
+}
+
+model Location {
+  id             String    @id @default(uuid()) @postgresql.Uuid
+  location       String    @default("")
+  area           String    @default("")
+  contactNumber  String    @default("")
+  email          String    @default("")
+  googleMapsLink String    @default("")
+  localTime      DateTime?
+  imageUrl       String    @default("")
 }

@@ -109,3 +109,20 @@ export interface WantToJoinUs {
   };
   emailbutton: string;
 }
+
+export interface ContactUsForm {
+  title: string;
+  subHeadline: {
+    content: string;
+  };
+}
+
+export interface Location {
+  location: string; // e.g., "Dubai"
+  area: string; // e.g., "Business Bay"
+  contactNumber: string; // e.g., "+054 73049 95"
+  email: string; // e.g., "info@mawaheb.mena"
+  googleMapsLink: string; // Link to Google Maps location
+  localTime: string; // For example, "01:14 PM GMT+4"
+  imageUrl: string; // URL for the image displayed (e.g., Burj Khalifa image)
+}

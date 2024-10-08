@@ -1,15 +1,29 @@
+import { useLoaderData } from "@remix-run/react"; // Hook to retrieve the loader data
+
+interface ContactUsForm {
+  title: string;
+  subHeadline: {
+    content: string;
+  };
+}
+
 const Form = () => {
+  // Get the data from the loader using the useLoaderData hook
+  const { contactUsFormSection } = useLoaderData<{
+    contactUsFormSection: ContactUsForm[];
+  }>();
+  const form = contactUsFormSection[0]; // Access the first form section
+
   return (
     <div className="font-['Switzer-Regular'] grid grid-cols-1 md:grid-cols-2 items-center justify-center gap-20 my-40">
       <div className="">
         <p className="text-6xl font-['BespokeSerif-Regular'] font-bold leading-relaxed">
-          Have a question or need assistance? We're here to help! Reach out to
-          us
+          {form?.title ||
+            "Have a question or need assistance? We're here to help! Reach out to us"}
         </p>
         <p className="text-xl font-['BespokeSerif-Regular'] mt-40 mb-6">
-          Whether you have questions about our platform, need technical support,
-          or want to provide feedback, we're here to ensure you have a seamless
-          experience with Mawaheb MENA
+          {form?.subHeadline?.content ||
+            "Whether you have questions about our platform, need technical support, or want to provide feedback, we're here to ensure you have a seamless experience with Mawaheb MENA."}
         </p>
       </div>
 
