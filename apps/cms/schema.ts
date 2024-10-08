@@ -436,4 +436,53 @@ export const lists = {
       plural: "wantToJoinUsSection", // Custom plural name for GraphQL API
     },
   }),
+
+  ContactUsForm: list({
+    access: allowAll,
+    fields: {
+      title: text({ validation: { isRequired: true } }),
+      // Set up a relationship field to the SubHeadline model
+      subHeadline: relationship({
+        ref: "SubHeadline", // Reference the SubHeadline model
+        ui: {
+          displayMode: "cards", // Display as cards for better UI
+          cardFields: ["content"], // Show the content of SubHeadline on the card
+          inlineCreate: { fields: ["content"] }, // Allow inline creation of SubHeadline
+          inlineEdit: { fields: ["content"] }, // Allow inline editing of SubHeadline
+        },
+      }),
+    },
+    graphql: {
+      plural: "contactUsFormSection", // Custom plural name for GraphQL API
+    },
+  }),
+
+  Location: list({
+    access: allowAll,
+    fields: {
+      location: text({ validation: { isRequired: true } }), // e.g., "Dubai"
+      area: text({ validation: { isRequired: true } }), // e.g., "Business Bay"
+      contactNumber: text({
+        validation: { isRequired: true },
+        ui: { displayMode: "input" },
+      }), // e.g., "+054 73049 95"
+      email: text({
+        validation: {
+          isRequired: true,
+          match: { regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+        },
+      }), // e.g., "info@mawaheb.mena"
+      googleMapsLink: text({ validation: { isRequired: true } }), // Link to Google Maps location
+      localTime: timestamp(), // For example, "01:14 PM GMT+4"
+      imageUrl: text({ validation: { isRequired: true } }), // URL for the image displayed (like Burj Khalifa in the screenshot)
+    },
+    ui: {
+      listView: {
+        initialColumns: ["location", "area", "contactNumber", "email"],
+      },
+    },
+    graphql: {
+      plural: "locationSection",
+    },
+  }),
 } satisfies Lists;

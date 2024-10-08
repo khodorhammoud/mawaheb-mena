@@ -174,3 +174,28 @@ export const GET_WANT_TO_JOIN_US_QUERY = `
     }
   }
 `;
+
+export const GET_CONTACT_US_FORM_QUERY = `
+  query {
+    contactUsFormSection {
+      title
+      subHeadline {
+        content
+    }
+  }
+}
+`;
+
+export const GET_LOCATION_SECTION_QUERY = `
+  query {
+    locationSection {
+      location
+      area
+      contactNumber
+      email
+      googleMapsLink
+      localTime
+      imageUrl
+    }
+  }
+`;
