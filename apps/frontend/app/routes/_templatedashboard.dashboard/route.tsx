@@ -22,8 +22,6 @@ import { SuccessVerificationLoaderStatus } from "~/types/misc";
 // import { getCurrentEmployerAccountInfo } from "../../servers/employer.server";
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log("submitting form 22");
-
   const formdata = await request.formData();
   if (formdata.get("target-updated") == "employer-bio") {
     const employer = (await getCurrentEployerFreelancerInfo(

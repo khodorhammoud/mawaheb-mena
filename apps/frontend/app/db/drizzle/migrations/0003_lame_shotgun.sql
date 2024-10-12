@@ -1,1 +1,0 @@
-ALTER TABLE "employers" ADD COLUMN "years_in_business" integer;

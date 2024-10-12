@@ -1,51 +1,3 @@
-DO $$ BEGIN
- CREATE TYPE "public"."account_status" AS ENUM('draft', 'pending', 'published', 'closed', 'suspended');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."account_type" AS ENUM('freelancer', 'employer');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."compensation_type" AS ENUM('project-based-rate', 'hourly-rate');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."country" AS ENUM('Albania', 'Algeria', 'Bahrain', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Oman', 'Palestine', 'Qatar', 'Saudi_Arabia', 'Syria', 'Tunisia', 'Turkey', 'United_Arab_Emirates', 'Yemen');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."day_of_week" AS ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."eployer_account_type" AS ENUM('personal', 'company');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."language" AS ENUM('Spanish', 'English', 'Italian', 'Arabic', 'French', 'Turkish', 'German', 'Portuguese', 'Russian');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."project_type" AS ENUM('short-term', 'long-term', 'per-project-basis');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"first_name" varchar(80),
@@ -75,6 +27,13 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"is_creation_complete" boolean DEFAULT false
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "employer_industries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"employer_id" integer,
+	"industry_id" integer,
+	"timestamp" timestamp DEFAULT now()
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"account_id" integer,
@@ -82,7 +41,9 @@ CREATE TABLE IF NOT EXISTS "employers" (
 	"company_name" varchar(100),
 	"employer_name" varchar(100),
 	"company_email" varchar(150),
+	"about" text,
 	"industry_sector" text,
+	"years_in_business" integer,
 	"company_rep_name" varchar(100),
 	"company_rep_email" varchar(150),
 	"company_rep_position" varchar(60),
@@ -115,6 +76,32 @@ CREATE TABLE IF NOT EXISTS "industries" (
 	"label" text,
 	"metadata" text[],
 	CONSTRAINT "industries_label_unique" UNIQUE("label")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "job_categories" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"job_id" integer,
+	"industry_id" integer,
+	"timestamp" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "jobs" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"employer_id" integer,
+	"title" text,
+	"description" text,
+	"working_hours_per_week" integer,
+	"location_preference" text,
+	"required_skills" text[],
+	"project_type" "project_type",
+	"budget" integer,
+	"experience_level" text,
+	"is_active" boolean DEFAULT false,
+	"is_deleted" boolean DEFAULT false,
+	"is_draft" boolean DEFAULT true,
+	"is_closed" boolean DEFAULT false,
+	"is_paused" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "languages" (
@@ -158,6 +145,18 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "employer_industries" ADD CONSTRAINT "employer_industries_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "employer_industries" ADD CONSTRAINT "employer_industries_industry_id_industries_id_fk" FOREIGN KEY ("industry_id") REFERENCES "public"."industries"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "employers" ADD CONSTRAINT "employers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -165,6 +164,24 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "freelancers" ADD CONSTRAINT "freelancers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_categories" ADD CONSTRAINT "job_categories_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_categories" ADD CONSTRAINT "job_categories_industry_id_industries_id_fk" FOREIGN KEY ("industry_id") REFERENCES "public"."industries"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "jobs" ADD CONSTRAINT "jobs_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

@@ -1,5 +1,5 @@
 {
-  "id": "ed0d0716-d1c8-4c21-8a93-a93d1a4a3b91",
+  "id": "299441f3-556a-4d56-92d9-bdc6381e7f82",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -203,6 +203,68 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.employer_industries": {
+      "name": "employer_industries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "employer_id": {
+          "name": "employer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "industry_id": {
+          "name": "industry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "employer_industries_employer_id_employers_id_fk": {
+          "name": "employer_industries_employer_id_employers_id_fk",
+          "tableFrom": "employer_industries",
+          "tableTo": "employers",
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "employer_industries_industry_id_industries_id_fk": {
+          "name": "employer_industries_industry_id_industries_id_fk",
+          "tableFrom": "employer_industries",
+          "tableTo": "industries",
+          "columnsFrom": [
+            "industry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.employers": {
       "name": "employers",
       "schema": "",
@@ -244,9 +306,21 @@
           "primaryKey": false,
           "notNull": false
         },
+        "about": {
+          "name": "about",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "industry_sector": {
           "name": "industry_sector",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "years_in_business": {
+          "name": "years_in_business",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -469,6 +543,195 @@
         }
       }
     },
+    "public.job_categories": {
+      "name": "job_categories",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "industry_id": {
+          "name": "industry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "job_categories_job_id_jobs_id_fk": {
+          "name": "job_categories_job_id_jobs_id_fk",
+          "tableFrom": "job_categories",
+          "tableTo": "jobs",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "job_categories_industry_id_industries_id_fk": {
+          "name": "job_categories_industry_id_industries_id_fk",
+          "tableFrom": "job_categories",
+          "tableTo": "industries",
+          "columnsFrom": [
+            "industry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.jobs": {
+      "name": "jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "employer_id": {
+          "name": "employer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "working_hours_per_week": {
+          "name": "working_hours_per_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location_preference": {
+          "name": "location_preference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "required_skills": {
+          "name": "required_skills",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "project_type": {
+          "name": "project_type",
+          "type": "project_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "budget": {
+          "name": "budget",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "experience_level": {
+          "name": "experience_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "is_draft": {
+          "name": "is_draft",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "is_closed": {
+          "name": "is_closed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "is_paused": {
+          "name": "is_paused",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "jobs_employer_id_employers_id_fk": {
+          "name": "jobs_employer_id_employers_id_fk",
+          "tableFrom": "jobs",
+          "tableTo": "employers",
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.languages": {
       "name": "languages",
       "schema": "",
@@ -610,106 +873,7 @@
       "uniqueConstraints": {}
     }
   },
-  "enums": {
-    "public.account_status": {
-      "name": "account_status",
-      "schema": "public",
-      "values": [
-        "draft",
-        "pending",
-        "published",
-        "closed",
-        "suspended"
-      ]
-    },
-    "public.account_type": {
-      "name": "account_type",
-      "schema": "public",
-      "values": [
-        "freelancer",
-        "employer"
-      ]
-    },
-    "public.compensation_type": {
-      "name": "compensation_type",
-      "schema": "public",
-      "values": [
-        "project-based-rate",
-        "hourly-rate"
-      ]
-    },
-    "public.country": {
-      "name": "country",
-      "schema": "public",
-      "values": [
-        "Albania",
-        "Algeria",
-        "Bahrain",
-        "Egypt",
-        "Iran",
-        "Iraq",
-        "Jordan",
-        "Kuwait",
-        "Lebanon",
-        "Libya",
-        "Morocco",
-        "Oman",
-        "Palestine",
-        "Qatar",
-        "Saudi_Arabia",
-        "Syria",
-        "Tunisia",
-        "Turkey",
-        "United_Arab_Emirates",
-        "Yemen"
-      ]
-    },
-    "public.day_of_week": {
-      "name": "day_of_week",
-      "schema": "public",
-      "values": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ]
-    },
-    "public.eployer_account_type": {
-      "name": "eployer_account_type",
-      "schema": "public",
-      "values": [
-        "personal",
-        "company"
-      ]
-    },
-    "public.language": {
-      "name": "language",
-      "schema": "public",
-      "values": [
-        "Spanish",
-        "English",
-        "Italian",
-        "Arabic",
-        "French",
-        "Turkish",
-        "German",
-        "Portuguese",
-        "Russian"
-      ]
-    },
-    "public.project_type": {
-      "name": "project_type",
-      "schema": "public",
-      "values": [
-        "short-term",
-        "long-term",
-        "per-project-basis"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "_meta": {

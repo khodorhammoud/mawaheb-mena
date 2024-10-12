@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1727019993416,
-      "tag": "0000_certain_morgan_stark",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1727023667989,
-      "tag": "0001_peaceful_victor_mancha",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1727025330178,
-      "tag": "0002_fearless_sabretooth",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1727040627128,
-      "tag": "0003_lame_shotgun",
+      "when": 1728716083540,
+      "tag": "0000_heavy_sage",
       "breakpoints": true
     }
   ]
