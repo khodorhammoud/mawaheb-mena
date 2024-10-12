@@ -21,6 +21,8 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  locationPreferenceTypeEnum,
+  experienceLevelEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -138,6 +140,7 @@ export const freelancersTable = pgTable("freelancers", {
  * @property company_name - varchar with length 100
  * @property employer_name - varchar with length 100
  * @property company_email - varchar with length 150
+ * @property about - text
  * @property industry_sector - text
  * @property company_rep_name - varchar with length 100
  * @property company_rep_email - varchar with length 150
@@ -157,6 +160,7 @@ export const employersTable = pgTable("employers", {
   companyName: varchar("company_name", { length: 100 }),
   employerName: varchar("employer_name", { length: 100 }),
   companyEmail: varchar("company_email", { length: 150 }),
+  about: text("about"),
   industrySector: text("industry_sector"),
   yearsInBusiness: integer("years_in_business"),
   companyRepName: varchar("company_rep_name", { length: 100 }),
@@ -242,4 +246,60 @@ export const employerIndustriesTable = pgTable("employer_industries", {
   employerId: integer("employer_id").references(() => employersTable.id),
   industryId: integer("industry_id").references(() => industriesTable.id),
   createdAt: timestamp("timestamp").default(sql`now()`),
+});
+
+/**
+ * Define the JobCategories table schema lthat links jobs table to industries table
+ *
+ * @property id - serial primary key
+ * @property job_id - integer referencing the jobsTable id
+ * @property industry_id - integer referencing the industriesTable id
+ * @property timestamp - timestamp
+ */
+export const jobCategoriesTable = pgTable("job_categories", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobsTable.id),
+  industryId: integer("industry_id").references(() => industriesTable.id),
+  createdAt: timestamp("timestamp").default(sql`now()`),
+});
+
+/**
+ * Define the Jobs table schema
+ *
+ * @property id - serial primary key
+ * @property employer_id - integer referencing the employersTable id
+ * @property title - text
+ * @property description - text
+ * @property working_hours_per_week - integer
+ * @property location_preference - locationPreferenceTypeEnum
+ * @property requred_skills - text array
+ * @property project_type - projectTypeEnum
+ * @property budget - integer
+ * @property experience_level - experienceLevelEnum
+ * @property is_active - boolean
+ * @property is_deleted - boolean
+ * @property is_draft - boolean
+ * @property is_closed - boolean
+ * @property is_paused - boolean
+ * @property created_at - timestamp
+ */
+export const jobsTable = pgTable("jobs", {
+  id: serial("id").primaryKey(),
+  employerId: integer("employer_id").references(() => employersTable.id),
+  title: text("title"),
+  description: text("description"),
+  workingHoursPerWeek: integer("working_hours_per_week"),
+  locationPreference: text("location_preference"),
+  //locationPreferenceTypeEnum("location_preference_type"),
+  requiredSkills: text("required_skills").array(),
+  projectType: projectTypeEnum("project_type"),
+  budget: integer("budget"),
+  experienceLevel: text("experience_level"),
+  //experienceLevelEnum("experience_level"),
+  isActive: boolean("is_active").default(false),
+  isDeleted: boolean("is_deleted").default(false),
+  isDraft: boolean("is_draft").default(true),
+  isClosed: boolean("is_closed").default(false),
+  isPaused: boolean("is_paused").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
 });
