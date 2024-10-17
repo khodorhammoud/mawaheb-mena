@@ -1,8 +1,17 @@
 export default {
-	siteTitle: "مواهب مينا",
+	siteTitle: " مواهب مينا",
 	navigationForEmployersLable: "لأصحاب العمل",
 	navigationForFreelancersLable: "للعمل الحر",
 	navigationAboutUsLable: "من نحن",
 	navigationContactUsLable: "تواصل معنا",
 	navigationHireNowLable: "وظف الآن",
+	dashboardEmployerDashboardLable: "لوحة القيادة",
+	dashboardEmployerManageJobsLable: "إدارة الوظائف",
+	dashboardEmployerTimeSheetLable: "ورقة الوقت",
+	dashboardEmployerSettingsLable: "الإعدادات",
+	dashboardEmployeeDashboardLable: "لوحة القيادة",
+	dashboardEmployeeBrowseJobsLable: "تصفح الوظائف",
+	dashboardEmployeeTimeSheetLable: "ورقة الوقت",
+	dashboardEmployeeReportsLable: "التقارير",
+	dashboardEmployeeSettingsLable: "الإعدادات",
 };

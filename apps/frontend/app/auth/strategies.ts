@@ -1,17 +1,24 @@
 import { FormStrategy } from "remix-auth-form";
-import { getUserAccountType, getUserByEmail, registerEmployer, registerFreelancer } from "../servers/user.server";
+import {
+  getUserAccountType,
+  getUser,
+  registerEmployer,
+  registerFreelancer,
+  getEmployerFreelancerInfo,
+} from "../servers/user.server";
 import { compare } from "bcrypt-ts";
-import { EmployerAccountType, User } from "../types/User";
+import { Employer, Freelancer } from "../types/User";
+import { EmployerAccountType } from "../types/enums";
 
 export const loginStrategy = new FormStrategy(
-  async ({ form }): Promise<User> => {
+  async ({ form }): Promise<Employer | Freelancer> => {
     let email = form.get("email") as string;
     const password = form.get("password") as string;
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
-    const user = await getUserByEmail(email);
+    const user = await getUser({ userEmail: email }, true);
 
-    if (user && await getUserAccountType(user.id!) !== accountType) {
+    if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }
 
@@ -21,18 +28,20 @@ export const loginStrategy = new FormStrategy(
 
     if (!user.isVerified) throw new Error("Account not verified");
 
-    return user;
+    return await getEmployerFreelancerInfo({ userId: user.id! });
   }
 );
 
 export const registerationStrategy = new FormStrategy(
-  async ({ form }): Promise<User> => {
+  async ({ form }): Promise<Employer | Freelancer> => {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
     const firstName = form.get("firstName") as string;
     const lastName = form.get("lastName") as string;
     const accountType = form.get("accountType") as string;
-    const employerAccountType = form.get("employerAccountType") as EmployerAccountType;
+    const employerAccountType = form.get(
+      "employerAccountType"
+    ) as EmployerAccountType;
 
     let user = null;
     if (!password || !firstName || !lastName || !email) {
@@ -40,24 +49,32 @@ export const registerationStrategy = new FormStrategy(
     }
 
     try {
-
       switch (accountType) {
         case "employer":
           user = await registerEmployer({
-            firstName: firstName.toLowerCase().trim(),
-            lastName: lastName.toLowerCase().trim(),
-            email: email.toLowerCase().trim(),
-            password,
+            account: {
+              user: {
+                firstName: firstName.toLowerCase().trim(),
+                lastName: lastName.toLowerCase().trim(),
+                email: email.toLowerCase().trim(),
+                password,
+              },
+            },
             employerAccountType,
-          });
+          } as Employer);
+
           break;
         case "freelancer":
           user = await registerFreelancer({
-            firstName: firstName.toLowerCase().trim(),
-            lastName: lastName.toLowerCase().trim(),
-            email: email.toLowerCase().trim(),
-            password,
-          });
+            account: {
+              user: {
+                firstName: firstName.toLowerCase().trim(),
+                lastName: lastName.toLowerCase().trim(),
+                email: email.toLowerCase().trim(),
+                password,
+              },
+            },
+          } as Freelancer);
           break;
         default:
           throw new Error("Invalid registration type");

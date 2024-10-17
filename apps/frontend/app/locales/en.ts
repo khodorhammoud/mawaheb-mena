@@ -7,4 +7,13 @@ export default {
 	navigationHireNowLable: "Hire Now",
 	navigationJoinOurTeamLable: "Join Our Team",
 	description: "A Remix + Vite + remix-i18next example",
+	dashboardEmployerDashboardLable: "Dashboard",
+	dashboardEmployerManageJobsLable: "Manage Jobs",
+	dashboardEmployerTimeSheetLable: "Time Sheet",
+	dashboardEmployerSettingsLable: "Settings",
+	dashboardEmployeeDashboardLable: "Dashboard",
+	dashboardEmployeeBrowseJobsLable: "Browse Jobs",
+	dashboardEmployeeTimeSheetLable: "Time Sheet",
+	dashboardEmployeeReportsLable: "Reports",
+	dashboardEmployeeSettingsLable: "Settings",
 };

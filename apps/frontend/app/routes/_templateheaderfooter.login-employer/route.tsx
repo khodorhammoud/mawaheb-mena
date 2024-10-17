@@ -1,14 +1,14 @@
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import LoginEmployerPage from "./Login";
 import { authenticator } from "../../auth/auth.server";
-import { User } from "../../types/User";
+import { Employer, Freelancer } from "../../types/User";
 import { createUserSession } from "../../auth/session.server";
 import { AuthorizationError } from "remix-auth";
 
 export async function action({ request }: ActionFunctionArgs) {
-  let user: User = null;
+  let employerFreelancer: Employer | Freelancer = null;
   try {
-    user = await authenticator.authenticate("login", request, {
+    employerFreelancer = await authenticator.authenticate("login", request, {
       throwOnError: true,
     });
   } catch (error) {
@@ -31,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
   //
-  return await createUserSession(request, user, "/dashboard");
+  return await createUserSession(request, employerFreelancer, "/dashboard"); // this is not working bro wix 🌟🌟
 
   // return json({ success: true });
 }

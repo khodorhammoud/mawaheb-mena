@@ -1,11 +1,9 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { authenticator } from "./auth.server";
-import { User } from "../types/User";
-import { isUserOnboarded } from "../servers/user.server";
+import { Employer, Freelancer } from "../types/User";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "__session",
+    name: "user",
     secure: false, //process.env.NODE_ENV === "production",
     // TODO: update with environment variables
     secrets: ["s3cret1"],
@@ -20,13 +18,13 @@ export const { getSession, commitSession, destroySession } = sessionStorage;
 
 export async function createUserSession(
   request,
-  user: User,
+  user: Employer | Freelancer,
   redirectTo: string
 ) {
   const session = await getSession(request.headers.get("cookie"));
-  session.set("currentUser", user);
+  session.set("user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-  if (isUserOnboarded(user)) return redirect(redirectTo, { headers });
+  if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
   return redirect("/onboarding", { headers });
 }
 
@@ -34,8 +32,10 @@ export async function getUserSession(request: Request) {
   return getSession(request.headers.get("Cookie"));
 }
 
-export async function getCurrentUser(request: Request) {
+export async function getCurrentUser(
+  request: Request
+): Promise<Employer | Freelancer> {
   const session = await getUserSession(request);
-  const user = session.get("currentUser");
+  const user = session.get("user");
   return user || null;
 }
