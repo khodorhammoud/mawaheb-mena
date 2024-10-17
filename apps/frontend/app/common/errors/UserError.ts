@@ -12,6 +12,7 @@ export enum ErrorCode {
   INVALID_TOKEN = "Invalid token",
   EXPIRED_TOKEN = "Expired token",
   USED_TOKEN = "Token already used",
+  INTERNAL_ERROR = "Internal error",
 }
 
 export class RegistrationError extends Error {

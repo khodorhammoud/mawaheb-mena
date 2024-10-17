@@ -41,12 +41,13 @@ export async function sendEmail(params: SendEmailParams) {
     subject: params.subject,
     html: htmlContent,
   };
+
+  console.log("Sending email with Brevo", mailOptions);
   await sendEmailWithBrevo(mailOptions);
 }
 
 // TODO change brevo API
 export async function sendEmailWithBrevo(mailOptions: MailOptions) {
-
   const apiInstance = new brevo.TransactionalEmailsApi();
 
   const apiKey = apiInstance.authentications["apiKey"];
