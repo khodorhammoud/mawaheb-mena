@@ -1,28 +1,59 @@
+import { useLoaderData } from "@remix-run/react";
+
+// Define the types for Mawaheb data
+type MawahebTopic = {
+  id: string;
+  topic: string;
+};
+
+type MawahebDescription = {
+  id: string;
+  description: string;
+};
+
+type LoaderData = {
+  mawahebSection: {
+    mawahebTopics: MawahebTopic[];
+    mawahebDescription: MawahebDescription[];
+  }[];
+};
+
 const MoreAboutMawaheb = () => {
+  // Fetch data from loader
+  const { mawahebSection } = useLoaderData<LoaderData>();
+
+  // Extract the first Mawaheb item (you can adjust if needed)
+  const mawaheb = mawahebSection[0];
+
   return (
     <section className="grid grid-cols-2 mb-20 font-['Switzer-Regular']">
+      {/* First div: Display all MawahebTopics with 2 <br> elements between them */}
       <div className="">
         <p className="text-gray-600 text-lg w-[90%] ml-2 tracking-wider">
-          Mawaheb MENA is more than just a job platform; it is a digital dynamic
-          community dedicated to empowering freelancers, fostering skill
-          enhancement, and facilitating seamless connections between skilled
-          professionals and clients.
+          {mawaheb?.mawahebTopics?.map((topic, index) => (
+            <span key={topic.id}>
+              {topic.topic}
+              {index < mawaheb.mawahebTopics.length - 1 && (
+                <>
+                  <br />
+                  <br />
+                </>
+              )}
+            </span>
+          )) || "Default topics for Mawaheb."}
         </p>
       </div>
 
+      {/* Second div: Display all MawahebDescription */}
       <div className="">
         <p className="text-2xl w-[90%] ml-6 text-black leading-relaxed">
-          We envision Mawaheb MENA as the paramount platform where talent meets
-          opportunity, revolutionizing the freelance landscape in the MENA
-          region and beyond. <br /> <br /> Our purpose is to serve as a catalyst
-          for growth and opportunity, bridging the gap between talent and
-          success in the MENA freelance ecosystem. We exist to empower
-          freelancers with the skills, resources, and connections they need to
-          thrive, while providing clients with access to top-tier professionals
-          who can bring their jobs to life. <br /> <br /> Our mission is to
-          uplift the freelance community in the MENA region by providing
-          top-notch skills training, robust verification processes, and
-          unparalleled opportunities for growth and collaboration.
+          {mawaheb?.mawahebDescription?.map((desc) => (
+            <span key={desc.id}>
+              {desc.description}
+              <br />
+              <br />
+            </span>
+          )) || "Default descriptions for Mawaheb."}
         </p>
       </div>
     </section>
