@@ -38,6 +38,10 @@ import { sql } from "drizzle-orm";
  * @property {boolean} is_verified - Verification status of the user account
  * @property {boolean} is_onboarded - Onboarding status of the user account
  */
+
+// each of these are tables, and in each tables, and each row here represent a column in our db schema (in neon)
+// the first word 'firstName' represent the keyword we wil use in our code (our code reference), and the second name 'first_name' is the name of the column that appears in our db (the standart naming for postgres is fname_lname)
+
 export const UsersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   firstName: varchar("first_name", { length: 80 }),
@@ -61,15 +65,15 @@ export const UsersTable = pgTable("users", {
  * @property phone - varchar with length 30
  */
 export const accountsTable = pgTable("accounts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => UsersTable.id),
+  id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
+  userId: integer("user_id").references(() => UsersTable.id), // foreign key
   accountType: accountTypeEnum("account_type"),
   // freelancerId: integer("freelancerId").references(() => freelancersTable.id),
   // employerId: integer("employerId").references(() => employersTable.id),
   location: varchar("location", { length: 150 }),
-  country: countryEnum("country"),
+  country: countryEnum("country"), // countryEnum is a variable, and we are calling it only, and the name inside paranthesis is the one that will apear in the table schema // click on countryEnum if you want
   region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("account_status"),
+  accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
   phone: varchar("phone", { length: 30 }),
   isCreationComplete: boolean("is_creation_complete").default(false),
 });
@@ -137,6 +141,7 @@ export const freelancersTable = pgTable("freelancers", {
  *
  * @property id - serial primary key
  * @property account_id - integer referencing the accountsTable id
+ * @property budget - text
  * @property company_name - varchar with length 100
  * @property employer_name - varchar with length 100
  * @property company_email - varchar with length 150
@@ -156,6 +161,7 @@ export const freelancersTable = pgTable("freelancers", {
 export const employersTable = pgTable("employers", {
   id: serial("id").primaryKey(),
   accountId: integer("account_id").references(() => accountsTable.id),
+  budget: integer("budget"),
   employerAccountType: employerAccountTypeEnum("employerAccountType"),
   companyName: varchar("company_name", { length: 100 }),
   employerName: varchar("employer_name", { length: 100 }),
@@ -234,8 +240,11 @@ export const industriesTable = pgTable("industries", {
 });
 
 /**
+ * ***********************************
+ * ***********************************
  * Define the relation between employers and industries where each employer can have zero to many insudries
- *
+ * ***********************************
+ * ***********************************
  * @property id - serial primary key
  * @property employer_id - integer referencing the employersTable id
  * @property industry_id - integer referencing the industriesTable id
@@ -260,7 +269,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
   jobId: integer("job_id").references(() => jobsTable.id),
   industryId: integer("industry_id").references(() => industriesTable.id),
-  createdAt: timestamp("timestamp").default(sql`now()`),
+  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted (created maybe)
 });
 
 /**

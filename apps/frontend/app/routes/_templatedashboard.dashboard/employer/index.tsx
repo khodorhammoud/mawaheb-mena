@@ -26,6 +26,9 @@ import DashboardScreen from "./dashboard-screen";
 //   const accountOnboarded = false;
 //   return json({ hi: "hi" });
 // }
+
+// i am here since the account type is an employer.
+// now if the employer is onboarded, then i will be directed to index.tsx inside dashboard-screen. Else, i am still not onboarded, and i am directed to index.tsx inside onboarding-screen
 export default function Dashboard() {
   const { accountOnboarded } = useLoaderData<{ accountOnboarded: boolean }>();
 

@@ -1,13 +1,11 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import {
   getCurrentEployerFreelancerInfo,
-  getCurrentUser,
-  // getCurrentUser,
   getCurrentUserAccountType,
 } from "../../servers/user.server";
 import EmployerDashboard from "./employer";
 import FreelancerDashboard from "./freelancer/Dashboard";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useActionData, Form } from "@remix-run/react";
 import { AccountType } from "../../types/enums";
 import {
   getAllIndustries,
@@ -16,108 +14,116 @@ import {
   updateEmployerBio,
   updateEmployerIndustries,
   updateEmployerYearsInBusiness,
+  getEmployerYearsInBusiness,
+  getEmployerBudget,
+  updateEmployerBudget,
+  updateEmployerAbout,
+  getEmployerAbout,
 } from "~/servers/employer.server";
 import { Employer, EmployerBio } from "~/types/User";
-import { SuccessVerificationLoaderStatus } from "~/types/misc";
-// import { getCurrentEmployerAccountInfo } from "../../servers/employer.server";
 
+// Action function
 export async function action({ request }: ActionFunctionArgs) {
-  const formdata = await request.formData();
-  if (formdata.get("target-updated") == "employer-bio") {
+  const formData = await request.formData();
+  const target = formData.get("target-updated");
+
+  try {
     const employer = (await getCurrentEployerFreelancerInfo(
       request
     )) as Employer;
-    console.log("employer", employer);
-    const bio: EmployerBio = {
-      firstName: formdata.get("firstName") as string,
-      lastName: formdata.get("lastName") as string,
-      location: formdata.get("location") as string,
-      websiteURL: formdata.get("website") as string,
-      socialMediaLinks: {
-        linkedin: formdata.get("linkedin") as string,
-        github: formdata.get("github") as string,
-        gitlab: formdata.get("gitlab") as string,
-        dribbble: formdata.get("dribbble") as string,
-        stackoverflow: formdata.get("stackoverflow") as string,
-      },
-    };
-    try {
-      const status = await updateEmployerBio(bio, employer);
-      return { success: status.success };
-    } catch (error) {
-      console.error("Error updating employer bio", error);
-      return json({ success: false, error: error });
+
+    switch (target) {
+      case "employer-about":
+        const aboutContent = formData.get("about") as string;
+        const aboutStatus = await updateEmployerAbout(employer, aboutContent);
+        return json({ success: aboutStatus.success });
+
+      case "employer-bio":
+        const bio = {
+          firstName: formData.get("firstName") as string,
+          lastName: formData.get("lastName") as string,
+          location: formData.get("location") as string,
+          websiteURL: formData.get("website") as string,
+          socialMediaLinks: {
+            linkedin: formData.get("linkedin") as string,
+            github: formData.get("github") as string,
+            gitlab: formData.get("gitlab") as string,
+            dribbble: formData.get("dribbble") as string,
+            stackoverflow: formData.get("stackoverflow") as string,
+          },
+        };
+        const bioStatus = await updateEmployerBio(bio, employer);
+        return json({ success: bioStatus.success });
+
+      case "employer-industries":
+        const industries = formData.get("employer-industries") as string;
+        const industriesIds = industries
+          .split(",")
+          .map((industry) => parseInt(industry));
+        const industriesStatus = await updateEmployerIndustries(
+          employer,
+          industriesIds
+        );
+        return json({ success: industriesStatus.success });
+
+      case "employer-years-in-business":
+        const yearsInBusiness =
+          parseInt(formData.get("years-in-business") as string) || 0;
+        const yearsStatus = await updateEmployerYearsInBusiness(
+          employer,
+          yearsInBusiness
+        );
+        return json({ success: yearsStatus.success });
+
+      case "employer-budget":
+        const budget = formData.get("budget") as string;
+        const budgetStatus = await updateEmployerBudget(employer, budget);
+        return json({ success: budgetStatus.success });
+
+      default:
+        throw new Error("Unknown target update");
     }
-  } else if (formdata.get("target-updated") == "employer-industries") {
-    const employer = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
-    const industries = formdata.get("employer-industries") as string;
+  } catch (error) {
+    console.error("Error processing request", error);
 
-    // parse industries from string to list of numbers
-    const industriesIds = industries
-      .split(",")
-      .map((industry) => parseInt(industry));
+    // Cast the error as an instance of Error to safely access the `message` property
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
 
-    try {
-      const status = await updateEmployerIndustries(employer, industriesIds);
-      return { success: status.success };
-    } catch (error) {
-      console.error("Error updating employer industries", error);
-      return json({ success: false, error: error });
-    }
-
-    return json({ success: true });
-  } else if (formdata.get("target-updated") == "employer-years-in-business") {
-    const employer = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
-    const yearsInBusiness =
-      parseInt(formdata.get("years-in-business") as string) || 0;
-
-    try {
-      const status = await updateEmployerYearsInBusiness(
-        employer,
-        yearsInBusiness
-      );
-      return { success: status.success };
-    } catch (error) {
-      console.error("Error updating employer years in business", error);
-      return json({ success: false, error: error });
-    }
-
-    return json({ success: true });
+    return json({ success: false, error: { message: errorMessage } });
   }
-
-  console.log(JSON.stringify(Object.fromEntries(formdata)));
-  return json(Object.fromEntries(formdata));
-  // return json({ success: true });
 }
-export async function loader({ request }: LoaderFunctionArgs) {
-  // check if the current user is an employer or a freelancer
-  // if the current user is an employer, redirect to the employer dashboard
-  // if the current user is a freelancer, redirect to the freelancer dashboard
-  const accountType: AccountType = await getCurrentUserAccountType(request);
-  const accountOnboarded = false;
-  if (!accountType) {
-    return json({ accountType: "employer", accountOnboarded });
-  }
 
+// Loader function
+export async function loader({ request }: LoaderFunctionArgs) {
+  const accountType: AccountType = await getCurrentUserAccountType(request);
   const employer = (await getCurrentEployerFreelancerInfo(request)) as Employer;
 
   const bioInfo = await getEmployerBio(employer);
   const employerIndustries = await getEmployerIndustries(employer);
   const allIndustries = (await getAllIndustries()) || [];
+  const yearsInBusiness = await getEmployerYearsInBusiness(employer);
+  const employerBudget = await getEmployerBudget(employer);
+  const aboutContent = await getEmployerAbout(employer); // Fetch the standalone "About" content
+
   return json({
     accountType,
     bioInfo,
     employerIndustries,
     allIndustries,
     currentUser: employer,
+    yearsInBusiness,
+    employerBudget,
+    aboutContent, // Include the "About" section content in the loader response
   });
 }
+
+// Layout component
 export default function Layout() {
-  const { accountType } = useLoaderData<{ accountType: AccountType }>();
+  const { accountType } = useLoaderData<{
+    accountType: AccountType;
+  }>();
+
   return (
     <div>
       {accountType === "employer" ? (

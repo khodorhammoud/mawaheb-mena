@@ -31,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
   //
-  return await createUserSession(request, employerFreelancer, "/dashboard");
+  return await createUserSession(request, employerFreelancer, "/dashboard"); // this is not working bro wix 🌟🌟
 
   // return json({ success: true });
 }
