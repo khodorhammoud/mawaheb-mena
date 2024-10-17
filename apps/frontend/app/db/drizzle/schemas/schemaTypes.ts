@@ -29,8 +29,9 @@ export const languageEnum = pgEnum(
   Object.values(Language) as [string, ...string[]]
 );
 export const countryEnum = pgEnum(
-  "country",
-  Object.values(Country) as [string, ...string[]]
+  // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
+  "country", // this name is not depending on any other name for now !
+  Object.values(Country) as [string, ...string[]] // List of all valid country values from the Country enum
 );
 export const dayOfWeekEnum = pgEnum(
   "day_of_week",

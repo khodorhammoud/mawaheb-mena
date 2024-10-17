@@ -187,3 +187,127 @@ export async function updateEmployerYearsInBusiness(
   }
   return { success: true };
 }
+
+export async function getEmployerYearsInBusiness(
+  employer: Employer
+): Promise<number> {
+  const accountId = employer.accountId;
+
+  try {
+    const result = await db
+      .select({
+        yearsInBusiness: employersTable.yearsInBusiness, // Wrap in an object
+      })
+      .from(employersTable)
+      .where(eq(employersTable.accountId, accountId))
+      .limit(1);
+
+    return result[0]?.yearsInBusiness ?? 0;
+  } catch (error) {
+    console.error("Error fetching employer years in business", error);
+    throw error;
+  }
+}
+
+export async function updateEmployerBudget(
+  employer: Employer,
+  budget: string
+): Promise<SuccessVerificationLoaderStatus> {
+  const accountId = employer.accountId;
+  try {
+    // Ensure budget is a valid number
+    if (!budget || isNaN(parseFloat(budget))) {
+      throw new Error("Budget must be a valid number");
+    }
+
+    // Update the employer's budget in the database
+    await db
+      .update(employersTable)
+      .set({ budget }) // Update the budget column
+      .where(eq(employersTable.accountId, accountId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating employer budget", error);
+    throw error; // Re-throw error for further handling
+  }
+}
+
+export async function getEmployerBudget(employer: Employer): Promise<string> {
+  const accountId = employer.accountId;
+
+  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
+
+  try {
+    const result = await db
+      .select({
+        budget: employersTable.budget, // Fetch the budget column
+      })
+      .from(employersTable)
+      .where(eq(employersTable.accountId, accountId))
+      .limit(1); // Limit to 1 row since we're expecting one result
+
+    // Log the result for debugging
+    console.log("Budget Result: ", result);
+
+    // Return the fetched budget or default to "0" if no result
+    return result[0]?.budget ? String(result[0].budget) : "0";
+  } catch (error) {
+    console.error("Error fetching employer budget", error);
+    throw error; // Re-throw error for further handling
+  }
+}
+
+// Function to fetch the "About" section content for an employer
+export async function getEmployerAbout(employer: Employer): Promise<string> {
+  const accountId = employer.accountId;
+
+  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
+
+  try {
+    const result = await db
+      .select({
+        about: employersTable.about, // Fetch the about column
+      })
+      .from(employersTable)
+      .where(eq(employersTable.accountId, accountId))
+      .limit(1); // Limit to 1 row since we're expecting one result
+
+    // Log the result for debugging
+    console.log("About Result: ", result);
+
+    // Return the fetched about content or default to an empty string if no result
+    return result[0]?.about ? String(result[0].about) : "";
+  } catch (error) {
+    console.error("Error fetching employer about section", error);
+    throw error; // Re-throw error for further handling
+  }
+}
+
+// Function to update the "About" section for an employer
+export async function updateEmployerAbout(
+  employer: Employer,
+  aboutContent: string
+): Promise<{ success: boolean }> {
+  const accountId = employer.accountId;
+
+  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
+  console.log("New About Content: ", aboutContent); // Log the content being updated
+
+  try {
+    const result = await db
+      .update(employersTable)
+      .set({
+        about: aboutContent, // Set the about column with the new content
+      })
+      .where(eq(employersTable.accountId, accountId));
+
+    // Log the update result for debugging
+    console.log("Update About Result: ", result);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating employer about section", error);
+    return { success: false }; // Return failure status
+  }
+}

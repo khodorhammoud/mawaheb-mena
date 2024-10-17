@@ -8,6 +8,20 @@
       "when": 1728716083540,
       "tag": "0000_heavy_sage",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1729178370066,
+      "tag": "0001_bitter_frank_castle",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1729184420371,
+      "tag": "0002_illegal_alex_power",
+      "breakpoints": true
     }
   ]
 }

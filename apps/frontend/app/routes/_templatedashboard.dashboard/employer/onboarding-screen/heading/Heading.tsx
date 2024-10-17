@@ -1,3 +1,4 @@
+import { useState, useRef, MutableRefObject, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -8,7 +9,6 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { RiGitlabFill, RiPencilFill } from "react-icons/ri";
-import { useState, useRef, MutableRefObject, useEffect } from "react";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -29,29 +29,46 @@ import { EmployerBio, Industry } from "~/types/User";
 import { parseHTTP } from "~/lib/utils";
 import { Badge } from "~/components/ui/badge";
 
+// Define the type of the action data to prevent TypeScript errors
+interface ActionData {
+  bioSuccess?: boolean;
+  industrySuccess?: boolean;
+  error?: {
+    message: string;
+  };
+}
+
 export default function Heading() {
-  const [open, setOpen] = useState(false); // Dialog state
-  const [industriesServedOpen, setIndustriesServedOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Bio dialog state
+  const [industriesServedOpen, setIndustriesServedOpen] = useState(false); // Industry dialog state
+  const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
+  const [showIndustryMessage, setShowIndustryMessage] = useState(false); // Track industry message visibility
+
+  // Load data
   const { bioInfo, employerIndustries, allIndustries } = useLoaderData() as {
     bioInfo: EmployerBio;
     employerIndustries: Industry[];
     allIndustries: Industry[];
   };
-  const actionData = useActionData();
-  const navigation = useNavigation();
-  const locationInputRef = useRef<HTMLInputElement>(null); // Ref for location input
-  const websiteInputRef = useRef<HTMLInputElement>(null); // Ref for location input
 
+  const actionData = useActionData<ActionData>(); // Form submission result
+  const navigation = useNavigation();
+
+  // Refs for location and website input fields
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const websiteInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle opening the bio dialog and focusing the relevant input
   const handleTriggerClick = (ref: MutableRefObject<HTMLInputElement>) => {
-    setOpen(true); // Open the dialog
+    setOpen(true);
     setTimeout(() => {
-      ref.current?.focus(); // Focus the location input
-    }, 100); // Slight delay to ensure dialog is fully opened
+      ref.current?.focus();
+    }, 100);
   };
 
   const [selectedIndustries, setSelectedIndustries] = useState<number[]>([]);
 
-  // set the initial value of selected industries
+  // Set initial industries selected
   useEffect(() => {
     setSelectedIndustries(employerIndustries.map((i) => i.id));
   }, [employerIndustries]);
@@ -74,6 +91,36 @@ export default function Heading() {
     }
   };
 
+  // Handle showing the bio submission message
+  useEffect(() => {
+    if (actionData?.bioSuccess || actionData?.error) {
+      setShowBioMessage(true); // Show bio message when form is submitted
+    }
+  }, [actionData?.bioSuccess, actionData?.error]);
+
+  // Handle showing the industry submission message
+  useEffect(() => {
+    if (actionData?.industrySuccess || actionData?.error) {
+      setShowIndustryMessage(true); // Show industry message when form is submitted
+    }
+  }, [actionData?.industrySuccess, actionData?.error]);
+
+  // Reset messages when the bio dialog is closed
+  const handleBioDialogChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setShowBioMessage(false); // Clear bio message when dialog is closed
+    }
+  };
+
+  // Reset messages when the industry dialog is closed
+  const handleIndustryDialogChange = (isOpen: boolean) => {
+    setIndustriesServedOpen(isOpen);
+    if (!isOpen) {
+      setShowIndustryMessage(false); // Clear industry message when dialog is closed
+    }
+  };
+
   return (
     <>
       <div className="flex items-center mb-6">
@@ -85,7 +132,8 @@ export default function Heading() {
             <h1 className="text-2xl font-semibold">
               {bioInfo.firstName} {bioInfo.lastName}
             </h1>
-            <Dialog open={open} onOpenChange={setOpen}>
+            {/* ✏️ */}
+            <Dialog open={open} onOpenChange={handleBioDialogChange}>
               <DialogTrigger asChild>
                 <Button variant="link">
                   <RiPencilFill className="text-lg" />
@@ -95,8 +143,9 @@ export default function Heading() {
                 <DialogHeader>
                   <DialogTitle>Bio</DialogTitle>
                 </DialogHeader>
-                {/* error message in case of error */}
-                {actionData?.error && (
+
+                {/* Display Error Message */}
+                {showBioMessage && actionData?.error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                     <strong className="font-bold">Error! </strong>
                     <span className="block sm:inline">
@@ -104,8 +153,8 @@ export default function Heading() {
                     </span>
                   </div>
                 )}
-                {/* handle success */}
-                {actionData?.success && (
+                {/* Display Success Message for Bio */}
+                {showBioMessage && actionData?.bioSuccess && (
                   <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
                     <strong className="font-bold">Success! </strong>
                     <span className="block sm:inline">
@@ -113,6 +162,7 @@ export default function Heading() {
                     </span>
                   </div>
                 )}
+
                 <Form method="post" className="space-y-6">
                   <input
                     type="hidden"
@@ -221,10 +271,10 @@ export default function Heading() {
                     </div>
                   </div>
 
+                  {/* Save */}
                   <DialogFooter>
                     <Button
                       disabled={navigation.state === "submitting"}
-                      //   onClick={() => setOpen(false)}
                       className="mr-2 bg-gray-200 text-sm disabled:opacity-50 hover:bg-gray-300"
                       type="submit"
                     >
@@ -236,6 +286,7 @@ export default function Heading() {
             </Dialog>
           </div>
 
+          {/* Add Location / Add Website */}
           <div className="flex space-x-2 mt-2">
             {bioInfo.location ? (
               <span className="flex items-center text-sm">
@@ -250,6 +301,7 @@ export default function Heading() {
                 Add Location
               </button>
             )}
+
             {bioInfo.websiteURL ? (
               <span className="flex items-center text-sm">
                 <FaGlobe className="h-4 w-4 mr-1" />
@@ -272,11 +324,12 @@ export default function Heading() {
           </div>
         </div>
 
+        {/* Industries Served ✏️ */}
         <div className="ml-auto text-sm flex items-center">
           <span>Industries Served</span>
           <Dialog
             open={industriesServedOpen}
-            onOpenChange={setIndustriesServedOpen}
+            onOpenChange={handleIndustryDialogChange}
           >
             <DialogTrigger asChild>
               <Button variant="link">
@@ -287,6 +340,25 @@ export default function Heading() {
               <DialogHeader>
                 <DialogTitle>Industries</DialogTitle>
               </DialogHeader>
+
+              {/* Display Error Message */}
+              {showIndustryMessage && actionData?.error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                  <strong className="font-bold">Error! </strong>
+                  <span className="block sm:inline">
+                    {actionData?.error?.message}
+                  </span>
+                </div>
+              )}
+              {/* Display Success Message for Industries */}
+              {showIndustryMessage && actionData?.industrySuccess && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                  <strong className="font-bold">Success! </strong>
+                  <span className="block sm:inline">
+                    Industries updated successfully
+                  </span>
+                </div>
+              )}
 
               <Form method="post" id="employer-industires-form">
                 <input
