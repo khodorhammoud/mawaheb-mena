@@ -1,8 +1,5 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import ContactUsPage from "./ContactUs";
-<<<<<<< HEAD
-
-=======
 import { fetchCMSData } from "~/api/fetch-cms-data.server";
 import {
   GET_CONTACT_US_FORM_QUERY,
@@ -33,7 +30,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     locationSection,
   });
 };
->>>>>>> origin/dev
 export default function Layout() {
   return (
     <div
