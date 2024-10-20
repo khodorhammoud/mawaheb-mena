@@ -15,7 +15,7 @@ export default function WhayWorkWithUs() {
   const { whyWorkWithUsSection } = useLoaderData<LoaderData>();
 
   // Extract the first item from the array (if you're only displaying the first object)
-  const { title, description } = whyWorkWithUsSection[0];
+  const { title, description } = whyWorkWithUsSection[0] || {};
 
   return (
     <MainHeading

@@ -1,3 +1,5 @@
+// this carries the query functions such as (Select/From/Where.....)
+
 // import { Employer } from "~/types/User";
 // import { getCurrentUser } from "./user.server";
 
@@ -211,16 +213,10 @@ export async function getEmployerYearsInBusiness(
 
 export async function updateEmployerBudget(
   employer: Employer,
-  budget: string
+  budget: number
 ): Promise<SuccessVerificationLoaderStatus> {
   const accountId = employer.accountId;
   try {
-    // Ensure budget is a valid number
-    if (!budget || isNaN(parseFloat(budget))) {
-      throw new Error("Budget must be a valid number");
-    }
-
-    // Update the employer's budget in the database
     await db
       .update(employersTable)
       .set({ budget }) // Update the budget column
@@ -229,7 +225,7 @@ export async function updateEmployerBudget(
     return { success: true };
   } catch (error) {
     console.error("Error updating employer budget", error);
-    throw error; // Re-throw error for further handling
+    throw error;
   }
 }
 
