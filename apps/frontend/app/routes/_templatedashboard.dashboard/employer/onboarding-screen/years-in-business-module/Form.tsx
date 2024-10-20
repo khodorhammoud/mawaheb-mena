@@ -10,13 +10,9 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Form,
-  useActionData,
-  useNavigation,
-  useLoaderData,
-} from "@remix-run/react";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";
+import { Employer } from "~/types/User";
 
 // Define the type for the action data
 interface ActionData {
@@ -28,9 +24,12 @@ interface ActionData {
 
 export default function YearsInBusinessCard() {
   const actionData = useActionData<ActionData>();
-  const { yearsInBusiness: initialYearsInBusiness } = useLoaderData<{
-    yearsInBusiness: number;
-  }>(); // Fetch initial years
+  const { yearsInBusiness: initialYearsInBusiness, currentUser } =
+    useLoaderData<{
+      yearsInBusiness: number;
+      currentUser: Employer;
+    }>(); // Fetch initial years and user
+
   const [open, setOpen] = useState(false);
   const [yearsInBusiness, setYearsInBusiness] = useState(
     initialYearsInBusiness || 1
@@ -53,7 +52,8 @@ export default function YearsInBusinessCard() {
   };
 
   const handleYearsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setYearsInBusiness(Number(e.target.value));
+    const value = Math.max(1, Math.min(30, Number(e.target.value))); // Limit input between 1 and 30
+    setYearsInBusiness(value);
   };
 
   const increaseYears = () => {
@@ -74,9 +74,7 @@ export default function YearsInBusinessCard() {
           <DialogTrigger asChild>
             <Button variant="link">
               <SlBadge className="text-lg mr-2" />
-              {/* here */}
-              {yearsInBusiness} years in business{" "}
-              {/* Display years nb beside the button */}
+              {yearsInBusiness} years in business {/* Display years */}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white p-6">
@@ -119,6 +117,11 @@ export default function YearsInBusinessCard() {
                   type="hidden"
                   name="target-updated"
                   value="employer-years-in-business"
+                />
+                <input
+                  type="hidden"
+                  name="userId"
+                  value={currentUser.account?.user?.id} // Pass the userId dynamically
                 />
                 {/* Display Current Years */}
                 <Input

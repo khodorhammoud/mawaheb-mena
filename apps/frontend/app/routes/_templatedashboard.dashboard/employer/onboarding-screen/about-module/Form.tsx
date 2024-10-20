@@ -16,9 +16,10 @@ import {
 import {
   Form,
   useActionData,
-  useNavigation,
   useLoaderData,
+  useNavigation,
 } from "@remix-run/react";
+import { Employer } from "~/types/User";
 
 // Define ActionData type for TypeScript safety
 interface ActionData {
@@ -27,7 +28,10 @@ interface ActionData {
 }
 
 const UserAboutPopup = () => {
-  const { aboutContent } = useLoaderData<{ aboutContent: string }>();
+  const { aboutContent, currentUser } = useLoaderData<{
+    aboutContent: string;
+    currentUser: Employer;
+  }>(); // Fetch initial aboutContent and user
   const [isOpen, setIsOpen] = useState(false);
   const [about, setAbout] = useState(aboutContent || ""); // About state
 
@@ -82,7 +86,11 @@ const UserAboutPopup = () => {
                 )}
 
                 <Form method="post" className="grid gap-4">
-                  <input type="hidden" name="employer-id" value="1" />
+                  <input
+                    type="hidden"
+                    name="userId"
+                    value={currentUser.account?.user?.id} // Pass the userId dynamically
+                  />
                   <input
                     type="hidden"
                     name="target-updated"

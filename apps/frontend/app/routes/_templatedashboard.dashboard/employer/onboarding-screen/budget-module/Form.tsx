@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { BsCurrencyDollar } from "react-icons/bs";
+import { Employer } from "~/types/User";
 
 // Define the type for the action data
 interface ActionData {
@@ -23,35 +24,40 @@ interface ActionData {
 
 export default function BudgetModuleForm() {
   const actionData = useActionData<ActionData>();
-  const { initialBudget } = useLoaderData<{ initialBudget: string }>(); // Fetch initial budget
-  const [open, setOpen] = useState(false);
-  const [budget, setBudget] = useState(initialBudget || "0");
-  const [inputValue, setInputValue] = useState(budget); // Initialize input with initial budget value
-  const [showMessage, setShowMessage] = useState(false); // Track message visibility
+  const { employerBudget, currentUser } = useLoaderData<{
+    employerBudget: number;
+    currentUser: Employer;
+  }>(); // Fetch the employer budget and user
 
-  // Show the message if the form is submitted successfully or if there's an error
+  const [open, setOpen] = useState(false);
+  const [budget, setBudget] = useState(employerBudget?.toString() || "0");
+  const [inputValue, setInputValue] = useState(budget);
+  const [showMessage, setShowMessage] = useState(false);
+
   useEffect(() => {
     if (actionData?.success || actionData?.error) {
-      setShowMessage(true); // Show the message when form is submitted
+      setShowMessage(true);
     }
   }, [actionData]);
 
-  // Reset the message when the dialog is closed and reopened
   const handleDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      setShowMessage(false); // Clear the message when dialog is closed
+      setShowMessage(false);
     }
   };
 
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setInputValue(value);
   };
 
-  const saveBudget = () => {
-    setBudget(inputValue);
-    setOpen(false);
-  };
+  // Update budget state after successful form submission
+  useEffect(() => {
+    if (actionData?.success) {
+      setBudget(parseFloat(inputValue).toString());
+    }
+  }, [actionData?.success]);
 
   return (
     <Card className="w-[350px] border border-dashed border-gray-300 rounded-lg">
@@ -68,7 +74,7 @@ export default function BudgetModuleForm() {
               className="flex items-center justify-center w-full py-3 border border-gray-300 rounded-lg hover:bg-gray-100"
             >
               <BsCurrencyDollar className="text-lg mr-2" />
-              {budget ? `${budget}` : "Add Average Budget"}
+              {budget !== "0" ? `$ ${budget}` : "Add Average Budget"}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-[320px]">
@@ -83,6 +89,11 @@ export default function BudgetModuleForm() {
                 name="target-updated"
                 value="employer-budget"
               />
+              <input
+                type="hidden"
+                name="userId"
+                value={currentUser.account?.user?.id} // Pass the userId dynamically
+              />
               <div className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2">
                 <Input
                   placeholder="Enter amount"
@@ -96,7 +107,6 @@ export default function BudgetModuleForm() {
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700"
-                onClick={saveBudget}
               >
                 Save
               </button>

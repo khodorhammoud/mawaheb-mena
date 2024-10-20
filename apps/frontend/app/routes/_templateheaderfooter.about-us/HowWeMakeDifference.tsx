@@ -133,7 +133,9 @@ const HowWeMakeDifference: React.FC = () => {
         <p
           className="text-lg mt-20 mb-20 md:w-[80%] sm:w-[90%] leading-normal"
           dangerouslySetInnerHTML={{
-            __html: howWeMakeDiffSection[activeIndex].belongingText,
+            __html:
+              howWeMakeDiffSection?.[activeIndex]?.belongingText ||
+              "Default text goes here.",
           }}
         ></p>
 
