@@ -33,17 +33,19 @@ export default function BudgetModuleForm() {
   const [budget, setBudget] = useState(employerBudget?.toString() || "0");
   const [inputValue, setInputValue] = useState(budget);
   const [showMessage, setShowMessage] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false); // Track if form was submitted
 
   useEffect(() => {
-    if (actionData?.success || actionData?.error) {
-      setShowMessage(true);
+    if (formSubmitted && (actionData?.success || actionData?.error)) {
+      setShowMessage(true); // Show the message when form is submitted
+      setFormSubmitted(false); // Reset formSubmitted to prevent showing the message again without a new submission
     }
-  }, [actionData]);
+  }, [actionData, formSubmitted]);
 
   const handleDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      setShowMessage(false);
+      setShowMessage(false); // Clear the message when dialog is closed
     }
   };
 
@@ -58,6 +60,11 @@ export default function BudgetModuleForm() {
       setBudget(parseFloat(inputValue).toString());
     }
   }, [actionData?.success]);
+
+  // Handle form submission to set formSubmitted to true
+  const handleFormSubmit = () => {
+    setFormSubmitted(true);
+  };
 
   return (
     <Card className="w-[350px] border border-dashed border-gray-300 rounded-lg">
@@ -83,7 +90,31 @@ export default function BudgetModuleForm() {
                 Add Average Budget
               </DialogTitle>
             </DialogHeader>
-            <Form method="post" className="space-y-4">
+
+            {/* Display Error Message */}
+            {showMessage && actionData?.error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <strong className="font-bold">Error! </strong>
+                <span className="block sm:inline">
+                  {actionData.error.message}
+                </span>
+              </div>
+            )}
+            {/* Display Success Message */}
+            {showMessage && actionData?.success && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                <strong className="font-bold">Success! </strong>
+                <span className="block sm:inline">
+                  Budget updated successfully
+                </span>
+              </div>
+            )}
+
+            <Form
+              method="post"
+              className="space-y-4"
+              onSubmit={handleFormSubmit}
+            >
               <input
                 type="hidden"
                 name="target-updated"
