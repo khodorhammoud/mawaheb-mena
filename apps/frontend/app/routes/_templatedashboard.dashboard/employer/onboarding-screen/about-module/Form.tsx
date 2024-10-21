@@ -1,141 +1,159 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogClose,
-} from "@radix-ui/react-dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../../../../components/ui/card";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Employer } from "~/types/User";
 
-// Define ActionData type for TypeScript safety
+// Define the type for the action data
 interface ActionData {
   success?: boolean;
-  error?: { message: string };
+  error?: {
+    message: string;
+  };
 }
 
-const UserAboutPopup = () => {
+export default function UserAboutPopup() {
+  const actionData = useActionData<ActionData>();
   const { aboutContent, currentUser } = useLoaderData<{
     aboutContent: string;
     currentUser: Employer;
-  }>(); // Fetch initial aboutContent and user
-  const [isOpen, setIsOpen] = useState(false);
-  const [about, setAbout] = useState(aboutContent || ""); // About state
+  }>();
 
-  const actionData = useActionData<ActionData>(); // Handle form response
-  const navigation = useNavigation(); // Get navigation state (e.g., submitting)
+  const [open, setOpen] = useState(false);
+  const [about, setAbout] = useState(aboutContent || "");
+  const [showMessage, setShowMessage] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (formSubmitted && (actionData?.success || actionData?.error)) {
+      setShowMessage(true);
+      setFormSubmitted(false);
+    }
+  }, [actionData, formSubmitted]);
+
+  const handleDialogChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setShowMessage(false);
+    }
+  };
 
   const handleAboutChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setAbout(e.target.value); // Update about state
+    setAbout(e.target.value);
+
+  const handleFormSubmit = () => {
+    setFormSubmitted(true);
+  };
 
   return (
-    <>
-      <Card className="border border-gray-200 rounded-lg shadow-md md:w-[350px] mt-10">
-        <CardHeader className="p-4">
-          <CardTitle className="text-xl font-semibold">About</CardTitle>
-          <CardDescription className="text-sm text-gray-500 mt-2">
-            {aboutContent ? (
-              <span>{aboutContent}</span>
-            ) : (
-              "Add your headline and bio. Share more about yourself and what you hope to accomplish."
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4">
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <button className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
-                {aboutContent ? "Edit Bio" : "Add Bio"}
-              </button>
-            </DialogTrigger>
-            <DialogContent className="fixed inset-0 flex items-center justify-center p-4 bg-black/50">
-              <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                  <DialogTitle className="text-xl font-semibold">
-                    {aboutContent ? "Edit Your Bio" : "Add Your Bio"}
-                  </DialogTitle>
-                  <DialogClose asChild>
-                    <button className="text-gray-500 hover:text-black">
-                      ✕
-                    </button>
-                  </DialogClose>
-                </div>
+    <Card className="w-[350px] border border-dashed border-gray-300 rounded-lg">
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg font-semibold text-center">
+          About
+        </CardTitle>
+        {/* Display about content from the database */}
+        <p className="text-sm text-center text-gray-600 mt-2">
+          {aboutContent
+            ? aboutContent
+            : "No information available. Add your bio!"}
+        </p>
+      </CardHeader>
+      <CardContent className="p-4">
+        <Dialog open={open} onOpenChange={handleDialogChange}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex items-center justify-center w-full py-3 border border-gray-300 rounded-lg hover:bg-gray-100"
+            >
+              {aboutContent ? "Edit Bio" : "Add Bio"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-[320px]">
+            <DialogHeader>
+              <DialogTitle className="text-center font-semibold text-xl mb-4">
+                {aboutContent ? "Edit Your Bio" : "Add Your Bio"}
+              </DialogTitle>
+            </DialogHeader>
 
-                {actionData?.error && (
-                  <div className="bg-red-100 text-red-700 px-4 py-3 rounded mb-4">
-                    <strong>Error: </strong> {actionData.error.message}
-                  </div>
-                )}
-                {actionData?.success && (
-                  <div className="bg-green-100 text-green-700 px-4 py-3 rounded mb-4">
-                    About section updated successfully!
-                  </div>
-                )}
-
-                <Form method="post" className="grid gap-4">
-                  <input
-                    type="hidden"
-                    name="userId"
-                    value={currentUser.account?.user?.id} // Pass the userId dynamically
-                  />
-                  <input
-                    type="hidden"
-                    name="target-updated"
-                    value="employer-about"
-                  />
-                  <div className="grid gap-2">
-                    <label htmlFor="about" className="text-gray-700">
-                      Tell us about yourself
-                    </label>
-                    <textarea
-                      id="about"
-                      name="about"
-                      value={about}
-                      onChange={handleAboutChange}
-                      placeholder="Add content to describe yourself"
-                      rows={6}
-                      className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      maxLength={2000}
-                    />
-                    <div className="text-right text-sm text-gray-500">
-                      {about.length} / 2000 characters
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <DialogClose asChild>
-                      <button className="bg-gray-200 text-black px-4 py-2 rounded-md hover:bg-gray-300 transition">
-                        Cancel
-                      </button>
-                    </DialogClose>
-                    <button
-                      type="submit"
-                      disabled={navigation.state === "submitting"}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition disabled:opacity-50"
-                    >
-                      {navigation.state === "submitting" ? "Saving..." : "Save"}
-                    </button>
-                  </div>
-                </Form>
+            {showMessage && actionData?.error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <strong className="font-bold">Error! </strong>
+                <span className="block sm:inline">
+                  {actionData.error.message}
+                </span>
               </div>
-            </DialogContent>
-          </Dialog>
-        </CardContent>
-      </Card>
-    </>
-  );
-};
+            )}
+            {showMessage && actionData?.success && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                <strong className="font-bold">Success! </strong>
+                <span className="block sm:inline">
+                  About section updated successfully
+                </span>
+              </div>
+            )}
 
-export default UserAboutPopup;
+            <Form
+              method="post"
+              className="space-y-4"
+              onSubmit={handleFormSubmit}
+            >
+              <input
+                type="hidden"
+                name="userId"
+                value={currentUser.account?.user?.id}
+              />
+              <input
+                type="hidden"
+                name="target-updated"
+                value="employer-about"
+              />
+              <div className="grid gap-2">
+                <label htmlFor="about" className="text-gray-700">
+                  Tell us about yourself
+                </label>
+                <textarea
+                  id="about"
+                  name="about"
+                  value={about}
+                  onChange={handleAboutChange}
+                  placeholder="Add content to describe yourself"
+                  rows={6}
+                  className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  maxLength={2000}
+                />
+                <div className="text-right text-sm text-gray-500">
+                  {about.length} / 2000 characters
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </Form>
+            <DialogFooter className="flex justify-center mt-4">
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-gray-500"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
+}
