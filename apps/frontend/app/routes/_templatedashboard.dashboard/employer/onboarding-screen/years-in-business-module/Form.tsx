@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
@@ -13,10 +12,11 @@ import { Input } from "~/components/ui/input";
 import {
   Form,
   useActionData,
-  useNavigation,
   useLoaderData,
+  useSubmit,
 } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";
+import { Employer } from "~/types/User";
 
 // Define the type for the action data
 interface ActionData {
@@ -28,21 +28,30 @@ interface ActionData {
 
 export default function YearsInBusinessCard() {
   const actionData = useActionData<ActionData>();
-  const { yearsInBusiness: initialYearsInBusiness } = useLoaderData<{
-    yearsInBusiness: number;
-  }>(); // Fetch initial years
+  const { yearsInBusiness: initialYearsInBusiness, currentUser } =
+    useLoaderData<{
+      yearsInBusiness: number;
+      currentUser: Employer;
+    }>();
+
   const [open, setOpen] = useState(false);
   const [yearsInBusiness, setYearsInBusiness] = useState(
     initialYearsInBusiness || 1
   );
-  const [showMessage, setShowMessage] = useState(false); // Track message visibility
+  const [showMessage, setShowMessage] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [message, setMessage] = useState(""); // State for dynamic message
+  const [messageType, setMessageType] = useState<"success" | "error">(
+    "success"
+  ); // Track message type
+  const submit = useSubmit(); // Hook for submitting the form programmatically
 
-  // Show the message if the form is submitted successfully or if there's an error
   useEffect(() => {
-    if (actionData?.success || actionData?.error) {
+    if (formSubmitted && (actionData?.success || actionData?.error)) {
       setShowMessage(true); // Show the message when form is submitted
+      setFormSubmitted(false); // Reset formSubmitted to prevent showing the message again without a new submission
     }
-  }, [actionData]);
+  }, [actionData, formSubmitted]);
 
   // Reset the message when the dialog is closed and reopened
   const handleDialogChange = (isOpen: boolean) => {
@@ -52,16 +61,45 @@ export default function YearsInBusinessCard() {
     }
   };
 
-  const handleYearsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setYearsInBusiness(Number(e.target.value));
+  // Update the years and submit the form
+  const handleYearsChange = (
+    value: number,
+    action: "increase" | "decrease",
+    count: number
+  ) => {
+    setYearsInBusiness(value);
+    setFormSubmitted(true);
+
+    // Set the message and message type based on the action and count
+    if (action === "increase") {
+      setMessage(`${count} year${count > 1 ? "s" : ""} added`);
+      setMessageType("success");
+    } else {
+      setMessage(`${count} year${count > 1 ? "s" : ""} removed`);
+      setMessageType("error");
+    }
+
+    // Submit the form programmatically
+    submit(
+      {
+        "target-updated": "employer-years-in-business",
+        userId: currentUser.account?.user?.id,
+        "years-in-business": value.toString(),
+      },
+      { method: "post" }
+    );
   };
 
   const increaseYears = () => {
-    setYearsInBusiness((prev) => (prev < 30 ? prev + 1 : prev));
+    if (yearsInBusiness < 30) {
+      handleYearsChange(yearsInBusiness + 1, "increase", 1);
+    }
   };
 
   const decreaseYears = () => {
-    setYearsInBusiness((prev) => (prev > 1 ? prev - 1 : prev));
+    if (yearsInBusiness > 1) {
+      handleYearsChange(yearsInBusiness - 1, "decrease", 1);
+    }
   };
 
   return (
@@ -74,9 +112,7 @@ export default function YearsInBusinessCard() {
           <DialogTrigger asChild>
             <Button variant="link">
               <SlBadge className="text-lg mr-2" />
-              {/* here */}
-              {yearsInBusiness} years in business{" "}
-              {/* Display years nb beside the button */}
+              {yearsInBusiness} years in business {/* Display years */}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white p-6">
@@ -84,22 +120,19 @@ export default function YearsInBusinessCard() {
               <DialogTitle>Years in business</DialogTitle>
             </DialogHeader>
 
-            {/* Display Error Message */}
-            {showMessage && actionData?.error && (
+            {/* Display Message */}
+            {showMessage &&
+              messageType === "success" &&
+              actionData?.success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                  <strong className="font-bold">Success! </strong>
+                  <span className="block sm:inline">{message}</span>
+                </div>
+              )}
+            {showMessage && messageType === "error" && actionData?.error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                 <strong className="font-bold">Error! </strong>
-                <span className="block sm:inline">
-                  {actionData.error.message}
-                </span>
-              </div>
-            )}
-            {/* Display Success Message */}
-            {showMessage && actionData?.success && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                <strong className="font-bold">Success! </strong>
-                <span className="block sm:inline">
-                  Years in Business added successfully
-                </span>
+                <span className="block sm:inline">{message}</span>
               </div>
             )}
 
@@ -113,23 +146,15 @@ export default function YearsInBusinessCard() {
                 -
               </Button>
 
-              {/* Form */}
-              <Form method="post" id="experience-form">
-                <input
-                  type="hidden"
-                  name="target-updated"
-                  value="employer-years-in-business"
-                />
-                {/* Display Current Years */}
-                <Input
-                  value={yearsInBusiness}
-                  className="text-center w-16 h-10"
-                  name="years-in-business"
-                  min={1}
-                  max={30}
-                  onChange={handleYearsChange}
-                />
-              </Form>
+              {/* Display Current Years */}
+              <Input
+                value={yearsInBusiness}
+                className="text-center w-16 h-10"
+                name="years-in-business"
+                min={1}
+                max={30}
+                readOnly // Make the input read-only
+              />
 
               {/* Increase Button */}
               <Button
@@ -140,13 +165,6 @@ export default function YearsInBusinessCard() {
                 +
               </Button>
             </div>
-
-            {/* Submit Button */}
-            <DialogFooter className="mt-4">
-              <Button className="px-6" type="submit" form="experience-form">
-                Save
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </CardContent>

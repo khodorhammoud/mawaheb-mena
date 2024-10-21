@@ -6,6 +6,7 @@ import { createUserSession } from "../../auth/session.server";
 import { AuthorizationError } from "remix-auth";
 
 export async function action({ request }: ActionFunctionArgs) {
+  //  this is for the loging in to the account
   let employerFreelancer: Employer | Freelancer = null;
   try {
     employerFreelancer = await authenticator.authenticate("login", request, {
@@ -32,6 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   //
   return await createUserSession(request, employerFreelancer, "/dashboard"); // this is not working bro wix 🌟🌟
+  // if i want to change it, press on createUserSession, and look there ❤️🤝
 
   // return json({ success: true });
 }

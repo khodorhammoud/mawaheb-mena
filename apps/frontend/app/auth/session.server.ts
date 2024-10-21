@@ -25,7 +25,7 @@ export async function createUserSession(
   session.set("user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
   if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
-  return redirect("/onboarding", { headers });
+  return redirect("/dashboard", { headers }); // this is the session that direct me to the dashboard
 }
 
 export async function getUserSession(request: Request) {
