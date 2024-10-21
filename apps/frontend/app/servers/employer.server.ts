@@ -1,3 +1,5 @@
+// this carries the query functions such as (Select/From/Where.....)
+
 // import { Employer } from "~/types/User";
 // import { getCurrentUser } from "./user.server";
 
@@ -29,9 +31,9 @@ export async function updateEmployerBio(
     // update user info first
     const res1 = await db
       .update(UsersTable)
-      .set({ firstName: bio.firstName, lastName: bio.lastName })
+      .set({ firstName: bio.firstName, lastName: bio.lastName } as any) // Casting as any to bypass type check
       .where(eq(UsersTable.id, userId))
-      .returning({ id: UsersTable.id });
+      .returning();
 
     // update employer info
     const socialMediaLinks: EmployerSocialMediaLinks = bio.socialMediaLinks;
@@ -211,16 +213,10 @@ export async function getEmployerYearsInBusiness(
 
 export async function updateEmployerBudget(
   employer: Employer,
-  budget: string
+  budget: number
 ): Promise<SuccessVerificationLoaderStatus> {
   const accountId = employer.accountId;
   try {
-    // Ensure budget is a valid number
-    if (!budget || isNaN(parseFloat(budget))) {
-      throw new Error("Budget must be a valid number");
-    }
-
-    // Update the employer's budget in the database
     await db
       .update(employersTable)
       .set({ budget }) // Update the budget column
@@ -229,14 +225,12 @@ export async function updateEmployerBudget(
     return { success: true };
   } catch (error) {
     console.error("Error updating employer budget", error);
-    throw error; // Re-throw error for further handling
+    throw error;
   }
 }
 
 export async function getEmployerBudget(employer: Employer): Promise<string> {
   const accountId = employer.accountId;
-
-  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
 
   try {
     const result = await db
@@ -246,9 +240,6 @@ export async function getEmployerBudget(employer: Employer): Promise<string> {
       .from(employersTable)
       .where(eq(employersTable.accountId, accountId))
       .limit(1); // Limit to 1 row since we're expecting one result
-
-    // Log the result for debugging
-    console.log("Budget Result: ", result);
 
     // Return the fetched budget or default to "0" if no result
     return result[0]?.budget ? String(result[0].budget) : "0";
@@ -262,8 +253,6 @@ export async function getEmployerBudget(employer: Employer): Promise<string> {
 export async function getEmployerAbout(employer: Employer): Promise<string> {
   const accountId = employer.accountId;
 
-  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
-
   try {
     const result = await db
       .select({
@@ -272,9 +261,6 @@ export async function getEmployerAbout(employer: Employer): Promise<string> {
       .from(employersTable)
       .where(eq(employersTable.accountId, accountId))
       .limit(1); // Limit to 1 row since we're expecting one result
-
-    // Log the result for debugging
-    console.log("About Result: ", result);
 
     // Return the fetched about content or default to an empty string if no result
     return result[0]?.about ? String(result[0].about) : "";
@@ -291,9 +277,6 @@ export async function updateEmployerAbout(
 ): Promise<{ success: boolean }> {
   const accountId = employer.accountId;
 
-  console.log("Employer Account ID: ", accountId); // Log to ensure it's valid
-  console.log("New About Content: ", aboutContent); // Log the content being updated
-
   try {
     const result = await db
       .update(employersTable)
@@ -302,12 +285,29 @@ export async function updateEmployerAbout(
       })
       .where(eq(employersTable.accountId, accountId));
 
-    // Log the update result for debugging
-    console.log("Update About Result: ", result);
-
     return { success: true };
   } catch (error) {
     console.error("Error updating employer about section", error);
     return { success: false }; // Return failure status
   }
+}
+
+// Helper function to check if a user exists
+export async function checkUserExists(userId: number) {
+  return await db
+    .select()
+    .from(UsersTable)
+    .where(eq(UsersTable.id, userId))
+    .limit(1);
+}
+
+// Helper function to update onboarding status
+export async function updateOnboardingStatus(userId: number) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded: true } as any)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return result; // Return the result from the update operation
 }
