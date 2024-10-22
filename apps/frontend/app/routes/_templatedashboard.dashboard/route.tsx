@@ -37,18 +37,12 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
-    // const userIdValue = formData.get("userId"); // Get the user ID from the form data
-    // console.log("User ID from form: ", userIdValue); // Check the value of userId
-
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
 
     const employer = (await getCurrentEployerFreelancerInfo(
       request
     )) as Employer;
-
-    // const userId = parseInt(userIdValue);
-    // console.log("Updating user with ID:", userId);
 
     switch (target) {
       // ABOUT
@@ -152,9 +146,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const yearsInBusiness = await getEmployerYearsInBusiness(employer);
   const employerBudget = await getEmployerBudget(employer);
   const aboutContent = await getEmployerAbout(employer);
-  // // Check if the user is onboarded and include that information in the JSON response
-  // const accountOnboarded = employer.isOnboarded;
-  // console.log("wixxxxxx ohhhhhhhh", accountOnboarded);
 
   const accountOnboarded = employer.account?.user?.isOnboarded; // this worked for the proceed button, and made me move to another page
 
@@ -168,6 +159,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     employerBudget,
     aboutContent,
     accountOnboarded, // Include the onboarding status in the return JSON
+    employer,
   });
 }
 
