@@ -164,6 +164,7 @@ export default function Heading() {
                 )}
 
                 <Form method="post" className="space-y-6">
+                  <input type="hidden" name="userId" value={bioInfo.userId} />
                   <input
                     type="hidden"
                     name="target-updated"

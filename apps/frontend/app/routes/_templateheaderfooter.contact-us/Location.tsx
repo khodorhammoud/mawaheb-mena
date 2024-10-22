@@ -9,7 +9,8 @@ const Location = () => {
   }>();
 
   // Assuming you're using the first location item
-  const location = locationSection[0];
+  const location = locationSection[0]; // if this page is not oppening, use the below comment insetead of the line in the left
+  // const location = locationSection[0] || {};
 
   return (
     <div className="font-['Switzer-Regular'] bg-gradient-to-r from-primaryColor to-[rgba(39,99,138,0.7)] p-6 md:p-12 items-center justify-between grid grid-cols-1 md:grid-cols-[50%,50%] lg:grid-cols-[27%,73%] mb-40 rounded-xl shadow-xl">
