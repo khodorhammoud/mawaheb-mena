@@ -1,12 +1,9 @@
+// this contains all the Navigations :)
 // this is the navigation of our home Pages 😎
 
 import { TFunction } from "i18next";
 
-/* For Employers
-For Freelancers
-About Us
-Contact Us
-Hire Now */
+// this is the main navigation
 export const navigation = function (t: TFunction) {
   return [
     {
@@ -38,13 +35,12 @@ export const navigation = function (t: TFunction) {
   ];
 };
 
-
-
+// this is for the left navigation on the onBoarding state :)
 export const sidebarEmployerNav = function (t: TFunction) {
   return [
     {
       label: t("dashboardEmployerDashboardLable"),
-      href: "/for-employers",
+      href: "/dashboard",
     },
     {
       label: t("dashboardEmployerManageJobsLable"),
@@ -85,4 +81,3 @@ export const sidebarEmployeeNav = function (t: TFunction) {
     },
   ];
 };
-
