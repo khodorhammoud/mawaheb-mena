@@ -3,7 +3,6 @@ import YearsInBusiness from "./years-in-business-module/Form";
 import About from "./about-module/Form";
 import BudgetModuleForm from "./budget-module/Form";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
 import type { Employer } from "~/types/User";
 
 export default function Body() {
