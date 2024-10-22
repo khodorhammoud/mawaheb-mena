@@ -67,6 +67,7 @@ export interface Employer {
   WebsiteURL?: string;
   socialMediaLinks?: EmployerSocialMediaLinks;
   account?: UserAccount;
+  isOnboarded: boolean; // this is used in the loader :)
 }
 
 export interface Freelancer {
@@ -98,6 +99,7 @@ export interface EmployerBio {
   location: string;
   socialMediaLinks: EmployerSocialMediaLinks;
   websiteURL: string;
+  userId: number; // Add this property
 }
 
 export interface Industry {
