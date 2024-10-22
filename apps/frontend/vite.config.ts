@@ -14,24 +14,21 @@ export default defineConfig({
         return defineRoutes((route) => {
           route(
             "dashboard",
-            "routes/_templatedashboard.dashboard/route.tsx",
-            () => {
-              // route("", "concerts/home.tsx", { index: true });
-              route(
-                "jobs",
-                "routes/_templatedashboard.dashboard/jobs/JobsList.tsx",
-                () => {
-                  route(
-                    ":jobId",
-                    "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
-                  );
-                  route(
-                    "new",
-                    "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
-                  );
-                }
-              );
-            }
+            "routes/_templatedashboard.dashboard/dashboard/Dashboard.tsx"
+          ),
+            // Dashboard index route
+            route(
+              "dashboard/jobs",
+              "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
+            );
+
+          route(
+            "dashboard/jobs:jobId",
+            "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
+          );
+          route(
+            "dashboard/jobs/new",
+            "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
           );
         });
       },
