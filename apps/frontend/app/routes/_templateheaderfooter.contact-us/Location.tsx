@@ -4,13 +4,26 @@ import { Location as LocationType } from "../../types/PageContent"; // Import Lo
 
 const Location = () => {
   // Get the location data from the loader
-  const { locationSection } = useLoaderData<{
-    locationSection: LocationType[];
+  const data = useLoaderData<{
+    locationSection?: LocationType[];
   }>();
 
-  // Assuming you're using the first location item
-  const location = locationSection[0]; // if this page is not oppening, use the below comment insetead of the line in the left
-  // const location = locationSection[0] || {};
+  // Log the data for debugging purposes
+  console.log("Loader Data:", data);
+
+  // Safely access the first location item
+  const location = data?.locationSection?.[0] ?? null;
+
+  // If no location data is available, render a fallback UI
+  if (!location) {
+    return (
+      <div className="text-center mt-40">
+        <p className="text-xl text-red-500">
+          Error: The location data is not available. Please try again later.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="font-['Switzer-Regular'] bg-gradient-to-r from-primaryColor to-[rgba(39,99,138,0.7)] p-6 md:p-12 items-center justify-between grid grid-cols-1 md:grid-cols-[50%,50%] lg:grid-cols-[27%,73%] mb-40 rounded-xl shadow-xl">
@@ -73,7 +86,6 @@ const Location = () => {
               {location.email || "Email"}
             </a>
           </p>
-          <p></p>
         </div>
       </div>
     </div>

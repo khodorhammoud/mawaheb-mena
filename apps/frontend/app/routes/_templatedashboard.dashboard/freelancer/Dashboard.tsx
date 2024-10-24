@@ -3,11 +3,9 @@ import { useTranslation } from "react-i18next";
 import Sidebar from "~/routes/_templatedashboard/Sidebar";
 
 export default function Dashboard() {
-
   const { t } = useTranslation();
   const menuNavigation = sidebarEmployerNav(t); //
   return (
-
     <div>
       <div className="flex">
         <Sidebar accountType="freelancer" />
@@ -59,7 +57,9 @@ export default function Dashboard() {
           {/* Stats Section */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button className="p-4 border rounded-md">
-              <h3 className="text-sm text-gray-500">Average Project Budget Freelancer</h3>
+              <h3 className="text-sm text-gray-500">
+                Average Project Budget Freelancer
+              </h3>
               <button className="text-blue-500 text-sm">
                 Add Average Budget
               </button>
@@ -86,6 +86,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-
   );
 }

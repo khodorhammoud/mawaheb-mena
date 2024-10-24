@@ -17,7 +17,19 @@ type ApplicantData = {
 
 const Dashboard: FC = () => {
   // Fetch loader data
-  const { currentUser } = useLoaderData<{ currentUser: Employer }>();
+  const {
+    currentUser,
+    activeJobCount,
+    draftedJobCount,
+    closedJobCount,
+    totalJobCount,
+  } = useLoaderData<{
+    currentUser: Employer;
+    activeJobCount: number;
+    draftedJobCount: number;
+    closedJobCount: number;
+    totalJobCount: number;
+  }>();
 
   // Access the firstName from the nested structure of currentUser
   const firstName = currentUser?.account?.user?.firstName || "User"; // Safely access the firstName
@@ -26,21 +38,21 @@ const Dashboard: FC = () => {
   const jobData: JobData[] = [
     {
       title: "Active Jobs",
-      count: 0,
-      change: "-0.089 than last month",
-      changeColor: "text-red-500",
+      count: activeJobCount,
+      change: "+0 from last month", // Update this dynamically if needed
+      changeColor: activeJobCount > 0 ? "text-green-500" : "text-red-500",
     },
     {
       title: "Drafted Jobs",
-      count: 0,
-      change: "+20 than last month",
-      changeColor: "text-green-500",
+      count: draftedJobCount,
+      change: "+0 from last month", // Update this dynamically if needed
+      changeColor: draftedJobCount > 0 ? "text-green-500" : "text-red-500",
     },
     {
       title: "Closed Jobs",
-      count: 0,
-      change: "+2 than last month",
-      changeColor: "text-green-500",
+      count: closedJobCount,
+      change: "+0 from last month", // Update this dynamically if needed
+      changeColor: closedJobCount > 0 ? "text-green-500" : "text-red-500",
     },
   ];
 
@@ -53,17 +65,25 @@ const Dashboard: FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <h1 className="text-2xl ml-6">
-        Welcome, <span className="text-primary font-bold">{firstName}!</span>
-      </h1>
-      <p className="text-2xl ml-6">Good to hear from you. Are you hiring?</p>
+      {/* Conditionally render the welcome message and button only if there are no jobs */}
+      {totalJobCount === 0 && (
+        <>
+          <h1 className="text-2xl ml-6">
+            Welcome,{" "}
+            <span className="text-primary font-bold">{firstName}!</span>
+          </h1>
+          <p className="text-2xl ml-6">
+            Good to hear from you. Are you hiring?
+          </p>
 
-      {/* Button to redirect to job posting page */}
-      <Link to="/job">
-        <button className="bg-primaryColor hover:bg-blue-700 text-white px-6 rounded-md text-lg mt-4 ml-6 transition">
-          Create New Job
-        </button>
-      </Link>
+          {/* Button to redirect to job posting page */}
+          <Link to="/dashboard/jobs">
+            <button className="bg-primaryColor hover:bg-blue-700 text-white px-6 rounded-md text-lg mt-4 ml-6 transition">
+              Create New Job
+            </button>
+          </Link>
+        </>
+      )}
 
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
         {/* Job Postings Section */}

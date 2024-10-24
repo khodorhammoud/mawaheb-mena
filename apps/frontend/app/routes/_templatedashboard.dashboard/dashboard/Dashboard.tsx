@@ -21,6 +21,8 @@ import {
   getEmployerAbout,
   checkUserExists,
   updateOnboardingStatus,
+  createJobPosting,
+  getEmployerDashboardData,
 } from "~/servers/employer.server";
 import { Employer } from "~/types/User";
 import { redirect } from "@remix-run/node";
@@ -39,6 +41,9 @@ export async function action({ request }: ActionFunctionArgs) {
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
+
+    console.log("Form submitted with target:", target); // Debug: check the form target
+    console.log("hii");
 
     const employer = (await getCurrentEployerFreelancerInfo(
       request
@@ -121,6 +126,45 @@ export async function action({ request }: ActionFunctionArgs) {
               { status: 500 }
             );
 
+      case "post-job": {
+        console.log("Current user and employer data:", currentUser, employer); // Debug: check user and employer
+        console.log("kifo");
+
+        const jobData = {
+          employerId: employer.id,
+          title: formData.get("jobTitle") as string,
+          description: formData.get("jobDescription") as string,
+          workingHoursPerWeek:
+            parseInt(formData.get("workingHours") as string, 10) || 0,
+          locationPreference: formData.get("location") as string,
+          requiredSkills: (formData.get("skills") as string)
+            .split(",")
+            .map((skill) => skill.trim()),
+          projectType: formData.get("projectType") as string,
+          budget: parseInt(formData.get("budget") as string, 10) || 0,
+          experienceLevel: formData.get("experienceLevel") as string,
+          isDraft: false, // Set to false as it's being posted directly
+        };
+        console.log("Job data prepared for insertion:", jobData); // Debug: check the job data
+
+        const jobStatus = await createJobPosting(jobData);
+
+        console.log("Job creation status:", jobStatus); // Debug: check job creation response
+        console.log("yayyy");
+
+        if (jobStatus.success) {
+          return redirect("/dashboard");
+        } else {
+          return json(
+            {
+              success: false,
+              error: { message: "Failed to create job posting" },
+            },
+            { status: 500 }
+          );
+        }
+      }
+
       // DEFAULT
       default:
         throw new Error("Unknown target update");
@@ -140,15 +184,33 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   const accountType: AccountType = await getCurrentUserAccountType(request);
   const employer = (await getCurrentEployerFreelancerInfo(request)) as Employer;
+
+  // If the employer object is not available, return an error response early
+  if (!employer) {
+    return json(
+      {
+        success: false,
+        error: { message: "Employer information not found." },
+      },
+      { status: 404 }
+    );
+  }
+
+  // Fetch all the necessary data safely
   const bioInfo = await getEmployerBio(employer);
   const employerIndustries = await getEmployerIndustries(employer);
   const allIndustries = (await getAllIndustries()) || [];
   const yearsInBusiness = await getEmployerYearsInBusiness(employer);
   const employerBudget = await getEmployerBudget(employer);
   const aboutContent = await getEmployerAbout(employer);
+  const { activeJobCount, draftedJobCount, closedJobCount } =
+    await getEmployerDashboardData(request);
 
-  const accountOnboarded = employer.account?.user?.isOnboarded; // this worked for the proceed button, and made me move to another page
+  // Check if employer.account exists before accessing nested properties
+  const accountOnboarded = employer?.account?.user?.isOnboarded;
+  const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
+  // Return the response data
   return json({
     accountType,
     bioInfo,
@@ -158,8 +220,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     yearsInBusiness,
     employerBudget,
     aboutContent,
-    accountOnboarded, // Include the onboarding status in the return JSON
+    accountOnboarded,
     employer,
+    activeJobCount,
+    draftedJobCount,
+    closedJobCount,
+    totalJobCount,
   });
 }
 

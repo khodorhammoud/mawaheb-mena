@@ -1,4 +1,5 @@
-// Layout component
+import JobPostingForm from "./NewJob";
+
 export default function Layout() {
-  return <div>this is jobs list</div>;
+  return <JobPostingForm />;
 }

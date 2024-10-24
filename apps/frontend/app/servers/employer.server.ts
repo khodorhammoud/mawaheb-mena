@@ -10,6 +10,7 @@ import {
   employersTable,
   industriesTable,
   UsersTable,
+  jobsTable,
 } from "../db/drizzle/schemas/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -19,6 +20,7 @@ import {
   Industry,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
+import { getCurrentEployerFreelancerInfo } from "./user.server";
 
 export async function updateEmployerBio(
   bio: EmployerBio,
@@ -310,4 +312,101 @@ export async function updateOnboardingStatus(userId: number) {
     .returning();
 
   return result; // Return the result from the update operation
+}
+
+// creating a job
+export async function createJobPosting(jobData: {
+  employerId: number;
+  title: string;
+  description: string;
+  workingHoursPerWeek: number;
+  locationPreference: string;
+  requiredSkills: string[];
+  projectType: string;
+  budget: number;
+  experienceLevel: string;
+  isDraft: boolean;
+}): Promise<{ success: boolean }> {
+  try {
+    // Log the job data being inserted
+    console.log("Attempting to insert job data into the database:", jobData);
+    console.log("ohhhh");
+
+    const result = await db
+      .insert(jobsTable)
+      .values({
+        employerId: jobData.employerId,
+        title: jobData.title,
+        description: jobData.description,
+        workingHoursPerWeek: jobData.workingHoursPerWeek,
+        locationPreference: jobData.locationPreference,
+        requiredSkills: jobData.requiredSkills,
+        projectType: jobData.projectType,
+        budget: jobData.budget,
+        experienceLevel: jobData.experienceLevel,
+        isDraft: jobData.isDraft,
+        isActive: !jobData.isDraft,
+      })
+      .returning();
+
+    console.log("Database insert result:", result); // Log the result of the database operation
+    console.log("mondyyo");
+
+    if (!result.length) {
+      console.error("No rows returned after insertion, indicating a failure.");
+      throw new Error("Job posting failed - no rows inserted.");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating job posting:", error);
+    return { success: false };
+  }
+}
+
+// fetch the job count
+export async function getEmployerDashboardData(request: Request) {
+  try {
+    // Fetch the current employer information based on the request
+    const currentUser = await getCurrentEployerFreelancerInfo(request);
+    if (!currentUser) {
+      throw new Error("Current user not found.");
+    }
+
+    // Fetch counts for active, drafted, and closed jobs
+    const [activeJobs, draftedJobs, closedJobs] = await Promise.all([
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          eq(jobsTable.employerId, currentUser.id) &&
+            eq(jobsTable.isActive, true)
+        ),
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          eq(jobsTable.employerId, currentUser.id) &&
+            eq(jobsTable.isDraft, true)
+        ),
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          eq(jobsTable.employerId, currentUser.id) &&
+            eq(jobsTable.isClosed, true)
+        ),
+    ]);
+
+    // Calculate the counts based on the length of the results
+    const activeJobCount = activeJobs.length;
+    const draftedJobCount = draftedJobs.length;
+    const closedJobCount = closedJobs.length;
+
+    // Return the job counts
+    return { activeJobCount, draftedJobCount, closedJobCount };
+  } catch (error) {
+    console.error("Error fetching employer dashboard data:", error);
+    throw error; // Re-throw the error for further handling
+  }
 }
