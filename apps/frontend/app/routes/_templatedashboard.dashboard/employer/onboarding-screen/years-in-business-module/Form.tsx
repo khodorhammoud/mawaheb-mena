@@ -9,12 +9,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useSubmit,
-} from "@remix-run/react";
+import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";
 import { Employer } from "~/types/User";
 
@@ -44,6 +39,7 @@ export default function YearsInBusinessCard() {
   const [messageType, setMessageType] = useState<"success" | "error">(
     "success"
   ); // Track message type
+  const [cumulativeCount, setCumulativeCount] = useState(0); // New state for tracking cumulative count
   const submit = useSubmit(); // Hook for submitting the form programmatically
 
   useEffect(() => {
@@ -53,29 +49,46 @@ export default function YearsInBusinessCard() {
     }
   }, [actionData, formSubmitted]);
 
-  // Reset the message when the dialog is closed and reopened
+  // Reset the message and cumulative count when the dialog is closed
   const handleDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
       setShowMessage(false); // Clear the message when dialog is closed
+      setCumulativeCount(0); // Reset cumulative count when dialog is closed
     }
   };
 
-  // Update the years and submit the form
   const handleYearsChange = (
     value: number,
-    action: "increase" | "decrease",
-    count: number
+    action: "increase" | "decrease"
   ) => {
     setYearsInBusiness(value);
     setFormSubmitted(true);
 
-    // Set the message and message type based on the action and count
+    // Reset the cumulative count to 1 if the action type changes, otherwise increment
+    setCumulativeCount((prev) => {
+      if (
+        (action === "increase" && messageType === "error") ||
+        (action === "decrease" && messageType === "success")
+      ) {
+        return 1; // Reset the count if the action type changes
+      } else {
+        return prev + 1; // Otherwise, increment the count
+      }
+    });
+
+    // Update the message and message type based on the action
+    const newCount =
+      (action === "increase" && messageType === "error") ||
+      (action === "decrease" && messageType === "success")
+        ? 1
+        : cumulativeCount + 1;
+
     if (action === "increase") {
-      setMessage(`${count} year${count > 1 ? "s" : ""} added`);
+      setMessage(`${newCount} year${newCount > 1 ? "s" : ""} added`);
       setMessageType("success");
-    } else {
-      setMessage(`${count} year${count > 1 ? "s" : ""} removed`);
+    } else if (action === "decrease") {
+      setMessage(`${newCount} year${newCount > 1 ? "s" : ""} removed`);
       setMessageType("error");
     }
 
@@ -92,13 +105,13 @@ export default function YearsInBusinessCard() {
 
   const increaseYears = () => {
     if (yearsInBusiness < 30) {
-      handleYearsChange(yearsInBusiness + 1, "increase", 1);
+      handleYearsChange(yearsInBusiness + 1, "increase");
     }
   };
 
   const decreaseYears = () => {
     if (yearsInBusiness > 1) {
-      handleYearsChange(yearsInBusiness - 1, "decrease", 1);
+      handleYearsChange(yearsInBusiness - 1, "decrease");
     }
   };
 
@@ -129,7 +142,7 @@ export default function YearsInBusinessCard() {
                   <span className="block sm:inline">{message}</span>
                 </div>
               )}
-            {showMessage && messageType === "error" && actionData?.error && (
+            {showMessage && messageType === "error" && actionData?.success && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                 <strong className="font-bold">Error! </strong>
                 <span className="block sm:inline">{message}</span>

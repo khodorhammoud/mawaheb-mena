@@ -81,7 +81,7 @@ export default function BudgetModuleForm() {
               className="flex items-center justify-center w-full py-3 border border-gray-300 rounded-lg hover:bg-gray-100"
             >
               <BsCurrencyDollar className="text-lg mr-2" />
-              {budget !== "0" ? `$ ${budget}` : "Add Average Budget"}
+              {budget !== "0" ? ` ${budget}` : "Add Average Budget"}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-[320px]">
