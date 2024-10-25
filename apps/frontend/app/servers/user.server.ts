@@ -75,7 +75,7 @@ export async function getCurrentUser(
   withPassword = false
 ): Promise<User | null> {
   const user = await authenticator.isAuthenticated(request);
-  console.log("user is authenticated", user);
+  // console.log("user is authenticated", user);
   if (!user) return null;
   const currentUser = user.account.user;
 

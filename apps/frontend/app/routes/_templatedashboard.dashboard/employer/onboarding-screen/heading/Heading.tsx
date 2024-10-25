@@ -11,12 +11,7 @@ import { Button } from "~/components/ui/button";
 import { RiGitlabFill, RiPencilFill } from "react-icons/ri";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Form,
-  useLoaderData,
-  useActionData,
-  useNavigation,
-} from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
   FaMapMarkerAlt,
   FaGlobe,
@@ -29,20 +24,22 @@ import { EmployerBio, Industry } from "~/types/User";
 import { parseHTTP } from "~/lib/utils";
 import { Badge } from "~/components/ui/badge";
 
-// Define the type of the action data to prevent TypeScript errors
-interface ActionData {
-  bioSuccess?: boolean;
-  industrySuccess?: boolean;
-  error?: {
-    message: string;
-  };
-}
-
 export default function Heading() {
   const [open, setOpen] = useState(false); // Bio dialog state
   const [industriesServedOpen, setIndustriesServedOpen] = useState(false); // Industry dialog state
   const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
   const [showIndustryMessage, setShowIndustryMessage] = useState(false); // Track industry message visibility
+
+  const bioFetcher = useFetcher<{
+    success?: boolean;
+    error?: { message: string };
+  }>(); // Fetcher for bio form
+  const industryFetcher = useFetcher<{
+    success?: boolean;
+    error?: { message: string };
+  }>(); // Fetcher for industry form
+
+  const industryFormRef = useRef<HTMLFormElement>(null); // Ref for industry form
 
   // Load data
   const { bioInfo, employerIndustries, allIndustries } = useLoaderData() as {
@@ -50,9 +47,6 @@ export default function Heading() {
     employerIndustries: Industry[];
     allIndustries: Industry[];
   };
-
-  const actionData = useActionData<ActionData>(); // Form submission result
-  const navigation = useNavigation();
 
   // Refs for location and website input fields
   const locationInputRef = useRef<HTMLInputElement>(null);
@@ -89,21 +83,27 @@ export default function Heading() {
     } else {
       setSelectedIndustries([...selectedIndustries, industryId]);
     }
+    // wait for the state to update before submitting the industries form programmatically
+    setTimeout(() => {
+      if (industryFormRef.current) {
+        industryFetcher.submit(industryFormRef.current);
+      }
+    }, 100);
   };
 
   // Handle showing the bio submission message
   useEffect(() => {
-    if (actionData?.bioSuccess || actionData?.error) {
-      setShowBioMessage(true); // Show bio message when form is submitted
+    if (bioFetcher.data?.success || bioFetcher.data?.error) {
+      setShowBioMessage(true);
     }
-  }, [actionData?.bioSuccess, actionData?.error]);
+  }, [bioFetcher.data]);
 
   // Handle showing the industry submission message
   useEffect(() => {
-    if (actionData?.industrySuccess || actionData?.error) {
-      setShowIndustryMessage(true); // Show industry message when form is submitted
+    if (industryFetcher.data?.success || industryFetcher.data?.error) {
+      setShowIndustryMessage(true);
     }
-  }, [actionData?.industrySuccess, actionData?.error]);
+  }, [industryFetcher.data]);
 
   // Reset messages when the bio dialog is closed
   const handleBioDialogChange = (isOpen: boolean) => {
@@ -118,6 +118,7 @@ export default function Heading() {
     setIndustriesServedOpen(isOpen);
     if (!isOpen) {
       setShowIndustryMessage(false); // Clear industry message when dialog is closed
+      setSearchTerm(""); // Clear search term when dialog is closed
     }
   };
 
@@ -143,28 +144,23 @@ export default function Heading() {
                 <DialogHeader>
                   <DialogTitle>Bio</DialogTitle>
                 </DialogHeader>
-
                 {/* Display Error Message */}
-                {showBioMessage && actionData?.error && (
+                {showBioMessage && bioFetcher.data?.error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                    <strong className="font-bold">Error! </strong>
                     <span className="block sm:inline">
-                      {actionData?.error?.message}
+                      {bioFetcher.data.error.message}
                     </span>
                   </div>
                 )}
                 {/* Display Success Message for Bio */}
-                {showBioMessage && actionData?.bioSuccess && (
+                {showBioMessage && bioFetcher.data?.success && (
                   <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                    <strong className="font-bold">Success! </strong>
                     <span className="block sm:inline">
                       Bio updated successfully
                     </span>
                   </div>
                 )}
-
-                <Form method="post" className="space-y-6">
-                  <input type="hidden" name="userId" value={bioInfo.userId} />
+                <bioFetcher.Form method="post" className="space-y-6">
                   <input
                     type="hidden"
                     name="target-updated"
@@ -271,18 +267,17 @@ export default function Heading() {
                       <FaStackOverflow className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     </div>
                   </div>
-
                   {/* Save */}
                   <DialogFooter>
                     <Button
-                      disabled={navigation.state === "submitting"}
+                      disabled={bioFetcher.state === "submitting"}
                       className="mr-2 bg-gray-200 text-sm disabled:opacity-50 hover:bg-gray-300"
                       type="submit"
                     >
                       Save
                     </Button>
                   </DialogFooter>
-                </Form>
+                </bioFetcher.Form>
               </DialogContent>
             </Dialog>
           </div>
@@ -343,25 +338,28 @@ export default function Heading() {
               </DialogHeader>
 
               {/* Display Error Message */}
-              {showIndustryMessage && actionData?.error && (
+              {showIndustryMessage && industryFetcher.data?.error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                  <strong className="font-bold">Error! </strong>
+                  <strong className="font-bold">Error: </strong>
                   <span className="block sm:inline">
-                    {actionData?.error?.message}
+                    {industryFetcher.data.error.message}
                   </span>
                 </div>
               )}
               {/* Display Success Message for Industries */}
-              {showIndustryMessage && actionData?.industrySuccess && (
+              {/* {showIndustryMessage && industryFetcher.data?.success && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                  <strong className="font-bold">Success! </strong>
                   <span className="block sm:inline">
                     Industries updated successfully
                   </span>
                 </div>
-              )}
+              )} */}
 
-              <Form method="post" id="employer-industires-form">
+              <industryFetcher.Form
+                ref={industryFormRef}
+                method="post"
+                id="employer-industires-form"
+              >
                 <input
                   type="hidden"
                   name="target-updated"
@@ -372,7 +370,7 @@ export default function Heading() {
                   name="employer-industries"
                   value={selectedIndustries.join(",")}
                 />
-              </Form>
+              </industryFetcher.Form>
 
               {/* Search Bar */}
               <div className="relative mb-4">
@@ -406,7 +404,7 @@ export default function Heading() {
                 )}
               </div>
 
-              <DialogFooter className="mt-6">
+              {/* <DialogFooter className="mt-6">
                 <Button
                   className="px-6"
                   type="submit"
@@ -414,7 +412,7 @@ export default function Heading() {
                 >
                   Save
                 </Button>
-              </DialogFooter>
+              </DialogFooter> */}
             </DialogContent>
           </Dialog>
         </div>

@@ -12,7 +12,7 @@ import {
   UsersTable,
   jobsTable,
 } from "../db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   Employer,
   EmployerBio,
@@ -330,7 +330,6 @@ export async function createJobPosting(jobData: {
   try {
     // Log the job data being inserted
     console.log("Attempting to insert job data into the database:", jobData);
-    console.log("ohhhh");
 
     const result = await db
       .insert(jobsTable)
@@ -368,7 +367,9 @@ export async function createJobPosting(jobData: {
 export async function getEmployerDashboardData(request: Request) {
   try {
     // Fetch the current employer information based on the request
-    const currentUser = await getCurrentEployerFreelancerInfo(request);
+    const currentUser = (await getCurrentEployerFreelancerInfo(
+      request
+    )) as Employer;
     if (!currentUser) {
       throw new Error("Current user not found.");
     }
@@ -379,22 +380,28 @@ export async function getEmployerDashboardData(request: Request) {
         .select()
         .from(jobsTable)
         .where(
-          eq(jobsTable.employerId, currentUser.id) &&
+          and(
+            eq(jobsTable.employerId, currentUser.id),
             eq(jobsTable.isActive, true)
+          )
         ),
       db
         .select()
         .from(jobsTable)
         .where(
-          eq(jobsTable.employerId, currentUser.id) &&
+          and(
+            eq(jobsTable.employerId, currentUser.id),
             eq(jobsTable.isDraft, true)
+          )
         ),
       db
         .select()
         .from(jobsTable)
         .where(
-          eq(jobsTable.employerId, currentUser.id) &&
+          and(
+            eq(jobsTable.employerId, currentUser.id),
             eq(jobsTable.isClosed, true)
+          )
         ),
     ]);
 
