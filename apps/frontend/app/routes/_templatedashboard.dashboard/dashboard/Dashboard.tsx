@@ -8,11 +8,11 @@ import {
   getCurrentEployerFreelancerInfo,
   getCurrentUserAccountType,
   getCurrentUser,
-} from "../../servers/user.server";
-import EmployerDashboard from "./employer";
-import FreelancerDashboard from "./freelancer/Dashboard";
+} from "~/servers/user.server";
+import EmployerDashboard from "../employer";
+import FreelancerDashboard from "../freelancer/Dashboard";
 import { useLoaderData /* useActionData, Form */ } from "@remix-run/react";
-import { AccountType } from "../../types/enums";
+import { AccountType } from "~/types/enums";
 import {
   getAllIndustries,
   getEmployerBio,
@@ -29,13 +29,6 @@ import {
   updateOnboardingStatus,
 } from "~/servers/employer.server";
 import { Employer } from "~/types/User";
-// import { db } from "../../db/drizzle/connector"; // Import your db instance
-// import { UsersTable } from "../../db/drizzle/schemas/schema"; // Adjust the path to where you define your schema
-// import { eq } from "drizzle-orm"; // Import 'eq' for comparison
-
-// Action
-// Action
-// Action
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
