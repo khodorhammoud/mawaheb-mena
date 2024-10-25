@@ -1,0 +1,1 @@
+ALTER TABLE "employers" ALTER COLUMN "budget" SET DATA TYPE integer;
