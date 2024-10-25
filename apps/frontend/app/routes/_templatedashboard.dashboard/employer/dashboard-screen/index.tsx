@@ -1,6 +1,16 @@
-import { FC } from "react";
-import { useLoaderData, Link } from "@remix-run/react";
+import { FC, useState } from "react";
+import { useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
+import JobPostingForm from "../../jobs/NewJob";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 
 // Type definitions for job and applicant data
 type JobData = {
@@ -63,8 +73,11 @@ const Dashboard: FC = () => {
     { title: "Shortlisted", count: 2 },
   ];
 
+  // State for dialog visibility
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col mt-20">
       {/* Conditionally render the welcome message and button only if there are no jobs */}
       {totalJobCount === 0 && (
         <>
@@ -76,18 +89,46 @@ const Dashboard: FC = () => {
             Good to hear from you. Are you hiring?
           </p>
 
-          {/* Button to redirect to job posting page */}
-          <Link to="/dashboard/jobs">
-            <button className="bg-primaryColor hover:bg-blue-700 text-white px-6 rounded-md text-lg mt-4 ml-6 transition">
-              Create New Job
-            </button>
-          </Link>
+          {/* Centered Button Container */}
+          <div className="flex justify-start ml-6 mt-4">
+            {/* Button to open the job posting form dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto">
+                  Create New Job
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl mx-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-center font-semibold text-xl mb-4">
+                    Create a New Job
+                  </DialogTitle>
+                </DialogHeader>
+
+                {/* Job Posting Form */}
+                <div className="overflow-y-auto max-h-[70vh] px-4">
+                  <JobPostingForm />
+                </div>
+
+                <DialogFooter className="flex justify-center mt-4">
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={() => setIsDialogOpen(false)}
+                    className="text-gray-500"
+                  >
+                    Cancel
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </>
       )}
 
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
         {/* Job Postings Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6">
           <h1 className="text-3xl font-semibold mb-6">Job Postings</h1>
           <div className="grid grid-cols-1">
             {jobData.map((job, index) => (
@@ -112,7 +153,7 @@ const Dashboard: FC = () => {
         </div>
 
         {/* Applicants Summary Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6">
           <h1 className="text-3xl font-semibold mb-6">Applicants Summary</h1>
           <div className="grid grid-cols-2 gap-6">
             {applicantData.map((applicant, index) => (
