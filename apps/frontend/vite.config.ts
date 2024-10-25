@@ -10,6 +10,28 @@ export default defineConfig({
         v3_relativeSplatPath: true,
         v3_throwAbortReason: true,
       },
+      routes(defineRoutes) {
+        return defineRoutes((route) => {
+          route(
+            "dashboard",
+            "routes/_templatedashboard.dashboard/dashboard/Dashboard.tsx"
+          ),
+            // Dashboard index route
+            route(
+              "dashboard/jobs",
+              "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
+            );
+
+          route(
+            "dashboard/jobs:jobId",
+            "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
+          );
+          route(
+            "dashboard/jobs/new",
+            "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
+          );
+        });
+      },
     }),
     tsconfigPaths(),
   ],
