@@ -11,7 +11,7 @@ import {
 } from "~/servers/user.server";
 import EmployerDashboard from "../employer";
 import FreelancerDashboard from "../freelancer/Dashboard";
-import { useLoaderData /* useActionData, Form */ } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import {
   getAllIndustries,
@@ -31,6 +31,7 @@ import {
   getEmployerDashboardData,
 } from "~/servers/employer.server";
 import { Employer } from "~/types/User";
+import Header from "../../_templatedashboard/header";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -38,10 +39,6 @@ export async function action({ request }: ActionFunctionArgs) {
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
-
-    console.log("Form submitted with target:", target); // Debug: check the form target
-    console.log("hii");
-
     const employer = (await getCurrentEployerFreelancerInfo(
       request
     )) as Employer;
@@ -122,9 +119,6 @@ export async function action({ request }: ActionFunctionArgs) {
           );
     }
     if (target == "post-job") {
-      console.log("Current user and employer data:", currentUser, employer); // Debug: check user and employer
-      console.log("kifo");
-
       const jobData = {
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
@@ -140,12 +134,8 @@ export async function action({ request }: ActionFunctionArgs) {
         experienceLevel: formData.get("experienceLevel") as string,
         isDraft: false, // Set to false as it's being posted directly
       };
-      console.log("Job data prepared for insertion:", jobData); // Debug: check the job data
 
       const jobStatus = await createJobPosting(jobData);
-
-      console.log("Job creation status:", jobStatus); // Debug: check job creation response
-      console.log("yayyy");
 
       if (jobStatus.success) {
         return redirect("/dashboard");
@@ -173,7 +163,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const accountType: AccountType = await getCurrentUserAccountType(request);
   const employer = (await getCurrentEployerFreelancerInfo(request)) as Employer;
 
-  // If the employer object is not available, return an error response early
+  // !!IMPortant!! If the employer object is not available, return an error response early
   if (!employer) {
     return json(
       {
@@ -225,6 +215,8 @@ export default function Layout() {
 
   return (
     <div>
+      {/* adding the header like that shall be temporary, and i shall ask about it */}
+      <Header />
       {accountType === "employer" ? (
         <EmployerDashboard />
       ) : (

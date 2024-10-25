@@ -21,7 +21,7 @@ export default function Sidebar({ accountType }) {
   }
 
   return (
-    <div className="w-64 bg-gray-100 h-screen p-5">
+    <div className="w-64 bg-gray-100 h-screen p-5 mt-20">
       <div className="flex flex-col items-center">
         <div className="bg-gray-300 rounded-full w-24 h-24 flex items-center justify-center mb-4">
           <span className="text-xl font-bold">AM</span>

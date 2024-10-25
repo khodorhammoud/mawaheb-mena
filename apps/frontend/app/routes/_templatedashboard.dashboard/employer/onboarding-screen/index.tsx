@@ -15,7 +15,7 @@ export default function Body() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <div>
+    <div className="mt-20">
       <Heading />
       <div className="flex justify-between mb-4">
         <BudgetModuleForm />
