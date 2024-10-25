@@ -9,12 +9,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useSubmit,
-} from "@remix-run/react";
+import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";
 import { Employer } from "~/types/User";
 
@@ -121,17 +116,16 @@ export default function YearsInBusinessCard() {
             </DialogHeader>
 
             {/* Display Message */}
-            {showMessage &&
+            {/* {showMessage &&
               messageType === "success" &&
               actionData?.success && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
                   <strong className="font-bold">Success! </strong>
                   <span className="block sm:inline">{message}</span>
                 </div>
-              )}
+              )} */}
             {showMessage && messageType === "error" && actionData?.error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                <strong className="font-bold">Error! </strong>
                 <span className="block sm:inline">{message}</span>
               </div>
             )}
