@@ -403,6 +403,16 @@ export default function Heading() {
                   <p className="text-gray-500">No industries found</p>
                 )}
               </div>
+
+              {/* <DialogFooter className="mt-6">
+                <Button
+                  className="px-6"
+                  type="submit"
+                  form="employer-industires-form"
+                >
+                  Save
+                </Button>
+              </DialogFooter> */}
             </DialogContent>
           </Dialog>
         </div>

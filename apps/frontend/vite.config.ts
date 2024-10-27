@@ -12,15 +12,15 @@ export default defineConfig({
       },
       routes(defineRoutes) {
         return defineRoutes((route) => {
-          route(
+          /* route(
             "dashboard",
             "routes/_templatedashboard.dashboard/dashboard/Dashboard.tsx"
-          ),
-            // Dashboard index route
-            route(
-              "dashboard/jobs",
-              "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
-            );
+          ), */
+          // Dashboard index route
+          route(
+            "dashboard/jobs",
+            "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
+          );
 
           route(
             "dashboard/jobs:jobId",
