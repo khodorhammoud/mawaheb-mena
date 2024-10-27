@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { Form, useActionData, useNavigation } from "@remix-run/react"; // Changed useTransition to useNavigation
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 
 // ActionData type for response handling
 interface ActionData {
@@ -12,9 +12,16 @@ interface ActionData {
   };
 }
 
+// ProjectType enum values
+const projectTypes = [
+  { value: "short-term", label: "Short Term" },
+  { value: "long-term", label: "Long Term" },
+  { value: "per-project-basis", label: "Per Project Basis" },
+];
+
 export default function JobPostingForm() {
   const actionData = useActionData<ActionData>();
-  const navigation = useNavigation(); // Use useNavigation instead of useTransition
+  const navigation = useNavigation();
 
   // Form fields state
   const [jobTitle, setJobTitle] = useState("");
@@ -22,7 +29,7 @@ export default function JobPostingForm() {
   const [workingHours, setWorkingHours] = useState("");
   const [location, setLocation] = useState("");
   const [skills, setSkills] = useState("");
-  const [projectType, setProjectType] = useState("");
+  const [projectType, setProjectType] = useState(projectTypes[0].value);
   const [budget, setBudget] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedExperience, setSelectedExperience] = useState("");
@@ -53,50 +60,80 @@ export default function JobPostingForm() {
     <div className="p-10 bg-gray-100 min-h-screen flex justify-center">
       <Card className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg">
         <CardHeader className="mb-6">
-          <CardTitle className="text-2xl font-bold">Job Posting Form</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Job Posting Form2
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <Form method="post" className="space-y-6">
+          <Form method="post" action="/dashboard" className="space-y-6">
+            <input type="hidden" name="target-updated" value="post-job" />
+            <input type="hidden" name="category" value={selectedCategory} />
+            <input
+              type="hidden"
+              name="experienceLevel"
+              value={selectedExperience}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 placeholder="Job Title"
                 name="jobTitle"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
+                required
               />
               <Input
                 placeholder="Working Hours per week"
                 name="workingHours"
                 value={workingHours}
                 onChange={(e) => setWorkingHours(e.target.value)}
+                required
               />
               <Input
                 placeholder="Location Preferences"
                 name="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                required
               />
               <Input
-                placeholder="Required Skills"
+                placeholder="Required Skills (comma-separated)"
                 name="skills"
                 value={skills}
                 onChange={(e) => setSkills(e.target.value)}
+                required
               />
-              <Input
-                placeholder="Project Type"
-                name="projectType"
-                value={projectType}
-                onChange={(e) => setProjectType(e.target.value)}
-              />
+              <div>
+                <label
+                  htmlFor="projectType"
+                  className="block mb-2 text-sm font-medium text-gray-700"
+                >
+                  Project Type
+                </label>
+                <select
+                  name="projectType"
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  {projectTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Input
                 placeholder="Budget"
                 name="budget"
+                type="number"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
+                required
               />
             </div>
 
-            {/* Job Description */}
             <div className="mt-4">
               <label
                 htmlFor="jobDescription"
@@ -112,10 +149,10 @@ export default function JobPostingForm() {
                 placeholder="Enter the job description"
                 rows={4}
                 className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
 
-            {/* Job Category */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Job Category</h3>
               <div className="flex flex-wrap gap-2">
@@ -136,7 +173,6 @@ export default function JobPostingForm() {
               </div>
             </div>
 
-            {/* Experience Level */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Experience Level</h3>
               <div className="flex flex-wrap gap-2">
@@ -157,7 +193,18 @@ export default function JobPostingForm() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {actionData?.error && (
+              <div className="text-red-600 mt-4">
+                {actionData.error.message}
+              </div>
+            )}
+
+            {actionData?.success && (
+              <div className="text-green-600 mt-4">
+                Job posted successfully!
+              </div>
+            )}
+
             <div className="flex justify-end space-x-4 mt-8">
               <Button variant="outline" type="button">
                 Save as Draft

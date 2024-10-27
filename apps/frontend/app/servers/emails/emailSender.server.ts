@@ -50,8 +50,10 @@ export async function sendEmail(params: SendEmailParams) {
 export async function sendEmailWithBrevo(mailOptions: MailOptions) {
   const apiInstance = new brevo.TransactionalEmailsApi();
 
-  const apiKey = apiInstance.authentications["apiKey"];
-  apiKey.apiKey = process.env.BREVO_API_KEY;
+  apiInstance.setApiKey(
+    brevo.TransactionalEmailsApiApiKeys.apiKey,
+    process.env.BREVO_API_KEY
+  );
 
   const sendSmtpEmail = new brevo.SendSmtpEmail();
 

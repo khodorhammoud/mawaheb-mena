@@ -23,7 +23,7 @@ dotenv.config({
 async function seed() {
   await db.transaction(async (tx) => {
     try {
-      /* const lastUserIDinDB = await db
+      const lastUserIDinDB = await db
         .select()
         .from(UsersTable)
         .orderBy(asc(UsersTable.id))
@@ -56,6 +56,7 @@ async function seed() {
       // Seed Users
       for (let i = lastUserID; i < lastUserID + 10; i++) {
         await tx.insert(UsersTable).values({
+          // @ts-expect-error: Faker types may not match the expected types
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
           email: faker.internet.email(),
@@ -99,10 +100,10 @@ async function seed() {
           ]),
           phone: faker.phone.number().substring(0, 20),
         });
-      } */
+      }
 
       // Seed Preferred Working Times
-      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(preferredWorkingTimesTable).values({
           accountId: i + 1,
           dayOfWeek: faker.helpers.arrayElement([
@@ -117,10 +118,10 @@ async function seed() {
           startTime: faker.date.recent().toISOString().substring(11, 19),
           endTime: faker.date.future().toISOString().substring(11, 19),
         });
-      } */
+      }
 
       // Seed Freelancers
-      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(freelancersTable).values({
           accountId: i + 1,
           fieldsOfExpertise: faker.helpers.arrayElements([
@@ -155,10 +156,10 @@ async function seed() {
             "hourly-rate",
           ]),
         });
-      } */
+      }
 
       // Seed Employers
-      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(employersTable).values({
           accountId: i + 1,
           companyName: faker.company.name(),
@@ -179,7 +180,7 @@ async function seed() {
             faker.internet.url(),
           ]),
         });
-      } */
+      }
 
       // Seed Languages
       for (const language of [
@@ -199,12 +200,12 @@ async function seed() {
       }
 
       // Seed Account Languages
-      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(accountLanguagesTable).values({
           accountId: i + 1,
           languageId: faker.datatype.number({ min: 1, max: 9 }),
         });
-      } */
+      }
 
       // seed industries
       const industries = [
@@ -353,7 +354,7 @@ async function seed() {
         });
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       tx.rollback();
       throw err;
     }

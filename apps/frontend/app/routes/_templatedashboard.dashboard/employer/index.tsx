@@ -1,8 +1,8 @@
-import Sidebar from "~/routes/_templatedashboard/Sidebar";
-import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+// import Sidebar from "~/routes/_templatedashboard/Sidebar";
+import { Link, useLoaderData } from "@remix-run/react";
+// import { useState } from "react";
 import type { Employer } from "~/types/User";
-import JobPostingForm from "../jobs/NewJob";
+/* import JobPostingForm from "../jobs/NewJob";
 import {
   Dialog,
   DialogTrigger,
@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
+} from "~/components/ui/dialog"; */
+// import { Button } from "~/components/ui/button";
 
 type JobData = {
   title: string;
@@ -77,12 +77,10 @@ export default function Dashboard() {
   ];
 
   // State for dialog visibility
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <div className="flex">
-      <Sidebar accountType="employer" />
-
       {/* Main Content */}
       {/* <div className="flex-1 p-6">
           {accountOnboarded ? <DashboardScreen /> : <OnboardingScreen />}
@@ -102,8 +100,14 @@ export default function Dashboard() {
 
               {/* Centered Button Container */}
               <div className="flex justify-start ml-6 mt-4">
+                <Link
+                  to="/new-job"
+                  className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto"
+                >
+                  Create New Job
+                </Link>
                 {/* Button to open the job posting form dialog */}
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto">
                       Create New Job
@@ -116,7 +120,6 @@ export default function Dashboard() {
                       </DialogTitle>
                     </DialogHeader>
 
-                    {/* Job Posting Form */}
                     <div className="overflow-y-auto max-h-[70vh] px-4">
                       <JobPostingForm />
                     </div>
@@ -132,7 +135,7 @@ export default function Dashboard() {
                       </Button>
                     </DialogFooter>
                   </DialogContent>
-                </Dialog>
+                </Dialog> */}
               </div>
             </>
           )}
