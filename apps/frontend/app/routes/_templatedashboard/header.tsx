@@ -1,11 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { navigation } from "~/constants/navigation";
 import { NavLink } from "@remix-run/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import "~/styles/wavy/wavy.css";
-import { Link } from "@remix-run/react";
+/* import { Link } from "@remix-run/react";
 import {
   Dialog,
   DialogTrigger,
@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import JobPostingForm from "../_templatedashboard.dashboard/jobs/NewJob"; // Import your JobPostingForm component
+import JobPostingForm from "../_templatedashboard.dashboard/jobs/NewJob"; // Import your JobPostingForm component */
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ export default function Layout() {
         </div>
 
         {/* Dialog for Post Job Button */}
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        {/* <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end">
               Post Job
@@ -55,7 +55,6 @@ export default function Layout() {
               </DialogTitle>
             </DialogHeader>
 
-            {/* Job Posting Form */}
             <div className="overflow-y-auto max-h-[70vh] px-4">
               <JobPostingForm />
             </div>
@@ -71,7 +70,7 @@ export default function Layout() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
 
       {/* Mobile Menu - Framer Motion */}

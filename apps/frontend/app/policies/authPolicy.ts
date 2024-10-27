@@ -9,7 +9,6 @@ export const ensureAuthenticated = async (
   try {
     const session = await getSession(request.headers.get("cookie"));
     if (!session.get("user")) {
-      console.log("user not authenticated");
       return redirect(redirectTo);
     }
     const { id: userId } = session.get("user");

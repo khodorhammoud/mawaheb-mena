@@ -33,7 +33,7 @@ export async function updateEmployerBio(
     // update user info first
     const res1 = await db
       .update(UsersTable)
-      .set({ firstName: bio.firstName, lastName: bio.lastName } as any) // Casting as any to bypass type check
+      .set({ firstName: bio.firstName, lastName: bio.lastName } as unknown) // Casting as any to bypass type check
       .where(eq(UsersTable.id, userId))
       .returning();
 
@@ -280,7 +280,7 @@ export async function updateEmployerAbout(
   const accountId = employer.accountId;
 
   try {
-    const result = await db
+    await db
       .update(employersTable)
       .set({
         about: aboutContent, // Set the about column with the new content
@@ -307,7 +307,7 @@ export async function checkUserExists(userId: number) {
 export async function updateOnboardingStatus(userId: number) {
   const result = await db
     .update(UsersTable)
-    .set({ isOnboarded: true } as any)
+    .set({ isOnboarded: true } as unknown)
     .where(eq(UsersTable.id, userId))
     .returning();
 
@@ -328,9 +328,6 @@ export async function createJobPosting(jobData: {
   isDraft: boolean;
 }): Promise<{ success: boolean }> {
   try {
-    // Log the job data being inserted
-    console.log("Attempting to insert job data into the database:", jobData);
-
     const result = await db
       .insert(jobsTable)
       .values({
@@ -347,9 +344,6 @@ export async function createJobPosting(jobData: {
         isActive: !jobData.isDraft,
       })
       .returning();
-
-    console.log("Database insert result:", result); // Log the result of the database operation
-    console.log("mondyyo");
 
     if (!result.length) {
       console.error("No rows returned after insertion, indicating a failure.");

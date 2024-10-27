@@ -1,4 +1,3 @@
-import React from "react";
 import { useLoaderData } from "@remix-run/react";
 import { Location as LocationType } from "../../types/PageContent"; // Import Location interface
 
@@ -7,9 +6,6 @@ const Location = () => {
   const data = useLoaderData<{
     locationSection?: LocationType[];
   }>();
-
-  // Log the data for debugging purposes
-  console.log("Loader Data:", data);
 
   // Safely access the first location item
   const location = data?.locationSection?.[0] ?? null;

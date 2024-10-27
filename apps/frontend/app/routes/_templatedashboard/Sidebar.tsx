@@ -1,20 +1,25 @@
 import { sidebarEmployerNav, sidebarEmployeeNav } from "~/constants/navigation";
 import { useTranslation } from "react-i18next";
-import { NavLink, useLocation } from "@remix-run/react";
+import { NavLink, useLoaderData, useLocation } from "@remix-run/react";
 import clsx from "clsx";
+import { User } from "~/types/User";
 
-export default function Sidebar({ accountType }) {
+type SidebarProps = {
+  accountType: string;
+};
+export default function Sidebar({ accountType }: SidebarProps) {
+  const { currentUser } = useLoaderData<{
+    currentUser: User;
+  }>();
   const { t } = useTranslation();
   const location = useLocation(); // Get the current location
   let menuNavigation;
 
   switch (accountType) {
-    case "employer":
-      menuNavigation = sidebarEmployerNav(t);
-      break;
     case "employee":
       menuNavigation = sidebarEmployeeNav(t);
       break;
+    case "employer":
     default:
       menuNavigation = sidebarEmployerNav(t);
       break;
@@ -27,7 +32,9 @@ export default function Sidebar({ accountType }) {
           <span className="text-xl font-bold">AM</span>
         </div>
         <div className="text-center">
-          <h2 className="text-lg font-medium">Ahmad M.</h2>
+          <h2 className="text-lg font-medium">
+            {currentUser.firstName + " " + currentUser.lastName}
+          </h2>
           <p className="text-sm text-gray-500">Add Title</p>
           <p className="text-sm text-gray-500">Add Location</p>
         </div>
