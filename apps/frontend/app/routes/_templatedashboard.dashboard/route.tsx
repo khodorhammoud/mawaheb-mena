@@ -9,8 +9,8 @@ import {
   getCurrentUserAccountType,
   getCurrentUser,
 } from "~/servers/user.server";
-import EmployerDashboard from "../employer";
-import FreelancerDashboard from "../freelancer/Dashboard";
+import EmployerDashboard from "./employer";
+import FreelancerDashboard from "./freelancer";
 import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import {
@@ -31,7 +31,8 @@ import {
   getEmployerDashboardData,
 } from "~/servers/employer.server";
 import { Employer } from "~/types/User";
-import Header from "../../_templatedashboard/header";
+import Header from "../_templatedashboard/header";
+import { authenticator } from "~/auth/auth.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -160,6 +161,11 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  // if the curretn user is not logged in, redirect them to the login screen
+  const user = await authenticator.isAuthenticated(request);
+  if (!user) {
+    return redirect("/login-employer");
+  }
   const accountType: AccountType = await getCurrentUserAccountType(request);
   const employer = (await getCurrentEployerFreelancerInfo(request)) as Employer;
 
@@ -172,6 +178,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       { status: 404 }
     );
+  }
+
+  // if the current user is not onboarded, redirect them to the onboarding screen
+  if (!employer.account.user.isOnboarded) {
+    return redirect("/onboarding");
   }
 
   // Fetch all the necessary data safely
