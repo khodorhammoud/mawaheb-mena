@@ -3,8 +3,12 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import JobCategoryField from "./job-category";
-import { getAllJobCategories } from "~/servers/job.server";
+import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
 import { Badge } from "~/components/ui/badge";
+import RequiredSkills from "./required-skills";
+import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
+import { getCurrentEployerFreelancerInfo } from "~/servers/user.server";
+import { Job } from "~/types/Job";
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
@@ -18,6 +22,62 @@ interface ActionData {
   error?: {
     message: string;
   };
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  try {
+    const formData = await request.formData(); // always do this :)
+    const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
+    const employer = (await getCurrentEployerFreelancerInfo(
+      request
+    )) as Employer;
+    if (target == "post-job") {
+      // TODO: Add validation for the form fields
+      const jobData: Job = {
+        employerId: employer.id,
+        title: formData.get("jobTitle") as string,
+        description: formData.get("jobDescription") as string,
+        jobCategoryId: parseInt(formData.get("jobCategory") as string) || null,
+        workingHoursPerWeek:
+          parseInt(formData.get("workingHours") as string, 10) || 0,
+        locationPreference: formData.get("location") as string,
+        requiredSkills: (formData.get("jobSkills") as string)
+          .split(",")
+          .map((skill) => skill.trim()),
+        projectType: formData.get("projectType") as string,
+        budget: parseInt(formData.get("budget") as string, 10) || 0,
+        experienceLevel: formData.get("experienceLevel") as string,
+
+        isDraft: false, // Set to false as it's being posted directly
+        isActive: true,
+        isDeleted: false,
+        isClosed: false,
+        isPaused: false,
+      };
+
+      const jobStatus = await createJobPosting(jobData);
+
+      if (jobStatus.success) {
+        return redirect("/dashboard");
+      } else {
+        return json(
+          {
+            success: false,
+            error: { message: "Failed to create job posting" },
+          },
+          { status: 500 }
+        );
+      }
+    }
+    // DEFAULT
+    throw new Error("Unknown target update");
+  } catch (error) {
+    console.error("error while creating a job", error);
+    return json(
+      { success: false, error: { message: "An unexpected error occurred." } },
+      { status: 500 }
+    );
+  }
 }
 
 // ProjectType enum values
@@ -36,7 +96,6 @@ export default function JobPostingForm() {
   const [jobDescription, setJobDescription] = useState("");
   const [workingHours, setWorkingHours] = useState<number>(0);
   const [location, setLocation] = useState("");
-  const [skills, setSkills] = useState("");
   const [projectType, setProjectType] = useState(projectTypes[0].value);
   const [budget, setBudget] = useState("");
   const [selectedExperience, setSelectedExperience] = useState("");
@@ -57,7 +116,7 @@ export default function JobPostingForm() {
         <div className="min-h-screen flex flex-col mt-20">
           <h1 className="text-2xl font-semibold">Job Posting Form</h1>
 
-          <Form method="post" action="/dashboard" className="space-y-6">
+          <Form method="post" className="space-y-6">
             <input type="hidden" name="target-updated" value="post-job" />
             <input
               type="hidden"
@@ -108,14 +167,8 @@ export default function JobPostingForm() {
                 className="column-start-2"
                 required
               />
-              <Input
-                className="column-start-2"
-                placeholder="Required Skills (comma-separated)"
-                name="skills"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
-                required
-              />
+              <RequiredSkills />
+
               <div className="column-start-2">
                 <label
                   htmlFor="projectType"
