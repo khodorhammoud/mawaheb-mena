@@ -26,9 +26,11 @@ export default function LoginEmployerPage() {
 
   return (
     <LayoutContainer>
-      <div className="flex h-screen">
+      <div className="flex h-screen mt-24 mb-20">
         {/* Left Side - Login Form */}
-        <LoginFormComponent />
+        <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">
+          <LoginFormComponent />
+        </div>
 
         {/* Right Side - Image and Testimonial */}
         <div className="hidden md:block w-1/2 bg-gray-50 relative">
