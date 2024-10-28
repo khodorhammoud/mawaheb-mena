@@ -107,3 +107,8 @@ export interface Industry {
   label: string;
   metadata: string[];
 }
+
+export interface JobCategory {
+  id: number;
+  label: string;
+}

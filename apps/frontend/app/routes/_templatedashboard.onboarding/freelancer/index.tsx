@@ -1,10 +1,10 @@
-import { sidebarEmployerNav } from "~/constants/navigation";
-import { useTranslation } from "react-i18next";
+// import { sidebarEmployerNav } from "~/constants/navigation";
+// import { useTranslation } from "react-i18next";
 import Sidebar from "~/routes/_templatedashboard/Sidebar";
 
-export default function Dashboard() {
-  const { t } = useTranslation();
-  const menuNavigation = sidebarEmployerNav(t); //
+export default function FreelancerOnboardingScreen() {
+  // const { t } = useTranslation();
+  // const menuNavigation = sidebarEmployerNav(t); //
   return (
     <div>
       <div className="flex">

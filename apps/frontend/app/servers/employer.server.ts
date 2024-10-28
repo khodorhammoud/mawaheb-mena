@@ -314,49 +314,6 @@ export async function updateOnboardingStatus(userId: number) {
   return result; // Return the result from the update operation
 }
 
-// creating a job
-export async function createJobPosting(jobData: {
-  employerId: number;
-  title: string;
-  description: string;
-  workingHoursPerWeek: number;
-  locationPreference: string;
-  requiredSkills: string[];
-  projectType: string;
-  budget: number;
-  experienceLevel: string;
-  isDraft: boolean;
-}): Promise<{ success: boolean }> {
-  try {
-    const result = await db
-      .insert(jobsTable)
-      .values({
-        employerId: jobData.employerId,
-        title: jobData.title,
-        description: jobData.description,
-        workingHoursPerWeek: jobData.workingHoursPerWeek,
-        locationPreference: jobData.locationPreference,
-        requiredSkills: jobData.requiredSkills,
-        projectType: jobData.projectType,
-        budget: jobData.budget,
-        experienceLevel: jobData.experienceLevel,
-        isDraft: jobData.isDraft,
-        isActive: !jobData.isDraft,
-      })
-      .returning();
-
-    if (!result.length) {
-      console.error("No rows returned after insertion, indicating a failure.");
-      throw new Error("Job posting failed - no rows inserted.");
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error creating job posting:", error);
-    return { success: false };
-  }
-}
-
 // fetch the job count
 export async function getEmployerDashboardData(request: Request) {
   try {

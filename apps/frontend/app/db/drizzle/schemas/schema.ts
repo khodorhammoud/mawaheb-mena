@@ -21,8 +21,8 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-  locationPreferenceTypeEnum,
-  experienceLevelEnum,
+  // locationPreferenceTypeEnum,
+  // experienceLevelEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -258,18 +258,16 @@ export const employerIndustriesTable = pgTable("employer_industries", {
 });
 
 /**
- * Define the JobCategories table schema lthat links jobs table to industries table
+ * Define the JobCategories table schema that stores the job categories
  *
  * @property id - serial primary key
- * @property job_id - integer referencing the jobsTable id
- * @property industry_id - integer referencing the industriesTable id
- * @property timestamp - timestamp
+ * @property label - text
+ * @property createdAt - timestamp
  */
 export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
-  jobId: integer("job_id").references(() => jobsTable.id),
-  industryId: integer("industry_id").references(() => industriesTable.id),
-  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted (created maybe)
+  label: text("label"),
+  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted
 });
 
 /**
@@ -279,6 +277,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property employer_id - integer referencing the employersTable id
  * @property title - text
  * @property description - text
+ * @property job_category_id - integer referencing the jobCategoriesTable id
  * @property working_hours_per_week - integer
  * @property location_preference - locationPreferenceTypeEnum
  * @property requred_skills - text array
@@ -297,6 +296,9 @@ export const jobsTable = pgTable("jobs", {
   employerId: integer("employer_id").references(() => employersTable.id),
   title: text("title"),
   description: text("description"),
+  jobCategoryId: integer("job_category_id").references(
+    () => jobCategoriesTable.id
+  ),
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
