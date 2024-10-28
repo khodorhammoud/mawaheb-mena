@@ -5,7 +5,7 @@ import BudgetModuleForm from "./budget-module/Form";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
 
-export default function Body() {
+export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
   const { currentUser } = useLoaderData<{ currentUser: Employer }>();
 
@@ -15,7 +15,7 @@ export default function Body() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <div>
+    <div className="mt-20">
       <Heading />
       <div className="flex justify-between mb-4">
         <BudgetModuleForm />

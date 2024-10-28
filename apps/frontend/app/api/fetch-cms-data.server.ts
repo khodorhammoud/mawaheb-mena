@@ -1,6 +1,4 @@
 export async function fetchCMSData(queries: string[]) {
-  console.log("Fetching data with queries:", queries);
-
   const responses = [];
 
   // Iterate over all the queries
@@ -41,7 +39,6 @@ export async function fetchCMSData(queries: string[]) {
       }
 
       const data = await response.json();
-      console.log("Fetched data for query:", query, data);
       return data;
     } catch (error) {
       console.error("Error fetching query data:", query, error);
