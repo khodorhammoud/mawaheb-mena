@@ -1,11 +1,21 @@
-// Layout Component
 import { useTranslation } from "react-i18next";
 import { navigation } from "~/constants/navigation";
 import { NavLink } from "@remix-run/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import "~/styles/wavy/wavy.css";
+/* import { Link } from "@remix-run/react";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import JobPostingForm from "../_templatedashboard.dashboard/jobs/NewJob"; // Import your JobPostingForm component */
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -13,7 +23,7 @@ export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-2 pt-2 fixed top-0 left-0 w-full z-[1000]">
+    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-2 pt-2 fixed top-0 left-0 w-full z-[1px]">
       <div className="container flex lg:gap-24 md:gap-8 gap-2 items-center py-4">
         <div className="xl:text-2xl lg:text-lg md:text-base font-extrabold font-['BespokeSerif-Regular']">
           {t("siteTitle")}
@@ -31,9 +41,36 @@ export default function Layout() {
           </button>
         </div>
 
-        <button className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end">
-          Post Job
-        </button>
+        {/* Dialog for Post Job Button */}
+        {/* <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end">
+              Post Job
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-center font-semibold text-xl mb-4">
+                Create a New Job
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="overflow-y-auto max-h-[70vh] px-4">
+              <JobPostingForm />
+            </div>
+
+            <DialogFooter className="flex justify-center mt-4">
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="text-gray-500"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog> */}
       </div>
 
       {/* Mobile Menu - Framer Motion */}

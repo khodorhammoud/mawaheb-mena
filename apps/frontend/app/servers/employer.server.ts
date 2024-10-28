@@ -10,8 +10,9 @@ import {
   employersTable,
   industriesTable,
   UsersTable,
+  jobsTable,
 } from "../db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   Employer,
   EmployerBio,
@@ -19,6 +20,7 @@ import {
   Industry,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
+import { getCurrentEployerFreelancerInfo } from "./user.server";
 
 export async function updateEmployerBio(
   bio: EmployerBio,
@@ -31,7 +33,7 @@ export async function updateEmployerBio(
     // update user info first
     const res1 = await db
       .update(UsersTable)
-      .set({ firstName: bio.firstName, lastName: bio.lastName } as any) // Casting as any to bypass type check
+      .set({ firstName: bio.firstName, lastName: bio.lastName } as unknown) // Casting as any to bypass type check
       .where(eq(UsersTable.id, userId))
       .returning();
 
@@ -278,7 +280,7 @@ export async function updateEmployerAbout(
   const accountId = employer.accountId;
 
   try {
-    const result = await db
+    await db
       .update(employersTable)
       .set({
         about: aboutContent, // Set the about column with the new content
@@ -305,9 +307,64 @@ export async function checkUserExists(userId: number) {
 export async function updateOnboardingStatus(userId: number) {
   const result = await db
     .update(UsersTable)
-    .set({ isOnboarded: true } as any)
+    .set({ isOnboarded: true } as unknown)
     .where(eq(UsersTable.id, userId))
     .returning();
 
   return result; // Return the result from the update operation
+}
+
+// fetch the job count
+export async function getEmployerDashboardData(request: Request) {
+  try {
+    // Fetch the current employer information based on the request
+    const currentUser = (await getCurrentEployerFreelancerInfo(
+      request
+    )) as Employer;
+    if (!currentUser) {
+      throw new Error("Current user not found.");
+    }
+
+    // Fetch counts for active, drafted, and closed jobs
+    const [activeJobs, draftedJobs, closedJobs] = await Promise.all([
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, currentUser.id),
+            eq(jobsTable.isActive, true)
+          )
+        ),
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, currentUser.id),
+            eq(jobsTable.isDraft, true)
+          )
+        ),
+      db
+        .select()
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, currentUser.id),
+            eq(jobsTable.isClosed, true)
+          )
+        ),
+    ]);
+
+    // Calculate the counts based on the length of the results
+    const activeJobCount = activeJobs.length;
+    const draftedJobCount = draftedJobs.length;
+    const closedJobCount = closedJobs.length;
+
+    // Return the job counts
+    return { activeJobCount, draftedJobCount, closedJobCount };
+  } catch (error) {
+    console.error("Error fetching employer dashboard data:", error);
+    throw error; // Re-throw the error for further handling
+  }
 }

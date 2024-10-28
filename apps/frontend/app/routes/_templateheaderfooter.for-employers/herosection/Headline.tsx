@@ -15,7 +15,6 @@ interface LoaderData {
 export default function Headline() {
   // UseLoaderData to get subHeadline from the loader
   const { subHeadline } = useLoaderData<LoaderData>();
-  console.log("SubHeadline in Headline component:", subHeadline);
 
   return (
     <section className="text-center py-16 bg-white mt-28 relative z-50">
