@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
+import JobCategoryField from "./job-category";
+import { getAllJobCategories } from "~/servers/job.server";
+import { Badge } from "~/components/ui/badge";
 
+export async function loader() {
+  const jobCategories = await getAllJobCategories();
+  return {
+    jobCategories: jobCategories || [],
+  };
+}
 // ActionData type for response handling
 interface ActionData {
   success?: boolean;
@@ -26,48 +34,31 @@ export default function JobPostingForm() {
   // Form fields state
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
-  const [workingHours, setWorkingHours] = useState("");
+  const [workingHours, setWorkingHours] = useState<number>(0);
   const [location, setLocation] = useState("");
   const [skills, setSkills] = useState("");
   const [projectType, setProjectType] = useState(projectTypes[0].value);
   const [budget, setBudget] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedExperience, setSelectedExperience] = useState("");
 
-  // Job categories and experience levels for selection
-  const jobCategories = [
-    "Design",
-    "Programming",
-    "Writing",
-    "Marketing",
-    "Law",
-    "Communications",
-    "Health Care",
-    "Other",
-  ];
-
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level"];
-
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
-  };
 
   const handleExperienceClick = (level: string) => {
     setSelectedExperience(level);
   };
 
   return (
-    <div className="p-10 bg-gray-100 min-h-screen flex justify-center">
-      <Card className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg">
-        <CardHeader className="mb-6">
-          <CardTitle className="text-2xl font-bold">
-            Job Posting Form2
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="flex">
+      {/* Main Content */}
+      {/* <div className="flex-1 p-6">
+          {accountOnboarded ? <DashboardScreen /> : <OnboardingScreen />}
+        </div> */}
+      <div className="flex-1 p-6 bg-white">
+        <div className="min-h-screen flex flex-col mt-20">
+          <h1 className="text-2xl font-semibold">Job Posting Form</h1>
+
           <Form method="post" action="/dashboard" className="space-y-6">
             <input type="hidden" name="target-updated" value="post-job" />
-            <input type="hidden" name="category" value={selectedCategory} />
             <input
               type="hidden"
               name="experienceLevel"
@@ -82,10 +73,30 @@ export default function JobPostingForm() {
                 onChange={(e) => setJobTitle(e.target.value)}
                 required
               />
+              <div className="mt-4 row-start-2">
+                <label
+                  htmlFor="jobDescription"
+                  className="block mb-2 text-sm font-medium text-gray-700"
+                >
+                  Job Description
+                </label>
+                <textarea
+                  id="jobDescription"
+                  name="jobDescription"
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Enter the job description"
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
               <Input
+                className="column-start-2"
                 placeholder="Working Hours per week"
                 name="workingHours"
                 value={workingHours}
+                type="number"
                 onChange={(e) => setWorkingHours(e.target.value)}
                 required
               />
@@ -94,16 +105,18 @@ export default function JobPostingForm() {
                 name="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                className="column-start-2"
                 required
               />
               <Input
+                className="column-start-2"
                 placeholder="Required Skills (comma-separated)"
                 name="skills"
                 value={skills}
                 onChange={(e) => setSkills(e.target.value)}
                 required
               />
-              <div>
+              <div className="column-start-2">
                 <label
                   htmlFor="projectType"
                   className="block mb-2 text-sm font-medium text-gray-700"
@@ -134,61 +147,25 @@ export default function JobPostingForm() {
               />
             </div>
 
-            <div className="mt-4">
-              <label
-                htmlFor="jobDescription"
-                className="block mb-2 text-sm font-medium text-gray-700"
-              >
-                Job Description
-              </label>
-              <textarea
-                id="jobDescription"
-                name="jobDescription"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Enter the job description"
-                rows={4}
-                className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Job Category</h3>
-              <div className="flex flex-wrap gap-2">
-                {jobCategories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => handleCategoryClick(category)}
-                    className={`px-4 py-2 rounded-lg border ${
-                      selectedCategory === category
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              <JobCategoryField />
             </div>
 
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Experience Level</h3>
               <div className="flex flex-wrap gap-2">
                 {experienceLevels.map((level) => (
-                  <button
+                  <Badge
                     key={level}
-                    type="button"
                     onClick={() => handleExperienceClick(level)}
-                    className={`px-4 py-2 rounded-lg border ${
+                    className={`cursor-pointer px-4 py-2 ${
                       selectedExperience === level
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-800"
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-gray-100 text-gray-600"
                     }`}
                   >
                     {level}
-                  </button>
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -214,8 +191,8 @@ export default function JobPostingForm() {
               </Button>
             </div>
           </Form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

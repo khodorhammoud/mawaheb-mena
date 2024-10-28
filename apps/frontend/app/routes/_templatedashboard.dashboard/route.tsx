@@ -27,12 +27,13 @@ import {
   getEmployerAbout,
   checkUserExists,
   updateOnboardingStatus,
-  createJobPosting,
   getEmployerDashboardData,
 } from "~/servers/employer.server";
 import { Employer } from "~/types/User";
 import Header from "../_templatedashboard/header";
 import { authenticator } from "~/auth/auth.server";
+import { Job } from "~/types/Job";
+import { createJobPosting } from "~/servers/job.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -120,10 +121,12 @@ export async function action({ request }: ActionFunctionArgs) {
           );
     }
     if (target == "post-job") {
-      const jobData = {
+      // TODO: Add validation for the form fields
+      const jobData: Job = {
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
         description: formData.get("jobDescription") as string,
+        jobCategoryId: parseInt(formData.get("jobCategory") as string) || null,
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
@@ -133,7 +136,12 @@ export async function action({ request }: ActionFunctionArgs) {
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
+
         isDraft: false, // Set to false as it's being posted directly
+        isActive: true,
+        isDeleted: false,
+        isClosed: false,
+        isPaused: false,
       };
 
       const jobStatus = await createJobPosting(jobData);
