@@ -1,5 +1,6 @@
 import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, Form } from "@remix-run/react";
+import AppFormField from "../../common/form-fields";
 
 export default function LoginFormComponent() {
   const actionData = useActionData();
@@ -20,50 +21,19 @@ export default function LoginFormComponent() {
         )}
         <Form method="post" className="space-y-6">
           <input type="hidden" name="accountType" value="employer" />
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type="password"
-                id="password"
-                name="password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M2.166 10C2.166 5.55 5.551 2.166 10 2.166c4.45 0 7.834 3.384 7.834 7.834 0 4.45-3.384 7.834-7.834 7.834-4.45 0-7.834-3.384-7.834-7.834zM10 0c5.523 0 10 4.477 10 10s-4.477 10-10 10S0 15.523 0 10 4.477 0 10 0zm-1 5a1 1 0 012 0v2a1 1 0 11-2 0V5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            </div>
-          </div>
+
+          {/* AppFormField for email */}
+          <AppFormField id="email" name="email" label="Email Address" />
+
+          {/* AppFormField for password */}
+          <AppFormField
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            showPasswordHint={false}
+          />
+
           <div className="text-right">
             <a href="/" className="text-sm text-blue-600 hover:text-blue-500">
               Forgot Password?
