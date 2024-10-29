@@ -2,9 +2,15 @@ import SocialLinks from "../../common/registration/socialLinks";
 import { useEffect, useRef } from "react";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 
-export default function SignupLeftComponent() {
+interface ActionData {
+  success?: boolean;
+  error?: {
+    message: string;
+  };
+}
 
-  const actionData = useActionData();
+export default function SignupLeftComponent() {
+  const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
 
   const redirectionFlag = useRef(false);
@@ -12,147 +18,135 @@ export default function SignupLeftComponent() {
   useEffect(() => {
     if (!redirectionFlag.current && actionData?.success) {
       redirectionFlag.current = true;
-      // Trigger redirect after 2 seconds
-      /* const timer = setTimeout(() => {
-        navigate("/success-page");
-      }, 2000); */
-
-      // Cleanup the timeout if the component unmounts before the redirect
-      // return () => clearTimeout(timer);
     }
   }, [actionData, navigate]);
 
   return (
-    <>
-      <div className="w-full max-w-sm">
-        <h1 className="text-4xl font-bold mb-6">Sign Up</h1>
-        {/* error message in case of error */}
-        {actionData?.error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-            <strong className="font-bold">Error!</strong>
-            <span className="block sm:inline">{actionData.error.message}</span>
-          </div>
-        )}
-        <Form method="post" className="space-y-4">
-          <input type="hidden" name="accountType" value="freelancer" />
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-          <div className="flex space-x-4">
-            <div className="w-1/2">
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div className="w-1/2">
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type="password"
-                id="password"
-                name="password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M2.166 10C2.166 5.55 5.551 2.166 10 2.166c4.45 0 7.834 3.384 7.834 7.834 0 4.45-3.384 7.834-7.834 7.834-4.45 0-7.834-3.384-7.834-7.834zM10 0c5.523 0 10 4.477 10 10s-4.477 10-10 10S0 15.523 0 10 4.477 0 10 0zm-1 5a1 1 0 012 0v2a1 1 0 11-2 0V5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Password must be 8 characters, upper capital, lower case, symbols
-            </p>
-          </div>
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Continue
-            </button>
-          </div>
-          {/* success message when all is done */}
-          {actionData?.success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-              <strong className="font-bold">
-                ✅ A verification email has been sent to you.
-              </strong>
-            </div>
-          )}
-        </Form>
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white p-10">
+      <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
+        Sign Up
+      </h1>
+      {/* error message in case of error */}
+      {actionData?.error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{actionData.error.message}</span>
+        </div>
+      )}
 
-        <div className="relative mt-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+      {/* the Form */}
+      <Form method="post" className="w-full space-y-6">
+        <input type="hidden" name="accountType" value="freelancer" />
+        <div className="relative">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder=" "
+            className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
+          />
+          <label
+            htmlFor="email"
+            className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-3 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+          >
+            Email Address
+          </label>
+        </div>
+
+        <div className="flex space-x-4">
+          <div className="relative w-1/2">
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              placeholder=" "
+              className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
+            />
+            <label
+              htmlFor="firstName"
+              className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-1/2 peer-focus:top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+            >
+              First Name
+            </label>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">or</span>
+          <div className="relative w-1/2">
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              placeholder=" "
+              className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
+            />
+            <label
+              htmlFor="lastName"
+              className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-1/2 peer-focus:top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+            >
+              Last Name
+            </label>
           </div>
         </div>
 
-        <SocialLinks />
-
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <a
-              href="/login-freelancer"
-              className="text-blue-600 hover:text-blue-500"
-            >
-              Login
-            </a>
+        <div className="relative">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder=" "
+            className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:
+              ring-primaryColor focus:border-primaryColor text-lg pr-12"
+          />
+          <label
+            htmlFor="password"
+            className="absolute left-4 top-0 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-[30%] peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-2 peer-focus:-top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+          >
+            Password
+          </label>
+          <button className="absolute inset-y-3 right-3 flex text-xl text-gray-400 cursor-pointer">
+            👁️
+          </button>
+          <p className="text-xs text-gray-600 mt-3 mb-6 ml-4">
+            Password must be 8 characters, upper capital, lower case, symbols
           </p>
         </div>
+
+        <button
+          type="submit"
+          className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
+        >
+          Continue
+        </button>
+
+        {/* success message when all is done */}
+        {actionData?.success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+            <strong className="font-bold">
+              ✅ A verification email has been sent to you.
+            </strong>
+          </div>
+        )}
+      </Form>
+
+      {/* or */}
+      <div className="relative flex items-center justify-center mt-6 mb-2">
+        <div className="flex-grow border border-gray-200 w-[270px] mt-1"></div>
+        <span className="px-2">or</span>
+        <div className="flex-grow border border-gray-200 w-[270px] mt-1"></div>
       </div>
-    </>
+
+      <SocialLinks />
+
+      {/* Alredy have an account? Login */}
+      <div className="text-center mt-8">
+        <p className="text-sm text-gray-600">
+          Already have an account?{" "}
+          <a
+            href="/login-employer"
+            className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"
+          >
+            Login
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }
