@@ -19,7 +19,6 @@ export async function action({ request }: ActionFunctionArgs) {
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
     const user = await authenticator.authenticate("register", request);
-    console.log("get user being called", user);
     newEmployer = (await getEmployerFreelancerInfo({
       userId: user.account.user.id,
     })) as Employer;
@@ -71,8 +70,6 @@ export async function action({ request }: ActionFunctionArgs) {
     console.error("Error sending verification email:", error);
     return json({ success: false, error });
   }
-
-  console.log("New employer registered:", newEmployer);
 
   return json({ success: true, newEmployer });
 }

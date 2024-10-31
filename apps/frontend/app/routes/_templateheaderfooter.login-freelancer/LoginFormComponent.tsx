@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
-import InputForm from "../../components/ui/inputForm";
+import AppFormField from "../../common/form-fields";
 
 interface ActionData {
   success?: boolean;
@@ -13,7 +13,6 @@ interface ActionData {
 export default function LoginFormComponent() {
   const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
-
   const redirectionFlag = useRef(false);
 
   useEffect(() => {
@@ -28,13 +27,11 @@ export default function LoginFormComponent() {
         Log In
       </h1>
 
-      {/* Error message in case of error */}
+      {/* error message in case of error */}
       {actionData?.error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 w-full">
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline ml-2">
-            {actionData.error.message}
-          </span>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{actionData?.error?.message}</span>
         </div>
       )}
 
@@ -42,34 +39,42 @@ export default function LoginFormComponent() {
       <Form method="post" className="w-full space-y-6">
         <input type="hidden" name="accountType" value="employer" />
 
-        <InputForm
-          type="email"
+        {/* The Email */}
+        <AppFormField
+          id="email"
           name="email"
           label="Email Address"
           className="peer mt-1"
         />
 
-        <div className="relative">
-          <InputForm
-            type="password"
-            name="password"
-            label="Password"
-            className="peer mt-1 pr-12"
-          />
-          <button className="absolute inset-y-3 right-3 flex text-xl text-gray-400 cursor-pointer">
-            👁️
-          </button>
-          <p className="text-sm font-medium text-primaryColor mt-4 mb-6 mr-4 text-end underline hover:no-underline cursor-pointer">
-            Forget Password?
-          </p>
+        {/* The Password */}
+        <AppFormField
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          showPasswordHint={false}
+        />
+
+        {/* Forget Password */}
+        <div className="text-right">
+          <a
+            href="/"
+            className="text-sm font-medium text-primaryColor mt-4 mb-6 mr-4 text-end underline hover:no-underline cursor-pointer"
+          >
+            Forgot Password?
+          </a>
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
-        >
-          Continue
-        </button>
+        {/* Continue Button */}
+        <div>
+          <button
+            type="submit"
+            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
+          >
+            Continue
+          </button>
+        </div>
 
         {/* success message when all is done */}
         {actionData?.success && (
@@ -90,12 +95,12 @@ export default function LoginFormComponent() {
 
       <SocialLinks />
 
-      {/* Already have an account? Login */}
+      {/* Don't have an account? SignUp */}
       <div className="text-center mt-8">
         <p className="text-sm text-gray-600">
           Don't have an account?{" "}
           <a
-            href="/login-employer"
+            href="/signup-freelancer"
             className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"
           >
             SignUp

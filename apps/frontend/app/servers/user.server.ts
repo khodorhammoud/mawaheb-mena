@@ -75,7 +75,6 @@ export async function getCurrentUser(
   withPassword = false
 ): Promise<User | null> {
   const user = await authenticator.isAuthenticated(request);
-  console.log("user is authenticated", user);
   if (!user) return null;
   const currentUser = user.account.user;
 
@@ -265,7 +264,7 @@ export async function getUserAccountType(
 }
 
 export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
-  console.log("using isUserOnboarded_Depricated", user);
+  console.warn("using isUserOnboarded_Depricated", user);
   return null;
   // const users = await db
   //   .select()
@@ -285,7 +284,7 @@ export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
 export async function getUserIdFromEmployerId_Depricated(
   employerId: number
 ): Promise<number | null> {
-  console.log("using getUserIdFromEmployerId_Depricated", employerId);
+  console.warn("using getUserIdFromEmployerId_Depricated", employerId);
   return null;
   // // join the employers table with the accounts table to get the userId
   // const result = await db
@@ -306,7 +305,7 @@ export async function getUserIdFromEmployerId_Depricated(
 export async function getUserIdFromFreelancerId_Depricated(
   freelancerId: number
 ): Promise<number | null> {
-  console.log("using getUserIdFromFreelancerId_Depricated", freelancerId);
+  console.warn("using getUserIdFromFreelancerId_Depricated", freelancerId);
   return null;
   // join the freelancers table with the accounts table to get the userId
   // const result = await db
@@ -321,7 +320,7 @@ export async function getUserIdFromFreelancerId_Depricated(
 export async function getCurrentEmployerAccountInfo_Depricated(
   request: Request
 ): Promise<Employer | null> {
-  console.log("using getCurrentEmployerAccountInfo_Depricated", request);
+  console.warn("using getCurrentEmployerAccountInfo_Depricated", request);
   return null;
   // const user = await getCurrentUser(request);
   // const employer = await db
@@ -392,11 +391,10 @@ export async function registerEmployer({
     employerAccountType,
   };
 
-  const result = (await db
+  await db
     .insert(employersTable) // insert into employers table
     .values(newEmployer)
-    .returning()) as unknown as Employer;
-  console.log("employer inserted: ", result);
+    .returning();
   return (await getEmployerFreelancerInfo({
     accountId,
     // employerId: result[0].id,
@@ -440,11 +438,10 @@ export async function registerFreelancer({
     accountId,
   };
 
-  const result = (await db
+  await db
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
-    .returning()) as unknown as Freelancer;
-  console.log("freelancer inserted: ", result);
+    .returning();
   return (await getEmployerFreelancerInfo({
     // freelancerId: result[0].id,
     accountId,

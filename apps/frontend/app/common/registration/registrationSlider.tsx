@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { FaArrowLeft, FaArrowRight, FaStar } from "react-icons/fa";
 
 export type registrationSlideData = {
   image: string;
@@ -40,9 +41,13 @@ export default function RegistrationSlider(props: {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
   return (
-    <div className="absolute inset-0 flex flex-col justify-center items-center">
+    <div className="absolute inset-0 flex flex-col justify-end h-[900px]">
+      {/* Background Image */}
       <motion.div
-        className="max-w-md text-center p-4"
+        className="absolute inset-0 bg-cover bg-center z-0 h-full"
+        style={{
+          backgroundImage: `url(${slides[currentSlide].image})`,
+        }}
         key={currentSlide}
         custom={direction}
         variants={variants}
@@ -50,39 +55,52 @@ export default function RegistrationSlider(props: {
         animate="center"
         exit="exit"
         transition={{
-          x: { type: "spring", stiffness: 300, damping: 30 },
+          x: { type: "spring", stiffness: 300, damping: 50 },
           opacity: { duration: 0.2 },
         }}
-      >
-        <img
-          src={slides[currentSlide].image}
-          alt="Testimonial"
-          className="mb-4 rounded-full w-48 h-48 mx-auto object-cover"
-        />
-        <p className="text-lg text-gray-800 font-medium mb-2">
-          {slides[currentSlide].quote}
-        </p>
-        <p className="text-sm text-gray-500">{slides[currentSlide].name}</p>
-        <p className="text-sm text-gray-400">{slides[currentSlide].title}</p>
-        <div className="flex justify-center mt-2">
-          <div className="text-blue-600 bg-gray-200 px-2 py-1 rounded-full text-xs">
-            {slides[currentSlide].rating}
+      />
+      <div className="sticky bottom-0 w-full p-6 text-white flex justify-between items-end mb-4">
+        {/* Quote and Name */}
+        <div>
+          <p className="text-xl -mr-20 mb-10">{slides[currentSlide].quote}</p>
+          <p className="text-lg font-semibold mb-10">
+            {slides[currentSlide].name}
+          </p>
+          <p className="text-sm text-gray-400 font-semibold mb-2">
+            {slides[currentSlide].title}
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center">
+          {/* Stars ⭐⭐⭐⭐⭐*/}
+          <div className="flex ml-4">
+            {[...Array(5)].map((_, index) => (
+              <FaStar
+                key={index}
+                className={`text-md ${
+                  index < slides[currentSlide].rating
+                    ? "text-white"
+                    : "text-gray-400"
+                }`}
+              />
+            ))}
+          </div>
+          {/* Navigation Icons ⬅️➡️ */}
+          <div className="flex space-x-4 mt-8">
+            <button
+              onClick={prevSlide}
+              className="text-white p-2 border-2 rounded-full"
+            >
+              <FaArrowLeft size={24} />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="text-white p-2 border-2 rounded-full"
+            >
+              <FaArrowRight size={24} />
+            </button>
           </div>
         </div>
-      </motion.div>
-      <div className="flex mt-4">
-        <button
-          onClick={prevSlide}
-          className="mx-2 px-2 py-1 bg-gray-300 rounded-md hover:bg-gray-400"
-        >
-          Previous
-        </button>
-        <button
-          onClick={nextSlide}
-          className="mx-2 px-2 py-1 bg-gray-300 rounded-md hover:bg-gray-400"
-        >
-          Next
-        </button>
       </div>
     </div>
   );
