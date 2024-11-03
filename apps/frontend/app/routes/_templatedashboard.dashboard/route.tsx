@@ -38,7 +38,7 @@ import { createJobPosting } from "~/servers/job.server";
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData(); // always do this :)
-    const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
+    const target = formData.get("target-updated"); // for the if and else, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
     const employer = (await getCurrentEployerFreelancerInfo(
