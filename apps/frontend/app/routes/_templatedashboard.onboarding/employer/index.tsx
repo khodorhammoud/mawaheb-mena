@@ -4,7 +4,8 @@ import About from "./about-module/Form";
 import BudgetModuleForm from "./budget-module/Form";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
-
+import HourlyRate from "./hourlyRate";
+import GeneralizableFormCard from "./generaliziableFormCard";
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
   const { currentUser } = useLoaderData<{ currentUser: Employer }>();
@@ -20,6 +21,61 @@ export default function EmployerOnboardingScreen() {
       <div className="flex justify-between mb-4">
         <BudgetModuleForm />
         <YearsInBusiness />
+        <HourlyRate />
+        {/* 
+        "text"
+    | "number"
+    | "textArea"
+    | "increment"
+    | "video"
+    | "file"
+    | "custom";
+        */}
+        <GeneralizableFormCard
+          formType="text"
+          title="Text"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="number"
+          title="Number"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="textArea"
+          title="Text Area"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="increment"
+          title="Increment"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="video"
+          title="Video"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="file"
+          title="File"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="custom"
+          title="Custom"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+          customComponents={[
+            <div key="custom-component">Custom Component</div>,
+          ]}
+        />
       </div>
       <About />
       <div className="mt-6 flex justify-center">
