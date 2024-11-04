@@ -1,5 +1,5 @@
 import { useState, ReactNode } from "react";
-import { Card } from "~/components/ui/card";
+import { Card, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -9,10 +9,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "~/components/ui/dialog";
-import { FaDollarSign } from "react-icons/fa";
 
 interface FormDialogProps {
-  title: string;
+  popupTitle: string;
   children: React.ReactNode;
   onSave: () => void;
   triggerLabel: string;
@@ -20,7 +19,7 @@ interface FormDialogProps {
 }
 
 function FormDialog({
-  title,
+  popupTitle,
   children,
   onSave,
   triggerLabel,
@@ -38,8 +37,8 @@ function FormDialog({
           <span>{triggerLabel}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="space-y-4">
-        <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="space-y-4 bg-white">
+        <DialogTitle>{popupTitle}</DialogTitle>
         {children}
         <DialogFooter>
           <Button
@@ -63,17 +62,26 @@ interface GeneralizableFormCardProps {
     | "video"
     | "file"
     | "custom";
-  title: string;
+  cardTitle: string;
+  popupTitle: string;
+
   triggerLabel: string;
+  triggerIcon?: React.ReactNode;
+  formName: string;
+  fieldName: string;
   onSave: (value: any) => void;
   customComponents?: ReactNode;
 }
 
 function GeneralizableFormCard({
   formType,
-  title,
+  cardTitle,
+  popupTitle,
   triggerLabel,
+  formName,
+  fieldName,
   onSave,
+  triggerIcon,
   customComponents,
 }: GeneralizableFormCardProps) {
   const [inputValue, setInputValue] = useState<any>(
@@ -84,7 +92,7 @@ function GeneralizableFormCard({
   );
 
   const handleIncrement = (step: number) => {
-    setInputValue((prev: number) => prev + step);
+    setInputValue((prev: number) => (prev as number) + step);
   };
 
   const renderFormField = () => {
@@ -96,6 +104,7 @@ function GeneralizableFormCard({
             placeholder="Enter text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            name={fieldName}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         );
@@ -105,6 +114,7 @@ function GeneralizableFormCard({
             type="number"
             placeholder="Enter a number"
             value={inputValue}
+            name={fieldName}
             onChange={(e) => setInputValue(Number(e.target.value))}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
@@ -114,6 +124,7 @@ function GeneralizableFormCard({
           <textarea
             placeholder="Enter detailed text"
             value={inputValue}
+            name={fieldName}
             onChange={(e) => setInputValue(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md"
             rows={4}
@@ -126,6 +137,7 @@ function GeneralizableFormCard({
             <Input
               type="number"
               value={inputValue}
+              name={fieldName}
               readOnly
               className="w-full p-3 border border-gray-300 rounded-md"
             />
@@ -138,6 +150,7 @@ function GeneralizableFormCard({
             type="text"
             placeholder="Paste YouTube URL or upload video"
             value={inputValue}
+            name={fieldName}
             onChange={(e) => setInputValue(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
@@ -146,6 +159,7 @@ function GeneralizableFormCard({
         return (
           <Input
             type="file"
+            name={fieldName}
             onChange={(e) =>
               setInputValue(e.target.files ? e.target.files[0] : null)
             }
@@ -183,11 +197,18 @@ function GeneralizableFormCard({
         borderSpacing: "10px",
       }}
     >
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg font-semibold text-center">
+          {cardTitle}
+        </CardTitle>
+      </CardHeader>
       <FormDialog
-        title={title}
+        popupTitle={popupTitle}
         triggerLabel={triggerLabel}
         onSave={() => onSave(inputValue)}
+        triggerIcon={triggerIcon}
       >
+        <input type="hidden" name="target-updated" value={formName} />
         {renderFormField()}
       </FormDialog>
     </Card>

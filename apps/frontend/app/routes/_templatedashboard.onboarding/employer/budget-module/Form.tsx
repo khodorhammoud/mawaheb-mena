@@ -119,11 +119,6 @@ export default function BudgetModuleForm() {
                 name="target-updated"
                 value="employer-budget"
               />
-              <input
-                type="hidden"
-                name="userId"
-                value={currentUser.account?.user?.id} // Pass the userId dynamically
-              />
               <div className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2">
                 <Input
                   placeholder="Enter amount"

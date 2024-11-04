@@ -6,6 +6,9 @@ import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
 import HourlyRate from "./hourlyRate";
 import GeneralizableFormCard from "./generaliziableFormCard";
+import { BsCurrencyDollar } from "react-icons/bs";
+import { SlBadge } from "react-icons/sl";
+
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
   const { currentUser } = useLoaderData<{ currentUser: Employer }>();
@@ -31,13 +34,29 @@ export default function EmployerOnboardingScreen() {
     | "file"
     | "custom";
         */}
+        {/* Years in Business */}
         <GeneralizableFormCard
-          formType="text"
-          title="Text"
-          triggerLabel="Trigger Label"
+          formType="number"
+          cardTitle="Average Project Budget"
+          popupTitle="Add Average Budget"
+          triggerLabel="Add Average Budget"
+          formName="employer-budget"
+          fieldName="budget"
+          triggerIcon={<BsCurrencyDollar />}
           onSave={() => alert("save")}
         />
+        {/* budget */}
         <GeneralizableFormCard
+          formType="increment"
+          cardTitle="Years in Business"
+          popupTitle="Years in Business"
+          triggerLabel="Add Years in Business"
+          formName="employer-years-in-business"
+          fieldName="years-in-business"
+          triggerIcon={<SlBadge />}
+          onSave={() => alert("save")}
+        />
+        {/* <GeneralizableFormCard
           formType="number"
           title="Number"
           triggerLabel="Trigger Label"
@@ -75,7 +94,7 @@ export default function EmployerOnboardingScreen() {
           customComponents={[
             <div key="custom-component">Custom Component</div>,
           ]}
-        />
+        /> */}
       </div>
       <About />
       <div className="mt-6 flex justify-center">
