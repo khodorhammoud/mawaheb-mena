@@ -117,7 +117,7 @@ export default function BudgetModuleForm() {
               <input
                 type="hidden"
                 name="target-updated"
-                value="employer-budget"
+                value="employerbudget"
               />
               <div className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2">
                 <Input

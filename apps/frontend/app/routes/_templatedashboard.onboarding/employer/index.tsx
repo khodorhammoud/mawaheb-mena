@@ -1,11 +1,11 @@
 import Heading from "./heading/Heading";
-import YearsInBusiness from "./years-in-business-module/Form";
-import About from "./about-module/Form";
-import BudgetModuleForm from "./budget-module/Form";
+// import YearsInBusiness from "./years-in-business-module/Form";
+// import About from "./about-module/Form";
+// import BudgetModuleForm from "./budget-module/Form";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
-import HourlyRate from "./hourlyRate";
-import GeneralizableFormCard from "./generaliziableFormCard";
+// import HourlyRate from "./hourlyRate";
+import GeneralizableFormCard from "./generaliziable-form-component";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { SlBadge } from "react-icons/sl";
 
@@ -23,27 +23,26 @@ export default function EmployerOnboardingScreen() {
       <Heading />
       <div className="grid grid-cols-1 mb-4">
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3">
-
-          {/* budget */}
+          {/* Years in Business */}
           <GeneralizableFormCard
             formType="increment"
             cardTitle="Years in Business"
             popupTitle="Years in Business"
             triggerLabel="Add Years in Business"
             formName="employer-years-in-business"
-            fieldName="years-in-business"
+            fieldName="yearsInBusiness"
             triggerIcon={<SlBadge />}
             onSave={() => alert("save")}
           />
 
-          {/* Years in Business */}
+          {/* Budget */}
           <GeneralizableFormCard
             formType="number"
             cardTitle="Average Project Budget"
             popupTitle="Add Average Budget"
             triggerLabel="Add Average Budget"
             formName="employer-budget"
-            fieldName="budget"
+            fieldName="employerBudget"
             triggerIcon={<BsCurrencyDollar />}
             onSave={() => alert("save")}
           />
@@ -56,7 +55,7 @@ export default function EmployerOnboardingScreen() {
             popupTitle="Add Average Budget"
             triggerLabel="Add Bio"
             formName="employer-about"
-            fieldName="about"
+            fieldName="aboutEmployer"
             onSave={() => alert("save")}
           />
         </div>
@@ -80,7 +79,6 @@ export default function EmployerOnboardingScreen() {
     | "file"
     | "custom";
         */}
-
 
         {/* range */}
         {/* <GeneralizableFormCard

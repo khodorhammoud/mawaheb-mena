@@ -1,5 +1,6 @@
 import {
   AccountStatus,
+  AccountType,
   CompensationType,
   DayOfWeek,
   EmployerAccountType,
@@ -111,4 +112,33 @@ export interface Industry {
 export interface JobCategory {
   id: number;
   label: string;
+}
+
+export interface LoaderFunctionError {
+  success: boolean;
+  error: {
+    message: string;
+  };
+  status: number;
+}
+
+/* 
+These fields names also control their respective HTML input fields names
+For example, we use the HTML input field name "employerBudget" to get/set the value for the employer budget
+*/
+export interface OnboardingFields {
+  accountType: AccountType;
+  bioInfo: EmployerBio;
+  employerIndustries: Industry[];
+  allIndustries: Industry[];
+  currentUser: Employer;
+  yearsInBusiness: number;
+  employerBudget: string;
+  aboutEmployer: string;
+  accountOnboarded: boolean;
+  employer: Employer;
+  activeJobCount: number;
+  draftedJobCount: number;
+  closedJobCount: number;
+  totalJobCount: number;
 }
