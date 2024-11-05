@@ -21,10 +21,56 @@ export default function EmployerOnboardingScreen() {
   return (
     <div className="mt-20">
       <Heading />
-      <div className="flex justify-between mb-4">
-        <BudgetModuleForm />
-        <YearsInBusiness />
-        <HourlyRate />
+      <div className="grid grid-cols-1 mb-4">
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3">
+
+          {/* budget */}
+          <GeneralizableFormCard
+            formType="increment"
+            cardTitle="Years in Business"
+            popupTitle="Years in Business"
+            triggerLabel="Add Years in Business"
+            formName="employer-years-in-business"
+            fieldName="years-in-business"
+            triggerIcon={<SlBadge />}
+            onSave={() => alert("save")}
+          />
+
+          {/* Years in Business */}
+          <GeneralizableFormCard
+            formType="number"
+            cardTitle="Average Project Budget"
+            popupTitle="Add Average Budget"
+            triggerLabel="Add Average Budget"
+            formName="employer-budget"
+            fieldName="budget"
+            triggerIcon={<BsCurrencyDollar />}
+            onSave={() => alert("save")}
+          />
+        </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
+          {/* About */}
+          <GeneralizableFormCard
+            formType="textArea"
+            cardTitle="About"
+            popupTitle="Add Average Budget"
+            triggerLabel="Add Bio"
+            formName="employer-about"
+            fieldName="about"
+            onSave={() => alert("save")}
+          />
+        </div>
+        {/* 
+        </div>
+        {/* <div className="grid grid-cols-3">
+          <div className="p-4">
+            <BudgetModuleForm />
+          </div>
+          <div className="p-4">
+            <YearsInBusiness />
+          </div>
+        </div> */}
+        {/* <HourlyRate /> */}
         {/* 
         "text"
     | "number"
@@ -34,28 +80,21 @@ export default function EmployerOnboardingScreen() {
     | "file"
     | "custom";
         */}
-        {/* Years in Business */}
-        <GeneralizableFormCard
-          formType="number"
-          cardTitle="Average Project Budget"
-          popupTitle="Add Average Budget"
-          triggerLabel="Add Average Budget"
-          formName="employer-budget"
-          fieldName="budget"
-          triggerIcon={<BsCurrencyDollar />}
-          onSave={() => alert("save")}
-        />
-        {/* budget */}
-        <GeneralizableFormCard
-          formType="increment"
-          cardTitle="Years in Business"
-          popupTitle="Years in Business"
-          triggerLabel="Add Years in Business"
+
+
+        {/* range */}
+        {/* <GeneralizableFormCard
+          formType="range"
+          minVal={12}
+          maxVal={24}
+          cardTitle="Range Card Title"
+          popupTitle="Range Popup Title"
+          triggerLabel="Edit Range"
           formName="employer-years-in-business"
           fieldName="years-in-business"
           triggerIcon={<SlBadge />}
           onSave={() => alert("save")}
-        />
+        /> */}
         {/* <GeneralizableFormCard
           formType="number"
           title="Number"
@@ -96,7 +135,7 @@ export default function EmployerOnboardingScreen() {
           ]}
         /> */}
       </div>
-      <About />
+      {/* <About /> */}
       <div className="mt-6 flex justify-center">
         {/* Form to update the user's onboard status */}
         <Form method="post">

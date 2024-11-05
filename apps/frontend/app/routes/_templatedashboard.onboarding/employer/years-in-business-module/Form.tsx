@@ -80,7 +80,7 @@ export default function YearsInBusinessCard() {
     // Update the message and message type based on the action
     const newCount =
       (action === "increase" && messageType === "error") ||
-      (action === "decrease" && messageType === "success")
+        (action === "decrease" && messageType === "success")
         ? 1
         : cumulativeCount + 1;
 
@@ -116,7 +116,7 @@ export default function YearsInBusinessCard() {
   };
 
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Years in Business</CardTitle>
       </CardHeader>
