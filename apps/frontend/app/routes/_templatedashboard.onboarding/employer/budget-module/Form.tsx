@@ -67,7 +67,7 @@ export default function BudgetModuleForm() {
   };
 
   return (
-    <Card className="w-[350px] border border-dashed border-gray-300 rounded-lg">
+    <Card className="border border-dashed border-gray-300 rounded-lg">
       <CardHeader className="p-4">
         <CardTitle className="text-lg font-semibold text-center">
           Average Project Budget
