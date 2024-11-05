@@ -80,7 +80,7 @@ export default function YearsInBusinessCard() {
     // Update the message and message type based on the action
     const newCount =
       (action === "increase" && messageType === "error") ||
-        (action === "decrease" && messageType === "success")
+      (action === "decrease" && messageType === "success")
         ? 1
         : cumulativeCount + 1;
 
@@ -95,7 +95,7 @@ export default function YearsInBusinessCard() {
     // Submit the form programmatically
     submit(
       {
-        "target-updated": "employer-years-in-business",
+        "target-updated": "years-in-business",
         userId: currentUser.account?.user?.id,
         "years-in-business": value.toString(),
       },

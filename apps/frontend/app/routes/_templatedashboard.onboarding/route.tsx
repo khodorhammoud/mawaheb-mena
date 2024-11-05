@@ -7,8 +7,12 @@ import {
   getCurrentEployerFreelancerInfo,
   getCurrentUserAccountType,
 } from "~/servers/user.server";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Employer } from "~/types/User";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  TypedResponse,
+} from "@remix-run/node";
+import { Employer, LoaderFunctionError, OnboardingFields } from "~/types/User";
 import { authenticator } from "~/auth/auth.server";
 import {
   getEmployerBio,
@@ -41,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // ABOUT
     if (target == "employer-about") {
-      const aboutContent = formData.get("about") as string;
+      const aboutContent = formData.get("aboutEmployer") as string;
       const aboutStatus = await updateEmployerAbout(employer, aboutContent);
       return json({ success: aboutStatus.success });
     }
@@ -79,7 +83,8 @@ export async function action({ request }: ActionFunctionArgs) {
     // YEARS IN BUSINESS
     if (target == "employer-years-in-business") {
       const yearsInBusiness =
-        parseInt(formData.get("years-in-business") as string) || 0;
+        parseInt(formData.get("yearsInBusiness") as string) || 0;
+
       const yearsStatus = await updateEmployerYearsInBusiness(
         employer,
         yearsInBusiness
@@ -88,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
     // BUDGET
     if (target == "employer-budget") {
-      const budgetValue = formData.get("budget");
+      const budgetValue = formData.get("employerBudget");
       const budget = parseInt(budgetValue as string, 10);
 
       const budgetStatus = await updateEmployerBudget(employer, budget);
@@ -99,33 +104,40 @@ export async function action({ request }: ActionFunctionArgs) {
       const userId = currentUser.account.user.id;
       const userExists = await checkUserExists(userId);
       if (!userExists.length)
-        return json(
-          { success: false, error: { message: "User not found." } },
-          { status: 404 }
-        );
+        return json({
+          success: false,
+          error: { message: "User not found." },
+          status: 404,
+        });
 
       const result = await updateOnboardingStatus(userId);
       return result.length
         ? redirect("/dashboard")
-        : json(
-            {
-              success: false,
-              error: { message: "Failed to update onboarding status" },
-            },
-            { status: 500 }
-          );
+        : json({
+            success: false,
+            error: { message: "Failed to update onboarding status" },
+
+            status: 500,
+          });
     }
     // DEFAULT
     throw new Error("Unknown target update");
   } catch (error) {
-    return json(
-      { success: false, error: { message: "An unexpected error occurred." } },
-      { status: 500 }
-    );
+    return json({
+      success: false,
+      error: { message: "An unexpected error occurred." },
+      status: 500,
+    });
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+}: LoaderFunctionArgs): Promise<
+  | TypedResponse<OnboardingFields>
+  | TypedResponse<LoaderFunctionError>
+  | TypedResponse<never>
+> {
   const currentUser = await authenticator.isAuthenticated(request);
   if (!currentUser) {
     return redirect("/login-employer");
@@ -135,13 +147,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // !!IMPortant!! If the employer object is not available, return an error response early
   if (!employer) {
-    return json(
-      {
-        success: false,
-        error: { message: "Employer information not found." },
-      },
-      { status: 404 }
-    );
+    return json({
+      success: false,
+      error: { message: "Employer information not found." },
+      status: 404,
+    });
   }
 
   // if the current user is not onboarded, redirect them to the onboarding screen
@@ -155,7 +165,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const allIndustries = (await getAllIndustries()) || [];
   const yearsInBusiness = await getEmployerYearsInBusiness(employer);
   const employerBudget = await getEmployerBudget(employer);
-  const aboutContent = await getEmployerAbout(employer);
+  const aboutEmployer = await getEmployerAbout(employer);
   const { activeJobCount, draftedJobCount, closedJobCount } =
     await getEmployerDashboardData(request);
 
@@ -172,7 +182,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     currentUser: employer,
     yearsInBusiness,
     employerBudget,
-    aboutContent,
+    aboutEmployer,
     accountOnboarded,
     employer,
     activeJobCount,

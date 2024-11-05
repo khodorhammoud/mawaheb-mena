@@ -37,6 +37,7 @@ import { createJobPosting } from "~/servers/job.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
+    console.log("action");
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
@@ -83,9 +84,12 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({ success: industriesStatus.success });
     }
     // YEARS IN BUSINESS
-    if (target == "employer-years-in-business") {
-      const yearsInBusiness =
-        parseInt(formData.get("years-in-business") as string) || 0;
+    console.log("target", target);
+    if (target == "years-in-business") {
+      const fetchedValue = formData.get("years-in-business");
+      console.log("fetchedValue", fetchedValue);
+      const yearsInBusiness = parseInt(fetchedValue as string) || 0;
+
       const yearsStatus = await updateEmployerYearsInBusiness(
         employer,
         yearsInBusiness
