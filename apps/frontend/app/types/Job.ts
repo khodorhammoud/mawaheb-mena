@@ -1,19 +1,21 @@
-export type Job = {
-  id?: number;
-  employerId: number;
+interface Skill {
+  name: string;
+  isStarred: boolean;
+}
+
+export interface Job {
+  id: number;
   title: string;
   description: string;
-  jobCategoryId?: number;
-  workingHoursPerWeek?: number;
-  locationPreference?: string;
-  requiredSkills?: string[];
+  workingHoursPerWeek: number;
+  locationPreference: string;
+  requiredSkills: Skill[]; // Change to Skill[] instead of string[]
   projectType: string;
   budget: number;
   experienceLevel: string;
   isActive: boolean;
-  isDeleted: boolean;
   isDraft: boolean;
   isClosed: boolean;
   isPaused: boolean;
-  createdAt?: Date;
-};
+  createdAt: string; // Keep as string for JSON compatibility
+}

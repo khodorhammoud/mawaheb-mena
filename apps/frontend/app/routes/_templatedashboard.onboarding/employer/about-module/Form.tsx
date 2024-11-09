@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "~/common/header/card";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Employer } from "~/types/User";

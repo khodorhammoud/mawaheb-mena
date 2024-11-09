@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "~/common/header/card";
 import { Input } from "~/components/ui/input";
 import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";

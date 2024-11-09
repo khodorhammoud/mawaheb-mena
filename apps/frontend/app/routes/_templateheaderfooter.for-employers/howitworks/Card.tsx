@@ -5,7 +5,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "../../../components/ui/card";
+} from "../../../common/header/card";
 
 interface CardProps {
   step: string;
