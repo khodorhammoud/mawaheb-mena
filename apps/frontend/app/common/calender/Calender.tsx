@@ -1,4 +1,3 @@
-// app/routes/calendar.jsx
 import { useState } from "react";
 import {
   format,
@@ -14,9 +13,8 @@ import {
 } from "date-fns";
 import { motion } from "framer-motion";
 
-const Calendar = () => {
+const Calendar = ({ highlightedDates = [] }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState(null); // State to store selected day
 
   const months = Array.from({ length: 12 }, (_, i) =>
     format(setMonth(new Date(), i), "MMMM")
@@ -31,38 +29,32 @@ const Calendar = () => {
     setCurrentMonth(setYear(currentMonth, parseInt(event.target.value)));
   };
 
-  const handleDayClick = (day) => {
-    setSelectedDay(day); // Set the selected day
-  };
-
-  const renderHeader = () => {
-    return (
-      <div className="flex justify-between items-center mb-4 px-4">
-        <select
-          onChange={handleMonthChange}
-          value={currentMonth.getMonth()}
-          className="p-2 border rounded"
-        >
-          {months.map((month, index) => (
-            <option key={index} value={index}>
-              {month}
-            </option>
-          ))}
-        </select>
-        <select
-          onChange={handleYearChange}
-          value={currentMonth.getFullYear()}
-          className="p-2 border rounded"
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  };
+  const renderHeader = () => (
+    <div className="flex justify-between items-center mb-4 xl:text-base text-sm">
+      <select
+        onChange={handleMonthChange}
+        value={currentMonth.getMonth()}
+        className="p-2 border rounded"
+      >
+        {months.map((month, index) => (
+          <option key={index} value={index}>
+            {month}
+          </option>
+        ))}
+      </select>
+      <select
+        onChange={handleYearChange}
+        value={currentMonth.getFullYear()}
+        className="p-2 border rounded"
+      >
+        {years.map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   const renderDays = () => {
     const days = [];
@@ -71,12 +63,12 @@ const Calendar = () => {
 
     for (let i = 0; i < 7; i++) {
       days.push(
-        <div className="text-center font-medium text-xs -mb-1" key={i}>
-          {format(addDays(startDate, i), dateFormat)[0]} {/* First letter */}
+        <div className="text-center font-medium text-xs" key={i}>
+          {format(addDays(startDate, i), dateFormat)[0]}
         </div>
       );
     }
-    return <div className="grid grid-cols-7 gap-1 mb-2">{days}</div>;
+    return <div className="grid grid-cols-7">{days}</div>;
   };
 
   const renderCells = () => {
@@ -93,22 +85,35 @@ const Calendar = () => {
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
         const formattedDate = format(day, dateFormat);
-        const cloneDay = day;
-        const isSelected = selectedDay && isSameDay(day, selectedDay);
+
+        // Determine the index of the highlighted date
+        const highlightIndex = highlightedDates.findIndex((highlightedDate) =>
+          isSameDay(day, new Date(highlightedDate))
+        );
+
+        // Assign different Tailwind classes based on the index
+        let highlightClass = "";
+        if (highlightIndex === 0)
+          highlightClass = "bg-yellow-200 text-white font-semibold";
+        else if (highlightIndex === 1)
+          highlightClass = "bg-yellow-300 text-white font-semibold";
+        else if (highlightIndex === 2)
+          highlightClass = "bg-yellow-400 text-white font-semibold";
+        else if (highlightIndex >= 3)
+          highlightClass = "bg-yellow-500 text-white font-semibold";
 
         days.push(
           <div
-            className={`text-center py-2 rounded-full cursor-pointer transition-transform transform ${
+            className={`text-center py-1 rounded-full transition-transform transform ${
               !isSameMonth(day, monthStart)
                 ? "text-gray-400"
-                : isSelected
-                  ? "text-white font-semibold border-primaryColor bg-primaryColor"
+                : highlightIndex >= 0
+                  ? highlightClass
                   : "text-gray-900"
             }`}
-            key={day.getTime()} // Using timestamp as a unique key
-            onClick={() => handleDayClick(cloneDay)} // Click handler for day selection
+            key={day.getTime()}
           >
-            <span className="inline-block transition-transform transform hover:scale-110 hover:bg-primaryColor hover:text-white rounded-full px-1">
+            <span className="inline-block rounded-full px-1 lg:text-sm text-xs">
               {formattedDate}
             </span>
           </div>
@@ -116,7 +121,10 @@ const Calendar = () => {
         day = addDays(day, 1);
       }
       rows.push(
-        <div className="grid grid-cols-7 gap-1" key={day.getTime()}>
+        <div
+          className="grid grid-cols-7 xl:gap-1 gap-0 text-xs"
+          key={day.getTime()}
+        >
           {days}
         </div>
       );
