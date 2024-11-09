@@ -2,20 +2,19 @@ import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import JobManagement from "./jobs-displaying";
 
-// Define Skill interface
 interface Skill {
   name: string;
   isStarred: boolean;
 }
 
-// Update Job interface
 interface Job {
-  id: number;
+  id?: number;
+  employerId: number;
   title: string;
   description: string;
   workingHoursPerWeek: number;
   locationPreference: string;
-  requiredSkills: Skill[]; // Change to Skill[] instead of string[]
+  requiredSkills: Skill[];
   projectType: string;
   budget: number;
   experienceLevel: string;
@@ -23,12 +22,13 @@ interface Job {
   isDraft: boolean;
   isClosed: boolean;
   isPaused: boolean;
-  createdAt: string; // Keep as string for JSON compatibility
+  createdAt?: string;
 }
 
 const dummyJobs: Job[] = [
   {
     id: 1,
+    employerId: 1,
     title: "Frontend Developer",
     description: "Developing UI components for a web app.",
     workingHoursPerWeek: 40,
@@ -49,6 +49,7 @@ const dummyJobs: Job[] = [
   },
   {
     id: 2,
+    employerId: 2,
     title: "Backend Developer",
     description: "Implementing APIs and database operations.",
     workingHoursPerWeek: 40,
@@ -69,6 +70,7 @@ const dummyJobs: Job[] = [
   },
   {
     id: 3,
+    employerId: 3,
     title: "UI/UX Designer",
     description: "Designing user-friendly interfaces.",
     workingHoursPerWeek: 30,

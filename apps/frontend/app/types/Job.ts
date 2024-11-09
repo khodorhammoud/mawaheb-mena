@@ -4,12 +4,13 @@ interface Skill {
 }
 
 export interface Job {
-  id: number;
+  id?: number;
+  employerId: number;
   title: string;
   description: string;
   workingHoursPerWeek: number;
   locationPreference: string;
-  requiredSkills: Skill[]; // Change to Skill[] instead of string[]
+  requiredSkills: Skill[];
   projectType: string;
   budget: number;
   experienceLevel: string;
@@ -17,5 +18,5 @@ export interface Job {
   isDraft: boolean;
   isClosed: boolean;
   isPaused: boolean;
-  createdAt: string; // Keep as string for JSON compatibility
+  createdAt?: string; // Keep as string for JSON compatibility
 }

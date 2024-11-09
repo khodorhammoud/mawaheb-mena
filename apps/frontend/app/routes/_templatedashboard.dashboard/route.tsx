@@ -126,20 +126,19 @@ export async function action({ request }: ActionFunctionArgs) {
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
         description: formData.get("jobDescription") as string,
-        jobCategoryId: parseInt(formData.get("jobCategory") as string) || null,
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
         requiredSkills: (formData.get("skills") as string)
           .split(",")
-          .map((skill) => skill.trim()),
+          .map((skill) => ({ name: skill.trim(), isStarred: false })),
+
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
 
         isDraft: false, // Set to false as it's being posted directly
         isActive: true,
-        isDeleted: false,
         isClosed: false,
         isPaused: false,
       };
