@@ -1,6 +1,6 @@
 {
-  "id": "f7724b78-a9ed-485b-afd7-e1b9ba014d49",
-  "prevId": "97c5904b-be5a-4980-b5fd-8401744f0bd8",
+  "id": "9e6d65b6-a581-49e2-a5d9-eee2a0bf4e58",
+  "prevId": "7be8e9e1-d585-44df-b17f-8b2f8e6a5701",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -175,6 +175,19 @@
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": false
+        },
+        "website_url": {
+          "name": "website_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "social_media_links": {
+          "name": "social_media_links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
         },
         "is_creation_complete": {
           "name": "is_creation_complete",
@@ -377,19 +390,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "website_url": {
-          "name": "website_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "social_media_links": {
-          "name": "social_media_links",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
@@ -400,6 +400,68 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.freelancer_languages": {
+      "name": "freelancer_languages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "freelancer_languages_freelancer_id_freelancers_id_fk": {
+          "name": "freelancer_languages_freelancer_id_freelancers_id_fk",
+          "tableFrom": "freelancer_languages",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "freelancer_languages_language_id_languages_id_fk": {
+          "name": "freelancer_languages_language_id_languages_id_fk",
+          "tableFrom": "freelancer_languages",
+          "tableTo": "languages",
+          "columnsFrom": [
+            "language_id"
           ],
           "columnsTo": [
             "id"
@@ -424,6 +486,12 @@
         "account_id": {
           "name": "account_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "about": {
+          "name": "about",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -468,16 +536,9 @@
         },
         "years_of_experience": {
           "name": "years_of_experience",
-          "type": "varchar(80)",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "language": {
-          "name": "language",
-          "type": "language[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "ARRAY[]::language[]"
         },
         "preferred_project_types": {
           "name": "preferred_project_types",
@@ -485,6 +546,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "ARRAY[]::project_type[]"
+        },
+        "hourly_rate": {
+          "name": "hourly_rate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "compensation_type": {
           "name": "compensation_type",

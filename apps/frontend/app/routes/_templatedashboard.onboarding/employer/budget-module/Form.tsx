@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { BsCurrencyDollar } from "react-icons/bs";
-import { Employer } from "~/types/User";
+// import { Employer } from "~/types/User";
 
 // Define the type for the action data
 interface ActionData {
@@ -24,9 +24,9 @@ interface ActionData {
 
 export default function BudgetModuleForm() {
   const actionData = useActionData<ActionData>();
-  const { employerBudget, currentUser } = useLoaderData<{
+  const { employerBudget /* , currentProfile */ } = useLoaderData<{
     employerBudget: number;
-    currentUser: Employer;
+    /* currentProfile: Employer; */
   }>(); // Fetch the employer budget and user
 
   const [open, setOpen] = useState(false);

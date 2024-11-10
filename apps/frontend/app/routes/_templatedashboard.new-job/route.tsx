@@ -7,7 +7,7 @@ import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
 import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "./required-skills";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { getCurrentEployerFreelancerInfo } from "~/servers/user.server";
+import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 
 export async function loader() {
@@ -28,9 +28,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
-    const employer = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
+    const employer = (await getCurrentProfileInfo(request)) as Employer;
     if (target == "post-job") {
       // TODO: Add validation for the form fields
       const jobData: Job = {

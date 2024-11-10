@@ -1,89 +1,171 @@
-// import { sidebarEmployerNav } from "~/constants/navigation";
-// import { useTranslation } from "react-i18next";
-import Sidebar from "~/routes/_templatedashboard/Sidebar";
+import Heading from "../common/heading/Heading";
+// import YearsInBusiness from "./years-in-business-module/Form";
+// import About from "./about-module/Form";
+// import BudgetModuleForm from "./budget-module/Form";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import type { Employer } from "~/types/User";
+// import HourlyRate from "./hourlyRate";
+import GeneralizableFormCard from "../common/onboarding-form-component";
+import { BsCurrencyDollar } from "react-icons/bs";
+import { SlBadge } from "react-icons/sl";
+import { FaDollarSign } from "react-icons/fa";
 
-export default function FreelancerOnboardingScreen() {
-  // const { t } = useTranslation();
-  // const menuNavigation = sidebarEmployerNav(t); //
+export default function EmployerOnboardingScreen() {
+  // Use loader data to retrieve the user information
+  const { currentProfile } = useLoaderData<{ currentProfile: Employer }>();
+
+  type ActionData = {
+    error?: { message: string };
+  };
+  const actionData = useActionData<ActionData>();
+
   return (
-    <div>
-      <div className="flex">
-        <Sidebar accountType="freelancer" />
+    <div className="mt-20">
+      <Heading />
+      <div className="grid grid-cols-1 mb-4">
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3">
+          {/* Hourly Rate */}
+          <GeneralizableFormCard
+            formType="range"
+            cardTitle="Hourly Rate"
+            popupTitle="Hourly Rate"
+            triggerLabel="Add Hourly Rate"
+            formName="freelancer-hourly-rate"
+            fieldName="hourlyRate"
+            triggerIcon={<FaDollarSign />}
+            minVal={10}
+            maxVal={100}
+          />
 
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="bg-gray-200 h-32 rounded-md mb-4 relative">
-            <button className="absolute top-2 right-2 bg-gray-100 px-2 py-1 text-sm rounded-md">
-              Add Title freelancer
-            </button>
-          </div>
+          {/* Years of Experience */}
+          <GeneralizableFormCard
+            formType="increment"
+            cardTitle="Years of Experience"
+            popupTitle="Years of experience"
+            triggerLabel="Add Years of Experience"
+            formName="freelancer-years-of-experience"
+            fieldName="yearsOfExperience"
+            triggerIcon={<SlBadge />}
+          />
 
-          <div className="flex items-center mb-6">
-            <div className="bg-gray-300 rounded-full w-24 h-24 flex items-center justify-center mr-4">
-              <span className="text-3xl font-bold">AM</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold">Ahmad Mostafa</h1>
-              <div className="flex space-x-2 mt-2">
-                <button className="text-sm bg-gray-200 px-3 py-1 rounded-md">
-                  Add Location
-                </button>
-                <button className="text-sm bg-gray-200 px-3 py-1 rounded-md">
-                  Add Websites
-                </button>
-              </div>
-            </div>
-            <div className="ml-auto text-sm flex items-center">
-              <span>Industries Served</span>
-              <button className="ml-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m4 4h-1V9h-1m6 2h-2a9 9 0 11-18 0h2a7 7 0 1014 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <button className="p-4 border rounded-md">
-              <h3 className="text-sm text-gray-500">
-                Average Project Budget Freelancer
-              </h3>
-              <button className="text-blue-500 text-sm">
-                Add Average Budget
-              </button>
-            </button>
-            <button className="p-4 border rounded-md">
-              <h3 className="text-sm text-gray-500">Years in Business</h3>
-              <button className="text-blue-500 text-sm">
-                Add Years in Business
-              </button>
-            </button>
-          </div>
-
-          {/* About Section */}
-          <div className="mb-6 p-4 border rounded-md">
-            <h3 className="text-lg font-medium mb-2">About</h3>
-            <button className="text-blue-500 text-sm">Add bio</button>
-          </div>
-
-          {/* Posted Jobs Section */}
-          <div className="p-4 border rounded-md">
-            <h3 className="text-lg font-medium mb-2">Posted Jobs</h3>
-            <button className="text-blue-500 text-sm">Post Job</button>
-          </div>
+          {/* Budget */}
+          <GeneralizableFormCard
+            formType="number"
+            cardTitle="Average Project Budget"
+            popupTitle="Add Average Budget"
+            triggerLabel="Add Average Budget"
+            formName="employer-budget"
+            fieldName="employerBudget"
+            triggerIcon={<BsCurrencyDollar />}
+          />
         </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
+          {/* About */}
+          <GeneralizableFormCard
+            formType="textArea"
+            cardTitle="About"
+            popupTitle="Add Average Budget"
+            triggerLabel="Add Bio"
+            formName="employer-about"
+            fieldName="about"
+          />
+        </div>
+        {/* 
+        </div>
+        {/* <div className="grid grid-cols-3">
+          <div className="p-4">
+            <BudgetModuleForm />
+          </div>
+          <div className="p-4">
+            <YearsInBusiness />
+          </div>
+        </div> */}
+        {/* <HourlyRate /> */}
+        {/* 
+        "text"
+    | "number"
+    | "textArea"
+    | "increment"
+    | "video"
+    | "file"
+    | "custom";
+        */}
+
+        {/* range */}
+        {/* <GeneralizableFormCard
+          formType="range"
+          minVal={12}
+          maxVal={24}
+          cardTitle="Range Card Title"
+          popupTitle="Range Popup Title"
+          triggerLabel="Edit Range"
+          formName="employer-years-in-business"
+          fieldName="years-in-business"
+          triggerIcon={<SlBadge />}
+          onSave={() => alert("save")}
+        /> */}
+        {/* <GeneralizableFormCard
+          formType="number"
+          title="Number"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="textArea"
+          title="Text Area"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="increment"
+          title="Increment"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="video"
+          title="Video"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="file"
+          title="File"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+        />
+        <GeneralizableFormCard
+          formType="custom"
+          title="Custom"
+          triggerLabel="Trigger Label"
+          onSave={() => alert("save")}
+          customComponents={[
+            <div key="custom-component">Custom Component</div>,
+          ]}
+        /> */}
+      </div>
+      {/* <About /> */}
+      <div className="mt-6 flex justify-center">
+        {/* Form to update the user's onboard status */}
+        <Form method="post">
+          {/* this input sends the userId to be used in the action (queries, ....) */}
+          <input
+            type="hidden"
+            name="userId"
+            value={currentProfile.account.user.id}
+          />
+          <input type="hidden" name="target-updated" value="employer-onboard" />
+          {/* in the switch case, use value employer-onboard */}
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+          >
+            Proceed
+          </button>
+        </Form>
+        {actionData?.error && (
+          <p className="text-red-500 mt-2">{actionData.error.message}</p>
+        )}
       </div>
     </div>
   );

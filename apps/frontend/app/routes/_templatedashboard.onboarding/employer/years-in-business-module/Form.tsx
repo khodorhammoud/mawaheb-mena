@@ -23,10 +23,10 @@ interface ActionData {
 
 export default function YearsInBusinessCard() {
   const actionData = useActionData<ActionData>();
-  const { yearsInBusiness: initialYearsInBusiness, currentUser } =
+  const { yearsInBusiness: initialYearsInBusiness, currentProfile } =
     useLoaderData<{
       yearsInBusiness: number;
-      currentUser: Employer;
+      currentProfile: Employer;
     }>();
 
   const [open, setOpen] = useState(false);
@@ -96,7 +96,7 @@ export default function YearsInBusinessCard() {
     submit(
       {
         "target-updated": "years-in-business",
-        userId: currentUser.account?.user?.id,
+        userId: currentProfile.account?.user?.id,
         "years-in-business": value.toString(),
       },
       { method: "post" }

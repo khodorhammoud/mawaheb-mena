@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"region" varchar(100),
 	"account_status" "account_status",
 	"phone" varchar(30),
+	"website_url" text,
+	"social_media_links" jsonb DEFAULT '{}'::jsonb,
 	"is_creation_complete" boolean DEFAULT false
 );
 --> statement-breakpoint
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS "employer_industries" (
 CREATE TABLE IF NOT EXISTS "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"account_id" integer,
+	"budget" integer,
 	"employerAccountType" "eployer_account_type",
 	"company_name" varchar(100),
 	"employer_name" varchar(100),
@@ -51,9 +54,14 @@ CREATE TABLE IF NOT EXISTS "employers" (
 	"tax_id_number" varchar,
 	"tax_id_document_link" text,
 	"business_license_link" text,
-	"certification_of_incorporation_link" text,
-	"website_url" text,
-	"social_media_links" jsonb DEFAULT '{}'::jsonb
+	"certification_of_incorporation_link" text
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "freelancer_languages" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"freelancer_id" integer,
+	"language_id" integer,
+	"timestamp" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "freelancers" (
@@ -66,7 +74,6 @@ CREATE TABLE IF NOT EXISTS "freelancers" (
 	"video_link" text,
 	"certificates_links" text[] DEFAULT '{}'::text[],
 	"years_of_experience" varchar(80),
-	"language" language[] DEFAULT ARRAY[]::language[],
 	"preferred_project_types" project_type[] DEFAULT ARRAY[]::project_type[],
 	"compensation_type" "compensation_type"
 );
@@ -80,8 +87,7 @@ CREATE TABLE IF NOT EXISTS "industries" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "job_categories" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"job_id" integer,
-	"industry_id" integer,
+	"label" text,
 	"timestamp" timestamp DEFAULT now()
 );
 --> statement-breakpoint
@@ -90,6 +96,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"employer_id" integer,
 	"title" text,
 	"description" text,
+	"job_category_id" integer,
 	"working_hours_per_week" integer,
 	"location_preference" text,
 	"required_skills" text[],
@@ -163,25 +170,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "freelancer_languages" ADD CONSTRAINT "freelancer_languages_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "freelancer_languages" ADD CONSTRAINT "freelancer_languages_language_id_languages_id_fk" FOREIGN KEY ("language_id") REFERENCES "public"."languages"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "freelancers" ADD CONSTRAINT "freelancers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "job_categories" ADD CONSTRAINT "job_categories_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "job_categories" ADD CONSTRAINT "job_categories_industry_id_industries_id_fk" FOREIGN KEY ("industry_id") REFERENCES "public"."industries"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "jobs" ADD CONSTRAINT "jobs_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "jobs" ADD CONSTRAINT "jobs_job_category_id_job_categories_id_fk" FOREIGN KEY ("job_category_id") REFERENCES "public"."job_categories"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
