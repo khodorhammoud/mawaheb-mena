@@ -1,17 +1,17 @@
-import Heading from "./heading/Heading";
+import Heading from "../common/heading/Heading";
 // import YearsInBusiness from "./years-in-business-module/Form";
 // import About from "./about-module/Form";
 // import BudgetModuleForm from "./budget-module/Form";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
 // import HourlyRate from "./hourlyRate";
-import GeneralizableFormCard from "./generaliziable-form-component";
+import GeneralizableFormCard from "../common/onboarding-form-component";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { SlBadge } from "react-icons/sl";
 
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
-  const { currentUser } = useLoaderData<{ currentUser: Employer }>();
+  const { currentProfile } = useLoaderData<{ currentProfile: Employer }>();
 
   type ActionData = {
     error?: { message: string };
@@ -32,9 +32,7 @@ export default function EmployerOnboardingScreen() {
             formName="employer-years-in-business"
             fieldName="yearsInBusiness"
             triggerIcon={<SlBadge />}
-            onSave={() => alert("save")}
           />
-
           {/* Budget */}
           <GeneralizableFormCard
             formType="number"
@@ -44,7 +42,6 @@ export default function EmployerOnboardingScreen() {
             formName="employer-budget"
             fieldName="employerBudget"
             triggerIcon={<BsCurrencyDollar />}
-            onSave={() => alert("save")}
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
@@ -55,8 +52,7 @@ export default function EmployerOnboardingScreen() {
             popupTitle="Add Average Budget"
             triggerLabel="Add Bio"
             formName="employer-about"
-            fieldName="aboutEmployer"
-            onSave={() => alert("save")}
+            fieldName="about"
           />
         </div>
         {/* 
@@ -141,7 +137,7 @@ export default function EmployerOnboardingScreen() {
           <input
             type="hidden"
             name="userId"
-            value={currentUser.account.user.id}
+            value={currentProfile.account.user.id}
           />
           <input type="hidden" name="target-updated" value="employer-onboard" />
           {/* in the switch case, use value employer-onboard */}

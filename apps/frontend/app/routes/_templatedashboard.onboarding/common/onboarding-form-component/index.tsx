@@ -11,7 +11,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "~/components/ui/dialog";
-import { OnboardingFields } from "~/types/User";
+import {
+  OnboardingEmployerFields,
+  OnboardingFreelancerFields,
+} from "~/types/User";
 
 interface GeneralizableFormCardProps {
   formType:
@@ -49,7 +52,9 @@ function GeneralizableFormCard({
   maxVal,
   customComponents,
 }: GeneralizableFormCardProps) {
-  const initialData = useLoaderData<OnboardingFields>();
+  const initialData = useLoaderData<
+    OnboardingEmployerFields | OnboardingFreelancerFields
+  >();
 
   const [inputValue, setInputValue] = useState<number | string | File>(
     initialData?.[fieldName] ?? (formType === "increment" ? 0 : "")
@@ -69,6 +74,13 @@ function GeneralizableFormCard({
 
   // Handle showing the bio submission message
   useEffect(() => {
+    console.log("fieldName", fieldName);
+    console.log(
+      "initialData?.[fieldName]",
+      fieldName,
+      initialData?.[fieldName]
+    );
+
     if (fetcher.data?.success || fetcher.data?.error) {
       setShowStatusMessage(true);
     }

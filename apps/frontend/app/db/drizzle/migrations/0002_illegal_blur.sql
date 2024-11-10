@@ -1,0 +1,1 @@
+ALTER TABLE "freelancers" ADD COLUMN "hourly_rate" integer;

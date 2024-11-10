@@ -29,7 +29,7 @@ export interface PreferredWorkingTimes {
 
 export interface UserAccount {
   id: number;
-  accountType: EmployerAccountType;
+  accountType: AccountType;
   isCreationComplete: boolean;
   location?: string;
   country?: string;
@@ -41,7 +41,7 @@ export interface UserAccount {
   user: User;
 }
 
-export interface EmployerSocialMediaLinks {
+export interface AccountSocialMediaLinks {
   linkedin: string;
   github: string;
   gitlab: string;
@@ -66,7 +66,7 @@ export interface Employer {
   businessLicenseLink?: string;
   certificationOfIncorporationLink?: string;
   WebsiteURL?: string;
-  socialMediaLinks?: EmployerSocialMediaLinks;
+  socialMediaLinks?: AccountSocialMediaLinks;
   account?: UserAccount;
   isOnboarded: boolean; // this is used in the loader :)
 }
@@ -80,9 +80,10 @@ export interface Freelancer {
   cvLink?: string;
   videoLink?: string;
   certificatesLinks?: string[];
-  yearsOfExperience?: string;
+  yearsOfExperience?: number;
   languagesSpoken?: Language[];
   preferredProjectTypes?: ProjectType[];
+  hourlyRate?: number;
   compensationType?: CompensationType[];
   account?: UserAccount;
 }
@@ -94,11 +95,11 @@ export interface LoggedInUser {
   email: string;
 }
 
-export interface EmployerBio {
+export interface AccountBio {
   firstName: string;
   lastName: string;
   location: string;
-  socialMediaLinks: EmployerSocialMediaLinks;
+  socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
   userId: number; // Add this property
 }
@@ -126,19 +127,28 @@ export interface LoaderFunctionError {
 These fields names also control their respective HTML input fields names
 For example, we use the HTML input field name "employerBudget" to get/set the value for the employer budget
 */
-export interface OnboardingFields {
+export interface OnboardingEmployerFields {
   accountType: AccountType;
-  bioInfo: EmployerBio;
+  bioInfo: AccountBio;
   employerIndustries: Industry[];
   allIndustries: Industry[];
-  currentUser: Employer;
+  currentProfile: Employer;
   yearsInBusiness: number;
   employerBudget: string;
-  aboutEmployer: string;
+  about: string;
   accountOnboarded: boolean;
-  employer: Employer;
   activeJobCount: number;
   draftedJobCount: number;
   closedJobCount: number;
   totalJobCount: number;
+}
+
+export interface OnboardingFreelancerFields {
+  accountType: AccountType;
+  bioInfo: AccountBio;
+  currentProfile: Freelancer;
+  about: string;
+  accountOnboarded: boolean;
+  hourlyRate: number;
+  yearsOfExperience: number;
 }

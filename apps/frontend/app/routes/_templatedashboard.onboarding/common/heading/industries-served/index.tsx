@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -8,13 +8,14 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { RiPencilFill } from "react-icons/ri";
-import { Input } from "~/components/ui/input";
+// import { Input } from "~/components/ui/input";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-import { FaSearch } from "react-icons/fa";
+// import { FaSearch } from "react-icons/fa";
 import { Industry } from "~/types/User";
-import { Badge } from "~/components/ui/badge";
+// import { Badge } from "~/components/ui/badge";
+import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 
-export default function Heading() {
+export default function Languages() {
   const [industriesServedOpen, setIndustriesServedOpen] = useState(false); // Industry dialog state
   const [showIndustryMessage, setShowIndustryMessage] = useState(false); // Track industry message visibility
 
@@ -23,7 +24,7 @@ export default function Heading() {
     error?: { message: string };
   }>(); // Fetcher for industry form
 
-  const industryFormRef = useRef<HTMLFormElement>(null); // Ref for industry form
+  // const industryFormRef = useRef<HTMLFormElement>(null); // Ref for industry form
 
   // Load data
   const { employerIndustries, allIndustries } = useLoaderData() as {
@@ -38,17 +39,17 @@ export default function Heading() {
     setSelectedIndustries(employerIndustries.map((i) => i.id));
   }, [employerIndustries]);
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  // const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const filteredIndustries = allIndustries.filter(
+  /* const filteredIndustries = allIndustries.filter(
     (industry) =>
       industry.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
       industry.metadata.some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase())
       )
-  );
+  ); */
 
-  const toggleIndustry = (industryId: number) => {
+  /* const toggleIndustry = (industryId: number) => {
     if (selectedIndustries.includes(industryId)) {
       setSelectedIndustries(selectedIndustries.filter((i) => i !== industryId));
     } else {
@@ -60,7 +61,7 @@ export default function Heading() {
         industryFetcher.submit(industryFormRef.current);
       }
     }, 100);
-  };
+  }; */
 
   // Handle showing the industry submission message
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function Heading() {
     setIndustriesServedOpen(isOpen);
     if (!isOpen) {
       setShowIndustryMessage(false); // Clear industry message when dialog is closed
-      setSearchTerm(""); // Clear search term when dialog is closed
+      // setSearchTerm(""); // Clear search term when dialog is closed
     }
   };
 
@@ -106,6 +107,16 @@ export default function Heading() {
                 </span>
               </div>
             )}
+
+            <SearcheableTagSelector<Industry>
+              data={allIndustries}
+              selectedKeys={selectedIndustries}
+              itemLabel={(item: Industry) => item.label}
+              itemKey={(item) => item.id}
+              formName="employer-industries"
+              fieldName="employer-industries"
+              searchPlaceholder="Search or type industry"
+            />
             {/* Display Success Message for Industries */}
             {/* {showIndustryMessage && industryFetcher.data?.success && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -115,7 +126,7 @@ export default function Heading() {
                 </div>
               )} */}
 
-            <industryFetcher.Form
+            {/* <industryFetcher.Form
               ref={industryFormRef}
               method="post"
               id="employer-industires-form"
@@ -130,10 +141,10 @@ export default function Heading() {
                 name="employer-industries"
                 value={selectedIndustries.join(",")}
               />
-            </industryFetcher.Form>
+            </industryFetcher.Form> */}
 
             {/* Search Bar */}
-            <div className="relative mb-4">
+            {/* <div className="relative mb-4">
               <Input
                 placeholder="Search or type industry"
                 value={searchTerm}
@@ -141,10 +152,10 @@ export default function Heading() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
-            </div>
+            </div> */}
 
             {/* Industry Options */}
-            <div className="flex flex-wrap gap-2">
+            {/* <div className="flex flex-wrap gap-2">
               {filteredIndustries.length > 0 ? (
                 filteredIndustries.map((industry) => (
                   <Badge
@@ -162,7 +173,7 @@ export default function Heading() {
               ) : (
                 <p className="text-gray-500">No industries found</p>
               )}
-            </div>
+            </div> */}
 
             {/* <DialogFooter className="mt-6">
                 <Button

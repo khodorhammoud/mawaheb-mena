@@ -5,12 +5,13 @@ export default function RangeComponent({
   minVal: number;
   maxVal: number;
 }) {
+  const rightBorderSize = maxVal * 1.3;
   // Calculate the percentage position of the min and max values
-  const minValPercent = (minVal / 40) * 100;
-  const maxValPercent = (maxVal / 40) * 100;
+  const minValPercent = (minVal / rightBorderSize) * 100;
+  const maxValPercent = (maxVal / rightBorderSize) * 100;
 
   return (
-    <div className="relative w-full flex items-center mt-4">
+    <div className="relative w-full flex items-center mt-8">
       {/* Slider Track */}
       <div className="relative w-full h-2 bg-blue-200 rounded-full">
         {/* Line representing min to max values */}
