@@ -9,6 +9,7 @@ import RequiredSkills from "./required-skills";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
+import { Employer } from "~/types/User";
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();

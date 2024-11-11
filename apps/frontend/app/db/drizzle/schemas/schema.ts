@@ -1,4 +1,3 @@
-/** Import PG Core types from drizzle-orm/pg-core. */
 import {
   pgTable,
   serial,
@@ -9,6 +8,7 @@ import {
   time,
   timestamp,
   jsonb,
+  json,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -305,6 +305,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property is_paused - boolean
  * @property created_at - timestamp
  */
+
 export const jobsTable = pgTable("jobs", {
   id: serial("id").primaryKey(),
   employerId: integer("employer_id").references(() => employersTable.id),
@@ -316,7 +317,13 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-  requiredSkills: text("required_skills").array(),
+
+  // Updated requiredSkills to be an array of JSON objects
+  requiredSkills: json("required_skills")
+    .array()
+    .notNull()
+    .default(sql`'[]'::jsonb[]`),
+
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
