@@ -148,7 +148,15 @@ export interface OnboardingFreelancerFields {
   bioInfo: AccountBio;
   currentProfile: Freelancer;
   about: string;
+  videoLink: string;
   accountOnboarded: boolean;
   hourlyRate: number;
   yearsOfExperience: number;
+}
+
+export interface PortfolioFormFieldType {
+  projectName: string;
+  projectLink: string;
+  projectDescription: string;
+  projectImage: File | null;
 }

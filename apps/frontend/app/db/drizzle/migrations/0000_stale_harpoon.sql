@@ -67,14 +67,17 @@ CREATE TABLE IF NOT EXISTS "freelancer_languages" (
 CREATE TABLE IF NOT EXISTS "freelancers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"account_id" integer,
+	"about" text,
 	"fields_of_expertise" text[] DEFAULT '{}'::text[],
-	"portfolio" text[] DEFAULT '{}'::text[],
-	"portfolio_description" text,
+	"portfolio" jsonb DEFAULT '[]'::jsonb,
+	"work_history" jsonb DEFAULT '[]'::jsonb,
 	"cv_link" text,
 	"video_link" text,
-	"certificates_links" text[] DEFAULT '{}'::text[],
-	"years_of_experience" varchar(80),
+	"certificates" jsonb DEFAULT '[]'::jsonb,
+	"educations" jsonb DEFAULT '[]'::jsonb,
+	"years_of_experience" integer,
 	"preferred_project_types" project_type[] DEFAULT ARRAY[]::project_type[],
+	"hourly_rate" integer,
 	"compensation_type" "compensation_type"
 );
 --> statement-breakpoint

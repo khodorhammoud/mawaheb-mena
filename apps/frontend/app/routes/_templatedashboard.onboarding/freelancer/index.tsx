@@ -6,7 +6,7 @@ import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
 // import HourlyRate from "./hourlyRate";
 import GeneralizableFormCard from "../common/onboarding-form-component";
-import { BsCurrencyDollar } from "react-icons/bs";
+// import { BsCurrencyDollar } from "react-icons/bs";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
 
@@ -40,35 +40,39 @@ export default function EmployerOnboardingScreen() {
           {/* Years of Experience */}
           <GeneralizableFormCard
             formType="increment"
-            cardTitle="Years of Experience"
+            cardTitle="Experience"
             popupTitle="Years of experience"
             triggerLabel="Add Years of Experience"
             formName="freelancer-years-of-experience"
             fieldName="yearsOfExperience"
             triggerIcon={<SlBadge />}
           />
-
-          {/* Budget */}
+        </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2">
+          {/* Years of Experience */}
           <GeneralizableFormCard
-            formType="number"
-            cardTitle="Average Project Budget"
+            formType="video"
+            cardTitle="Don't miss out on this opportunity to make a great first impression."
+            cardSubtitle="Upload a video to introduce yourself and your business."
+            popupTitle="Introductory video"
+            triggerLabel="Add Video"
+            formName="freelancer-video"
+            fieldName="introductoryVideo"
+          />
+
+          {/* Portfolio */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="repeatable"
             popupTitle="Add Average Budget"
-            triggerLabel="Add Average Budget"
-            formName="employer-budget"
-            fieldName="employerBudget"
-            triggerIcon={<BsCurrencyDollar />}
+            triggerLabel="Add Bio"
+            formName="freelancer-portfolio"
+            fieldName="portfolio"
+            repeatableFieldName="portfolio"
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
           {/* About */}
-          <GeneralizableFormCard
-            formType="textArea"
-            cardTitle="About"
-            popupTitle="Add Average Budget"
-            triggerLabel="Add Bio"
-            formName="employer-about"
-            fieldName="about"
-          />
         </div>
         {/* 
         </div>

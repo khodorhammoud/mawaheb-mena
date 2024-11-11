@@ -1,1 +1,0 @@
-ALTER TABLE "freelancers" ADD COLUMN "about" text;

@@ -124,15 +124,13 @@ export const freelancersTable = pgTable("freelancers", {
   fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
-  portfolio: text("portfolio")
-    .array()
-    .default(sql`'{}'::text[]`),
-  portfolioDescription: text("portfolio_description"),
+  portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
+  workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
+  // portfolioDescription: text("portfolio_description"),
   cvLink: text("cv_link"),
   videoLink: text("video_link"),
-  certificatesLinks: text("certificates_links")
-    .array()
-    .default(sql`'{}'::text[]`),
+  certificates: jsonb("certificates").default(sql`'[]'::jsonb`),
+  educations: jsonb("educations").default(sql`'[]'::jsonb`),
   yearsOfExperience: integer("years_of_experience"),
   preferredProjectTypes: projectTypeEnum("preferred_project_types")
     .array()

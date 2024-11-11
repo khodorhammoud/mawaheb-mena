@@ -1,1 +1,0 @@
-ALTER TABLE "freelancers" ALTER COLUMN "years_of_experience" SET DATA TYPE integer USING years_of_experience::integer;
