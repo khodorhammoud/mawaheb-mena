@@ -302,7 +302,6 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-  requiredSkills: text("required_skills").array(),
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
@@ -313,4 +312,17 @@ export const jobsTable = pgTable("jobs", {
   isClosed: boolean("is_closed").default(false),
   isPaused: boolean("is_paused").default(false),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const skillsTable = pgTable("skills", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
+});
+
+export const jobSkillsTable = pgTable("job_skills", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobsTable.id),
+  skillId: integer("skill_id").references(() => skillsTable.id),
+  isStarred: boolean("is_starred").default(false),
 });
