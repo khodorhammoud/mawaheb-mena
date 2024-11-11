@@ -18,6 +18,7 @@ import {
   LoaderFunctionError,
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
+  PortfolioFormFieldType,
 } from "~/types/User";
 import { authenticator } from "~/auth/auth.server";
 import {
@@ -39,6 +40,8 @@ import {
   updateFreelancerAbout,
   updateFreelancerHourlyRate,
   updateFreelancerYearsOfExperience,
+  updateFreelancerVideoLink,
+  updateFreelancerPortfolio,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
 
@@ -164,6 +167,16 @@ export async function action({ request }: ActionFunctionArgs) {
         );
         return json({ success: aboutStatus.success });
       }
+      // VIDEO LINK
+      if (target == "freelancer-video") {
+        const videoLink = formData.get("videoLink") as string;
+        const videoStatus = await updateFreelancerVideoLink(
+          freelancer.id,
+          videoLink
+        );
+        return json({ success: videoStatus.success });
+      }
+
       // BIO
       if (target == "freelancer-bio") {
         const bio = {
@@ -183,6 +196,29 @@ export async function action({ request }: ActionFunctionArgs) {
         const bioStatus = await updateAccountBio(bio, freelancer.account);
         return json({ success: bioStatus.success });
       }
+      // PORTFOLIO
+      if (target == "freelancer-portfolio") {
+        const portfolio = formData.get("portfolio") as string;
+        try {
+          const portfolioParsed = JSON.parse(
+            portfolio
+          ) as PortfolioFormFieldType[];
+          console.log("portfolioParsed", portfolioParsed);
+          return json({ success: true });
+          // const portfolioStatus = await updateFreelancerPortfolio(
+          //   freelancer,
+          //   portfolioParsed
+          // );
+          // return json({ success: portfolioStatus.success });
+        } catch (error) {
+          return json({
+            success: false,
+            error: { message: "Invalid portfolio data." },
+            status: 400,
+          });
+        }
+      }
+
       // ONBOARDING -> TRUE ✅
       if (target == "freelancer-onboard") {
         const userId = currentUser.account.user.id;
@@ -284,12 +320,14 @@ export async function loader({
     // Fetch all the necessary data safely
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
+    const { videoLink } = profile;
 
     return json({
       accountType,
       bioInfo,
       currentProfile: profile,
       about,
+      videoLink,
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,

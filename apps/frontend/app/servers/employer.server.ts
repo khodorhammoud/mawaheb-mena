@@ -21,6 +21,7 @@ import {
   Industry,
   UserAccount,
   Freelancer,
+  PortfolioFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
@@ -97,6 +98,30 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
     return emp[0] as AccountBio;
   } catch (error) {
     console.error("Error getting employer bio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerPortfolio(
+  freelancer: Freelancer,
+  portfolio: PortfolioFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    const res = await db
+      .update(freelancersTable)
+      .set({
+        portfolio: JSON.stringify(portfolio),
+      })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer portfolio");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer portfolio", error);
     throw error;
   }
 }
@@ -362,6 +387,21 @@ export async function updateFreelancerAbout(
     console.error("Error updating freelancer about section", error);
     return { success: false }; // Return failure status
   }
+}
+
+export async function updateFreelancerVideoLink(
+  freelancerId: number,
+  videoLink: string
+): Promise<{ success: boolean }> {
+  return db
+    .update(freelancersTable)
+    .set({ introductoryVideo: videoLink })
+    .where(eq(freelancersTable.accountId, freelancerId))
+    .then(() => ({ success: true }))
+    .catch((error) => {
+      console.error("Error updating freelancer video link", error);
+      return { success: false };
+    });
 }
 
 export async function updateFreelancerYearsOfExperience(

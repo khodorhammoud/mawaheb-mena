@@ -1,5 +1,5 @@
 {
-  "id": "32c4dbff-c1f7-4707-8de8-a1277b220731",
+  "id": "e75a2600-5191-46ac-849e-d27f2aebcef2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -489,6 +489,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "about": {
+          "name": "about",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "fields_of_expertise": {
           "name": "fields_of_expertise",
           "type": "text[]",
@@ -498,16 +504,17 @@
         },
         "portfolio": {
           "name": "portfolio",
-          "type": "text[]",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::text[]"
+          "default": "'[]'::jsonb"
         },
-        "portfolio_description": {
-          "name": "portfolio_description",
-          "type": "text",
+        "work_history": {
+          "name": "work_history",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'[]'::jsonb"
         },
         "cv_link": {
           "name": "cv_link",
@@ -521,16 +528,23 @@
           "primaryKey": false,
           "notNull": false
         },
-        "certificates_links": {
-          "name": "certificates_links",
-          "type": "text[]",
+        "certificates": {
+          "name": "certificates",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::text[]"
+          "default": "'[]'::jsonb"
+        },
+        "educations": {
+          "name": "educations",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
         },
         "years_of_experience": {
           "name": "years_of_experience",
-          "type": "varchar(80)",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -540,6 +554,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "ARRAY[]::project_type[]"
+        },
+        "hourly_rate": {
+          "name": "hourly_rate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "compensation_type": {
           "name": "compensation_type",
