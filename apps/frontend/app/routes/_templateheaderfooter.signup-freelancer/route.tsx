@@ -3,7 +3,7 @@ import SignUpFreelancerPage from "./Signup";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import {
   generateVerificationToken,
-  getEmployerFreelancerInfo,
+  getProfileInfo,
 } from "../../servers/user.server";
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
@@ -18,12 +18,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    const employerFreelancer = await authenticator.authenticate(
-      "register",
-      request
-    );
-    newFreelancer = (await getEmployerFreelancerInfo({
-      userId: employerFreelancer.account.user.id,
+    const profile = await authenticator.authenticate("register", request);
+    newFreelancer = (await getProfileInfo({
+      userId: profile.account.user.id,
     })) as Freelancer;
   } catch (error) {
     // handle registration errors

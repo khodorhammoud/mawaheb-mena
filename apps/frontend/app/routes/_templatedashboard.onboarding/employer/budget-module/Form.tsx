@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "~/common/header/card";
 import { Input } from "~/components/ui/input";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { BsCurrencyDollar } from "react-icons/bs";
-import { Employer } from "~/types/User";
+// import { Employer } from "~/types/User";
 
 // Define the type for the action data
 interface ActionData {
@@ -24,9 +24,9 @@ interface ActionData {
 
 export default function BudgetModuleForm() {
   const actionData = useActionData<ActionData>();
-  const { employerBudget, currentUser } = useLoaderData<{
+  const { employerBudget /* , currentProfile */ } = useLoaderData<{
     employerBudget: number;
-    currentUser: Employer;
+    /* currentProfile: Employer; */
   }>(); // Fetch the employer budget and user
 
   const [open, setOpen] = useState(false);
@@ -67,7 +67,7 @@ export default function BudgetModuleForm() {
   };
 
   return (
-    <Card className="w-[350px] border border-dashed border-gray-300 rounded-lg">
+    <Card className="border border-dashed border-gray-300 rounded-lg">
       <CardHeader className="p-4">
         <CardTitle className="text-lg font-semibold text-center">
           Average Project Budget
@@ -117,12 +117,7 @@ export default function BudgetModuleForm() {
               <input
                 type="hidden"
                 name="target-updated"
-                value="employer-budget"
-              />
-              <input
-                type="hidden"
-                name="userId"
-                value={currentUser.account?.user?.id} // Pass the userId dynamically
+                value="employerbudget"
               />
               <div className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2">
                 <Input
