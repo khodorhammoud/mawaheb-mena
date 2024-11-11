@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "../../components/ui/card";
+} from "../../common/header/card";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FAQ {
