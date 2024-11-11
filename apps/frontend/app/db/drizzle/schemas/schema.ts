@@ -63,6 +63,8 @@ export const UsersTable = pgTable("users", {
  * @property region - varchar with length 100
  * @property account_status - accountStatusEnum
  * @property phone - varchar with length 30
+ * @property website_url - text
+ * @property social_media_links - text array with default ''
  */
 export const accountsTable = pgTable("accounts", {
   id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
@@ -75,6 +77,8 @@ export const accountsTable = pgTable("accounts", {
   region: varchar("region", { length: 100 }),
   accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
   phone: varchar("phone", { length: 30 }),
+  websiteURL: text("website_url"),
+  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
   isCreationComplete: boolean("is_creation_complete").default(false),
 });
 
@@ -100,6 +104,7 @@ export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
  *
  * @property id - serial primary key
  * @property account_id - integer referencing the accountsTable id
+ * @property about - text
  * @property fields_of_expertise - text array with default ''
  * @property portfolio - text array with default ''
  * @property portfolio_description - text
@@ -109,31 +114,44 @@ export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
  * @property years_of_experience - varchar with length 80
  * @property languagesSpoken - languageEnum array with default ''
  * @property preferred_project_types - projectTypeEnum array with default ''
+ * @property hourlyRate - integer
  * @property compensation_type - compensationTypeEnum
  */
 export const freelancersTable = pgTable("freelancers", {
   id: serial("id").primaryKey(),
   accountId: integer("account_id").references(() => accountsTable.id),
+  about: text("about"),
   fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
-  portfolio: text("portfolio")
-    .array()
-    .default(sql`'{}'::text[]`),
-  portfolioDescription: text("portfolio_description"),
+  portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
+  workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
+  // portfolioDescription: text("portfolio_description"),
   cvLink: text("cv_link"),
   videoLink: text("video_link"),
-  certificatesLinks: text("certificates_links")
-    .array()
-    .default(sql`'{}'::text[]`),
-  yearsOfExperience: varchar("years_of_experience", { length: 80 }),
-  languagesSpoken: languageEnum("language")
-    .array()
-    .default(sql`ARRAY[]::language[]`),
+  certificates: jsonb("certificates").default(sql`'[]'::jsonb`),
+  educations: jsonb("educations").default(sql`'[]'::jsonb`),
+  yearsOfExperience: integer("years_of_experience"),
   preferredProjectTypes: projectTypeEnum("preferred_project_types")
     .array()
     .default(sql`ARRAY[]::project_type[]`),
+  hourlyRate: integer("hourly_rate"),
   compensationType: compensationTypeEnum("compensation_type"),
+});
+
+/**
+ * Define the relation between freelancers and languages where each employer can have zero to many languages
+ *
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property language_id - integer referencing the languagesTable id
+ * @property timestamp - timestamp
+ */
+export const freelancerLanguagesTable = pgTable("freelancer_languages", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  languageId: integer("language_id").references(() => languagesTable.id),
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
@@ -155,8 +173,6 @@ export const freelancersTable = pgTable("freelancers", {
  * @property tax_id_document_link - text
  * @property business_license_link - text
  * @property certification_of_incorporation_link - text
- * @property website_url - text
- * @property social_media_links - text array with default ''
  */
 export const employersTable = pgTable("employers", {
   id: serial("id").primaryKey(),
@@ -177,8 +193,6 @@ export const employersTable = pgTable("employers", {
   taxIdDocumentLink: text("tax_id_document_link"),
   businessLicenseLink: text("business_license_link"),
   certificationOfIncorporationLink: text("certification_of_incorporation_link"),
-  websiteURL: text("website_url"),
-  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
 });
 
 /**

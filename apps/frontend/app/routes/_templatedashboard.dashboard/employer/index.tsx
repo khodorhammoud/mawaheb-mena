@@ -31,21 +31,21 @@ export default function Dashboard() {
   // const { accountOnboarded } = useLoaderData<{ accountOnboarded: boolean }>();
   // Fetch loader data
   const {
-    currentUser,
+    currentProfile,
     activeJobCount,
     draftedJobCount,
     closedJobCount,
     totalJobCount,
   } = useLoaderData<{
-    currentUser: Employer;
+    currentProfile: Employer;
     activeJobCount: number;
     draftedJobCount: number;
     closedJobCount: number;
     totalJobCount: number;
   }>();
 
-  // Access the firstName from the nested structure of currentUser
-  const firstName = currentUser?.account?.user?.firstName || "User"; // Safely access the firstName
+  // Access the firstName from the nested structure of currentProfile
+  const firstName = currentProfile?.account?.user?.firstName || "User"; // Safely access the firstName
 
   // Job postings data
   const jobData: JobData[] = [

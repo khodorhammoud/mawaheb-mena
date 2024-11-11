@@ -7,9 +7,9 @@ import { AuthorizationError } from "remix-auth";
 
 export async function action({ request }: ActionFunctionArgs) {
   //  this is for the loging in to the account
-  let employerFreelancer: Employer | Freelancer = null;
+  let profile: Employer | Freelancer = null;
   try {
-    employerFreelancer = await authenticator.authenticate("login", request, {
+    profile = await authenticator.authenticate("login", request, {
       throwOnError: true,
     });
   } catch (error) {
@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
   //
-  return await createUserSession(request, employerFreelancer, "/dashboard"); // this is not working bro wix 🌟🌟
+  return await createUserSession(request, profile, "/dashboard"); // this is not working bro wix 🌟🌟
   // if i want to change it, press on createUserSession, and look there ❤️🤝
 
   // return json({ success: true });
