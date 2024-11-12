@@ -5,7 +5,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "../../../components/ui/card";
+} from "../../../common/header/card";
 
 // Define the type for a feature
 interface Feature {

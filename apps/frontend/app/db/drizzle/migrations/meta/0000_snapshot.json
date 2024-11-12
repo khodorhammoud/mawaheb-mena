@@ -1,5 +1,5 @@
 {
-  "id": "299441f3-556a-4d56-92d9-bdc6381e7f82",
+  "id": "e75a2600-5191-46ac-849e-d27f2aebcef2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -176,6 +176,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "website_url": {
+          "name": "website_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "social_media_links": {
+          "name": "social_media_links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
         "is_creation_complete": {
           "name": "is_creation_complete",
           "type": "boolean",
@@ -281,6 +294,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "budget": {
+          "name": "budget",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "employerAccountType": {
           "name": "employerAccountType",
           "type": "eployer_account_type",
@@ -371,19 +390,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "website_url": {
-          "name": "website_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "social_media_links": {
-          "name": "social_media_links",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
@@ -394,6 +400,68 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.freelancer_languages": {
+      "name": "freelancer_languages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "freelancer_languages_freelancer_id_freelancers_id_fk": {
+          "name": "freelancer_languages_freelancer_id_freelancers_id_fk",
+          "tableFrom": "freelancer_languages",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "freelancer_languages_language_id_languages_id_fk": {
+          "name": "freelancer_languages_language_id_languages_id_fk",
+          "tableFrom": "freelancer_languages",
+          "tableTo": "languages",
+          "columnsFrom": [
+            "language_id"
           ],
           "columnsTo": [
             "id"
@@ -421,6 +489,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "about": {
+          "name": "about",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "fields_of_expertise": {
           "name": "fields_of_expertise",
           "type": "text[]",
@@ -430,16 +504,17 @@
         },
         "portfolio": {
           "name": "portfolio",
-          "type": "text[]",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::text[]"
+          "default": "'[]'::jsonb"
         },
-        "portfolio_description": {
-          "name": "portfolio_description",
-          "type": "text",
+        "work_history": {
+          "name": "work_history",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'[]'::jsonb"
         },
         "cv_link": {
           "name": "cv_link",
@@ -453,25 +528,25 @@
           "primaryKey": false,
           "notNull": false
         },
-        "certificates_links": {
-          "name": "certificates_links",
-          "type": "text[]",
+        "certificates": {
+          "name": "certificates",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::text[]"
+          "default": "'[]'::jsonb"
+        },
+        "educations": {
+          "name": "educations",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
         },
         "years_of_experience": {
           "name": "years_of_experience",
-          "type": "varchar(80)",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "language": {
-          "name": "language",
-          "type": "language[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "ARRAY[]::language[]"
         },
         "preferred_project_types": {
           "name": "preferred_project_types",
@@ -479,6 +554,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "ARRAY[]::project_type[]"
+        },
+        "hourly_rate": {
+          "name": "hourly_rate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "compensation_type": {
           "name": "compensation_type",
@@ -553,15 +634,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "job_id": {
-          "name": "job_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "industry_id": {
-          "name": "industry_id",
-          "type": "integer",
+        "label": {
+          "name": "label",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -574,34 +649,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "job_categories_job_id_jobs_id_fk": {
-          "name": "job_categories_job_id_jobs_id_fk",
-          "tableFrom": "job_categories",
-          "tableTo": "jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "job_categories_industry_id_industries_id_fk": {
-          "name": "job_categories_industry_id_industries_id_fk",
-          "tableFrom": "job_categories",
-          "tableTo": "industries",
-          "columnsFrom": [
-            "industry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -630,6 +678,12 @@
         "description": {
           "name": "description",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_category_id": {
+          "name": "job_category_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -721,6 +775,19 @@
           "tableTo": "employers",
           "columnsFrom": [
             "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "jobs_job_category_id_job_categories_id_fk": {
+          "name": "jobs_job_category_id_job_categories_id_fk",
+          "tableFrom": "jobs",
+          "tableTo": "job_categories",
+          "columnsFrom": [
+            "job_category_id"
           ],
           "columnsTo": [
             "id"
