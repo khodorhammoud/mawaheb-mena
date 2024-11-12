@@ -23,6 +23,7 @@ export async function createUserSession(
 ) {
   const session = await getSession(request.headers.get("cookie"));
   session.set("user", user);
+  console.log("======setting user", user);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
   if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
   return redirect("/dashboard", { headers }); // this is the session that direct me to the dashboard
@@ -32,7 +33,7 @@ export async function getUserSession(request: Request) {
   return getSession(request.headers.get("Cookie"));
 }
 
-export async function getCurrentUser(
+export async function getCurrentProfile(
   request: Request
 ): Promise<Employer | Freelancer> {
   const session = await getUserSession(request);

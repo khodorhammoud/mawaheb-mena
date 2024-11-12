@@ -1,1 +1,0 @@
-ALTER TABLE "employers" ADD COLUMN "budget" integer;

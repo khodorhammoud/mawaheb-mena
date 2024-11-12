@@ -5,7 +5,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import {
-  getCurrentEployerFreelancerInfo,
+  getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUser,
 } from "~/servers/user.server";
@@ -15,9 +15,9 @@ import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import {
   getAllIndustries,
-  getEmployerBio,
+  getAccountBio,
   getEmployerIndustries,
-  updateEmployerBio,
+  updateAccountBio,
   updateEmployerIndustries,
   updateEmployerYearsInBusiness,
   getEmployerYearsInBusiness,
@@ -37,13 +37,12 @@ import { createJobPosting } from "~/servers/job.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
+    console.log("action");
     const formData = await request.formData(); // always do this :)
-    const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
+    const target = formData.get("target-updated"); // for the if and else, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
-    const employer = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
+    const employer = (await getCurrentProfileInfo(request)) as Employer;
 
     // ABOUT
     if (target == "employer-about") {
@@ -67,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
         userId: userId,
       };
-      const bioStatus = await updateEmployerBio(bio, employer);
+      const bioStatus = await updateAccountBio(bio, employer.account);
       return json({ success: bioStatus.success });
     }
     // INDUSTRIES
@@ -83,9 +82,12 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({ success: industriesStatus.success });
     }
     // YEARS IN BUSINESS
-    if (target == "employer-years-in-business") {
-      const yearsInBusiness =
-        parseInt(formData.get("years-in-business") as string) || 0;
+    console.log("target", target);
+    if (target == "years-in-business") {
+      const fetchedValue = formData.get("years-in-business");
+      console.log("fetchedValue", fetchedValue);
+      const yearsInBusiness = parseInt(fetchedValue as string) || 0;
+
       const yearsStatus = await updateEmployerYearsInBusiness(
         employer,
         yearsInBusiness
@@ -126,20 +128,19 @@ export async function action({ request }: ActionFunctionArgs) {
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
         description: formData.get("jobDescription") as string,
-        jobCategoryId: parseInt(formData.get("jobCategory") as string) || null,
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
         requiredSkills: (formData.get("skills") as string)
           .split(",")
-          .map((skill) => skill.trim()),
+          .map((skill) => ({ name: skill.trim(), isStarred: false })),
+
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
 
         isDraft: false, // Set to false as it's being posted directly
         isActive: true,
-        isDeleted: false,
         isClosed: false,
         isPaused: false,
       };
@@ -175,7 +176,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect("/login-employer");
   }
   const accountType: AccountType = await getCurrentUserAccountType(request);
-  const employer = (await getCurrentEployerFreelancerInfo(request)) as Employer;
+  const employer = (await getCurrentProfileInfo(request)) as Employer;
 
   // !!IMPortant!! If the employer object is not available, return an error response early
   if (!employer) {
@@ -194,7 +195,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // Fetch all the necessary data safely
-  const bioInfo = await getEmployerBio(employer);
+  const bioInfo = await getAccountBio(employer.account);
   const employerIndustries = await getEmployerIndustries(employer);
   const allIndustries = (await getAllIndustries()) || [];
   const yearsInBusiness = await getEmployerYearsInBusiness(employer);

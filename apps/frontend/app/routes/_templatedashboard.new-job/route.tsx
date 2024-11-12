@@ -1,6 +1,6 @@
 import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { getCurrentEployerFreelancerInfo } from "~/servers/user.server";
+import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import NewJob from "./jobs/NewJob";
@@ -14,13 +14,11 @@ export async function loader() {
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    const formData = await request.formData();
-    const target = formData.get("target-updated");
-    const employer = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
-
-    if (target === "post-job") {
+    const formData = await request.formData(); // always do this :)
+    const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
+    const employer = (await getCurrentProfileInfo(request)) as Employer;
+    if (target == "post-job") {
+      // TODO: Add validation for the form fields
       const jobData: Job = {
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
@@ -31,13 +29,15 @@ export async function action({ request }: ActionFunctionArgs) {
         locationPreference: formData.get("location") as string,
         requiredSkills: (formData.get("jobSkills") as string)
           .split(",")
-          .map((skill) => skill.trim()),
+          .map((skill) => ({
+            name: skill.trim(), // Skill name from input
+            isStarred: false, // Default isStarred to false, or set dynamically if needed
+          })),
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
         isDraft: false,
         isActive: true,
-        isDeleted: false,
         isClosed: false,
         isPaused: false,
       };

@@ -141,6 +141,7 @@ AppFormField.propTypes = {
   ),
   className: PropTypes.string,
   col: PropTypes.number, // New prop for dynamic height of textarea
+  placeholderTextSize: PropTypes.string, // Prop type for custom placeholder text size
 };
 
 export default AppFormField;

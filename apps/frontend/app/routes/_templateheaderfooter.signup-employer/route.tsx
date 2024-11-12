@@ -2,7 +2,7 @@ import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import SignUpEmployerPage from "./Signup";
 import {
   generateVerificationToken,
-  getEmployerFreelancerInfo,
+  getProfileInfo,
   // registerEmployer,
 } from "../../servers/user.server";
 // import { EmployerAccountType } from "../../types/User";
@@ -19,7 +19,7 @@ export async function action({ request }: ActionFunctionArgs) {
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
     const user = await authenticator.authenticate("register", request);
-    newEmployer = (await getEmployerFreelancerInfo({
+    newEmployer = (await getProfileInfo({
       userId: user.account.user.id,
     })) as Employer;
   } catch (error) {
@@ -75,11 +75,16 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // get current logged in user
-  // If the user is already authenticated redirect to /dashboard directly
-  return await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
-  });
+  const user = await authenticator.isAuthenticated(request);
+
+  // SO !--IMPORTANT--!
+  // If the user is authenticated, redirect to the dashboard.
+  if (user) {
+    return json({ redirect: "/dashboard" });
+  }
+
+  // Otherwise, let them stay on the signup page.
+  return json({ success: false });
 }
 
 export default function Layout() {

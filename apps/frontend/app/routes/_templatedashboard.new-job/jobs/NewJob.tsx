@@ -18,11 +18,31 @@ export default function NewJob() {
   const navigation = useNavigation();
 
   const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [requiredSkills, setRequiredSkills] = useState([]); // Track selected skills
 
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level"];
+  const jobCategories = [
+    "Design",
+    "Programming",
+    "Writing",
+    "Marketing",
+    "Law",
+    "Communications",
+    "Health Care",
+    "Other",
+  ];
 
   const handleExperienceClick = (level) => {
     setSelectedExperience(level);
+  };
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const handleSkillsChange = (skills) => {
+    setRequiredSkills(skills); // Update selected skills
   };
 
   return (
@@ -35,16 +55,21 @@ export default function NewJob() {
 
           <Form
             method="post"
-            className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 md:gap-x-12 md:gap-y-6 w-full"
+            className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
-            {" "}
-            {/* Add w-full here */}
             <input type="hidden" name="target-updated" value="post-job" />
             <input
               type="hidden"
               name="experienceLevel"
               value={selectedExperience}
             />
+            <input type="hidden" name="jobCategory" value={selectedCategory} />
+            <input
+              type="hidden"
+              name="requiredSkills"
+              value={requiredSkills.map((skill) => skill.name).join(",")}
+            />
+
             <AppFormField
               type="text"
               id="jobTitle"
@@ -75,12 +100,9 @@ export default function NewJob() {
                 label="Location Preferences"
                 className="col-span-1 w-full"
               />
-              <AppFormField
-                type="text"
-                id="requiredSkills"
-                name="requiredSkills"
-                label="Required Skills"
-                className="col-span-1 w-full"
+              <RequiredSkills
+                selectedSkills={requiredSkills}
+                onChange={handleSkillsChange}
               />
               <AppFormField
                 type="select"
@@ -101,23 +123,43 @@ export default function NewJob() {
                 className="col-span-1 w-full"
               />
             </div>
+
+            {/* Job Category Section */}
             <div className="col-span-2 mt-6">
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label className="block md:text-2xl text-xl font-semibold mb-4">
                 Job Category
               </label>
-              <JobCategoryField />
+              <div className="flex flex-wrap gap-3">
+                {jobCategories.map((category) => (
+                  <Badge
+                    key={category}
+                    onClick={() => handleCategoryClick(category)}
+                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
+                      selectedCategory === category
+                        ? "bg-blue-100 text-blue-600 border-blue-600"
+                        : "text-gray-600 border-gray-300"
+                    }`}
+                  >
+                    {category}
+                  </Badge>
+                ))}
+              </div>
             </div>
+
+            {/* Experience Level Section */}
             <div className="col-span-2 mt-6">
-              <h3 className="text-lg font-semibold mb-2">Experience Level</h3>
+              <h3 className="block md:text-2xl text-xl font-semibold mb-4">
+                Experience Level
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {experienceLevels.map((level) => (
                   <Badge
                     key={level}
                     onClick={() => handleExperienceClick(level)}
-                    className={`cursor-pointer px-4 py-2 ${
+                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
                       selectedExperience === level
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-blue-100 text-blue-600 border-blue-600"
+                        : "text-gray-600 border-gray-300"
                     }`}
                   >
                     {level}
@@ -125,6 +167,8 @@ export default function NewJob() {
                 ))}
               </div>
             </div>
+
+            {/* Success or Error Message */}
             {actionData?.error && (
               <div className="text-red-600 mt-4 col-span-2">
                 {actionData.error.message}
@@ -135,11 +179,20 @@ export default function NewJob() {
                 Job posted successfully!
               </div>
             )}
+
+            {/* Buttons */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
-              <Button variant="outline" type="button">
+              <Button
+                variant="outline"
+                type="button"
+                className="text-primaryColor border-gray-300 not-active-gradient rounded-xl hover:text-white hover:bg-primaryColor"
+              >
                 Save as Draft
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                type="submit"
+                className="bg-primaryColor text-white not-active-gradient rounded-xl hover:text-white hover:bg-primaryColor"
+              >
                 {navigation.state === "submitting" ? "Posting..." : "Post Job"}
               </Button>
             </div>
