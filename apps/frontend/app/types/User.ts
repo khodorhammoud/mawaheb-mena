@@ -1,5 +1,6 @@
 import {
   AccountStatus,
+  AccountType,
   CompensationType,
   DayOfWeek,
   EmployerAccountType,
@@ -28,7 +29,7 @@ export interface PreferredWorkingTimes {
 
 export interface UserAccount {
   id: number;
-  accountType: EmployerAccountType;
+  accountType: AccountType;
   isCreationComplete: boolean;
   location?: string;
   country?: string;
@@ -40,7 +41,7 @@ export interface UserAccount {
   user: User;
 }
 
-export interface EmployerSocialMediaLinks {
+export interface AccountSocialMediaLinks {
   linkedin: string;
   github: string;
   gitlab: string;
@@ -65,7 +66,7 @@ export interface Employer {
   businessLicenseLink?: string;
   certificationOfIncorporationLink?: string;
   WebsiteURL?: string;
-  socialMediaLinks?: EmployerSocialMediaLinks;
+  socialMediaLinks?: AccountSocialMediaLinks;
   account?: UserAccount;
   isOnboarded: boolean; // this is used in the loader :)
 }
@@ -79,9 +80,10 @@ export interface Freelancer {
   cvLink?: string;
   videoLink?: string;
   certificatesLinks?: string[];
-  yearsOfExperience?: string;
+  yearsOfExperience?: number;
   languagesSpoken?: Language[];
   preferredProjectTypes?: ProjectType[];
+  hourlyRate?: number;
   compensationType?: CompensationType[];
   account?: UserAccount;
 }
@@ -93,11 +95,11 @@ export interface LoggedInUser {
   email: string;
 }
 
-export interface EmployerBio {
+export interface AccountBio {
   firstName: string;
   lastName: string;
   location: string;
-  socialMediaLinks: EmployerSocialMediaLinks;
+  socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
   userId: number; // Add this property
 }
@@ -111,4 +113,50 @@ export interface Industry {
 export interface JobCategory {
   id: number;
   label: string;
+}
+
+export interface LoaderFunctionError {
+  success: boolean;
+  error: {
+    message: string;
+  };
+  status: number;
+}
+
+/* 
+These fields names also control their respective HTML input fields names
+For example, we use the HTML input field name "employerBudget" to get/set the value for the employer budget
+*/
+export interface OnboardingEmployerFields {
+  accountType: AccountType;
+  bioInfo: AccountBio;
+  employerIndustries: Industry[];
+  allIndustries: Industry[];
+  currentProfile: Employer;
+  yearsInBusiness: number;
+  employerBudget: string;
+  about: string;
+  accountOnboarded: boolean;
+  activeJobCount: number;
+  draftedJobCount: number;
+  closedJobCount: number;
+  totalJobCount: number;
+}
+
+export interface OnboardingFreelancerFields {
+  accountType: AccountType;
+  bioInfo: AccountBio;
+  currentProfile: Freelancer;
+  about: string;
+  videoLink: string;
+  accountOnboarded: boolean;
+  hourlyRate: number;
+  yearsOfExperience: number;
+}
+
+export interface PortfolioFormFieldType {
+  projectName: string;
+  projectLink: string;
+  projectDescription: string;
+  projectImage: File | null;
 }

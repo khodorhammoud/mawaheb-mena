@@ -145,19 +145,19 @@ export async function getCurrentUserAccountInfo(
  * @param identifier : object containing the id of the user, the email of the user, the id of the account, or the id of the employer/freelancer. The function only accepts one of the identifiers.
  * @returns Employer | Freelancer | null: the employer or freelancer with the given id or null if the employer/freelancer does not exist.
  */
-type EmployerFreelancerIdentifier = {
+type ProfileIdentifier = {
   userId?: number;
   userEmail?: string;
   accountId?: number;
   // employerId?: number;
   // freelancerId?: number;
 };
-export async function getEmployerFreelancerInfo(
+export async function getProfileInfo(
   identifier: {
-    [K in keyof EmployerFreelancerIdentifier]: {
-      [P in K]: EmployerFreelancerIdentifier[P];
+    [K in keyof ProfileIdentifier]: {
+      [P in K]: ProfileIdentifier[P];
     };
-  }[keyof EmployerFreelancerIdentifier]
+  }[keyof ProfileIdentifier]
 ): Promise<Employer | Freelancer | null> {
   let account = null;
   let employer = null;
@@ -231,17 +231,16 @@ export async function getEmployerFreelancerInfo(
   return null;
 }
 
-export async function getCurrentEployerFreelancerInfo(
+export async function getCurrentProfileInfo(
   request: Request
 ): Promise<Employer | Freelancer | null> {
   const user = await getCurrentUser(request);
   if (!user) return null;
-  const currentEmployerFreelancer: Employer | Freelancer =
-    await getEmployerFreelancerInfo({
-      userId: user.id,
-    });
+  const currentProfile: Employer | Freelancer = await getProfileInfo({
+    userId: user.id,
+  });
 
-  return currentEmployerFreelancer;
+  return currentProfile;
 }
 
 /**
@@ -395,7 +394,7 @@ export async function registerEmployer({
     .insert(employersTable) // insert into employers table
     .values(newEmployer)
     .returning();
-  return (await getEmployerFreelancerInfo({
+  return (await getProfileInfo({
     accountId,
     // employerId: result[0].id,
   })) as Employer;
@@ -442,7 +441,7 @@ export async function registerFreelancer({
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
     .returning();
-  return (await getEmployerFreelancerInfo({
+  return (await getProfileInfo({
     // freelancerId: result[0].id,
     accountId,
   })) as Freelancer;
