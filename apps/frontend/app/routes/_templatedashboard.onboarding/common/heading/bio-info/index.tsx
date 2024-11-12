@@ -19,7 +19,7 @@ import {
   FaStackOverflow,
 } from "react-icons/fa";
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
-import { EmployerBio } from "~/types/User";
+import { AccountBio } from "~/types/User";
 import { parseHTTP } from "~/lib/utils";
 
 export default function Heading() {
@@ -33,7 +33,7 @@ export default function Heading() {
 
   // Load data
   const { bioInfo } = useLoaderData() as {
-    bioInfo: EmployerBio;
+    bioInfo: AccountBio;
   };
 
   // Refs for location and website input fields
@@ -162,7 +162,7 @@ export default function Heading() {
                     <Input
                       name="linkedin"
                       placeholder="LinkedIn"
-                      defaultValue={bioInfo.socialMediaLinks.linkedin}
+                      defaultValue={bioInfo.socialMediaLinks?.linkedin}
                     />
                     <FaLinkedinIn className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   </div>
@@ -171,7 +171,7 @@ export default function Heading() {
                   <div className="relative">
                     <Input
                       name="github"
-                      defaultValue={bioInfo.socialMediaLinks.github}
+                      defaultValue={bioInfo.socialMediaLinks?.github}
                       placeholder="GitHub"
                     />
                     <TbBrandGithubFilled className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -181,7 +181,7 @@ export default function Heading() {
                   <div className="relative">
                     <Input
                       name="gitlab"
-                      defaultValue={bioInfo.socialMediaLinks.gitlab}
+                      defaultValue={bioInfo.socialMediaLinks?.gitlab}
                       placeholder="GitLab"
                     />
                     <RiGitlabFill className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -191,7 +191,7 @@ export default function Heading() {
                   <div className="relative">
                     <Input
                       name="dribbble"
-                      defaultValue={bioInfo.socialMediaLinks.dribbble}
+                      defaultValue={bioInfo.socialMediaLinks?.dribbble}
                       placeholder="Dribbble"
                     />
                     <TbBrandDribbbleFilled className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -202,7 +202,7 @@ export default function Heading() {
                     <Input
                       name="stackoverflow"
                       placeholder="StackOverflow"
-                      defaultValue={bioInfo.socialMediaLinks.stackoverflow}
+                      defaultValue={bioInfo.socialMediaLinks?.stackoverflow}
                     />
                     <FaStackOverflow className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   </div>
