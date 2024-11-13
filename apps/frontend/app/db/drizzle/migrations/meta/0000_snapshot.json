@@ -1,5 +1,5 @@
 {
-  "id": "1f49edfa-23ef-4827-8ac5-2285f86c2789",
+  "id": "d2c464d8-66e5-4592-9a12-85bc052e80bf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -701,9 +701,10 @@
         },
         "required_skills": {
           "name": "required_skills",
-          "type": "text[]",
+          "type": "json",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'{}'::jsonb"
         },
         "project_type": {
           "name": "project_type",
