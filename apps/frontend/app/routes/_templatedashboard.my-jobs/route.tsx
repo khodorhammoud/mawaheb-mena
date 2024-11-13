@@ -1,6 +1,7 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import JobManagement from "./jobs-displaying";
+import { getJobs } from "~/servers/employer.server"; // Assume this is where your database fetching function resides
 
 interface Skill {
   name: string;
@@ -25,75 +26,12 @@ interface Job {
   createdAt?: string;
 }
 
-const dummyJobs: Job[] = [
-  {
-    id: 1,
-    employerId: 1,
-    title: "Frontend Developer",
-    description: "Developing UI components for a web app.",
-    workingHoursPerWeek: 40,
-    locationPreference: "Remote",
-    requiredSkills: [
-      { name: "React", isStarred: true },
-      { name: "TypeScript", isStarred: false },
-      { name: "CSS", isStarred: true },
-    ],
-    projectType: "Fixed",
-    budget: 3000,
-    experienceLevel: "Mid",
-    isActive: true,
-    isDraft: false,
-    isClosed: false,
-    isPaused: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    employerId: 2,
-    title: "Backend Developer",
-    description: "Implementing APIs and database operations.",
-    workingHoursPerWeek: 40,
-    locationPreference: "On-site",
-    requiredSkills: [
-      { name: "Node.js", isStarred: true },
-      { name: "Express", isStarred: false },
-      { name: "SQL", isStarred: true },
-    ],
-    projectType: "Hourly",
-    budget: 50,
-    experienceLevel: "Senior",
-    isActive: true,
-    isDraft: true,
-    isClosed: false,
-    isPaused: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    employerId: 3,
-    title: "UI/UX Designer",
-    description: "Designing user-friendly interfaces.",
-    workingHoursPerWeek: 30,
-    locationPreference: "Hybrid",
-    requiredSkills: [
-      { name: "Figma", isStarred: true },
-      { name: "Sketch", isStarred: false },
-      { name: "User Research", isStarred: true },
-    ],
-    projectType: "Fixed",
-    budget: 2000,
-    experienceLevel: "Entry",
-    isActive: true,
-    isDraft: false,
-    isClosed: false,
-    isPaused: true,
-    createdAt: new Date().toISOString(),
-  },
-];
-
-// Loader function with artificial delay
 export const loader: LoaderFunction = async () => {
-  return json({ jobs: dummyJobs });
+  // Fetch jobs from the database
+  const jobs = await getJobs(); // This function should return jobs in the format defined in `Job`
+
+  // Return the fetched jobs in the JSON response
+  return json({ jobs });
 };
 
 // Layout component

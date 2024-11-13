@@ -25,6 +25,8 @@ import {
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
+import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
+import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 
 export async function updateAccountBio(
   bio: AccountBio,
@@ -525,4 +527,26 @@ export async function getEmployerDashboardData(request: Request) {
     console.error("Error fetching employer dashboard data:", error);
     throw error; // Re-throw the error for further handling
   }
+}
+
+export async function getJobs(): Promise<Job[]> {
+  const jobs = await db.select().from(jobsTable).execute();
+
+  return jobs.map((job) => ({
+    id: job.id,
+    employerId: job.employerId,
+    title: job.title,
+    description: job.description,
+    workingHoursPerWeek: job.workingHoursPerWeek,
+    locationPreference: job.locationPreference,
+    requiredSkills: job.requiredSkills as Skill[],
+    projectType: job.projectType,
+    budget: job.budget,
+    experienceLevel: job.experienceLevel,
+    isActive: job.isActive,
+    isDraft: job.isDraft,
+    isClosed: job.isClosed,
+    isPaused: job.isPaused,
+    createdAt: job.createdAt?.toISOString(),
+  }));
 }
