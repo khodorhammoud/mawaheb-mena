@@ -44,10 +44,6 @@ import {
   updateFreelancerPortfolio,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
-import {
-  getFileFromBucket,
-  uploadFileToGoogleStorageBucket,
-} from "~/servers/cloudStorage.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -203,29 +199,17 @@ export async function action({ request }: ActionFunctionArgs) {
       // PORTFOLIO
       if (target == "freelancer-portfolio") {
         const portfolio = formData.get("portfolio") as string;
-        const projectNames = formData.getAll("projectName") as string[];
-        const projectLinks = formData.getAll("projectLink") as string[];
-        const projectDescriptions = formData.getAll(
-          "projectDescription"
-        ) as string[];
-
-        const projectImages = formData.getAll("projectImage") as File[];
-
-        console.log("=======projectNames", projectNames);
-        console.log("=======projectLinks", projectLinks);
-        console.log("=======projectDescriptions", projectDescriptions);
-        console.log("=======projectImages", projectImages);
 
         try {
           const portfolioParsed = JSON.parse(
             portfolio
           ) as PortfolioFormFieldType[];
-          console.log("portfolioParsed", portfolioParsed);
+
           const portfolioImages: File[] = [];
           // iterate over indexes of portfolioParsed and get the file type from the form
           for (let index = 0; index < portfolioParsed.length; index++) {
             const portfolioImage = formData.get(
-              `portfolio-projectImage[${index}]`
+              `portfolio-attachment[${index}]`
             ) as unknown as File;
             portfolioImages.push(portfolioImage ?? new File([], ""));
           }
