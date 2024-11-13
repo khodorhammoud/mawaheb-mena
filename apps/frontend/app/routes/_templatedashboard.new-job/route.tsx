@@ -41,9 +41,12 @@ export async function action({ request }: ActionFunctionArgs) {
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
-        requiredSkills: (formData.get("jobSkills") as string)
-          .split(",")
-          .map((skill) => skill.trim()),
+        requiredSkills: (formData.getAll("jobSkills") as string[]).map(
+          (skill) => ({
+            name: skill.trim(),
+            isStarred: false, // Default value for isStarred
+          })
+        ),
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
@@ -151,7 +154,7 @@ export default function JobPostingForm() {
                 name="workingHours"
                 value={workingHours}
                 type="number"
-                onChange={(e) => setWorkingHours(e.target.value)}
+                onChange={(e) => setWorkingHours(Number(e.target.value))}
                 required
               />
               <Input
