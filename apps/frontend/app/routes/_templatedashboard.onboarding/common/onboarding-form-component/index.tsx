@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "~/components/ui/card";
+} from "~/common/header/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import RangeComponent from "./RangeComponent";
