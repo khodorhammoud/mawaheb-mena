@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"job_category_id" integer,
 	"working_hours_per_week" integer,
 	"location_preference" text,
-	"required_skills" text[],
+	"required_skills" json DEFAULT '{}'::jsonb NOT NULL,
 	"project_type" "project_type",
 	"budget" integer,
 	"experience_level" text,
