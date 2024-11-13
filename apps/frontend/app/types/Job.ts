@@ -8,7 +8,7 @@ export interface Job {
   employerId: number;
   title: string;
   description: string;
-  jobCategoryId?: number; // Add this line to match the jobData structure
+  jobCategoryId?: number;
   workingHoursPerWeek: number;
   locationPreference: string;
   requiredSkills: Skill[];

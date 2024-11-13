@@ -281,7 +281,7 @@ export const employerIndustriesTable = pgTable("employer_industries", {
 export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
   label: text("label"),
-  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
