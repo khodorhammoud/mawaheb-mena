@@ -161,3 +161,9 @@ export interface PortfolioFormFieldType {
   projectImage: File | null;
   projectImageUrl: string | null;
 }
+
+export interface WorkHistoryFormFieldType {}
+
+export interface CertificatesFormFieldType {}
+
+export interface EducationFormFieldType {}

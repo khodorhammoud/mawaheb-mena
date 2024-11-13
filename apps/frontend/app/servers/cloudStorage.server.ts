@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { hash } from "bcrypt-ts";
 function getStorage() {
   const storage = new Storage({
     projectId: process.env.GOOGLE_PROJECT_ID,
@@ -7,6 +6,17 @@ function getStorage() {
   });
   return storage;
 }
+
+// format the date in YYYY-MM-DDTHH:mm:ss format and then concatenated with milliseconds.
+const formatDateWithMilliseconds = () => {
+  const now = new Date();
+  const dateString = now
+    .toLocaleString("sv", { timeZoneName: "short" })
+    .replace(/[-:T\s]/g, "")
+    .slice(0, 14);
+  const milliseconds = String(now.getMilliseconds()).padStart(3, "0");
+  return `${dateString}${milliseconds}`;
+};
 
 export async function getFileFromBucket(fileName: string) {
   const storage = getStorage();
@@ -23,13 +33,13 @@ export async function getFileFromBucket(fileName: string) {
   return url;
 }
 
-export async function uploadFileToBucket(fileName: string, file: File) {
+export async function uploadFileToBucket(prefix: string, file: File) {
   const storage = getStorage();
   const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME;
   const bucket = storage.bucket(bucketName);
   const fileBuffer = Buffer.from(await file.arrayBuffer());
-  // generate a hash for the file name to avoid conflicts, created with hash and signature date
-  const fileNameWithHash = `${hash(fileName, 10)}-${Date.now()}`;
+  // generate a unique file name to avoid conflicts, format: ${prefix}-${date formatted as YYYYMMDDHHmmss}
+  const fileNameWithHash = `${prefix}-${formatDateWithMilliseconds()}`;
   const blob = bucket.file(fileNameWithHash);
   const blobStream = blob.createWriteStream({
     metadata: {

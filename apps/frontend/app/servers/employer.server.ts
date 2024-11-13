@@ -108,29 +108,17 @@ export async function updateFreelancerPortfolio(
   portfolio: PortfolioFormFieldType[],
   portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
+  console.log("portfolioImages", portfolioImages);
   try {
     // upload portfolio Images
-    const portfolioImagesUrls: string[] = [];
-    for (const image of portfolioImages) {
-      // check if the image is not empty
-      if (image.size > 0) {
-        const imageUrl = await uploadFileToBucket(image.name, image);
-        portfolioImagesUrls.push(imageUrl.fileName);
+    for (let i = 0; i < portfolioImages.length; i++) {
+      const file = portfolioImages[i];
+      if (file && file.size > 0) {
+        portfolio[i].projectImageUrl = (
+          await uploadFileToBucket("portfolio", file)
+        ).fileName;
       } else {
-        portfolioImagesUrls.push("");
-      }
-    }
-
-    console.log("=======///========portfolioImagesUrls", portfolioImagesUrls);
-
-    // loop over portfolios, upload the image to google storage and update the portfolio with the image url
-    for (const project of portfolio) {
-      if (project.projectImage) {
-        const imageUrl = await uploadFileToBucket(
-          project.projectImage.name,
-          project.projectImage
-        );
-        project.projectImageUrl = imageUrl.fileName;
+        portfolio[i].projectImageUrl = "";
       }
     }
 
