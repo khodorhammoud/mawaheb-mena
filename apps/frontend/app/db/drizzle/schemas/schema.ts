@@ -315,6 +315,7 @@ export const jobsTable = pgTable("jobs", {
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
   // Updated requiredSkills to be an array of JSON objects
+  // TODO: remove required skills since we are using job_skills table
   requiredSkills: json("required_skills")
     .array()
     .notNull()
