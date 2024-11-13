@@ -21,6 +21,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  jobStatusEnum,
   // locationPreferenceTypeEnum,
   // experienceLevelEnum,
 } from "./schemaTypes";
@@ -298,11 +299,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property project_type - projectTypeEnum
  * @property budget - integer
  * @property experience_level - experienceLevelEnum
- * @property is_active - boolean
- * @property is_deleted - boolean
- * @property is_draft - boolean
- * @property is_closed - boolean
- * @property is_paused - boolean
+ * @property status - jobStatusEnum
  * @property created_at - timestamp
  */
 
@@ -327,11 +324,7 @@ export const jobsTable = pgTable("jobs", {
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
   //experienceLevelEnum("experience_level"),
-  isActive: boolean("is_active").default(false),
-  isDeleted: boolean("is_deleted").default(false),
-  isDraft: boolean("is_draft").default(true),
-  isClosed: boolean("is_closed").default(false),
-  isPaused: boolean("is_paused").default(false),
+  status: jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
