@@ -6,7 +6,7 @@ export interface Job {
   employerId: number;
   title: string;
   description: string;
-  jobCategoryId: number;
+  jobCategoryId?: number;
   workingHoursPerWeek: number;
   locationPreference: string;
   requiredSkills: Skill[];
