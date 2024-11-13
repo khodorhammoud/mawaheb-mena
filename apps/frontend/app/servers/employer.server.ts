@@ -25,6 +25,7 @@ import {
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
+import { uploadFileToBucket } from "./cloudStorage.server";
 
 export async function updateAccountBio(
   bio: AccountBio,
@@ -104,9 +105,35 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
 
 export async function updateFreelancerPortfolio(
   freelancer: Freelancer,
-  portfolio: PortfolioFormFieldType[]
+  portfolio: PortfolioFormFieldType[],
+  portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
+    // upload portfolio Images
+    const portfolioImagesUrls: string[] = [];
+    for (const image of portfolioImages) {
+      // check if the image is not empty
+      if (image.size > 0) {
+        const imageUrl = await uploadFileToBucket(image.name, image);
+        portfolioImagesUrls.push(imageUrl.fileName);
+      } else {
+        portfolioImagesUrls.push("");
+      }
+    }
+
+    console.log("=======///========portfolioImagesUrls", portfolioImagesUrls);
+
+    // loop over portfolios, upload the image to google storage and update the portfolio with the image url
+    for (const project of portfolio) {
+      if (project.projectImage) {
+        const imageUrl = await uploadFileToBucket(
+          project.projectImage.name,
+          project.projectImage
+        );
+        project.projectImageUrl = imageUrl.fileName;
+      }
+    }
+
     const res = await db
       .update(freelancersTable)
       .set({

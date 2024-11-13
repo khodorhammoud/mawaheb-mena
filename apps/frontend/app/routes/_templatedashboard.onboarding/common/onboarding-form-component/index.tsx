@@ -50,7 +50,8 @@ const portfolioFormFields: PortfolioFormFieldType = {
   projectName: "",
   projectLink: "",
   projectDescription: "",
-  projectImage: null,
+  projectImage: new File([], "test.png"),
+  projectImageUrl: "",
 };
 
 interface PortfolioComponentProps {
@@ -73,6 +74,7 @@ function PortfolioComponent({
           className="w-1/2 border-gray-300 rounded-md"
           value={data.projectName}
           onChange={(e) => onChange({ ...data, projectName: e.target.value })}
+          name="projectName[]"
         />
         <Input
           type="url"
@@ -80,6 +82,7 @@ function PortfolioComponent({
           className="w-1/2 border-gray-300 rounded-md"
           value={data.projectLink}
           onChange={(e) => onChange({ ...data, projectLink: e.target.value })}
+          name="projectLink[]"
         />
       </div>
       <div className="w-full border-dashed border-gray-300 border rounded-md p-6 flex justify-center items-center cursor-pointer">
@@ -89,6 +92,8 @@ function PortfolioComponent({
           <input
             type="file"
             className="hidden"
+            name="projectImage[]"
+            accept="image/*"
             onChange={(e) =>
               onChange({
                 ...data,
@@ -104,6 +109,7 @@ function PortfolioComponent({
         className="w-full border-gray-300 rounded-md p-3"
         rows={4}
         maxLength={2000}
+        name="projectDescription[]"
         value={data.projectDescription}
         onChange={(e) =>
           onChange({ ...data, projectDescription: e.target.value })
@@ -134,6 +140,8 @@ function GeneralizableFormCard({
   >();
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const [dummyFile, setDummyFile] = useState<File | null>(null);
 
   /* 
   set the initial value of the input field based on the form type
@@ -178,9 +186,42 @@ function GeneralizableFormCard({
     index: number,
     updatedData: PortfolioFormFieldType
   ) => {
+    // Create a new array to avoid mutating the existing state
     const updatedInputValues = [...repeatableInputValues];
-    updatedInputValues[index] = updatedData;
+
+    // Ensure the File object is preserved
+    updatedInputValues[index] = {
+      ...updatedInputValues[index],
+      ...updatedData,
+    };
+
+    // // Update the state
     setRepeatableInputValues(updatedInputValues);
+
+    setDummyFile(updatedData.projectImage);
+    setTimeout(() => {
+      console.log("=======updatedInputValues", updatedInputValues);
+    }, 1000);
+
+    console.log("=======updatedData", updatedData);
+    setRepeatableInputValues((prevInputValues) => {
+      // Return a new array with the updated data
+      return prevInputValues.map((item, i) => {
+        if (i === index) {
+          console.log("=======updating file to", updatedData.projectImage);
+          return {
+            ...item,
+            ...updatedData,
+            // projectImage: updatedData.projectImage,
+          };
+        }
+        return item; // Return other items unchanged
+      });
+    });
+    // wait 100 ms
+    setTimeout(() => {
+      console.log("=======repeatableInputValues", repeatableInputValues);
+    }, 1000);
   };
 
   // Initialize repeatable fields with existing data
@@ -189,7 +230,7 @@ function GeneralizableFormCard({
       if (initialData && initialData[fieldName]) {
         setRepeatableInputValues(initialData[fieldName]);
       } else {
-        handleAddRepeatableField();
+        setRepeatableInputValues([portfolioFormFields]);
       }
     }
   }, [formType, initialData, fieldName]);
@@ -211,6 +252,36 @@ function GeneralizableFormCard({
   }, [fetcher.data]);
 
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(formRef.current!);
+    repeatableInputValues.forEach((dataItem, index) => {
+      formData.append(
+        `${fieldName}[${index}][projectName]`,
+        dataItem.projectName
+      );
+      formData.append(
+        `${fieldName}[${index}][projectLink]`,
+        dataItem.projectLink
+      );
+      formData.append(
+        `${fieldName}[${index}][projectDescription]`,
+        dataItem.projectDescription
+      );
+      if (dataItem.projectImage) {
+        formData.append(
+          `${fieldName}[${index}][projectImage]`,
+          dataItem.projectImage
+        );
+      }
+    });
+    console.log("=======formData", formData);
+    fetcher.submit(formData, {
+      method: "post",
+      encType: "multipart/form-data",
+    });
+  };
 
   const handleIncrement = (step: number) => {
     fetcher.submit(
@@ -460,16 +531,26 @@ function GeneralizableFormCard({
               <span className="block sm:inline">updated successfully</span>
             </div>
           )}
-          <fetcher.Form method="post" className="space-y-6" ref={formRef}>
+          <fetcher.Form
+            method="post"
+            className="space-y-6"
+            ref={formRef}
+            {...(formType === "repeatable"
+              ? { encType: "multipart/form-data" }
+              : {})}
+            // onSubmit={handleSubmit}
+          >
             <input type="hidden" name="target-updated" value={formName} />
             {renderFormField()}
-            {formType === "repeatable" && (
-              <input
-                type="hidden"
-                name={fieldName}
-                value={JSON.stringify(repeatableInputValues)}
-              />
-            )}
+            {/* {formType === "repeatable" && (
+              <>
+                <input
+                  type="hidden"
+                  name={fieldName}
+                  value={JSON.stringify(repeatableInputValues)}
+                />
+              </>
+            )} */}
             <DialogFooter>
               <Button
                 type="submit"

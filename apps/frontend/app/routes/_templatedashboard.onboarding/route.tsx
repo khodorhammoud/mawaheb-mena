@@ -1,6 +1,6 @@
 import EmployerOnboardingScreen from "./employer";
 import FreelancerOnboardingScreen from "./freelancer";
-import { json, redirect, useLoaderData } from "@remix-run/react";
+import { redirect, useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import Header from "../_templatedashboard/header";
 import {
@@ -44,6 +44,10 @@ import {
   updateFreelancerPortfolio,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
+import {
+  getFileFromBucket,
+  uploadFileToGoogleStorageBucket,
+} from "~/servers/cloudStorage.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -61,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (target == "employer-about") {
         const aboutContent = formData.get("about") as string;
         const aboutStatus = await updateEmployerAbout(employer, aboutContent);
-        return json({ success: aboutStatus.success });
+        return Response.json({ success: aboutStatus.success });
       }
       // BIO
       if (target == "employer-bio") {
@@ -80,7 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
           userId: userId,
         };
         const bioStatus = await updateAccountBio(bio, employer.account);
-        return json({ success: bioStatus.success });
+        return Response.json({ success: bioStatus.success });
       }
       // INDUSTRIES
       if (target == "employer-industries") {
@@ -92,7 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
           employer,
           industriesIds
         );
-        return json({ success: industriesStatus.success });
+        return Response.json({ success: industriesStatus.success });
       }
       // YEARS IN BUSINESS
       if (target == "employer-years-in-business") {
@@ -103,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
           employer,
           yearsInBusiness
         );
-        return json({ success: yearsStatus.success });
+        return Response.json({ success: yearsStatus.success });
       }
       // BUDGET
       if (target == "employer-budget") {
@@ -111,14 +115,14 @@ export async function action({ request }: ActionFunctionArgs) {
         const budget = parseInt(budgetValue as string, 10);
 
         const budgetStatus = await updateEmployerBudget(employer, budget);
-        return json({ success: budgetStatus.success });
+        return Response.json({ success: budgetStatus.success });
       }
       // ONBOARDING -> TRUE ✅
       if (target == "employer-onboard") {
         const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
         if (!userExists.length)
-          return json({
+          return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
@@ -127,7 +131,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await updateOnboardingStatus(userId);
         return result.length
           ? redirect("/dashboard")
-          : json({
+          : Response.json({
               success: false,
               error: { message: "Failed to update onboarding status" },
 
@@ -144,7 +148,7 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           hourlyRate
         );
-        return json({ success: hourlyRateStatus.success });
+        return Response.json({ success: hourlyRateStatus.success });
       }
 
       // YEARS OF EXPERIENCE
@@ -155,7 +159,7 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           yearsExperience
         );
-        return json({ success: yearsStatus.success });
+        return Response.json({ success: yearsStatus.success });
       }
 
       // ABOUT
@@ -165,7 +169,7 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           aboutContent
         );
-        return json({ success: aboutStatus.success });
+        return Response.json({ success: aboutStatus.success });
       }
       // VIDEO LINK
       if (target == "freelancer-video") {
@@ -174,7 +178,7 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer.id,
           videoLink
         );
-        return json({ success: videoStatus.success });
+        return Response.json({ success: videoStatus.success });
       }
 
       // BIO
@@ -194,24 +198,46 @@ export async function action({ request }: ActionFunctionArgs) {
           userId: userId,
         };
         const bioStatus = await updateAccountBio(bio, freelancer.account);
-        return json({ success: bioStatus.success });
+        return Response.json({ success: bioStatus.success });
       }
       // PORTFOLIO
       if (target == "freelancer-portfolio") {
         const portfolio = formData.get("portfolio") as string;
+        const projectNames = formData.getAll("projectName") as string[];
+        const projectLinks = formData.getAll("projectLink") as string[];
+        const projectDescriptions = formData.getAll(
+          "projectDescription"
+        ) as string[];
+
+        const projectImages = formData.getAll("projectImage") as File[];
+
+        console.log("=======projectNames", projectNames);
+        console.log("=======projectLinks", projectLinks);
+        console.log("=======projectDescriptions", projectDescriptions);
+        console.log("=======projectImages", projectImages);
+
         try {
           const portfolioParsed = JSON.parse(
             portfolio
           ) as PortfolioFormFieldType[];
           console.log("portfolioParsed", portfolioParsed);
-          return json({ success: true });
-          // const portfolioStatus = await updateFreelancerPortfolio(
-          //   freelancer,
-          //   portfolioParsed
-          // );
-          // return json({ success: portfolioStatus.success });
+          const portfolioImages: File[] = [];
+          // iterate over indexes of portfolioParsed and get the file type from the form
+          for (let index = 0; index < portfolioParsed.length; index++) {
+            const portfolioImage = formData.get(
+              `portfolio-projectImage[${index}]`
+            ) as unknown as File;
+            portfolioImages.push(portfolioImage ?? new File([], ""));
+          }
+          console.log("=======before portfolioImages", portfolioImages);
+          const portfolioStatus = await updateFreelancerPortfolio(
+            freelancer,
+            portfolioParsed,
+            portfolioImages
+          );
+          return Response.json({ success: portfolioStatus.success });
         } catch (error) {
-          return json({
+          return Response.json({
             success: false,
             error: { message: "Invalid portfolio data." },
             status: 400,
@@ -224,7 +250,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
         if (!userExists.length)
-          return json({
+          return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
@@ -233,7 +259,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await updateOnboardingStatus(userId);
         return result.length
           ? redirect("/dashboard")
-          : json({
+          : Response.json({
               success: false,
               error: { message: "Failed to update onboarding status" },
 
@@ -244,7 +270,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // DEFAULT
     throw new Error("Unknown target update");
   } catch (error) {
-    return json({
+    return Response.json({
       success: false,
       error: { message: "An unexpected error occurred." },
       status: 500,
@@ -268,7 +294,7 @@ export async function loader({
   let profile = await getCurrentProfileInfo(request);
 
   if (!profile) {
-    return json({
+    return Response.json({
       success: false,
       error: { message: "Profile information not found." },
       status: 404,
@@ -299,7 +325,7 @@ export async function loader({
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
     // Return the response data
-    return json({
+    return Response.json({
       accountType,
       bioInfo,
       employerIndustries,
@@ -322,7 +348,7 @@ export async function loader({
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
 
-    return json({
+    return Response.json({
       accountType,
       bioInfo,
       currentProfile: profile,
@@ -333,7 +359,7 @@ export async function loader({
       yearsOfExperience: profile.yearsOfExperience,
     });
   }
-  return json({
+  return Response.json({
     success: false,
     error: { message: "Account type not found." },
     status: 404,
