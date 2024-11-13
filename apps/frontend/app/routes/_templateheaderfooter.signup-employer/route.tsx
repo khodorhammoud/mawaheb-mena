@@ -75,11 +75,16 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // get current logged in user
-  // If the user is already authenticated redirect to /dashboard directly
-  return await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
-  });
+  const user = await authenticator.isAuthenticated(request);
+
+  // SO !--IMPORTANT--!
+  // If the user is authenticated, redirect to the dashboard.
+  if (user) {
+    return json({ redirect: "/dashboard" });
+  }
+
+  // Otherwise, let them stay on the signup page.
+  return json({ success: false });
 }
 
 export default function Layout() {
