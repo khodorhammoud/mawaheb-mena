@@ -12,9 +12,8 @@ import {
   LoaderFunctionArgs,
   MetaFunction,
 } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import stylesheet from "~/tailwind.css?url";
-import appStylesheet from "~/styles/app-global.css?url";
+import stylesheet from "./tailwind.css?url";
+import appStylesheet from "./styles/app-global.css?url";
 import i18nServer, { localeCookie } from "~/lib/i18n.server";
 import { useChangeLanguage } from "remix-i18next/react";
 import { useTranslation } from "react-i18next";
@@ -23,7 +22,7 @@ export const handle = { i18n: ["translation"] };
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // const locale = await i18nServer.getLocale(request);
-  // return json(
+  // return Response.json(
   //   { locale },
   //   { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
   // );
