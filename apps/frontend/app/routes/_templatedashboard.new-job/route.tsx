@@ -5,11 +5,21 @@ import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import NewJob from "./jobs/NewJob";
 
+interface JobCategory {
+  id: number;
+  label: string;
+}
+
+// Define the type for the loader's response
+export interface LoaderData {
+  jobCategories: JobCategory[];
+}
+
 export async function loader() {
   const jobCategories = await getAllJobCategories();
-  return {
+  return json<LoaderData>({
     jobCategories: jobCategories || [],
-  };
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -30,8 +40,8 @@ export async function action({ request }: ActionFunctionArgs) {
         requiredSkills: (formData.get("jobSkills") as string)
           .split(",")
           .map((skill) => ({
-            name: skill.trim(), // Skill name from input
-            isStarred: false, // Default isStarred to false, or set dynamically if needed
+            name: skill.trim(),
+            isStarred: false,
           })),
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,

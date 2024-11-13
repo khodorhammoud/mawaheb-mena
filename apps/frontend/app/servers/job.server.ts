@@ -37,7 +37,6 @@ export async function createJobPosting(
         experienceLevel: jobData.experienceLevel,
         isDraft: jobData.isDraft,
         isActive: jobData.isActive,
-        isDeleted: jobData.isDeleted,
         isClosed: jobData.isClosed,
         isPaused: jobData.isPaused,
       })
