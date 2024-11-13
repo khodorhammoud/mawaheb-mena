@@ -6,10 +6,11 @@ import JobCategoryField from "./job-category";
 import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
 import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "./required-skills";
-import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
+import { JobStatus } from "~/types/enums";
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
@@ -46,12 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
-
-        isDraft: false, // Set to false as it's being posted directly
-        isActive: true,
-        isDeleted: false,
-        isClosed: false,
-        isPaused: false,
+        status: JobStatus.Active,
       };
 
       const jobStatus = await createJobPosting(jobData);
@@ -59,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (jobStatus.success) {
         return redirect("/dashboard");
       } else {
-        return json(
+        return Response.json(
           {
             success: false,
             error: { message: "Failed to create job posting" },
@@ -72,7 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
     throw new Error("Unknown target update");
   } catch (error) {
     console.error("error while creating a job", error);
-    return json(
+    return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }
     );

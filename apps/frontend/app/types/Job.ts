@@ -1,3 +1,5 @@
+import { JobStatus } from "./enums";
+
 interface Skill {
   name: string;
   isStarred: boolean;
@@ -14,9 +16,6 @@ export interface Job {
   projectType: string;
   budget: number;
   experienceLevel: string;
-  isActive: boolean;
-  isDraft: boolean;
-  isClosed: boolean;
-  isPaused: boolean;
+  status: JobStatus;
   createdAt?: string; // Keep as string for JSON compatibility
 }
