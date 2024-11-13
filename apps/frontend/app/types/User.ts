@@ -159,4 +159,5 @@ export interface PortfolioFormFieldType {
   projectLink: string;
   projectDescription: string;
   projectImage: File | null;
+  projectImageUrl: string | null;
 }

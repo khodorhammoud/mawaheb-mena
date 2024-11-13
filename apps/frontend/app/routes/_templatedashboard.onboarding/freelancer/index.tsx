@@ -60,19 +60,28 @@ export default function EmployerOnboardingScreen() {
             fieldName="introductoryVideo"
           />
 
+          {/* About */}
+          <GeneralizableFormCard
+            formType="textArea"
+            cardTitle="About"
+            popupTitle="Introduce Yourself"
+            triggerLabel="Add Bio"
+            formName="freelancer-about"
+            fieldName="about"
+          />
+        </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
           {/* Portfolio */}
           <GeneralizableFormCard
             formType="repeatable"
-            cardTitle="repeatable"
+            cardTitle="Projects"
             popupTitle="Add Average Budget"
-            triggerLabel="Add Bio"
+            cardSubtitle="Upload your portfolio pieces and projects and let your work speak for itself."
+            triggerLabel="Add Projects"
             formName="freelancer-portfolio"
             fieldName="portfolio"
             repeatableFieldName="portfolio"
           />
-        </div>
-        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
-          {/* About */}
         </div>
         {/* 
         </div>
