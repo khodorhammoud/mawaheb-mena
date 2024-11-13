@@ -320,9 +320,8 @@ export const jobsTable = pgTable("jobs", {
 
   // Updated requiredSkills to be an array of JSON objects
   requiredSkills: json("required_skills")
-    .array()
     .notNull()
-    .default(sql`'[]'::jsonb[]`),
+    .default(sql`'{}'::jsonb`),
 
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
