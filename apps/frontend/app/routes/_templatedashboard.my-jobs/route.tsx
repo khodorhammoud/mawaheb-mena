@@ -1,37 +1,15 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import JobManagement from "./jobs-displaying";
 import { getJobs } from "~/servers/employer.server"; // Assume this is where your database fetching function resides
-
-interface Skill {
-  name: string;
-  isStarred: boolean;
-}
-
-interface Job {
-  id?: number;
-  employerId: number;
-  title: string;
-  description: string;
-  workingHoursPerWeek: number;
-  locationPreference: string;
-  requiredSkills: Skill[];
-  projectType: string;
-  budget: number;
-  experienceLevel: string;
-  isActive: boolean;
-  isDraft: boolean;
-  isClosed: boolean;
-  isPaused: boolean;
-  createdAt?: string;
-}
+import { Job } from "~/types/Job";
 
 export const loader: LoaderFunction = async () => {
   // Fetch jobs from the database
   const jobs = await getJobs(); // This function should return jobs in the format defined in `Job`
 
   // Return the fetched jobs in the JSON response
-  return json({ jobs });
+  return Response.json({ jobs });
 };
 
 // Layout component
