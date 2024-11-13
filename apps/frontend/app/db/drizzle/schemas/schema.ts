@@ -281,7 +281,7 @@ export const employerIndustriesTable = pgTable("employer_industries", {
 export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
   label: text("label"),
-  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
@@ -320,9 +320,8 @@ export const jobsTable = pgTable("jobs", {
 
   // Updated requiredSkills to be an array of JSON objects
   requiredSkills: json("required_skills")
-    .array()
     .notNull()
-    .default(sql`'[]'::jsonb[]`),
+    .default(sql`'{}'::jsonb`),
 
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
