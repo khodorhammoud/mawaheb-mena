@@ -24,6 +24,7 @@ import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   CertificateFormFieldType,
+  EducationFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
@@ -193,6 +194,28 @@ export async function updateFreelancerWorkHistory(
     return { success: true };
   } catch (error) {
     console.error("Error updating freelancer work history", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerEducation(
+  freelancer: Freelancer,
+  education: EducationFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    console.log("saving education", education);
+    const res = await db
+      .update(freelancersTable)
+      .set({ educations: JSON.stringify(education) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer education");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer education", error);
     throw error;
   }
 }

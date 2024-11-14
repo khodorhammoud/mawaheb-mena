@@ -28,6 +28,7 @@ import PortfolioComponent from "./PortfolioComponent";
 import WorkHistoryComponent from "./WorkHistory";
 import CertificateComponent from "./CertificateComponent";
 import { motion, AnimatePresence } from "framer-motion";
+import EducationComponent from "./EducationComponent";
 
 interface GeneralizableFormCardProps {
   formType:
@@ -116,7 +117,11 @@ function GeneralizableFormCard({
     attachmentUrl: "",
   };
 
-  // const educationFormFields: EducationFormFieldType = {};
+  const educationFormFields: EducationFormFieldType = {
+    degree: "",
+    institution: "",
+    graduationYear: 0,
+  };
 
   // =========== end of repeatable fields default values =============
 
@@ -138,22 +143,28 @@ function GeneralizableFormCard({
   const handleAddRepeatableField = () => {
     switch (repeatableFieldName) {
       case "portfolio":
-        setRepeatableInputValues([
-          ...repeatableInputValues,
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as PortfolioFormFieldType[]),
           { ...portfolioFormFields },
         ]);
 
         break;
       case "workHistory":
-        setRepeatableInputValues([
-          ...repeatableInputValues,
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as WorkHistoryFormFieldType[]),
           { ...workHistoryFormFields },
         ]);
         break;
       case "certificates":
-        setRepeatableInputValues([
-          ...repeatableInputValues,
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as CertificateFormFieldType[]),
           { ...certificatesFormFields },
+        ]);
+        break;
+      case "educations":
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as EducationFormFieldType[]),
+          { ...educationFormFields },
         ]);
         break;
       default:
@@ -165,7 +176,8 @@ function GeneralizableFormCard({
 
   const handleRemoveRepeatableField = (index: number) => {
     setRepeatableInputValues(
-      repeatableInputValues.filter((_, i) => i !== index)
+      (prevValues) =>
+        prevValues.filter((_, i) => i !== index) as typeof repeatableInputValues
     );
     setRepeatableInputFiles(repeatableInputFiles.filter((_, i) => i !== index));
     setExpandedIndex(null); // Collapse all fields after removal
@@ -181,18 +193,16 @@ function GeneralizableFormCard({
       | PortfolioFormFieldType
       | WorkHistoryFormFieldType
       | CertificateFormFieldType
+      | EducationFormFieldType
   ) => {
-    // Create a new array to avoid mutating the existing state
-    const updatedInputValues = [...repeatableInputValues];
-
-    // Ensure the File object is preserved
-    updatedInputValues[index] = {
-      ...updatedInputValues[index],
-      ...updatedData,
-    };
-
-    // Update the state
-    setRepeatableInputValues(updatedInputValues);
+    setRepeatableInputValues((prevValues) => {
+      const updatedInputValues = [...prevValues];
+      updatedInputValues[index] = {
+        ...updatedInputValues[index],
+        ...updatedData,
+      };
+      return updatedInputValues as typeof prevValues;
+    });
   };
 
   const handleFileChange = (index: number, file: File) => {
@@ -221,6 +231,12 @@ function GeneralizableFormCard({
           file.name;
         setRepeatableInputValues(updatedInputValues);
         break;
+      case "educations":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as EducationFormFieldType[];
+        setRepeatableInputValues(updatedInputValues);
+        break;
       default:
         break;
     }
@@ -237,7 +253,8 @@ function GeneralizableFormCard({
           const repeatableData = JSON.parse(initialData[fieldName]) as
             | PortfolioFormFieldType[]
             | WorkHistoryFormFieldType[]
-            | CertificateFormFieldType[];
+            | CertificateFormFieldType[]
+            | EducationFormFieldType[];
           setRepeatableInputValues(repeatableData);
           setRepeatableInputFiles(repeatableData.map(() => null));
           dataParsed = true;
@@ -255,6 +272,9 @@ function GeneralizableFormCard({
             break;
           case "certificates":
             setRepeatableInputValues([certificatesFormFields]);
+            break;
+          case "educations":
+            setRepeatableInputValues([educationFormFields]);
             break;
         }
         setRepeatableInputFiles([null]);
@@ -493,6 +513,13 @@ function GeneralizableFormCard({
                               }
                               onFileChange={(file) =>
                                 handleFileChange(index, file)
+                              }
+                            />
+                          ) : repeatableFieldName === "educations" ? (
+                            <EducationComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
                               }
                             />
                           ) : null}

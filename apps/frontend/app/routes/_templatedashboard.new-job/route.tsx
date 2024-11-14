@@ -155,7 +155,7 @@ export default function JobPostingForm() {
                 name="workingHours"
                 value={workingHours}
                 type="number"
-                onChange={(e) => setWorkingHours(e.target.value)}
+                onChange={(e) => setWorkingHours(parseInt(e.target.value))}
                 required
               />
               <Input

@@ -81,6 +81,7 @@ export interface Freelancer {
   cvLink?: string;
   videoLink?: string;
   certificates?: CertificateFormFieldType[];
+  educations?: EducationFormFieldType[];
   yearsOfExperience?: number;
   languagesSpoken?: Language[];
   preferredProjectTypes?: ProjectType[];
@@ -156,6 +157,7 @@ export interface OnboardingFreelancerFields {
   portfolio?: PortfolioFormFieldType[];
   workHistory?: WorkHistoryFormFieldType[];
   certificates?: CertificateFormFieldType[];
+  education?: EducationFormFieldType[];
 }
 
 export interface PortfolioFormFieldType {
@@ -183,4 +185,8 @@ export interface CertificateFormFieldType {
   yearIssued: number;
 }
 
-export interface EducationFormFieldType {}
+export interface EducationFormFieldType {
+  degree: string;
+  institution: string;
+  graduationYear: number;
+}
