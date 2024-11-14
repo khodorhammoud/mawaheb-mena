@@ -2,8 +2,8 @@ import Heading from "../common/heading/Heading";
 // import YearsInBusiness from "./years-in-business-module/Form";
 // import About from "./about-module/Form";
 // import BudgetModuleForm from "./budget-module/Form";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import type { Employer } from "~/types/User";
+import { Form, useActionData /* , useLoaderData */ } from "@remix-run/react";
+// import type { Employer } from "~/types/User";
 // import HourlyRate from "./hourlyRate";
 import GeneralizableFormCard from "../common/onboarding-form-component";
 // import { BsCurrencyDollar } from "react-icons/bs";
@@ -12,7 +12,7 @@ import { FaDollarSign } from "react-icons/fa";
 
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
-  const { currentProfile } = useLoaderData<{ currentProfile: Employer }>();
+  // const { currentProfile } = useLoaderData<{ currentProfile: Employer }>();
 
   type ActionData = {
     error?: { message: string };
@@ -104,6 +104,18 @@ export default function EmployerOnboardingScreen() {
             fieldName="certificates"
             repeatableFieldName="certificates"
           />
+
+          {/* Education */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Education"
+            cardSubtitle="Add your education and degrees."
+            popupTitle="Add Education"
+            triggerLabel="Add Education"
+            formName="freelancer-educations"
+            fieldName="educations"
+            repeatableFieldName="educations"
+          />
         </div>
         {/* 
         </div>
@@ -183,13 +195,11 @@ export default function EmployerOnboardingScreen() {
       <div className="mt-6 flex justify-center">
         {/* Form to update the user's onboard status */}
         <Form method="post">
-          {/* this input sends the userId to be used in the action (queries, ....) */}
           <input
             type="hidden"
-            name="userId"
-            value={currentProfile.account.user.id}
+            name="target-updated"
+            value="freelancer-onboard"
           />
-          <input type="hidden" name="target-updated" value="employer-onboard" />
           {/* in the switch case, use value employer-onboard */}
           <button
             type="submit"

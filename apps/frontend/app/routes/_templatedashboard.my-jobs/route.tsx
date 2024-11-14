@@ -1,11 +1,7 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import JobManagement from "./jobs-displaying";
-
-interface Skill {
-  name: string;
-  isStarred: boolean;
-}
+import { Skill } from "../../types/Job";
 
 interface Job {
   id?: number;
@@ -93,7 +89,7 @@ const dummyJobs: Job[] = [
 
 // Loader function with artificial delay
 export const loader: LoaderFunction = async () => {
-  return json({ jobs: dummyJobs });
+  return Response.json({ jobs: dummyJobs });
 };
 
 // Layout component

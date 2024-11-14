@@ -14,6 +14,7 @@ import {
 } from "@remix-run/node";
 import {
   CertificateFormFieldType,
+  EducationFormFieldType,
   Employer,
   Freelancer,
   LoaderFunctionError,
@@ -46,6 +47,7 @@ import {
   updateFreelancerPortfolio,
   updateFreelancerWorkHistory,
   updateFreelancerCertificates,
+  updateFreelancerEducation,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
 
@@ -262,6 +264,27 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
 
+      // EDUCATION
+      if (target == "freelancer-educations") {
+        const education = formData.get("educations") as string;
+        try {
+          const educationParsed = JSON.parse(
+            education
+          ) as EducationFormFieldType[];
+          const educationStatus = await updateFreelancerEducation(
+            freelancer,
+            educationParsed
+          );
+          return Response.json({ success: educationStatus.success });
+        } catch (error) {
+          return Response.json({
+            success: false,
+            error: { message: "Invalid education data." },
+            status: 400,
+          });
+        }
+      }
+
       // WORK HISTORY
       if (target == "freelancer-work-history") {
         const workHistory = formData.get("workHistory") as string;
@@ -398,6 +421,8 @@ export async function loader({
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
+      educations: profile.educations,
+      certificates: profile.certificates,
       portfolio,
       workHistory,
     });
