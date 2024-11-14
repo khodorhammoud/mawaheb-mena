@@ -1,0 +1,285 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* import "~/styles/wavy/wavy.css"; */
+/* Place it wherever you use any style from here */
+
+/* LINE AND BALL */
+/* LINE AND BALL */
+/* LINE AND BALL */
+@keyframes swing {
+  0% {
+    offset-distance: 0%;
+    transform: rotate(0deg);
+  }
+  25% {
+    offset-distance: 25%;
+    transform: rotate(10deg);
+  }
+  50% {
+    offset-distance: 50%;
+    transform: rotate(0deg);
+  }
+  75% {
+    offset-distance: 75%;
+    transform: rotate(-10deg);
+  }
+  100% {
+    offset-distance: 100%;
+    transform: rotate(0deg);
+  }
+}
+
+.swing-circle {
+  offset-path: path("M0 200 Q30 90 100 100 T200 40");
+  animation: swing 5s infinite ease-in-out;
+  offset-rotate: auto; /* Ensures the circle rotates according to the path's curve */
+}
+
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* use inline-block with rotate */
+
+.rotation-animation {
+  display: inline-block;
+  animation: rotation-animation 3s ease-in-out forwards;
+  animation-delay: 3s;
+}
+
+@keyframes rotation-animation {
+  0% {
+    rotate: 0;
+  }
+  10% {
+    rotate: 4deg;
+  }
+  25% {
+    rotate: 4deg;
+  }
+  35% {
+    rotate: 0;
+  }
+  50% {
+    rotate: 0;
+  }
+  60% {
+    rotate: -4deg;
+  }
+  75% {
+    rotate: -4deg;
+  }
+  85% {
+    rotate: 4deg;
+  }
+  100% {
+    rotate: 3deg;
+  }
+}
+
+/* LINEAR GRADIENT */
+/* LINEAR GRADIENT */
+/* LINEAR GRADIENT */
+
+.custom-gradient {
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 40%,
+      #27638a 40%,
+      hsl(204, 42%, 84%) 100%
+    ),
+    linear-gradient(
+      to left,
+      rgba(255, 255, 255, 0) 0%,
+      #27638a 0%,
+      hsl(204, 42%, 84%) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0) 60%,
+      #fff 60%,
+      rgb(255, 255, 255) 100%
+    );
+  transition: background 0.3s ease;
+  background-blend-mode: overlay;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.circle-grid {
+  position: absolute;
+  top: 40%; /* Ensure this covers the blue section */
+  left: 0;
+  width: 100%;
+  height: 60%; /* Ensure this covers the blue section */
+  display: grid;
+  row-gap: 10px;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(50, 1fr);
+  z-index: 3; /* Ensure this is behind the cards */
+}
+
+.circle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f1f9da;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.circle:hover::before {
+  animation: appear 0.5s forwards; /* Animation for appearing */
+}
+
+.circle::before {
+  animation: disappear 0.5s forwards; /* Animation for disappearing */
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* if */
+/* if */
+/* if */
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #003366;
+  width: 20px; /* Smaller circle */
+  height: 20px; /* Smaller circle */
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 1;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+/* HOVERING LINEAR GRADIENT */
+/* HOVERING LINEAR GRADIENT */
+/* HOVERING LINEAR GRADIENT */
+
+@keyframes gradientAnimation {
+  0% {
+    background: rgb(39, 99, 138);
+  }
+  50% {
+    background: rgb(58, 123, 175);
+  }
+  100% {
+    background: rgb(39, 99, 138);
+  }
+}
+
+.gradient-box {
+  border-radius: 10px;
+}
+
+.not-active-gradient:hover {
+  border-radius: 10px !important;
+  animation: gradientAnimation 3s ease infinite !important;
+}
+/* this is the one of the hover effect 👆 */
+
+/* NWE */
+/* NWE */
+
+/* FINGER ANIMATION */
+/* FINGER ANIMATION */
+/* FINGER ANIMATION */
+
+@keyframes fingerAnimation {
+  0% {
+    rotate: 0deg;
+  }
+  5% {
+    rotate: 0deg;
+  }
+  25% {
+    rotate: 100deg;
+  }
+  30% {
+    rotate: 100deg;
+  }
+  50% {
+    rotate: 0deg;
+  }
+  55% {
+    rotate: 0deg;
+  }
+  75% {
+    rotate: -80deg;
+  }
+  80% {
+    rotate: -80deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+.fingerAnimation {
+  animation: fingerAnimation 4s ease-in-out infinite;
+}
+
+/* NUMBER ANIMATION */
+/* NUMBER ANIMATION */
+/* NUMBER ANIMATION */
+
+/* Bounce effect for the final number */
+@keyframes bounce-center {
+  0% {
+    transform: translateY(0%);
+  }
+  20% {
+    transform: translateY(-30%);
+  }
+  50% {
+    transform: translateY(0%);
+  }
+  60% {
+    transform: translateY(-5%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.bounce-center {
+  animation: bounce-center 1s ease-out; /* Duration should match the transition duration */
+}

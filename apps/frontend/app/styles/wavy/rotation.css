@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* use inline-block with rotate */
+
+.rotation-animation {
+  display: inline-block;
+  animation: rotation-animation 3s ease-in-out forwards;
+}
+
+@keyframes rotation-animation {
+  0% {
+    rotate: 0;
+  }
+  10% {
+    rotate: 4deg;
+  }
+  25% {
+    rotate: 4deg;
+  }
+  35% {
+    rotate: 0;
+  }
+  50% {
+    rotate: 0;
+  }
+  60% {
+    rotate: -4deg;
+  }
+  75% {
+    rotate: -4deg;
+  }
+  85% {
+    rotate: 4deg;
+  }
+  100% {
+    rotate: 3deg;
+  }
+}

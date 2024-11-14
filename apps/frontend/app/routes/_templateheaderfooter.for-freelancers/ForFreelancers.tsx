@@ -1,13 +1,32 @@
+// i edit here and as the components i'll make in the comming days
+
+import "../../styles/wavy/wavy.css";
 import LayoutContainer from "../../common/layout_container";
-import { useNavigate } from "@remix-run/react";
+import HowItWorks from "../_templateheaderfooter.for-employers/howitworks/HowItWorks";
+import Segments from "../_templateheaderfooter.for-employers/Segments";
+import Languages from "../_templateheaderfooter.for-employers/Languages";
+import WhyWorkWithUs from "../_templateheaderfooter.for-employers/WhyWorkWithUs";
+import FAQ from "../_templateheaderfooter.for-employers/FAQ";
+import Topic from "./Topic";
+import Jobs from "./Jobs";
+import Achievements from "./Achievements";
 
 export default function ForFreelancersPage() {
-	const navigate = useNavigate();
-	return (
-		<LayoutContainer>
-			<div className="text-left my-[60px]">
-				<h1>For freelancers content here</h1>
-			</div>
-		</LayoutContainer>
-	);
+  return (
+    <LayoutContainer>
+      <div className="-mx-4">
+        <Topic />
+      </div>
+      <Jobs />
+      <div className="-mb-52">
+        <Achievements />
+      </div>
+      <HowItWorks />
+      <Languages />
+      <WhyWorkWithUs />
+      <div className="mb-20">
+        <FAQ />
+      </div>
+    </LayoutContainer>
+  );
 }

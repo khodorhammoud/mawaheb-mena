@@ -5,7 +5,8 @@ export default function Header() {
 			<div className="container mx-auto flex justify-between items-center py-4">
 				<div className="text-2xl font-bold">MAWAHEB MENA</div>
 				<nav className="flex space-x-4">
-					{Navigation.map((nav, index) => (
+					{Navigation.m
+					ap((nav, index) => (
 						<a
 							key={index}
 							href={nav.url}

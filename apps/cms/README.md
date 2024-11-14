@@ -1,57 +1,52 @@
-# 🚀 Getting started with Strapi
+# Keystone Project Starter
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Welcome to Keystone!
 
-### `develop`
-
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+Run
 
 ```
-npm run develop
-# or
-yarn develop
+npm run dev
 ```
 
-### `start`
+To view the config for your new app, look at [./keystone.ts](./keystone.ts)
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+This project starter is designed to give you a sense of the power Keystone can offer you, and show off some of its main features. It's also a pretty simple setup if you want to build out from it.
 
+We recommend you use this alongside our [getting started walkthrough](https://keystonejs.com/docs/walkthroughs/getting-started-with-create-keystone-app) which will walk you through what you get as part of this starter.
+
+If you want an overview of all the features Keystone offers, check out our [features](https://keystonejs.com/why-keystone#features) page.
+
+## Some Quick Notes On Getting Started
+
+### Changing the database
+
+We've set you up with an [SQLite database](https://keystonejs.com/docs/apis/config#sqlite) for ease-of-use. If you're wanting to use PostgreSQL, you can!
+
+Just change the `db` property on line 16 of the Keystone file [./keystone.ts](./keystone.ts) to
+
+```typescript
+db: {
+    provider: 'postgresql',
+    url: process.env.DATABASE_URL || 'DATABASE_URL_TO_REPLACE',
+}
 ```
-npm run start
-# or
-yarn start
-```
 
-### `build`
+And provide your database url from PostgreSQL.
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+For more on database configuration, check out or [DB API Docs](https://keystonejs.com/docs/apis/config#db)
 
-```
-npm run build
-# or
-yarn build
-```
+### Auth
 
-## ⚙️ Deployment
+We've put auth into its own file to make this humble starter easier to navigate. To explore it without auth turned on, comment out the `isAccessAllowed` on line 21 of the Keystone file [./keystone.ts](./keystone.ts).
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+For more on auth, check out our [Authentication API Docs](https://keystonejs.com/docs/apis/auth#authentication-api)
 
-## 📚 Learn more
+### Adding a frontend
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+As a Headless CMS, Keystone can be used with any frontend that uses GraphQL. It provides a GraphQL endpoint you can write queries against at `/api/graphql` (by default [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql)). At Thinkmill, we tend to use [Next.js](https://nextjs.org/) and [Apollo GraphQL](https://www.apollographql.com/docs/react/get-started/) as our frontend and way to write queries, but if you have your own favourite, feel free to use it.
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+A walkthrough on how to do this is forthcoming, but in the meantime our [todo example](https://github.com/keystonejs/keystone-react-todo-demo) shows a Keystone set up with a frontend. For a more full example, you can also look at an example app we built for [Prisma Day 2021](https://github.com/keystonejs/prisma-day-2021-workshop)
 
-## ✨ Community
+### Embedding Keystone in a Next.js frontend
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+While Keystone works as a standalone app, you can embed your Keystone app into a [Next.js](https://nextjs.org/) app. This is quite a different setup to the starter, and we recommend checking out our walkthrough for that [here](https://keystonejs.com/docs/walkthroughs/embedded-mode-with-sqlite-nextjs#how-to-embed-keystone-sq-lite-in-a-next-js-app).

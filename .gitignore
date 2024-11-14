@@ -21,6 +21,9 @@ coverage
 # Vercel
 .vercel
 
+# yarn
+.yarn
+
 # Build Outputs
 .next/
 out/
