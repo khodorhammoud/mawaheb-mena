@@ -32,9 +32,11 @@ export default function Sidebar({ accountType }: SidebarProps) {
           <span className="text-xl font-bold">AM</span>
         </div>
         <div className="text-center">
-          <h2 className="text-lg font-medium">
+          {/* <h2 className="text-lg font-medium">
             {currentUser.firstName + " " + currentUser.lastName}
-          </h2>
+          </h2> */}
+          <p>hiiio</p>
+          {/* this code up is to prevent errors */}
           <p className="text-sm text-gray-500">Add Title</p>
           <p className="text-sm text-gray-500">Add Location</p>
         </div>

@@ -4,12 +4,23 @@ import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import NewJob from "./jobs/NewJob";
+import { JobStatus } from "~/types/enums";
+
+interface JobCategory {
+  id: number;
+  label: string;
+}
+
+// Define the type for the loader's response
+export interface LoaderData {
+  jobCategories: JobCategory[];
+}
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
-  return {
+  return json<LoaderData>({
     jobCategories: jobCategories || [],
-  };
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -36,12 +47,10 @@ export async function action({ request }: ActionFunctionArgs) {
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
-        isDraft: false,
-        isActive: true,
-        isClosed: false,
-        isPaused: false,
+        status: JobStatus.Active,
       };
 
+      console.log("Job data for insertion:", jobData);
       const jobStatus = await createJobPosting(jobData);
 
       if (jobStatus.success) {

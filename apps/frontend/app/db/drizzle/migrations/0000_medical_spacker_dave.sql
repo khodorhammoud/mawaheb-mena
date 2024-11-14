@@ -94,6 +94,13 @@ CREATE TABLE IF NOT EXISTS "job_categories" (
 	"timestamp" timestamp DEFAULT now()
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "job_skills" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"job_id" integer,
+	"skill_id" integer,
+	"is_starred" boolean DEFAULT false
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"employer_id" integer,
@@ -102,15 +109,11 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"job_category_id" integer,
 	"working_hours_per_week" integer,
 	"location_preference" text,
-	"required_skills" text[],
+	"required_skills" json DEFAULT '{}'::jsonb NOT NULL,
 	"project_type" "project_type",
 	"budget" integer,
 	"experience_level" text,
-	"is_active" boolean DEFAULT false,
-	"is_deleted" boolean DEFAULT false,
-	"is_draft" boolean DEFAULT true,
-	"is_closed" boolean DEFAULT false,
-	"is_paused" boolean DEFAULT false,
+	"status" "job_status",
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
@@ -125,6 +128,12 @@ CREATE TABLE IF NOT EXISTS "preferred_working_times" (
 	"day" "day_of_week",
 	"start_time" time,
 	"end_time" time
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "skills" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"name" text,
+	"meta_data" jsonb DEFAULT '{}'::jsonb
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user_verifications" (
@@ -186,6 +195,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "freelancers" ADD CONSTRAINT "freelancers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_skills" ADD CONSTRAINT "job_skills_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_skills" ADD CONSTRAINT "job_skills_skill_id_skills_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skills"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

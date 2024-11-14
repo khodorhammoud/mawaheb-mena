@@ -9,8 +9,8 @@ import { FaStar } from "react-icons/fa";
 import { Input } from "../../../components/ui/input";
 
 interface Skill {
-  name: string;
-  isStarred: boolean;
+  id: number;
+  label: string;
 }
 
 interface RequiredSkillsProps {
@@ -38,29 +38,32 @@ export default function RequiredSkills({
     };
   }, []);
 
+  const [starredSkills, setStarredSkills] = useState<Skill[]>([]);
+
   const popularSkills: Skill[] = [
-    { name: "Responsive Web Design", isStarred: false },
-    { name: "JavaScript", isStarred: false },
-    { name: "HTML/CSS", isStarred: false },
-    { name: "Social Media Marketing", isStarred: false },
-    { name: "Accounting", isStarred: false },
-    { name: "DevOps", isStarred: false },
-    { name: "Technical Support", isStarred: false },
-    { name: "Other", isStarred: false },
+    { id: 1, label: "Responsive Web Design" },
+    { id: 2, label: "JavaScript" },
+    { id: 3, label: "HTML/CSS" },
+    { id: 4, label: "Social Media Marketing" },
+    { id: 5, label: "Accounting" },
+    { id: 6, label: "DevOps" },
+    { id: 7, label: "Technical Support" },
+    { id: 8, label: "Other" },
   ];
 
   const toggleSkill = (skill: Skill) => {
-    const updatedSkills = selectedSkills.some((s) => s.name === skill.name)
-      ? selectedSkills.filter((s) => s.name !== skill.name)
+    const updatedSkills = selectedSkills.some((s) => s.id === skill.id)
+      ? selectedSkills.filter((s) => s.id !== skill.id)
       : [...selectedSkills, skill];
     onChange(updatedSkills);
   };
 
   const toggleStarredSkill = (skill: Skill) => {
-    const updatedSkills = selectedSkills.map((s) =>
-      s.name === skill.name ? { ...s, isStarred: !s.isStarred } : s
-    );
-    onChange(updatedSkills);
+    if (starredSkills.some((s) => s.id === skill.id)) {
+      setStarredSkills(starredSkills.filter((s) => s.id !== skill.id));
+    } else if (starredSkills.length < 4) {
+      setStarredSkills([...starredSkills, skill]);
+    }
   };
 
   const renderSelectedSkillsInInput = () => {
@@ -73,17 +76,19 @@ export default function RequiredSkills({
         <input
           type="hidden"
           name="jobSkills"
-          value={selectedSkills.map((skill) => skill.name).join(",")}
+          value={selectedSkills.map((skill) => skill.label).join(",")}
         />
         {visibleSkills.map((skill) => (
           <Badge
-            key={skill.name}
+            key={skill.id}
             className="bg-blue-500 text-white flex items-center p-1 px-2 gap-1 xl:px-3 py-2"
           >
-            {skill.name.length > 10
-              ? skill.name.slice(0, 10) + "..."
-              : skill.name}
-            {skill.isStarred && <FaStar className="h-3 w-4 text-yellow-400" />}
+            {skill.label.length > 10
+              ? skill.label.slice(0, 10) + "..."
+              : skill.label}
+            {starredSkills.some((s) => s.id === skill.id) && (
+              <FaStar className="h-3 w-4 text-yellow-400" />
+            )}
           </Badge>
         ))}
         {moreSkillsCount > 0 && (
@@ -126,19 +131,19 @@ export default function RequiredSkills({
         <div className="flex flex-wrap gap-2 mb-4">
           {popularSkills
             .filter(
-              (skill) => !selectedSkills.some((s) => s.name === skill.name)
+              (skill) => !selectedSkills.some((s) => s.label === skill.label)
             )
             .map((skill) => (
               <Badge
-                key={skill.name}
+                key={skill.label}
                 onClick={() => toggleSkill(skill)}
                 className={`cursor-pointer px-2 gap-1 xl:px-3 py-2 ${
-                  selectedSkills.some((s) => s.name === skill.name)
+                  selectedSkills.some((s) => s.id === skill.id)
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200"
                 }`}
               >
-                {skill.name}
+                {skill.label}
               </Badge>
             ))}
         </div>
@@ -146,23 +151,25 @@ export default function RequiredSkills({
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {selectedSkills.map((skill) => (
               <div
-                key={skill.name}
+                key={skill.id}
                 className="flex items-center gap-2 cursor-pointer border rounded-xl p-2"
               >
                 <Badge
                   onClick={() => toggleSkill(skill)}
                   className={`cursor-pointer px-2 gap-1 xl:px-3 py-2 ${
-                    selectedSkills.some((s) => s.name === skill.name)
+                    selectedSkills.some((s) => s.id === skill.id)
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200"
                   }`}
                 >
-                  {skill.name}
+                  {skill.label}
                 </Badge>
                 <FaStar
                   onClick={() => toggleStarredSkill(skill)}
                   className={`h-5 w-5 ${
-                    skill.isStarred ? "text-yellow-400" : "text-gray-400"
+                    starredSkills.some((s) => s.id === skill.id)
+                      ? "text-yellow-400"
+                      : "text-gray-400"
                   } cursor-pointer hover:scale-110 transition-transform`}
                 />
               </div>
@@ -176,11 +183,11 @@ export default function RequiredSkills({
         <p className="mt-2 text-sm text-gray-600">
           You need to select at least {Math.max(0, 5 - selectedSkills.length)}{" "}
           more skills and star{" "}
-          {Math.max(
+          {/* {Math.max(
             0,
             3 - selectedSkills.filter((skill) => skill.isStarred).length
-          )}{" "}
-          more skills.
+          )}{" "} */}
+          3 more skills.
         </p>
       </PopoverContent>
     </Popover>
