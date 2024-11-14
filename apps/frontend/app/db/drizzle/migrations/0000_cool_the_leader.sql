@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"project_type" "project_type",
 	"budget" integer,
 	"experience_level" text,
-	"status" "job_status",
+	"job_status" text,
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint

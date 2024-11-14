@@ -4,7 +4,7 @@ import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import NewJob from "./jobs/NewJob";
-import { JobStatus } from "~/types/enums";
+// import { JobStatus } from "~/types/enums";
 
 interface JobCategory {
   id: number;
@@ -47,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
-        status: JobStatus.Active,
+        status: "active",
       };
 
       console.log("Job data for insertion:", jobData);

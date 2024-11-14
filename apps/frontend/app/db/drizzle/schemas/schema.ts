@@ -21,7 +21,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-  jobStatusEnum,
+  // jobStatusEnum,
   // locationPreferenceTypeEnum,
   // experienceLevelEnum,
 } from "./schemaTypes";
@@ -324,7 +324,7 @@ export const jobsTable = pgTable("jobs", {
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
   //experienceLevelEnum("experience_level"),
-  status: jobStatusEnum("status"),
+  status: text("job_status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 

@@ -1,5 +1,5 @@
 {
-  "id": "7e4bd195-751f-4192-a42a-c5fae89de156",
+  "id": "2abccb3f-c201-4aca-9dc4-b2428eb89376",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -787,10 +787,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
-          "type": "job_status",
-          "typeSchema": "public",
+        "job_status": {
+          "name": "job_status",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

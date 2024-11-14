@@ -12,6 +12,7 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
+  skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -473,10 +474,14 @@ export async function updateOnboardingStatus(userId: number) {
     .where(eq(UsersTable.id, userId))
     .returning();
 
-  return result; // Return the result from the update operation
+  return result;
 }
 
 // fetch the job count
+// fetch the job count
+// fetch the job count
+// DASHBOARD PAGE
+// EASSY
 export async function getEmployerDashboardData(request: Request) {
   try {
     // Fetch the current employer information based on the request
@@ -492,8 +497,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isActive, true)
+            eq(jobsTable.employerId, currentProfile.id)
+            // eq(jobsTable.isActive, true)
           )
         ),
       db
@@ -501,8 +506,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isDraft, true)
+            eq(jobsTable.employerId, currentProfile.id)
+            // eq(jobsTable.isDraft, true)
           )
         ),
       db
@@ -510,8 +515,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isClosed, true)
+            eq(jobsTable.employerId, currentProfile.id)
+            // eq(jobsTable.isClosed, true)
           )
         ),
     ]);
@@ -529,9 +534,15 @@ export async function getEmployerDashboardData(request: Request) {
   }
 }
 
+// fetch the jobs
+// fetch the jobs
+// fetch the jobs
+// my-jobs PAGE
 export async function getJobs(): Promise<Job[]> {
+  // Fetch all jobs from the database
   const jobs = await db.select().from(jobsTable).execute();
 
+  // Map each job result to a structured object
   return jobs.map((job) => ({
     id: job.id,
     employerId: job.employerId,
@@ -539,14 +550,12 @@ export async function getJobs(): Promise<Job[]> {
     description: job.description,
     workingHoursPerWeek: job.workingHoursPerWeek,
     locationPreference: job.locationPreference,
-    requiredSkills: job.requiredSkills as Skill[],
+    // requiredSkills: job.requiredSkills as Skill[],
+    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
     projectType: job.projectType,
     budget: job.budget,
     experienceLevel: job.experienceLevel,
-    isActive: job.isActive,
-    isDraft: job.isDraft,
-    isClosed: job.isClosed,
-    isPaused: job.isPaused,
-    createdAt: job.createdAt?.toISOString(),
+    status: job.status,
+    createdAt: job.createdAt ? job.createdAt.toISOString() : null, // Handle null values safely
   }));
 }
