@@ -23,6 +23,7 @@ import {
   Freelancer,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
+  CertificateFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
@@ -137,6 +138,40 @@ export async function updateFreelancerPortfolio(
     return { success: true };
   } catch (error) {
     console.error("Error updating freelancer portfolio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerCertificates(
+  freelancer: Freelancer,
+  certificates: CertificateFormFieldType[],
+  certificatesImages: File[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // upload certificates Images
+    for (let i = 0; i < certificatesImages.length; i++) {
+      const file = certificatesImages[i];
+      if (file && file.size > 0) {
+        certificates[i].attachmentUrl = (
+          await uploadFileToBucket("certificates", file)
+        ).fileName;
+      } else {
+        certificates[i].attachmentUrl = "";
+      }
+    }
+
+    const res = await db
+      .update(freelancersTable)
+      .set({ certificates: JSON.stringify(certificates) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer certificates");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer certificates", error);
     throw error;
   }
 }

@@ -13,6 +13,7 @@ import {
   TypedResponse,
 } from "@remix-run/node";
 import {
+  CertificateFormFieldType,
   Employer,
   Freelancer,
   LoaderFunctionError,
@@ -44,6 +45,7 @@ import {
   updateFreelancerVideoLink,
   updateFreelancerPortfolio,
   updateFreelancerWorkHistory,
+  updateFreelancerCertificates,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
 
@@ -225,6 +227,36 @@ export async function action({ request }: ActionFunctionArgs) {
           return Response.json({
             success: false,
             error: { message: "Invalid portfolio data." },
+            status: 400,
+          });
+        }
+      }
+
+      // CERTIFICATES
+      if (target == "freelancer-certificates") {
+        const certificates = formData.get("certificates") as string;
+
+        try {
+          const certificatesParsed = JSON.parse(
+            certificates
+          ) as CertificateFormFieldType[];
+          const certificatesImages: File[] = [];
+          for (let index = 0; index < certificatesParsed.length; index++) {
+            const certificateImage = formData.get(
+              `certificates-attachment[${index}]`
+            ) as unknown as File;
+            certificatesImages.push(certificateImage ?? new File([], ""));
+          }
+          const certificatesStatus = await updateFreelancerCertificates(
+            freelancer,
+            certificatesParsed,
+            certificatesImages
+          );
+          return Response.json({ success: certificatesStatus.success });
+        } catch (error) {
+          return Response.json({
+            success: false,
+            error: { message: "Invalid certificates data." },
             status: 400,
           });
         }

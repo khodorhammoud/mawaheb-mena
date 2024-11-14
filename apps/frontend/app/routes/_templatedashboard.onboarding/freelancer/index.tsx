@@ -93,6 +93,17 @@ export default function EmployerOnboardingScreen() {
             fieldName="workHistory"
             repeatableFieldName="workHistory"
           />
+          {/* Certificates */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Certificates"
+            cardSubtitle="Add your certifications."
+            popupTitle="Add Certificates"
+            triggerLabel="Add Certificates"
+            formName="freelancer-certificates"
+            fieldName="certificates"
+            repeatableFieldName="certificates"
+          />
         </div>
         {/* 
         </div>

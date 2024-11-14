@@ -19,13 +19,14 @@ import {
 import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
-  CertificatesFormFieldType,
+  CertificateFormFieldType,
   EducationFormFieldType,
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
 import PortfolioComponent from "./PortfolioComponent";
 import WorkHistoryComponent from "./WorkHistory";
+import CertificateComponent from "./CertificateComponent";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface GeneralizableFormCardProps {
@@ -85,7 +86,7 @@ function GeneralizableFormCard({
   repeatable field types:
     - portfolio
     - work history
-    - certification
+    - certificate
     - education
   */
 
@@ -107,7 +108,14 @@ function GeneralizableFormCard({
     jobDescription: "",
   };
 
-  // const certificatesFormFields: CertificatesFormFieldType = {};
+  const certificatesFormFields: CertificateFormFieldType = {
+    certificateName: "",
+    issuedBy: "",
+    yearIssued: 0,
+    attachmentName: "",
+    attachmentUrl: "",
+  };
+
   // const educationFormFields: EducationFormFieldType = {};
 
   // =========== end of repeatable fields default values =============
@@ -116,7 +124,7 @@ function GeneralizableFormCard({
   const [repeatableInputValues, setRepeatableInputValues] = useState<
     | PortfolioFormFieldType[]
     | WorkHistoryFormFieldType[]
-    | CertificatesFormFieldType[]
+    | CertificateFormFieldType[]
     | EducationFormFieldType[]
   >([]);
 
@@ -142,6 +150,12 @@ function GeneralizableFormCard({
           { ...workHistoryFormFields },
         ]);
         break;
+      case "certificates":
+        setRepeatableInputValues([
+          ...repeatableInputValues,
+          { ...certificatesFormFields },
+        ]);
+        break;
       default:
         break;
     }
@@ -163,7 +177,10 @@ function GeneralizableFormCard({
 
   const handleDataChange = (
     index: number,
-    updatedData: PortfolioFormFieldType | WorkHistoryFormFieldType
+    updatedData:
+      | PortfolioFormFieldType
+      | WorkHistoryFormFieldType
+      | CertificateFormFieldType
   ) => {
     // Create a new array to avoid mutating the existing state
     const updatedInputValues = [...repeatableInputValues];
@@ -185,7 +202,7 @@ function GeneralizableFormCard({
 
     let updatedInputValues:
       | PortfolioFormFieldType[]
-      | CertificatesFormFieldType[]
+      | CertificateFormFieldType[]
       | EducationFormFieldType[];
     switch (repeatableFieldName) {
       case "portfolio":
@@ -193,6 +210,14 @@ function GeneralizableFormCard({
           ...repeatableInputValues,
         ] as PortfolioFormFieldType[];
         (updatedInputValues[index] as PortfolioFormFieldType).projectImageName =
+          file.name;
+        setRepeatableInputValues(updatedInputValues);
+        break;
+      case "certificates":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as CertificateFormFieldType[];
+        (updatedInputValues[index] as CertificateFormFieldType).attachmentName =
           file.name;
         setRepeatableInputValues(updatedInputValues);
         break;
@@ -211,7 +236,8 @@ function GeneralizableFormCard({
         try {
           const repeatableData = JSON.parse(initialData[fieldName]) as
             | PortfolioFormFieldType[]
-            | WorkHistoryFormFieldType[];
+            | WorkHistoryFormFieldType[]
+            | CertificateFormFieldType[];
           setRepeatableInputValues(repeatableData);
           setRepeatableInputFiles(repeatableData.map(() => null));
           dataParsed = true;
@@ -226,6 +252,9 @@ function GeneralizableFormCard({
             break;
           case "workHistory":
             setRepeatableInputValues([workHistoryFormFields]);
+            break;
+          case "certificates":
+            setRepeatableInputValues([certificatesFormFields]);
             break;
         }
         setRepeatableInputFiles([null]);
@@ -454,6 +483,16 @@ function GeneralizableFormCard({
                               data={dataItem}
                               onTextChange={(updatedData) =>
                                 handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : repeatableFieldName === "certificates" ? (
+                            <CertificateComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                              onFileChange={(file) =>
+                                handleFileChange(index, file)
                               }
                             />
                           ) : null}

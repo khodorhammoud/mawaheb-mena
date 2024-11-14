@@ -80,7 +80,7 @@ export interface Freelancer {
   portfolioDescription?: string;
   cvLink?: string;
   videoLink?: string;
-  certificatesLinks?: string[];
+  certificates?: CertificateFormFieldType[];
   yearsOfExperience?: number;
   languagesSpoken?: Language[];
   preferredProjectTypes?: ProjectType[];
@@ -155,6 +155,7 @@ export interface OnboardingFreelancerFields {
   yearsOfExperience: number;
   portfolio?: PortfolioFormFieldType[];
   workHistory?: WorkHistoryFormFieldType[];
+  certificates?: CertificateFormFieldType[];
 }
 
 export interface PortfolioFormFieldType {
@@ -174,6 +175,12 @@ export interface WorkHistoryFormFieldType {
   jobDescription: string;
 }
 
-export interface CertificatesFormFieldType {}
+export interface CertificateFormFieldType {
+  attachmentName: string;
+  attachmentUrl: string;
+  certificateName: string;
+  issuedBy: string;
+  yearIssued: number;
+}
 
 export interface EducationFormFieldType {}
