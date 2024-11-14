@@ -1,22 +1,18 @@
-export interface Skill {
-  name: string;
-  isStarred: boolean;
-}
+import { Skill } from "./Skill";
+import { JobStatus } from "./enums";
 
 export interface Job {
   id?: number;
   employerId: number;
   title: string;
   description: string;
+  jobCategoryId?: number;
   workingHoursPerWeek: number;
   locationPreference: string;
   requiredSkills: Skill[];
   projectType: string;
   budget: number;
   experienceLevel: string;
-  isActive: boolean;
-  isDraft: boolean;
-  isClosed: boolean;
-  isPaused: boolean;
+  status: JobStatus;
   createdAt?: string; // Keep as string for JSON compatibility
 }

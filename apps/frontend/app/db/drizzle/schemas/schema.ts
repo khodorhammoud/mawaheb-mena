@@ -21,6 +21,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  // jobStatusEnum,
   // locationPreferenceTypeEnum,
   // experienceLevelEnum,
 } from "./schemaTypes";
@@ -280,7 +281,7 @@ export const employerIndustriesTable = pgTable("employer_industries", {
 export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
   label: text("label"),
-  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
@@ -297,11 +298,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property project_type - projectTypeEnum
  * @property budget - integer
  * @property experience_level - experienceLevelEnum
- * @property is_active - boolean
- * @property is_deleted - boolean
- * @property is_draft - boolean
- * @property is_closed - boolean
- * @property is_paused - boolean
+ * @property status - jobStatusEnum
  * @property created_at - timestamp
  */
 
@@ -316,8 +313,8 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-
   // Updated requiredSkills to be an array of JSON objects
+  // TODO: remove required skills since we are using job_skills table
   requiredSkills: json("required_skills")
     .notNull()
     .default(sql`'[]'::jsonb`),
@@ -326,10 +323,19 @@ export const jobsTable = pgTable("jobs", {
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
   //experienceLevelEnum("experience_level"),
-  isActive: boolean("is_active").default(false),
-  isDeleted: boolean("is_deleted").default(false),
-  isDraft: boolean("is_draft").default(true),
-  isClosed: boolean("is_closed").default(false),
-  isPaused: boolean("is_paused").default(false),
+  status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const skillsTable = pgTable("skills", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
+});
+
+export const jobSkillsTable = pgTable("job_skills", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobsTable.id),
+  skillId: integer("skill_id").references(() => skillsTable.id),
+  isStarred: boolean("is_starred").default(false),
 });

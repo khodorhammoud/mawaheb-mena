@@ -17,10 +17,10 @@ export async function getAllJobCategories(): Promise<JobCategory[]> {
   }
 }
 
-// creating a job
+// Create a job posting
 export async function createJobPosting(
   jobData: Job
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string }> {
   try {
     const result = await db
       .insert(jobsTable)
@@ -35,11 +35,7 @@ export async function createJobPosting(
         projectType: jobData.projectType,
         budget: jobData.budget,
         experienceLevel: jobData.experienceLevel,
-        isDraft: jobData.isDraft,
-        isActive: jobData.isActive,
-        isDeleted: jobData.isDeleted,
-        isClosed: jobData.isClosed,
-        isPaused: jobData.isPaused,
+        status: jobData.status,
       })
       .returning();
 
@@ -51,6 +47,11 @@ export async function createJobPosting(
     return { success: true };
   } catch (error) {
     console.error("Error creating job posting:", error);
-    return { success: false };
+
+    // Return success: false and a detailed error message
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
   }
 }
