@@ -75,7 +75,7 @@ export interface Freelancer {
   id: number;
   accountId?: number;
   fieldsOfExpertise?: string[];
-  portfolio?: string[];
+  portfolio?: PortfolioFormFieldType[];
   portfolioDescription?: string;
   cvLink?: string;
   videoLink?: string;
@@ -152,13 +152,14 @@ export interface OnboardingFreelancerFields {
   accountOnboarded: boolean;
   hourlyRate: number;
   yearsOfExperience: number;
+  portfolio?: PortfolioFormFieldType[];
 }
 
 export interface PortfolioFormFieldType {
   projectName: string;
   projectLink: string;
   projectDescription: string;
-  projectImage: File | null;
+  projectImageName: string;
   projectImageUrl: string | null;
 }
 

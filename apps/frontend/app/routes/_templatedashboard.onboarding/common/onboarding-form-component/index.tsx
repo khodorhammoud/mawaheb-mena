@@ -93,7 +93,7 @@ function GeneralizableFormCard({
     projectName: "",
     projectLink: "",
     projectDescription: "",
-    projectImage: new File([], "test.png"),
+    projectImageName: "",
     projectImageUrl: "",
   };
 
@@ -167,6 +167,24 @@ function GeneralizableFormCard({
     const updatedInputFiles = [...repeatableInputFiles];
     updatedInputFiles[index] = file;
     setRepeatableInputFiles(updatedInputFiles);
+
+    let updatedInputValues:
+      | PortfolioFormFieldType[]
+      | WorkHistoryFormFieldType[]
+      | CertificatesFormFieldType[]
+      | EducationFormFieldType[];
+    switch (repeatableFieldName) {
+      case "portfolio":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as PortfolioFormFieldType[];
+        (updatedInputValues[index] as PortfolioFormFieldType).projectImageName =
+          file.name;
+        setRepeatableInputValues(updatedInputValues);
+        break;
+      default:
+        break;
+    }
   };
 
   // =========== end of repeatable fields handlers =============
@@ -175,8 +193,11 @@ function GeneralizableFormCard({
   useEffect(() => {
     if (formType === "repeatable") {
       if (initialData && initialData[fieldName]) {
-        setRepeatableInputValues(initialData[fieldName]);
-        setRepeatableInputFiles(initialData[fieldName].map(() => null));
+        const portfolioData = JSON.parse(
+          initialData[fieldName]
+        ) as PortfolioFormFieldType[];
+        setRepeatableInputValues(portfolioData);
+        setRepeatableInputFiles(portfolioData.map(() => null));
       } else {
         switch (repeatableFieldName) {
           case "portfolio":

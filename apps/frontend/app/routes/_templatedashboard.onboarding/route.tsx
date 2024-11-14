@@ -213,7 +213,6 @@ export async function action({ request }: ActionFunctionArgs) {
             ) as unknown as File;
             portfolioImages.push(portfolioImage ?? new File([], ""));
           }
-          console.log("=======before portfolioImages", portfolioImages);
           const portfolioStatus = await updateFreelancerPortfolio(
             freelancer,
             portfolioParsed,
@@ -331,6 +330,7 @@ export async function loader({
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
+    const portfolio = profile.portfolio as PortfolioFormFieldType[];
 
     return Response.json({
       accountType,
@@ -341,6 +341,7 @@ export async function loader({
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
+      portfolio,
     });
   }
   return Response.json({
