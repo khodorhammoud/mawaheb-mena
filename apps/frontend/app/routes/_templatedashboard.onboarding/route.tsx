@@ -19,6 +19,7 @@ import {
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
   PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
 } from "~/types/User";
 import { authenticator } from "~/auth/auth.server";
 import {
@@ -42,6 +43,7 @@ import {
   updateFreelancerYearsOfExperience,
   updateFreelancerVideoLink,
   updateFreelancerPortfolio,
+  updateFreelancerWorkHistory,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
 
@@ -228,6 +230,28 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
 
+      // WORK HISTORY
+      if (target == "freelancer-work-history") {
+        const workHistory = formData.get("workHistory") as string;
+        let workHistoryParsed: WorkHistoryFormFieldType[];
+        try {
+          workHistoryParsed = JSON.parse(
+            workHistory
+          ) as WorkHistoryFormFieldType[];
+        } catch (error) {
+          return Response.json({
+            success: false,
+            error: { message: "Invalid work history data." },
+            status: 400,
+          });
+        }
+        const workHistoryStatus = await updateFreelancerWorkHistory(
+          freelancer,
+          workHistoryParsed
+        );
+        return Response.json({ success: workHistoryStatus.success });
+      }
+
       // ONBOARDING -> TRUE ✅
       if (target == "freelancer-onboard") {
         const userId = currentUser.account.user.id;
@@ -331,6 +355,7 @@ export async function loader({
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
+    const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
 
     return Response.json({
       accountType,
@@ -342,6 +367,7 @@ export async function loader({
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
       portfolio,
+      workHistory,
     });
   }
   return Response.json({
