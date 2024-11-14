@@ -13,15 +13,15 @@ export default function JobDesignOne({ job }: JobProps) {
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.isActive ? "active" : "draft");
+  // const [jobStatus, setJobStatus] = useState<
+  //   "active" | "draft" | "paused" | "close"
+  // >(job.isActive ? "active" : "draft");
 
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
+  // const handleStatusChange = (
+  //   newStatus: "active" | "draft" | "paused" | "close"
+  // ) => {
+  //   // setJobStatus(newStatus);
+  // };
 
   const applicantsPhotos = [
     // Dummy data or replace with actual applicant photos if available
@@ -53,7 +53,7 @@ export default function JobDesignOne({ job }: JobProps) {
           </div>
         </div>
         <p className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm">
-          We are looking for candidates with the following skills:
+          {job.description}
         </p>
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
           {job.requiredSkills.map((skill, index) => (
@@ -86,13 +86,13 @@ export default function JobDesignOne({ job }: JobProps) {
       </div>
 
       <div className="w-[16%] flex justify-end h-min xl:-ml-4 xl:mr-4 space-x-2">
-        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
+        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} /> */}
 
-        {jobStatus === "draft" && (
-          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
-            Edit
-          </button>
-        )}
+        {/* {jobStatus === "draft" && ( */}
+        <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
+          Edit
+        </button>
+        {/* )} */}
       </div>
     </div>
   );

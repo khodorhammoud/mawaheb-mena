@@ -3,14 +3,18 @@ import NewJob from "./jobs/NewJob";
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
-import { Employer } from "~/types/User";
+import { Employer, JobCategory } from "~/types/User";
 import { JobStatus } from "~/types/enums";
+
+export interface LoaderData {
+  jobCategories: JobCategory[];
+}
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
-  return {
+  return Response.json({
     jobCategories: jobCategories || [],
-  };
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -40,6 +44,7 @@ export async function action({ request }: ActionFunctionArgs) {
         status: JobStatus.Active,
       };
 
+      console.log("Job data for insertion:", jobData);
       const jobStatus = await createJobPosting(jobData);
 
       if (jobStatus.success) {

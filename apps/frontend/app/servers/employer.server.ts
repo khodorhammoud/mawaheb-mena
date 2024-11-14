@@ -12,6 +12,7 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
+  // skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -26,7 +27,7 @@ import {
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
-import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
+// import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
 
 export async function updateAccountBio(
@@ -474,10 +475,14 @@ export async function updateOnboardingStatus(userId: number) {
     .where(eq(UsersTable.id, userId))
     .returning();
 
-  return result; // Return the result from the update operation
+  return result;
 }
 
 // fetch the job count
+// fetch the job count
+// fetch the job count
+// DASHBOARD PAGE
+// EASSY
 export async function getEmployerDashboardData(request: Request) {
   try {
     // Fetch the current employer information based on the request
@@ -530,9 +535,15 @@ export async function getEmployerDashboardData(request: Request) {
   }
 }
 
+// fetch the jobs
+// fetch the jobs
+// fetch the jobs
+// my-jobs PAGE
 export async function getJobs(): Promise<Job[]> {
+  // Fetch all jobs from the database
   const jobs = await db.select().from(jobsTable).execute();
 
+  // Map each job result to a structured object
   return jobs.map((job) => ({
     id: job.id,
     employerId: job.employerId,
@@ -540,7 +551,8 @@ export async function getJobs(): Promise<Job[]> {
     description: job.description,
     workingHoursPerWeek: job.workingHoursPerWeek,
     locationPreference: job.locationPreference,
-    requiredSkills: job.requiredSkills as Skill[],
+    // requiredSkills: job.requiredSkills as Skill[],
+    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
     projectType: job.projectType,
     budget: job.budget,
     experienceLevel: job.experienceLevel,

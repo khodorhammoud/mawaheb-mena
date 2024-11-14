@@ -13,15 +13,15 @@ export default function JobDesignTwo({ job }: JobProps) {
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.isDraft ? "draft" : "active");
+  // const [jobStatus, setJobStatus] = useState<
+  //   "active" | "draft" | "paused" | "close"
+  // >(job.isDraft ? "draft" : "active");
 
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
+  // const handleStatusChange = (
+  //   newStatus: "active" | "draft" | "paused" | "close"
+  // ) => {
+  //   setJobStatus(newStatus);
+  // };
 
   const applicantsPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
@@ -42,12 +42,12 @@ export default function JobDesignTwo({ job }: JobProps) {
     <div className="md:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
+        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
         {jobStatus === "draft" && (
           <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
             Edit
           </button>
-        )}
+        )} */}
       </div>
 
       {/* JOB INFO */}

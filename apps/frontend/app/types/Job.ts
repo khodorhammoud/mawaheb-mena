@@ -1,5 +1,5 @@
 import { Skill } from "./Skill";
-import { JobStatus } from "./enums";
+// import { JobStatus } from "./enums";
 
 export interface Job {
   id?: number;
@@ -13,6 +13,7 @@ export interface Job {
   projectType: string;
   budget: number;
   experienceLevel: string;
-  status: JobStatus;
+  // status: JobStatus;
+  status: string;
   createdAt?: string; // Keep as string for JSON compatibility
 }

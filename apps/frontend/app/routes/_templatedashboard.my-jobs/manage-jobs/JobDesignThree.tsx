@@ -11,35 +11,35 @@ export default function JobDesignThree({ job }: JobProps) {
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
   // State to manage job status, including "close" as a selectable option
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.isDraft ? "draft" : "active");
+  // const [jobStatus, setJobStatus] = useState<
+  //   "active" | "draft" | "paused" | "close"
+  // >(job.isDraft ? "draft" : "active");
 
   // Handle status change to toggle the visibility of the Edit button
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
+  // const handleStatusChange = (
+  //   newStatus: "active" | "draft" | "paused" | "close"
+  // ) => {
+  //   setJobStatus(newStatus);
+  // };
 
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        <JobStateButton
+        {/* <JobStateButton
           status={jobStatus}
           onStatusChange={handleStatusChange}
-        />
+        /> */}
 
         {/* Show Edit button only when the job status is "draft" */}
-        {jobStatus === "draft" && (
-          <button
-            className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-            // This button has no functionality
-          >
-            Edit
-          </button>
-        )}
+        {/* {jobStatus === "draft" && ( */}
+        <button
+          className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
+          // This button has no functionality
+        >
+          Edit
+        </button>
+        {/* )} */}
       </div>
 
       {/* JOB INFORMATION */}

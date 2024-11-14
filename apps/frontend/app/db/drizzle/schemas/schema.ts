@@ -21,7 +21,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-  jobStatusEnum,
+  // jobStatusEnum,
   // locationPreferenceTypeEnum,
   // experienceLevelEnum,
 } from "./schemaTypes";

@@ -1,6 +1,5 @@
 import { Job } from "~/types/Job";
 import { db } from "../db/drizzle/connector";
-
 import { jobCategoriesTable, jobsTable } from "../db/drizzle/schemas/schema";
 import { JobCategory } from "../types/User";
 
@@ -22,7 +21,7 @@ export async function createJobPosting(
   jobData: Job
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const result = await db
+    const [job] = await db
       .insert(jobsTable)
       .values({
         employerId: jobData.employerId,
@@ -31,7 +30,6 @@ export async function createJobPosting(
         jobCategoryId: jobData.jobCategoryId,
         workingHoursPerWeek: jobData.workingHoursPerWeek,
         locationPreference: jobData.locationPreference,
-        requiredSkills: jobData.requiredSkills,
         projectType: jobData.projectType,
         budget: jobData.budget,
         experienceLevel: jobData.experienceLevel,
@@ -39,19 +37,16 @@ export async function createJobPosting(
       })
       .returning();
 
-    if (!result.length) {
-      console.error("No rows returned after insertion, indicating a failure.");
-      throw new Error("Job posting failed - no rows inserted.");
+    if (!job) {
+      console.error("Job insertion failed: No rows returned after insertion.");
+      throw new Error("Job insertion failed, no rows returned.");
     }
-
     return { success: true };
   } catch (error) {
-    console.error("Error creating job posting:", error);
-
-    // Return success: false and a detailed error message
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    };
+    console.error("Detailed error during job creation:");
   }
+  // Return a more specific error message if possible
+  return {
+    success: false,
+  };
 }
