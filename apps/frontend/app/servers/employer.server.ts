@@ -27,6 +27,7 @@ import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
 import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
+import { JobStatus } from "~/types/enums";
 
 export async function updateAccountBio(
   bio: AccountBio,
@@ -493,7 +494,7 @@ export async function getEmployerDashboardData(request: Request) {
         .where(
           and(
             eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isActive, true)
+            eq(jobsTable.status, JobStatus.Active)
           )
         ),
       db
@@ -502,7 +503,7 @@ export async function getEmployerDashboardData(request: Request) {
         .where(
           and(
             eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isDraft, true)
+            eq(jobsTable.status, JobStatus.Draft)
           )
         ),
       db
@@ -511,7 +512,7 @@ export async function getEmployerDashboardData(request: Request) {
         .where(
           and(
             eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.isClosed, true)
+            eq(jobsTable.status, JobStatus.Closed)
           )
         ),
     ]);
@@ -543,10 +544,7 @@ export async function getJobs(): Promise<Job[]> {
     projectType: job.projectType,
     budget: job.budget,
     experienceLevel: job.experienceLevel,
-    isActive: job.isActive,
-    isDraft: job.isDraft,
-    isClosed: job.isClosed,
-    isPaused: job.isPaused,
+    status: job.status as JobStatus,
     createdAt: job.createdAt?.toISOString(),
   }));
 }

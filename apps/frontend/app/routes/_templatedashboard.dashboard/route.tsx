@@ -1,7 +1,6 @@
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
-  json,
   redirect,
 } from "@remix-run/node";
 import {
@@ -12,7 +11,7 @@ import {
 import EmployerDashboard from "./employer";
 import FreelancerDashboard from "./freelancer";
 import { useLoaderData } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
+import { AccountType, JobStatus } from "~/types/enums";
 import {
   getAllIndustries,
   getAccountBio,
@@ -48,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (target == "employer-about") {
       const aboutContent = formData.get("about") as string;
       const aboutStatus = await updateEmployerAbout(employer, aboutContent);
-      return json({ success: aboutStatus.success });
+      return Response.json({ success: aboutStatus.success });
     }
     // BIO
     if (target == "employer-bio") {
@@ -67,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
         userId: userId,
       };
       const bioStatus = await updateAccountBio(bio, employer.account);
-      return json({ success: bioStatus.success });
+      return Response.json({ success: bioStatus.success });
     }
     // INDUSTRIES
     if (target == "employer-industries") {
@@ -79,7 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
         employer,
         industriesIds
       );
-      return json({ success: industriesStatus.success });
+      return Response.json({ success: industriesStatus.success });
     }
     // YEARS IN BUSINESS
     console.log("target", target);
@@ -92,7 +91,7 @@ export async function action({ request }: ActionFunctionArgs) {
         employer,
         yearsInBusiness
       );
-      return json({ success: yearsStatus.success });
+      return Response.json({ success: yearsStatus.success });
     }
     // BUDGET
     if (target == "employer-budget") {
@@ -100,13 +99,13 @@ export async function action({ request }: ActionFunctionArgs) {
       const budget = parseInt(budgetValue as string, 10);
 
       const budgetStatus = await updateEmployerBudget(employer, budget);
-      return json({ success: budgetStatus.success });
+      return Response.json({ success: budgetStatus.success });
     }
     // ONBOARDING -> TRUE ✅
     if (target == "employer-onboard") {
       const userExists = await checkUserExists(userId);
       if (!userExists.length)
-        return json(
+        return Response.json(
           { success: false, error: { message: "User not found." } },
           { status: 404 }
         );
@@ -114,7 +113,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = await updateOnboardingStatus(userId);
       return result.length
         ? redirect("/dashboard")
-        : json(
+        : Response.json(
             {
               success: false,
               error: { message: "Failed to update onboarding status" },
@@ -138,11 +137,7 @@ export async function action({ request }: ActionFunctionArgs) {
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
-
-        isDraft: false, // Set to false as it's being posted directly
-        isActive: true,
-        isClosed: false,
-        isPaused: false,
+        status: JobStatus.Active,
       };
 
       const jobStatus = await createJobPosting(jobData);
@@ -150,7 +145,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (jobStatus.success) {
         return redirect("/dashboard");
       } else {
-        return json(
+        return Response.json(
           {
             success: false,
             error: { message: "Failed to create job posting" },
@@ -162,7 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // DEFAULT
     throw new Error("Unknown target update");
   } catch (error) {
-    return json(
+    return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }
     );
@@ -180,7 +175,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // !!IMPortant!! If the employer object is not available, return an error response early
   if (!employer) {
-    return json(
+    return Response.json(
       {
         success: false,
         error: { message: "Employer information not found." },
@@ -209,7 +204,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
   // Return the response data
-  return json({
+  return Response.json({
     accountType,
     bioInfo,
     employerIndustries,

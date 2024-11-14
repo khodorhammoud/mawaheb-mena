@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useNavigation,
+  useLoaderData,
+} from "@remix-run/react";
+import AppFormField from "../../../common/form-fields";
+// import JobCategoryField from "../job-category";
 import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "../required-skills";
-import AppFormField from "../../../common/form-fields";
+import { JobCategory } from "~/types/User";
+// import { LoaderData } from "../route";
 
 interface ActionData {
   success?: boolean;
@@ -17,20 +25,12 @@ export default function NewJob() {
   const navigation = useNavigation();
 
   const [selectedExperience, setSelectedExperience] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null); // Set as number type
   const [requiredSkills, setRequiredSkills] = useState([]); // Track selected skills
 
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level"];
-  const jobCategories = [
-    "Design",
-    "Programming",
-    "Writing",
-    "Marketing",
-    "Law",
-    "Communications",
-    "Health Care",
-    "Other",
-  ];
+
+  const { jobCategories } = useLoaderData<{ jobCategories: JobCategory[] }>();
 
   const handleExperienceClick = (level) => {
     setSelectedExperience(level);
@@ -138,21 +138,29 @@ export default function NewJob() {
 
             {/* JOB CATEGORY */}
             <div className="col-span-2 mt-6">
-              <label className="block md:text-2xl text-xl font-semibold mb-4">
+              <label
+                htmlFor="jobCategory"
+                className="block md:text-2xl text-xl font-semibold mb-4"
+              >
                 Job Category
               </label>
-              <div className="flex flex-wrap gap-3">
+              <div
+                className="flex flex-wrap gap-3"
+                id="jobCategory"
+                role="radiogroup"
+                aria-label="Job Category"
+              >
                 {jobCategories.map((category) => (
                   <Badge
-                    key={category}
-                    onClick={() => handleCategoryClick(category)}
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
                     className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
-                      selectedCategory === category
+                      selectedCategory === category.id
                         ? "bg-blue-100 text-blue-600 border-blue-600"
                         : "text-gray-600 border-gray-300"
                     }`}
                   >
-                    {category}
+                    {category.label}
                   </Badge>
                 ))}
               </div>

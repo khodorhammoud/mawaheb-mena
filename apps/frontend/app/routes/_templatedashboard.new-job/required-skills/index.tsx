@@ -7,11 +7,7 @@ import {
 } from "../../../components/ui/popover";
 import { FaStar } from "react-icons/fa";
 import { Input } from "../../../components/ui/input";
-
-interface Skill {
-  name: string;
-  isStarred: boolean;
-}
+import { Skill } from "~/types/Skill";
 
 interface RequiredSkillsProps {
   selectedSkills: Skill[];
