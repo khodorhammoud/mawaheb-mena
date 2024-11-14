@@ -82,6 +82,17 @@ export default function EmployerOnboardingScreen() {
             fieldName="portfolio"
             repeatableFieldName="portfolio"
           />
+
+          {/* Work History */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Work History"
+            popupTitle="Work History"
+            triggerLabel="Add Work History"
+            formName="freelancer-work-history"
+            fieldName="workHistory"
+            repeatableFieldName="workHistory"
+          />
         </div>
         {/* 
         </div>

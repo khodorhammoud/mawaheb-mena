@@ -25,6 +25,7 @@ import {
   OnboardingFreelancerFields,
 } from "~/types/User";
 import PortfolioComponent from "./PortfolioComponent";
+import WorkHistoryComponent from "./WorkHistory";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface GeneralizableFormCardProps {
@@ -97,7 +98,15 @@ function GeneralizableFormCard({
     projectImageUrl: "",
   };
 
-  // const workHistoryFormFields: WorkHistoryFormFieldType = {};
+  const workHistoryFormFields: WorkHistoryFormFieldType = {
+    title: "",
+    company: "",
+    currentlyWorkingThere: false,
+    startDate: new Date(),
+    endDate: new Date(),
+    jobDescription: "",
+  };
+
   // const certificatesFormFields: CertificatesFormFieldType = {};
   // const educationFormFields: EducationFormFieldType = {};
 
@@ -127,6 +136,12 @@ function GeneralizableFormCard({
         ]);
 
         break;
+      case "workHistory":
+        setRepeatableInputValues([
+          ...repeatableInputValues,
+          { ...workHistoryFormFields },
+        ]);
+        break;
       default:
         break;
     }
@@ -148,7 +163,7 @@ function GeneralizableFormCard({
 
   const handleDataChange = (
     index: number,
-    updatedData: PortfolioFormFieldType
+    updatedData: PortfolioFormFieldType | WorkHistoryFormFieldType
   ) => {
     // Create a new array to avoid mutating the existing state
     const updatedInputValues = [...repeatableInputValues];
@@ -170,7 +185,6 @@ function GeneralizableFormCard({
 
     let updatedInputValues:
       | PortfolioFormFieldType[]
-      | WorkHistoryFormFieldType[]
       | CertificatesFormFieldType[]
       | EducationFormFieldType[];
     switch (repeatableFieldName) {
@@ -192,16 +206,26 @@ function GeneralizableFormCard({
   // Initialize repeatable fields with existing data
   useEffect(() => {
     if (formType === "repeatable") {
+      let dataParsed = false;
       if (initialData && initialData[fieldName]) {
-        const portfolioData = JSON.parse(
-          initialData[fieldName]
-        ) as PortfolioFormFieldType[];
-        setRepeatableInputValues(portfolioData);
-        setRepeatableInputFiles(portfolioData.map(() => null));
-      } else {
+        try {
+          const repeatableData = JSON.parse(initialData[fieldName]) as
+            | PortfolioFormFieldType[]
+            | WorkHistoryFormFieldType[];
+          setRepeatableInputValues(repeatableData);
+          setRepeatableInputFiles(repeatableData.map(() => null));
+          dataParsed = true;
+        } catch (error) {
+          console.error("Error parsing repeatable data", error);
+        }
+      }
+      if (!dataParsed) {
         switch (repeatableFieldName) {
           case "portfolio":
             setRepeatableInputValues([portfolioFormFields]);
+            break;
+          case "workHistory":
+            setRepeatableInputValues([workHistoryFormFields]);
             break;
         }
         setRepeatableInputFiles([null]);
@@ -415,15 +439,24 @@ function GeneralizableFormCard({
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                           className="overflow-hidden mt-4"
                         >
-                          <PortfolioComponent
-                            data={dataItem}
-                            onTextChange={(updatedData) =>
-                              handleDataChange(index, updatedData)
-                            }
-                            onFileChange={(file) =>
-                              handleFileChange(index, file)
-                            }
-                          />
+                          {repeatableFieldName === "portfolio" ? (
+                            <PortfolioComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                              onFileChange={(file) =>
+                                handleFileChange(index, file)
+                              }
+                            />
+                          ) : repeatableFieldName === "workHistory" ? (
+                            <WorkHistoryComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : null}
                         </motion.div>
                       )}
                     </AnimatePresence>

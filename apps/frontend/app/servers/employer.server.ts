@@ -22,6 +22,7 @@ import {
   UserAccount,
   Freelancer,
   PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
@@ -108,7 +109,6 @@ export async function updateFreelancerPortfolio(
   portfolio: PortfolioFormFieldType[],
   portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
-  console.log("portfolioImages", portfolioImages);
   try {
     // upload portfolio Images
     for (let i = 0; i < portfolioImages.length; i++) {
@@ -137,6 +137,27 @@ export async function updateFreelancerPortfolio(
     return { success: true };
   } catch (error) {
     console.error("Error updating freelancer portfolio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerWorkHistory(
+  freelancer: Freelancer,
+  workHistory: WorkHistoryFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    const res = await db
+      .update(freelancersTable)
+      .set({ workHistory: JSON.stringify(workHistory) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer work history");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer work history", error);
     throw error;
   }
 }
