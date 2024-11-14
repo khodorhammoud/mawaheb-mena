@@ -84,10 +84,10 @@ export enum ExperienceLevel {
   Expert = "senior_level",
 }
 
-// export enum JobStatus {
-//   Draft = "draft",
-//   Active = "active",
-//   Closed = "closed",
-//   Paused = "paused",
-//   Deleted = "deleted",
-// }
+export enum JobStatus {
+  Draft = "draft",
+  Active = "active",
+  Closed = "closed",
+  Paused = "paused",
+  Deleted = "deleted",
+}

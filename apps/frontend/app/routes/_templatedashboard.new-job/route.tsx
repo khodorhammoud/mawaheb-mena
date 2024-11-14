@@ -1,24 +1,18 @@
 import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
-import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
+import NewJob from "./jobs/NewJob";
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
-import { Employer } from "~/types/User";
-import NewJob from "./jobs/NewJob";
-// import { JobStatus } from "~/types/enums";
+import { Employer, JobCategory } from "~/types/User";
+import { JobStatus } from "~/types/enums";
 
-interface JobCategory {
-  id: number;
-  label: string;
-}
-
-// Define the type for the loader's response
 export interface LoaderData {
   jobCategories: JobCategory[];
 }
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
-  return json<LoaderData>({
+  return Response.json({
     jobCategories: jobCategories || [],
   });
 }
@@ -38,16 +32,16 @@ export async function action({ request }: ActionFunctionArgs) {
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
-        requiredSkills: ((formData.get("jobSkills") as string) || "")
-          .split(",")
-          .map((skill) => ({
+        requiredSkills: (formData.getAll("jobSkills") as string[]).map(
+          (skill) => ({
             name: skill.trim(),
-            isStarred: false,
-          })),
+            isStarred: false, // Default value for isStarred
+          })
+        ),
         projectType: formData.get("projectType") as string,
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
-        status: "active",
+        status: JobStatus.Active,
       };
 
       console.log("Job data for insertion:", jobData);
@@ -56,8 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (jobStatus.success) {
         return redirect("/dashboard");
       } else {
-        console.error("Failed to create job posting:", jobStatus.error);
-        return json(
+        return Response.json(
           {
             success: false,
             error: { message: "Failed to create job posting" },
@@ -69,8 +62,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
     throw new Error("Unknown target update");
   } catch (error) {
-    console.error("Unexpected error while creating a job:", error);
-    return json(
+    console.error("error while creating a job", error);
+    return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }
     );

@@ -324,7 +324,7 @@ export const jobsTable = pgTable("jobs", {
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
   //experienceLevelEnum("experience_level"),
-  status: text("job_status"),
+  status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 

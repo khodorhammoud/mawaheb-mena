@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
-import JobCategoryField from "../job-category";
+import {
+  Form,
+  useActionData,
+  useNavigation,
+  useLoaderData,
+} from "@remix-run/react";
+import AppFormField from "../../../common/form-fields";
+// import JobCategoryField from "../job-category";
 import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "../required-skills";
-import AppFormField from "../../../common/form-fields";
-import { LoaderData } from "../route";
+import { JobCategory } from "~/types/User";
+// import { LoaderData } from "../route";
 
 interface ActionData {
   success?: boolean;
@@ -23,8 +28,9 @@ export default function NewJob() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null); // Set as number type
   const [requiredSkills, setRequiredSkills] = useState([]); // Track selected skills
 
-  const { jobCategories } = useLoaderData<LoaderData>();
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level"];
+
+  const { jobCategories } = useLoaderData<{ jobCategories: JobCategory[] }>();
 
   const handleExperienceClick = (level) => {
     setSelectedExperience(level);
@@ -132,10 +138,18 @@ export default function NewJob() {
 
             {/* JOB CATEGORY */}
             <div className="col-span-2 mt-6">
-              <label className="block md:text-2xl text-xl font-semibold mb-4">
+              <label
+                htmlFor="jobCategory"
+                className="block md:text-2xl text-xl font-semibold mb-4"
+              >
                 Job Category
               </label>
-              <div className="flex flex-wrap gap-3">
+              <div
+                className="flex flex-wrap gap-3"
+                id="jobCategory"
+                role="radiogroup"
+                aria-label="Job Category"
+              >
                 {jobCategories.map((category) => (
                   <Badge
                     key={category.id}
