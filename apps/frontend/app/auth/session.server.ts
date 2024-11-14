@@ -1,37 +1,42 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { Employer, Freelancer } from "../types/User";
 
 export const sessionStorage = createCookieSessionStorage({
-	cookie: {
-		name: "__session",
-		secure: process.env.NODE_ENV === "production",
-		// TODO: update with environment variables
-		secrets: ["s3cret1"],
-		sameSite: "lax",
-		path: "/",
-		maxAge: 60 * 60 * 24 * 7, // 1 week
-		httpOnly: true,
-	},
+  cookie: {
+    name: "user",
+    secure: false, //process.env.NODE_ENV === "production",
+    // TODO: update with environment variables
+    secrets: ["s3cret1"],
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    httpOnly: true,
+  },
 });
 
 export const { getSession, commitSession, destroySession } = sessionStorage;
 
-export async function createUserSession(userId: number, redirectTo: string) {
-	const session = await getSession();
-	session.set("userId", userId);
-	console.log("setting session id", session, userId);
-	return redirect(redirectTo, {
-		headers: {
-			"Set-Cookie": await commitSession(session),
-		},
-	});
+export async function createUserSession(
+  request,
+  user: Employer | Freelancer,
+  redirectTo: string
+) {
+  const session = await getSession(request.headers.get("cookie"));
+  session.set("user", user);
+  console.log("======setting user", user);
+  const headers = new Headers({ "Set-Cookie": await commitSession(session) });
+  if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
+  return redirect("/dashboard", { headers }); // this is the session that direct me to the dashboard
 }
 
 export async function getUserSession(request: Request) {
-	return getSession(request.headers.get("Cookie"));
+  return getSession(request.headers.get("Cookie"));
 }
 
-export async function getUserId(request: Request) {
-	const session = await getUserSession(request);
-	const userId = session.get("userId");
-	return userId || null;
+export async function getCurrentProfile(
+  request: Request
+): Promise<Employer | Freelancer> {
+  const session = await getUserSession(request);
+  const user = session.get("user");
+  return user || null;
 }

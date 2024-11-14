@@ -5,16 +5,47 @@
 @tailwind utilities;
 
 @keyframes tilt-bounce {
-	0% {
-		transform: rotate(0deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
 }
 
 .tilt-bounce {
-	@apply inline-block bg-gray-200 px-2;
-	animation: tilt-bounce 5s ease-in-out 1 2s;
+  @apply inline-block bg-gray-200 px-2;
+  animation: tilt-bounce 5s ease-in-out 1 2s;
 }
 
 a.active {
-	color: red;
+  color: red;
 }
+
+/* setup global fonts : */
+body {
+  font-family: "Switzer-Regular", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Switzer-Semibold", sans-serif;
+}
+
+b,
+.font-bold {
+  font-family: "Switzer-Bold", sans-serif;
+}
+
+i,
+.font-italic {
+  font-family: "Switzer-Italic", sans-serif;
+}
+
+button.trigger * {
+  font-family: "Switzer-Semibold", sans-serif;
+  color: #27638a;
+}
+
+/* I wil start creating my own transitions here */

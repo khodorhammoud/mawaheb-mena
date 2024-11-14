@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* FOR BACKGROUND COLOR ROTATION ANIMATION */
+/* use inline-block with rotate */
+
+.rotation-animation {
+  display: inline-block;
+  animation: rotation-animation 3s ease-in-out forwards;
+}
+
+@keyframes rotation-animation {
+  0% {
+    rotate: 0;
+  }
+  10% {
+    rotate: 4deg;
+  }
+  25% {
+    rotate: 4deg;
+  }
+  35% {
+    rotate: 0;
+  }
+  50% {
+    rotate: 0;
+  }
+  60% {
+    rotate: -4deg;
+  }
+  75% {
+    rotate: -4deg;
+  }
+  85% {
+    rotate: 4deg;
+  }
+  100% {
+    rotate: 3deg;
+  }
+}
+
+/* LINEAR GRADIENT */
+/* LINEAR GRADIENT */
+
+.custom-gradient {
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 40%,
+      #27638a 40%,
+      hsl(203, 56%, 80%) 100%
+    ),
+    linear-gradient(
+      to left,
+      rgba(255, 255, 255, 0) 0%,
+      #27638a 0%,
+      hsl(203, 56%, 80%) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0) 60%,
+      #fff 60%,
+      rgb(255, 255, 255) 100%
+    );
+
+  background-blend-mode: overlay; /* Adjust blend mode as needed */
+}
+
+/* HOVERING LINEAR GRADIENT */
+/* HOVERING LINEAR GRADIENT */
+
+@keyframes gradientAnimation {
+  0% {
+    background: rgb(39, 99, 138);
+  }
+  50% {
+    background: rgb(58, 123, 175);
+  }
+  100% {
+    background: rgb(39, 99, 138);
+  }
+}
+
+@keyframes backgroundOpacity {
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background-color: rgba(39, 99, 138, 1);
+  }
+}
+
+.gradient-box {
+  border-radius: 10px;
+}
+
+.gradient-box:hover {
+  animation: gradientAnimation 3s ease infinite;
+  animation: backgroundOpacity 0.2s ease-out;
+}
