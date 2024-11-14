@@ -2,8 +2,15 @@ import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
 
+interface ActionData {
+  success?: boolean;
+  error?: {
+    message: string;
+  };
+}
+
 export default function LoginFormComponent() {
-  const actionData = useActionData();
+  const actionData = useActionData<ActionData>();
 
   return (
     <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">

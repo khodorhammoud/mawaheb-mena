@@ -35,10 +35,7 @@ export async function createJobPosting(
         projectType: jobData.projectType,
         budget: jobData.budget,
         experienceLevel: jobData.experienceLevel,
-        isDraft: jobData.isDraft,
-        isActive: jobData.isActive,
-        isClosed: jobData.isClosed,
-        isPaused: jobData.isPaused,
+        status: jobData.status,
       })
       .returning();
 

@@ -41,7 +41,7 @@ import {
   updateFreelancerHourlyRate,
   updateFreelancerYearsOfExperience,
   updateFreelancerVideoLink,
-  updateFreelancerPortfolio,
+  // updateFreelancerPortfolio,
 } from "~/servers/employer.server";
 import { getCurrentProfile } from "~/auth/session.server";
 
@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (target == "employer-about") {
         const aboutContent = formData.get("about") as string;
         const aboutStatus = await updateEmployerAbout(employer, aboutContent);
-        return json({ success: aboutStatus.success });
+        return Response.json({ success: aboutStatus.success });
       }
       // BIO
       if (target == "employer-bio") {
@@ -144,7 +144,7 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           hourlyRate
         );
-        return json({ success: hourlyRateStatus.success });
+        return Response.json({ success: hourlyRateStatus.success });
       }
 
       // YEARS OF EXPERIENCE
