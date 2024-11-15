@@ -10,6 +10,7 @@ import {
   AccountType,
   LocationPreferenceType,
   ExperienceLevel,
+  // JobStatus,
 } from "~/types/enums";
 
 export const accountStatusEnum = pgEnum(
@@ -55,3 +56,8 @@ export const experienceLevelEnum = pgEnum(
   "experience_level",
   Object.values(ExperienceLevel) as [string, ...string[]]
 );
+
+// export const jobStatusEnum = pgEnum(
+//   "job_status",
+//   Object.values(JobStatus) as [string, ...string[]]
+// );

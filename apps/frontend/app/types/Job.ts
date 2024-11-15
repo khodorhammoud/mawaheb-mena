@@ -1,19 +1,19 @@
-export type Job = {
+import { Skill } from "./Skill";
+// import { JobStatus } from "./enums";
+
+export interface Job {
   id?: number;
   employerId: number;
   title: string;
   description: string;
   jobCategoryId?: number;
-  workingHoursPerWeek?: number;
-  locationPreference?: string;
-  requiredSkills?: string[];
+  workingHoursPerWeek: number;
+  locationPreference: string;
+  requiredSkills: Skill[];
   projectType: string;
   budget: number;
   experienceLevel: string;
-  isActive: boolean;
-  isDeleted: boolean;
-  isDraft: boolean;
-  isClosed: boolean;
-  isPaused: boolean;
-  createdAt?: Date;
-};
+  // status: JobStatus;
+  status: string;
+  createdAt?: string; // Keep as string for JSON compatibility
+}

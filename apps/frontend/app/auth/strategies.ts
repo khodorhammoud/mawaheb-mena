@@ -4,7 +4,7 @@ import {
   getUser,
   registerEmployer,
   registerFreelancer,
-  getEmployerFreelancerInfo,
+  getProfileInfo,
 } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
 import { Employer, Freelancer } from "../types/User";
@@ -28,7 +28,7 @@ export const loginStrategy = new FormStrategy(
 
     if (!user.isVerified) throw new Error("Account not verified");
 
-    return await getEmployerFreelancerInfo({ userId: user.id! });
+    return await getProfileInfo({ userId: user.id! });
   }
 );
 

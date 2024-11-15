@@ -1,4 +1,3 @@
-/** Import PG Core types from drizzle-orm/pg-core. */
 import {
   pgTable,
   serial,
@@ -9,6 +8,7 @@ import {
   time,
   timestamp,
   jsonb,
+  json,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -21,6 +21,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  // jobStatusEnum,
   // locationPreferenceTypeEnum,
   // experienceLevelEnum,
 } from "./schemaTypes";
@@ -63,6 +64,8 @@ export const UsersTable = pgTable("users", {
  * @property region - varchar with length 100
  * @property account_status - accountStatusEnum
  * @property phone - varchar with length 30
+ * @property website_url - text
+ * @property social_media_links - text array with default ''
  */
 export const accountsTable = pgTable("accounts", {
   id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
@@ -75,6 +78,8 @@ export const accountsTable = pgTable("accounts", {
   region: varchar("region", { length: 100 }),
   accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
   phone: varchar("phone", { length: 30 }),
+  websiteURL: text("website_url"),
+  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
   isCreationComplete: boolean("is_creation_complete").default(false),
 });
 
@@ -100,40 +105,53 @@ export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
  *
  * @property id - serial primary key
  * @property account_id - integer referencing the accountsTable id
+ * @property about - text
  * @property fields_of_expertise - text array with default ''
  * @property portfolio - text array with default ''
- * @property portfolio_description - text
  * @property cv_link - text
  * @property video_link - text
  * @property certificates_links - text array with default ''
  * @property years_of_experience - varchar with length 80
  * @property languagesSpoken - languageEnum array with default ''
  * @property preferred_project_types - projectTypeEnum array with default ''
+ * @property hourlyRate - integer
  * @property compensation_type - compensationTypeEnum
  */
 export const freelancersTable = pgTable("freelancers", {
   id: serial("id").primaryKey(),
   accountId: integer("account_id").references(() => accountsTable.id),
+  about: text("about"),
   fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
-  portfolio: text("portfolio")
-    .array()
-    .default(sql`'{}'::text[]`),
-  portfolioDescription: text("portfolio_description"),
+  // portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
+  portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
+  workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
   cvLink: text("cv_link"),
   videoLink: text("video_link"),
-  certificatesLinks: text("certificates_links")
-    .array()
-    .default(sql`'{}'::text[]`),
-  yearsOfExperience: varchar("years_of_experience", { length: 80 }),
-  languagesSpoken: languageEnum("language")
-    .array()
-    .default(sql`ARRAY[]::language[]`),
+  certificates: jsonb("certificates").default(sql`'[]'::jsonb`),
+  educations: jsonb("educations").default(sql`'[]'::jsonb`),
+  yearsOfExperience: integer("years_of_experience"),
   preferredProjectTypes: projectTypeEnum("preferred_project_types")
     .array()
     .default(sql`ARRAY[]::project_type[]`),
+  hourlyRate: integer("hourly_rate"),
   compensationType: compensationTypeEnum("compensation_type"),
+});
+
+/**
+ * Define the relation between freelancers and languages where each employer can have zero to many languages
+ *
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property language_id - integer referencing the languagesTable id
+ * @property timestamp - timestamp
+ */
+export const freelancerLanguagesTable = pgTable("freelancer_languages", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  languageId: integer("language_id").references(() => languagesTable.id),
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
@@ -155,8 +173,6 @@ export const freelancersTable = pgTable("freelancers", {
  * @property tax_id_document_link - text
  * @property business_license_link - text
  * @property certification_of_incorporation_link - text
- * @property website_url - text
- * @property social_media_links - text array with default ''
  */
 export const employersTable = pgTable("employers", {
   id: serial("id").primaryKey(),
@@ -177,8 +193,6 @@ export const employersTable = pgTable("employers", {
   taxIdDocumentLink: text("tax_id_document_link"),
   businessLicenseLink: text("business_license_link"),
   certificationOfIncorporationLink: text("certification_of_incorporation_link"),
-  websiteURL: text("website_url"),
-  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
 });
 
 /**
@@ -267,7 +281,7 @@ export const employerIndustriesTable = pgTable("employer_industries", {
 export const jobCategoriesTable = pgTable("job_categories", {
   id: serial("id").primaryKey(),
   label: text("label"),
-  createdAt: timestamp("timestamp").default(sql`now()`), // this createdAt column stores the time when a job is created, and by default it is set at the instant where the row is inserted
+  createdAt: timestamp("timestamp").default(sql`now()`),
 });
 
 /**
@@ -284,13 +298,10 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property project_type - projectTypeEnum
  * @property budget - integer
  * @property experience_level - experienceLevelEnum
- * @property is_active - boolean
- * @property is_deleted - boolean
- * @property is_draft - boolean
- * @property is_closed - boolean
- * @property is_paused - boolean
+ * @property status - jobStatusEnum
  * @property created_at - timestamp
  */
+
 export const jobsTable = pgTable("jobs", {
   id: serial("id").primaryKey(),
   employerId: integer("employer_id").references(() => employersTable.id),
@@ -302,15 +313,29 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-  requiredSkills: text("required_skills").array(),
+  // Updated requiredSkills to be an array of JSON objects
+  // TODO: remove required skills since we are using job_skills table
+  requiredSkills: json("required_skills")
+    .notNull()
+    .default(sql`'[]'::jsonb`),
+
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
   //experienceLevelEnum("experience_level"),
-  isActive: boolean("is_active").default(false),
-  isDeleted: boolean("is_deleted").default(false),
-  isDraft: boolean("is_draft").default(true),
-  isClosed: boolean("is_closed").default(false),
-  isPaused: boolean("is_paused").default(false),
+  status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const skillsTable = pgTable("skills", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
+});
+
+export const jobSkillsTable = pgTable("job_skills", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobsTable.id),
+  skillId: integer("skill_id").references(() => skillsTable.id),
+  isStarred: boolean("is_starred").default(false),
 });

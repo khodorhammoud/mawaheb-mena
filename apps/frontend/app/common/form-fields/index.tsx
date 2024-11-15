@@ -7,9 +7,10 @@ const AppFormField = ({
   name,
   label,
   placeholder = "",
-  options = [], // For dropdowns
-  className = "", // Custom classes if needed
+  options = [],
+  className = "",
   showPasswordHint = true,
+  col = 4,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -17,48 +18,93 @@ const AppFormField = ({
     setShowPassword(!showPassword);
   };
 
+  const textareaHeight = `${col * 1.5}rem`;
+
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full ${className}`}>
+      {/* INPUTS */}
+      {/* INPUTS */}
+      {/* INPUTS */}
       {type === "select" ? (
+        // select input
         <select
           id={id}
           name={name}
-          className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
+          className="peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-base"
         >
-          <option value="" disabled selected hidden>
-            {placeholder}
-          </option>
+          <option value="" disabled selected hidden></option>
           {options.map((option, index) => (
             <option key={index} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
+      ) : type === "textarea" ? (
+        // textarea input
+        <textarea
+          id={id}
+          name={name}
+          placeholder={placeholder}
+          style={{ height: textareaHeight }} // Apply dynamic height style
+          className="peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-base resize-none"
+        ></textarea>
       ) : (
+        // else inputs
         <input
           type={type === "password" && showPassword ? "text" : type}
           id={id}
           name={name}
-          placeholder=" "
-          className={`peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg ${type === "password" ? "pr-12" : ""}`}
+          placeholder={placeholder}
+          className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-base ${type === "password" ? "pr-12" : ""}`}
         />
       )}
+
+      {/* LABELS */}
+      {/* LABELS */}
+      {/* LABELS */}
       {type === "password" ? (
+        // password label
         <label
-          htmlFor="password"
-          className="absolute left-4 top-0 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-[25px] peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-1/2 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 text-base bg-white px-1 transition-all transform -translate-y-1/2
+              peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+              peer-placeholder-shown:text-base
+              peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
         >
           Password
         </label>
-      ) : (
+      ) : type === "textarea" ? (
+        // textarea label
         <label
           htmlFor={id}
-          className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-3 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
+          className="absolute left-4 top-0 text-gray-500 text-base bg-white px-1 transition-all transform -translate-y-1/2
+              peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+              peer-placeholder-shown:text-base
+              peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
+          {label}
+        </label>
+      ) : (
+        // else labels
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 text-base bg-white px-1 transition-all transform -translate-y-1/2
+              peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+              peer-placeholder-shown:text-base
+              peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
         >
           {label}
         </label>
       )}
+
+      {/* BUTTONS */}
+      {/* BUTTONS */}
+      {/* BUTTONS */}
       {type === "password" && (
+        // password button
         <button
           type="button"
           onClick={togglePasswordVisibility}
@@ -67,6 +113,10 @@ const AppFormField = ({
           {showPassword ? "🙈" : "👁️"}
         </button>
       )}
+
+      {/* PASSWORD SHOW & HIDE ICONS */}
+      {/* PASSWORD SHOW & HIDE ICONS */}
+      {/* PASSWORD SHOW & HIDE ICONS */}
       {type === "password" && showPasswordHint && (
         <p className="text-xs text-gray-600 mt-3 mb-6 ml-4">
           Password must be 8 characters, upper capital, lower case, symbols
@@ -75,6 +125,7 @@ const AppFormField = ({
     </div>
   );
 };
+
 AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
@@ -89,11 +140,8 @@ AppFormField.propTypes = {
     })
   ),
   className: PropTypes.string,
+  col: PropTypes.number, // New prop for dynamic height of textarea
+  placeholderTextSize: PropTypes.string, // Prop type for custom placeholder text size
 };
 
 export default AppFormField;
-
-// Usage Example
-// <FormField type="email" id="email" name="email" label="Email Address" />
-// <FormField type="text" id="name" name="name" label="Full Name" />
-// <FormField type="select" id="country" name="country" label="Country" options={[{ value: 'us', label: 'United States' }, { value: 'ca', label: 'Canada' }]} placeholder="Select a country" />

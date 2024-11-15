@@ -11,23 +11,35 @@ import {
   industriesTable,
   UsersTable,
   jobsTable,
+  freelancersTable,
+  // skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
   Employer,
-  EmployerBio,
-  EmployerSocialMediaLinks,
+  AccountBio,
+  AccountSocialMediaLinks,
   Industry,
+  UserAccount,
+  Freelancer,
+  PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
-import { getCurrentEployerFreelancerInfo } from "./user.server";
+import { getCurrentProfileInfo } from "./user.server";
+import { uploadFileToBucket } from "./cloudStorage.server";
+import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
+// import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
+import { JobStatus } from "~/types/enums";
 
-export async function updateEmployerBio(
-  bio: EmployerBio,
-  employer: Employer
+export async function updateAccountBio(
+  bio: AccountBio,
+  account: UserAccount
 ): Promise<SuccessVerificationLoaderStatus> {
-  const userId = employer.account.user.id;
-  const accountId = employer.accountId;
+  const userId = account.user.id;
+  const accountId = account.id;
 
   try {
     // update user info first
@@ -38,13 +50,13 @@ export async function updateEmployerBio(
       .returning();
 
     // update employer info
-    const socialMediaLinks: EmployerSocialMediaLinks = bio.socialMediaLinks;
+    const socialMediaLinks: AccountSocialMediaLinks = bio.socialMediaLinks;
 
     const res2 = await db
-      .update(employersTable)
+      .update(accountsTable)
       .set({ socialMediaLinks, websiteURL: bio.websiteURL })
-      .where(eq(employersTable.accountId, accountId))
-      .returning({ id: employersTable.id });
+      .where(eq(accountsTable.id, accountId))
+      .returning({ id: accountsTable.id });
 
     // update location in accounts table
     const res3 = await db
@@ -63,8 +75,8 @@ export async function updateEmployerBio(
   return { success: true };
 }
 
-export async function getEmployerBio(employer: Employer): Promise<EmployerBio> {
-  const userId = employer.account.user.id;
+export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
+  const userId = account.user.id;
 
   try {
     const user = await db
@@ -78,22 +90,136 @@ export async function getEmployerBio(employer: Employer): Promise<EmployerBio> {
     const emp = await db
       .select({
         location: accountsTable.location,
-        websiteURL: employersTable.websiteURL,
-        socialMediaLinks: employersTable.socialMediaLinks,
+        websiteURL: accountsTable.websiteURL,
+        socialMediaLinks: accountsTable.socialMediaLinks,
         firstName: UsersTable.firstName,
         lastName: UsersTable.lastName,
       })
       .from(UsersTable)
       .leftJoin(accountsTable, eq(UsersTable.id, accountsTable.userId))
-      .leftJoin(employersTable, eq(employersTable.accountId, accountsTable.id))
+      // .leftJoin(employersTable, eq(employersTable.accountId, accountsTable.id))
       .where(eq(UsersTable.id, userId));
 
     if (!user || !emp) {
       throw new Error("Failed to get employer bio");
     }
-    return emp[0] as EmployerBio;
+    return emp[0] as AccountBio;
   } catch (error) {
     console.error("Error getting employer bio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerPortfolio(
+  freelancer: Freelancer,
+  portfolio: PortfolioFormFieldType[],
+  portfolioImages: File[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // upload portfolio Images
+    for (let i = 0; i < portfolioImages.length; i++) {
+      const file = portfolioImages[i];
+      if (file && file.size > 0) {
+        portfolio[i].projectImageUrl = (
+          await uploadFileToBucket("portfolio", file)
+        ).fileName;
+      } else {
+        portfolio[i].projectImageUrl = "";
+      }
+    }
+
+    const res = await db
+      .update(freelancersTable)
+      .set({
+        portfolio: JSON.stringify(portfolio),
+      })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer portfolio");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer portfolio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerCertificates(
+  freelancer: Freelancer,
+  certificates: CertificateFormFieldType[],
+  certificatesImages: File[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // upload certificates Images
+    for (let i = 0; i < certificatesImages.length; i++) {
+      const file = certificatesImages[i];
+      if (file && file.size > 0) {
+        certificates[i].attachmentUrl = (
+          await uploadFileToBucket("certificates", file)
+        ).fileName;
+      } else {
+        certificates[i].attachmentUrl = "";
+      }
+    }
+
+    const res = await db
+      .update(freelancersTable)
+      .set({ certificates: JSON.stringify(certificates) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer certificates");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer certificates", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerWorkHistory(
+  freelancer: Freelancer,
+  workHistory: WorkHistoryFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    const res = await db
+      .update(freelancersTable)
+      .set({ workHistory: JSON.stringify(workHistory) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer work history");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer work history", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerEducation(
+  freelancer: Freelancer,
+  education: EducationFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    console.log("saving education", education);
+    const res = await db
+      .update(freelancersTable)
+      .set({ educations: JSON.stringify(education) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer education");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer education", error);
     throw error;
   }
 }
@@ -272,6 +398,51 @@ export async function getEmployerAbout(employer: Employer): Promise<string> {
   }
 }
 
+// Function to fetch the "About" section content for a freelancer
+export async function getFreelancerAbout(
+  freelancer: Freelancer
+): Promise<string> {
+  const accountId = freelancer.accountId;
+
+  try {
+    const result = await db
+      .select({
+        about: freelancersTable.about, // Fetch the about column
+      })
+      .from(freelancersTable)
+      .where(eq(freelancersTable.accountId, accountId))
+      .limit(1); // Limit to 1 row since we're expecting one result
+
+    // Return the fetched about content or default to an empty string if no result
+    return result[0]?.about ? String(result[0].about) : "";
+  } catch (error) {
+    console.error("Error fetching freelancer about section", error);
+    throw error; // Re-throw error for further handling
+  }
+}
+
+export async function getFreelancerHourlyRate(
+  freelancer: Freelancer
+): Promise<number> {
+  const accountId = freelancer.accountId;
+
+  try {
+    const result = await db
+      .select({
+        hourlyRate: freelancersTable.hourlyRate, // Fetch the hourlyRate column
+      })
+      .from(freelancersTable)
+      .where(eq(freelancersTable.accountId, accountId))
+      .limit(1); // Limit to 1 row since we're expecting one result
+
+    // Return the fetched hourly rate or default to 0 if no result
+    return result[0]?.hourlyRate ?? 0;
+  } catch (error) {
+    console.error("Error fetching freelancer hourly rate", error);
+    throw error; // Re-throw error for further handling
+  }
+}
+
 // Function to update the "About" section for an employer
 export async function updateEmployerAbout(
   employer: Employer,
@@ -294,6 +465,93 @@ export async function updateEmployerAbout(
   }
 }
 
+// Function to update the "About" section for a freelancer
+export async function updateFreelancerAbout(
+  freelancer: Freelancer,
+  aboutContent: string
+): Promise<{ success: boolean }> {
+  const accountId = freelancer.accountId;
+
+  try {
+    await db
+      .update(freelancersTable)
+      .set({
+        about: aboutContent, // Set the about column with the new content
+      })
+      .where(eq(freelancersTable.accountId, accountId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer about section", error);
+    return { success: false }; // Return failure status
+  }
+}
+
+export async function updateFreelancerVideoLink(
+  freelancerId: number,
+  videoLink: string
+): Promise<{ success: boolean }> {
+  return db
+    .update(freelancersTable)
+    .set({ introductoryVideo: videoLink })
+    .where(eq(freelancersTable.accountId, freelancerId))
+    .then(() => ({ success: true }))
+    .catch((error) => {
+      console.error("Error updating freelancer video link", error);
+      return { success: false };
+    });
+}
+
+export async function updateFreelancerYearsOfExperience(
+  freelancer: Freelancer,
+  yearsOfExperience: number
+): Promise<{ success: boolean }> {
+  const accountId = freelancer.accountId;
+
+  try {
+    if (isNaN(yearsOfExperience)) {
+      throw new Error("Years experience must be a number");
+    }
+    if (yearsOfExperience < 0) {
+      throw new Error("Years experience must be a positive number");
+    }
+    if (yearsOfExperience > 30) {
+      throw new Error("Years experience must be less than 30");
+    }
+    console.log("updating years of experience", yearsOfExperience);
+    await db
+      .update(freelancersTable)
+      .set({ yearsOfExperience })
+      .where(eq(freelancersTable.accountId, accountId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer years experience", error);
+    return { success: false }; // Return failure status
+  }
+}
+
+export async function updateFreelancerHourlyRate(
+  freelancer: Freelancer,
+  hourlyRate: number
+): Promise<{ success: boolean }> {
+  const accountId = freelancer.accountId;
+
+  try {
+    await db
+      .update(freelancersTable)
+      .set({
+        hourlyRate, // Set the hourlyRate column with the new rate
+      })
+      .where(eq(freelancersTable.accountId, accountId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer hourly rate", error);
+    return { success: false }; // Return failure status
+  }
+}
+
 // Helper function to check if a user exists
 export async function checkUserExists(userId: number) {
   return await db
@@ -311,17 +569,19 @@ export async function updateOnboardingStatus(userId: number) {
     .where(eq(UsersTable.id, userId))
     .returning();
 
-  return result; // Return the result from the update operation
+  return result;
 }
 
 // fetch the job count
+// fetch the job count
+// fetch the job count
+// DASHBOARD PAGE
+// EASSY
 export async function getEmployerDashboardData(request: Request) {
   try {
     // Fetch the current employer information based on the request
-    const currentUser = (await getCurrentEployerFreelancerInfo(
-      request
-    )) as Employer;
-    if (!currentUser) {
+    const currentProfile = (await getCurrentProfileInfo(request)) as Employer;
+    if (!currentProfile) {
       throw new Error("Current user not found.");
     }
 
@@ -332,8 +592,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentUser.id),
-            eq(jobsTable.isActive, true)
+            eq(jobsTable.employerId, currentProfile.id),
+            eq(jobsTable.status, JobStatus.Active)
           )
         ),
       db
@@ -341,8 +601,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentUser.id),
-            eq(jobsTable.isDraft, true)
+            eq(jobsTable.employerId, currentProfile.id),
+            eq(jobsTable.status, JobStatus.Draft)
           )
         ),
       db
@@ -350,8 +610,8 @@ export async function getEmployerDashboardData(request: Request) {
         .from(jobsTable)
         .where(
           and(
-            eq(jobsTable.employerId, currentUser.id),
-            eq(jobsTable.isClosed, true)
+            eq(jobsTable.employerId, currentProfile.id),
+            eq(jobsTable.status, JobStatus.Closed)
           )
         ),
     ]);
@@ -367,4 +627,30 @@ export async function getEmployerDashboardData(request: Request) {
     console.error("Error fetching employer dashboard data:", error);
     throw error; // Re-throw the error for further handling
   }
+}
+
+// fetch the jobs
+// fetch the jobs
+// fetch the jobs
+// my-jobs PAGE
+export async function getJobs(): Promise<Job[]> {
+  // Fetch all jobs from the database
+  const jobs = await db.select().from(jobsTable).execute();
+
+  // Map each job result to a structured object
+  return jobs.map((job) => ({
+    id: job.id,
+    employerId: job.employerId,
+    title: job.title,
+    description: job.description,
+    workingHoursPerWeek: job.workingHoursPerWeek,
+    locationPreference: job.locationPreference,
+    // requiredSkills: job.requiredSkills as Skill[],
+    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
+    projectType: job.projectType,
+    budget: job.budget,
+    experienceLevel: job.experienceLevel,
+    status: job.status as JobStatus,
+    createdAt: job.createdAt?.toISOString(),
+  }));
 }

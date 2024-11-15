@@ -6,9 +6,9 @@ import { createUserSession } from "../../auth/session.server";
 import { AuthorizationError } from "remix-auth";
 
 export async function action({ request }: ActionFunctionArgs) {
-  let employerFreelancer: Employer | Freelancer = null;
+  let profile: Employer | Freelancer = null;
   try {
-    employerFreelancer = await authenticator.authenticate("login", request, {
+    profile = await authenticator.authenticate("login", request, {
       throwOnError: true,
     });
   } catch (error) {
@@ -30,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   }
-  return await createUserSession(request, employerFreelancer, "/dashboard");
+  return await createUserSession(request, profile, "/dashboard");
   // return json({ success: true });
 }
 

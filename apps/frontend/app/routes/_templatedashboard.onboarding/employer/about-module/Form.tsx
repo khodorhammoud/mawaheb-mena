@@ -8,8 +8,8 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "~/common/header/card";
+// import { Input } from "~/components/ui/input";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Employer } from "~/types/User";
 
@@ -23,9 +23,9 @@ interface ActionData {
 
 export default function UserAboutPopup() {
   const actionData = useActionData<ActionData>();
-  const { aboutContent, currentUser } = useLoaderData<{
+  const { aboutContent, currentProfile } = useLoaderData<{
     aboutContent: string;
-    currentUser: Employer;
+    currentProfile: Employer;
   }>();
 
   const [open, setOpen] = useState(false);
@@ -108,7 +108,7 @@ export default function UserAboutPopup() {
               <input
                 type="hidden"
                 name="userId"
-                value={currentUser.account?.user?.id}
+                value={currentProfile.account?.user?.id}
               />
               <input
                 type="hidden"

@@ -98,7 +98,7 @@ export default function SignupLeftComponent() {
         <p className="text-sm text-gray-600">
           Already have an account?{" "}
           <a
-            href="/login-employer"
+            href="/login-freelancer"
             className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"
           >
             Login

@@ -93,7 +93,7 @@ export default function LoginFormComponent() {
       {/* Don't have an account? SignUp */}
       <div className="text-center mt-8">
         <p className="text-sm text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a
             href="/signup-employer"
             className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"

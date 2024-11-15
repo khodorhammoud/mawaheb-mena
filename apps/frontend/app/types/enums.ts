@@ -83,3 +83,11 @@ export enum ExperienceLevel {
   Mid = "mid_level",
   Expert = "senior_level",
 }
+
+export enum JobStatus {
+  Draft = "draft",
+  Active = "active",
+  Closed = "closed",
+  Paused = "paused",
+  Deleted = "deleted",
+}

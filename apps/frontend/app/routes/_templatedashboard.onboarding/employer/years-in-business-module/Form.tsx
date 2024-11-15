@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "~/common/header/card";
 import { Input } from "~/components/ui/input";
 import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
 import { SlBadge } from "react-icons/sl";
@@ -23,10 +23,10 @@ interface ActionData {
 
 export default function YearsInBusinessCard() {
   const actionData = useActionData<ActionData>();
-  const { yearsInBusiness: initialYearsInBusiness, currentUser } =
+  const { yearsInBusiness: initialYearsInBusiness, currentProfile } =
     useLoaderData<{
       yearsInBusiness: number;
-      currentUser: Employer;
+      currentProfile: Employer;
     }>();
 
   const [open, setOpen] = useState(false);
@@ -95,8 +95,8 @@ export default function YearsInBusinessCard() {
     // Submit the form programmatically
     submit(
       {
-        "target-updated": "employer-years-in-business",
-        userId: currentUser.account?.user?.id,
+        "target-updated": "years-in-business",
+        userId: currentProfile.account?.user?.id,
         "years-in-business": value.toString(),
       },
       { method: "post" }
@@ -116,7 +116,7 @@ export default function YearsInBusinessCard() {
   };
 
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Years in Business</CardTitle>
       </CardHeader>
