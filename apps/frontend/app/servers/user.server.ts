@@ -13,6 +13,7 @@ import {
   Employer,
   Freelancer,
   UserAccount,
+  PortfolioFormFieldType,
 } from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
@@ -222,6 +223,7 @@ export async function getProfileInfo(
         .where(eq(freelancersTable.accountId, account.id));
       if (freelancer.length === 0) return null;
       freelancer = freelancer[0];
+      freelancer.portfolio = freelancer.portfolio as PortfolioFormFieldType[];
     }
     return {
       account,

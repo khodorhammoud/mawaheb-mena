@@ -108,7 +108,6 @@ export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
  * @property about - text
  * @property fields_of_expertise - text array with default ''
  * @property portfolio - text array with default ''
- * @property portfolio_description - text
  * @property cv_link - text
  * @property video_link - text
  * @property certificates_links - text array with default ''
@@ -125,9 +124,9 @@ export const freelancersTable = pgTable("freelancers", {
   fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
+  // portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
   portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
   workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
-  // portfolioDescription: text("portfolio_description"),
   cvLink: text("cv_link"),
   videoLink: text("video_link"),
   certificates: jsonb("certificates").default(sql`'[]'::jsonb`),
@@ -318,7 +317,7 @@ export const jobsTable = pgTable("jobs", {
   // TODO: remove required skills since we are using job_skills table
   requiredSkills: json("required_skills")
     .notNull()
-    .default(sql`'{}'::jsonb`),
+    .default(sql`'[]'::jsonb`),
 
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),

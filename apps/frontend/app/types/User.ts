@@ -75,11 +75,13 @@ export interface Freelancer {
   id: number;
   accountId?: number;
   fieldsOfExpertise?: string[];
-  portfolio?: string[];
+  portfolio?: PortfolioFormFieldType[];
+  workHistory?: WorkHistoryFormFieldType[];
   portfolioDescription?: string;
   cvLink?: string;
   videoLink?: string;
-  certificatesLinks?: string[];
+  certificates?: CertificateFormFieldType[];
+  educations?: EducationFormFieldType[];
   yearsOfExperience?: number;
   languagesSpoken?: Language[];
   preferredProjectTypes?: ProjectType[];
@@ -152,11 +154,39 @@ export interface OnboardingFreelancerFields {
   accountOnboarded: boolean;
   hourlyRate: number;
   yearsOfExperience: number;
+  portfolio?: PortfolioFormFieldType[];
+  workHistory?: WorkHistoryFormFieldType[];
+  certificates?: CertificateFormFieldType[];
+  education?: EducationFormFieldType[];
 }
 
 export interface PortfolioFormFieldType {
   projectName: string;
   projectLink: string;
   projectDescription: string;
-  projectImage: File | null;
+  projectImageName: string;
+  projectImageUrl: string | null;
+}
+
+export interface WorkHistoryFormFieldType {
+  title: string;
+  company: string;
+  currentlyWorkingThere: boolean;
+  startDate: Date;
+  endDate: Date;
+  jobDescription: string;
+}
+
+export interface CertificateFormFieldType {
+  attachmentName: string;
+  attachmentUrl: string;
+  certificateName: string;
+  issuedBy: string;
+  yearIssued: number;
+}
+
+export interface EducationFormFieldType {
+  degree: string;
+  institution: string;
+  graduationYear: number;
 }

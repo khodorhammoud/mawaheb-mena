@@ -18,10 +18,17 @@ import {
 } from "~/components/ui/dialog";
 import {
   PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
+import PortfolioComponent from "./PortfolioComponent";
+import WorkHistoryComponent from "./WorkHistory";
+import CertificateComponent from "./CertificateComponent";
 import { motion, AnimatePresence } from "framer-motion";
+import EducationComponent from "./EducationComponent";
 
 interface GeneralizableFormCardProps {
   formType:
@@ -46,76 +53,6 @@ interface GeneralizableFormCardProps {
   repeatableFieldName?: string;
 }
 
-const portfolioFormFields: PortfolioFormFieldType = {
-  projectName: "",
-  projectLink: "",
-  projectDescription: "",
-  projectImage: null,
-};
-
-interface PortfolioComponentProps {
-  // index: number;
-  data: PortfolioFormFieldType;
-  onChange: (data: PortfolioFormFieldType) => void;
-}
-
-function PortfolioComponent({
-  // index,
-  data,
-  onChange,
-}: PortfolioComponentProps) {
-  return (
-    <div className="space-y-4">
-      <div className="flex space-x-4">
-        <Input
-          type="text"
-          placeholder="Project Name"
-          className="w-1/2 border-gray-300 rounded-md"
-          value={data.projectName}
-          onChange={(e) => onChange({ ...data, projectName: e.target.value })}
-        />
-        <Input
-          type="url"
-          placeholder="Project Link"
-          className="w-1/2 border-gray-300 rounded-md"
-          value={data.projectLink}
-          onChange={(e) => onChange({ ...data, projectLink: e.target.value })}
-        />
-      </div>
-      <div className="w-full border-dashed border-gray-300 border rounded-md p-6 flex justify-center items-center cursor-pointer">
-        <label className="flex items-center space-x-2 cursor-pointer">
-          <span className="text-blue-500 underline">Click to Upload</span> or
-          drag and drop
-          <input
-            type="file"
-            className="hidden"
-            onChange={(e) =>
-              onChange({
-                ...data,
-                projectImage: e.target.files ? e.target.files[0] : null,
-              })
-            }
-          />
-        </label>
-        <p className="text-sm text-gray-500 mt-2">(Max. File size: 25 MB)</p>
-      </div>
-      <textarea
-        placeholder="Project Description"
-        className="w-full border-gray-300 rounded-md p-3"
-        rows={4}
-        maxLength={2000}
-        value={data.projectDescription}
-        onChange={(e) =>
-          onChange({ ...data, projectDescription: e.target.value })
-        }
-      />
-      <div className="text-right text-sm text-gray-500">
-        {data.projectDescription.length}/2000 words
-      </div>
-    </div>
-  );
-}
-
 function GeneralizableFormCard({
   formType,
   cardTitle,
@@ -127,7 +64,7 @@ function GeneralizableFormCard({
   triggerIcon,
   minVal,
   maxVal,
-  // repeatableFieldName,
+  repeatableFieldName,
 }: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
     OnboardingEmployerFields | OnboardingFreelancerFields
@@ -137,7 +74,7 @@ function GeneralizableFormCard({
 
   /* 
   set the initial value of the input field based on the form type
-  in case of repeatable, repeatableinputValue s used
+  in case of repeatable, repeatableinputValue is used
    */
   const [inputValue, setInputValue] = useState<number | string | File>(
     formType !== "repeatable"
@@ -145,28 +82,104 @@ function GeneralizableFormCard({
       : null
   );
 
+  /* 
+  INFO: repeatable fields
+  repeatable field types:
+    - portfolio
+    - work history
+    - certificate
+    - education
+  */
+
+  // =========== repeatable fields default values =============
+  const portfolioFormFields: PortfolioFormFieldType = {
+    projectName: "",
+    projectLink: "",
+    projectDescription: "",
+    projectImageName: "",
+    projectImageUrl: "",
+  };
+
+  const workHistoryFormFields: WorkHistoryFormFieldType = {
+    title: "",
+    company: "",
+    currentlyWorkingThere: false,
+    startDate: new Date(),
+    endDate: new Date(),
+    jobDescription: "",
+  };
+
+  const certificatesFormFields: CertificateFormFieldType = {
+    certificateName: "",
+    issuedBy: "",
+    yearIssued: 0,
+    attachmentName: "",
+    attachmentUrl: "",
+  };
+
+  const educationFormFields: EducationFormFieldType = {
+    degree: "",
+    institution: "",
+    graduationYear: 0,
+  };
+
+  // =========== end of repeatable fields default values =============
+
+  // =========== repeatable fields state =============
   const [repeatableInputValues, setRepeatableInputValues] = useState<
-    PortfolioFormFieldType[]
+    | PortfolioFormFieldType[]
+    | WorkHistoryFormFieldType[]
+    | CertificateFormFieldType[]
+    | EducationFormFieldType[]
   >([]);
 
-  /* const [components, setComponents] = useState<ReactNode[]>(
-    customComponents ? [customComponents] : []
-  ); */
+  // file uploads in repeatable fields
+  const [repeatableInputFiles, setRepeatableInputFiles] = useState<File[]>([]);
 
-  // const [repeatableFields, setRepeatableFields] = useState<ReactNode[]>([]);
+  // =========== end of repeatable fields state =============
+
+  // =========== repeatable fields handlers =============
 
   const handleAddRepeatableField = () => {
-    setRepeatableInputValues([
-      ...repeatableInputValues,
-      { ...portfolioFormFields },
-    ]);
+    switch (repeatableFieldName) {
+      case "portfolio":
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as PortfolioFormFieldType[]),
+          { ...portfolioFormFields },
+        ]);
+
+        break;
+      case "workHistory":
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as WorkHistoryFormFieldType[]),
+          { ...workHistoryFormFields },
+        ]);
+        break;
+      case "certificates":
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as CertificateFormFieldType[]),
+          { ...certificatesFormFields },
+        ]);
+        break;
+      case "educations":
+        setRepeatableInputValues((prevValues) => [
+          ...(prevValues as EducationFormFieldType[]),
+          { ...educationFormFields },
+        ]);
+        break;
+      default:
+        break;
+    }
+    setRepeatableInputFiles([...repeatableInputFiles, null]);
     setExpandedIndex(repeatableInputValues.length); // Expand the newly added field
   };
 
   const handleRemoveRepeatableField = (index: number) => {
     setRepeatableInputValues(
-      repeatableInputValues.filter((_, i) => i !== index)
+      (prevValues) =>
+        prevValues.filter((_, i) => i !== index) as typeof repeatableInputValues
     );
+    setRepeatableInputFiles(repeatableInputFiles.filter((_, i) => i !== index));
     setExpandedIndex(null); // Collapse all fields after removal
   };
 
@@ -176,23 +189,98 @@ function GeneralizableFormCard({
 
   const handleDataChange = (
     index: number,
-    updatedData: PortfolioFormFieldType
+    updatedData:
+      | PortfolioFormFieldType
+      | WorkHistoryFormFieldType
+      | CertificateFormFieldType
+      | EducationFormFieldType
   ) => {
-    const updatedInputValues = [...repeatableInputValues];
-    updatedInputValues[index] = updatedData;
-    setRepeatableInputValues(updatedInputValues);
+    setRepeatableInputValues((prevValues) => {
+      const updatedInputValues = [...prevValues];
+      updatedInputValues[index] = {
+        ...updatedInputValues[index],
+        ...updatedData,
+      };
+      return updatedInputValues as typeof prevValues;
+    });
   };
+
+  const handleFileChange = (index: number, file: File) => {
+    const updatedInputFiles = [...repeatableInputFiles];
+    updatedInputFiles[index] = file;
+    setRepeatableInputFiles(updatedInputFiles);
+
+    let updatedInputValues:
+      | PortfolioFormFieldType[]
+      | CertificateFormFieldType[]
+      | EducationFormFieldType[];
+    switch (repeatableFieldName) {
+      case "portfolio":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as PortfolioFormFieldType[];
+        (updatedInputValues[index] as PortfolioFormFieldType).projectImageName =
+          file.name;
+        setRepeatableInputValues(updatedInputValues);
+        break;
+      case "certificates":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as CertificateFormFieldType[];
+        (updatedInputValues[index] as CertificateFormFieldType).attachmentName =
+          file.name;
+        setRepeatableInputValues(updatedInputValues);
+        break;
+      case "educations":
+        updatedInputValues = [
+          ...repeatableInputValues,
+        ] as EducationFormFieldType[];
+        setRepeatableInputValues(updatedInputValues);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // =========== end of repeatable fields handlers =============
 
   // Initialize repeatable fields with existing data
   useEffect(() => {
     if (formType === "repeatable") {
+      let dataParsed = false;
       if (initialData && initialData[fieldName]) {
-        setRepeatableInputValues(initialData[fieldName]);
-      } else {
-        handleAddRepeatableField();
+        try {
+          const repeatableData = JSON.parse(initialData[fieldName]) as
+            | PortfolioFormFieldType[]
+            | WorkHistoryFormFieldType[]
+            | CertificateFormFieldType[]
+            | EducationFormFieldType[];
+          setRepeatableInputValues(repeatableData);
+          setRepeatableInputFiles(repeatableData.map(() => null));
+          dataParsed = true;
+        } catch (error) {
+          console.error("Error parsing repeatable data", error);
+        }
+      }
+      if (!dataParsed) {
+        switch (repeatableFieldName) {
+          case "portfolio":
+            setRepeatableInputValues([portfolioFormFields]);
+            break;
+          case "workHistory":
+            setRepeatableInputValues([workHistoryFormFields]);
+            break;
+          case "certificates":
+            setRepeatableInputValues([certificatesFormFields]);
+            break;
+          case "educations":
+            setRepeatableInputValues([educationFormFields]);
+            break;
+        }
+        setRepeatableInputFiles([null]);
       }
     }
-  }, [formType, initialData, fieldName]);
+  }, []);
 
   // -----------------------------
   // form fetcher fields
@@ -211,6 +299,21 @@ function GeneralizableFormCard({
   }, [fetcher.data]);
 
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(formRef.current!);
+    formData.append(repeatableFieldName, JSON.stringify(repeatableInputValues));
+    // add files
+    repeatableInputFiles.forEach((file, index) => {
+      formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
+    });
+
+    fetcher.submit(formData, {
+      method: "post",
+      encType: "multipart/form-data",
+    });
+  };
 
   const handleIncrement = (step: number) => {
     fetcher.submit(
@@ -385,13 +488,41 @@ function GeneralizableFormCard({
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                           className="overflow-hidden mt-4"
                         >
-                          <PortfolioComponent
-                            // index={index}
-                            data={dataItem}
-                            onChange={(updatedData) =>
-                              handleDataChange(index, updatedData)
-                            }
-                          />
+                          {repeatableFieldName === "portfolio" ? (
+                            <PortfolioComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                              onFileChange={(file) =>
+                                handleFileChange(index, file)
+                              }
+                            />
+                          ) : repeatableFieldName === "workHistory" ? (
+                            <WorkHistoryComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : repeatableFieldName === "certificates" ? (
+                            <CertificateComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                              onFileChange={(file) =>
+                                handleFileChange(index, file)
+                              }
+                            />
+                          ) : repeatableFieldName === "educations" ? (
+                            <EducationComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : null}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -460,16 +591,16 @@ function GeneralizableFormCard({
               <span className="block sm:inline">updated successfully</span>
             </div>
           )}
-          <fetcher.Form method="post" className="space-y-6" ref={formRef}>
+          <fetcher.Form
+            method="post"
+            className="space-y-6"
+            ref={formRef}
+            {...(formType === "repeatable"
+              ? { encType: "multipart/form-data", onSubmit: handleSubmit }
+              : {})}
+          >
             <input type="hidden" name="target-updated" value={formName} />
             {renderFormField()}
-            {formType === "repeatable" && (
-              <input
-                type="hidden"
-                name={fieldName}
-                value={JSON.stringify(repeatableInputValues)}
-              />
-            )}
             <DialogFooter>
               <Button
                 type="submit"

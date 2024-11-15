@@ -23,9 +23,13 @@ import {
   UserAccount,
   Freelancer,
   PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
+import { uploadFileToBucket } from "./cloudStorage.server";
 import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
@@ -108,9 +112,22 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
 
 export async function updateFreelancerPortfolio(
   freelancer: Freelancer,
-  portfolio: PortfolioFormFieldType[]
+  portfolio: PortfolioFormFieldType[],
+  portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
+    // upload portfolio Images
+    for (let i = 0; i < portfolioImages.length; i++) {
+      const file = portfolioImages[i];
+      if (file && file.size > 0) {
+        portfolio[i].projectImageUrl = (
+          await uploadFileToBucket("portfolio", file)
+        ).fileName;
+      } else {
+        portfolio[i].projectImageUrl = "";
+      }
+    }
+
     const res = await db
       .update(freelancersTable)
       .set({
@@ -126,6 +143,83 @@ export async function updateFreelancerPortfolio(
     return { success: true };
   } catch (error) {
     console.error("Error updating freelancer portfolio", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerCertificates(
+  freelancer: Freelancer,
+  certificates: CertificateFormFieldType[],
+  certificatesImages: File[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // upload certificates Images
+    for (let i = 0; i < certificatesImages.length; i++) {
+      const file = certificatesImages[i];
+      if (file && file.size > 0) {
+        certificates[i].attachmentUrl = (
+          await uploadFileToBucket("certificates", file)
+        ).fileName;
+      } else {
+        certificates[i].attachmentUrl = "";
+      }
+    }
+
+    const res = await db
+      .update(freelancersTable)
+      .set({ certificates: JSON.stringify(certificates) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer certificates");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer certificates", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerWorkHistory(
+  freelancer: Freelancer,
+  workHistory: WorkHistoryFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    const res = await db
+      .update(freelancersTable)
+      .set({ workHistory: JSON.stringify(workHistory) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer work history");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer work history", error);
+    throw error;
+  }
+}
+
+export async function updateFreelancerEducation(
+  freelancer: Freelancer,
+  education: EducationFormFieldType[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    console.log("saving education", education);
+    const res = await db
+      .update(freelancersTable)
+      .set({ educations: JSON.stringify(education) })
+      .where(eq(freelancersTable.id, freelancer.id))
+      .returning({ id: freelancersTable.id });
+
+    if (!res.length) {
+      throw new Error("Failed to update freelancer education");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer education", error);
     throw error;
   }
 }
