@@ -1,5 +1,4 @@
 import LayoutContainer from "../../common/layout_container";
-
 import RegistrationSlider, {
   registrationSlideData,
 } from "../../common/registration/registrationSlider";

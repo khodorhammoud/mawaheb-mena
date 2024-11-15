@@ -13,7 +13,6 @@ interface ActionData {
 export default function SignupLeftComponent() {
   const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
-
   const redirectionFlag = useRef(false);
 
   useEffect(() => {
@@ -55,7 +54,7 @@ export default function SignupLeftComponent() {
               ? "bg-blue-100 border-blue-300"
               : "border-gray-200"
           }`}
-          // this is for the selected button 👍
+          // this is the styles for the selected button 👍
         >
           <div className="flex flex-col items-center rounded-xl">
             <span className="text-4xl">👤</span>
@@ -114,6 +113,7 @@ export default function SignupLeftComponent() {
           name="password"
           label="Password"
         />
+
         <button
           type="submit"
           className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"

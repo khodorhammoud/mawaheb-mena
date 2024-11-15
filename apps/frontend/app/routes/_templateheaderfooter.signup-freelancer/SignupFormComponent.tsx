@@ -1,6 +1,7 @@
 import SocialLinks from "../../common/registration/socialLinks";
 import { useEffect, useRef } from "react";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
+import AppFormField from "../../common/form-fields";
 
 interface ActionData {
   success?: boolean;
@@ -12,7 +13,6 @@ interface ActionData {
 export default function SignupLeftComponent() {
   const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
-
   const redirectionFlag = useRef(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function SignupLeftComponent() {
       <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
         Sign Up
       </h1>
+
       {/* error message in case of error */}
       {actionData?.error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
@@ -37,77 +38,34 @@ export default function SignupLeftComponent() {
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
         <input type="hidden" name="accountType" value="freelancer" />
-        <div className="relative">
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder=" "
-            className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
-          />
-          <label
-            htmlFor="email"
-            className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-3 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
-          >
-            Email Address
-          </label>
-        </div>
+
+        {/* AppFormField for email */}
+        <AppFormField id="email" name="email" label="Email Address" />
 
         <div className="flex space-x-4">
-          <div className="relative w-1/2">
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              placeholder=" "
-              className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
-            />
-            <label
-              htmlFor="firstName"
-              className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-1/2 peer-focus:top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
-            >
-              First Name
-            </label>
-          </div>
-          <div className="relative w-1/2">
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              placeholder=" "
-              className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg"
-            />
-            <label
-              htmlFor="lastName"
-              className="absolute left-4 top-3 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-1/2 peer-focus:top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
-            >
-              Last Name
-            </label>
-          </div>
+          {/* AppFormField for first name */}
+          <AppFormField
+            className="w-1/2"
+            id="firstName"
+            name="firstName"
+            label="First Name"
+          />
+
+          {/* AppFormField for last name */}
+          <AppFormField
+            className="w-1/2"
+            id="lastName"
+            name="lastName"
+            label="Last Name"
+          />
         </div>
 
-        <div className="relative">
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder=" "
-            className="peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:
-              ring-primaryColor focus:border-primaryColor text-lg pr-12"
-          />
-          <label
-            htmlFor="password"
-            className="absolute left-4 top-0 text-gray-500 text-lg bg-white px-1 transition-all peer-placeholder-shown:top-[30%] peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base transform -translate-y-2 peer-focus:-top-1 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:bg-white peer-focus:px-1"
-          >
-            Password
-          </label>
-          <button className="absolute inset-y-3 right-3 flex text-xl text-gray-400 cursor-pointer">
-            👁️
-          </button>
-          <p className="text-xs text-gray-600 mt-3 mb-6 ml-4">
-            Password must be 8 characters, upper capital, lower case, symbols
-          </p>
-        </div>
+        <AppFormField
+          type="password"
+          id="password"
+          name="password"
+          label="Password"
+        />
 
         <button
           type="submit"
