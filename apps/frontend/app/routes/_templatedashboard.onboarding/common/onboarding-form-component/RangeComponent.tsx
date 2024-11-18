@@ -13,39 +13,49 @@ export default function RangeComponent({
   return (
     <div className="relative w-full flex items-center mt-8">
       {/* Slider Track */}
-      <div className="relative w-full h-2 bg-blue-200 rounded-full">
+      <div className="relative w-full h-3 bg-blue-100 rounded-full">
         {/* Line representing min to max values */}
         <div
-          className="absolute h-full bg-blue-600"
+          className="absolute h-full bg-primaryColor"
           style={{
             left: `${minValPercent}%`,
             right: `${100 - maxValPercent}%`,
           }}
         ></div>
 
+        <div className="flex">
+          {/* . left */}
+          <div className="absolute left-0 w-1 h-1 bg-primaryColor text-sm rounded-full mt-1 ml-1"></div>
+
+          {/* right . */}
+          <div className="absolute right-0 w-1 h-1 bg-primaryColor text-sm rounded-full mt-1 mr-1"></div>
+        </div>
+
         {/* Min Value Cursor */}
         <div
-          className="absolute bottom-0 transform -translate-x-1/2"
+          className="absolute -bottom-4 transform -translate-x-1/2"
           style={{ left: `${minValPercent}%` }}
         >
+          {/* 1st the black ball */}
           <div className="flex flex-col items-center">
-            <div className="mb-1 flex items-center justify-center w-8 h-8 bg-gray-800 text-white text-sm rounded-full">
+            <div className="mb-2 flex items-center justify-center w-9 h-8 bg-black text-white text-sm rounded-full">
               {minVal}
             </div>
-            <div className="w-1 h-6 bg-blue-600"></div>
+            <div className="w-1 h-11 bg-primaryColor rounded-xl"></div>
           </div>
         </div>
 
         {/* Max Value Cursor */}
         <div
-          className="absolute bottom-0 transform -translate-x-1/2"
+          className="absolute -bottom-4 transform -translate-x-1/2"
           style={{ left: `${maxValPercent}%` }}
         >
+          {/* 2nd the black ball */}
           <div className="flex flex-col items-center">
-            <div className="mb-1 flex items-center justify-center w-8 h-8 bg-gray-800 text-white text-sm rounded-full">
+            <div className="mb-2 flex items-center justify-center w-9 h-8 bg-black text-white text-sm rounded-full">
               {maxVal}
             </div>
-            <div className="w-1 h-6 bg-blue-600"></div>
+            <div className="w-1 h-11 bg-primaryColor rounded-xl"></div>
           </div>
         </div>
       </div>

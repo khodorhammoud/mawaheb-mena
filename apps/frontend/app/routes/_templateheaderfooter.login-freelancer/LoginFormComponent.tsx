@@ -37,7 +37,7 @@ export default function LoginFormComponent() {
 
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
-        <input type="hidden" name="accountType" value="employer" />
+        <input type="hidden" name="accountType" value="freelancer" />
 
         {/* The Email */}
         <AppFormField
