@@ -10,7 +10,7 @@ import {
   GET_TESTIMONIALS_QUERY,
   GET_ALL_JOBS_QUERY,
   GET_ACHIEVEMENTS_QUERY,
-} from "../../../../shared/cms-queries"; // the problem here is that i cant delete anything in the loader here eventhough i dont need the subheadline or features or blogCard
+} from "~/cms-queries/cms-queries"; // the problem here is that i cant delete anything in the loader here eventhough i dont need the subheadline or features or blogCard
 import {
   HowItWorksItem,
   PreWhatTheySayAboutUs,

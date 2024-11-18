@@ -11,7 +11,7 @@ import {
   GET_FAQS_QUERY,
   GET_TESTIMONIALS_QUERY,
   GET_BLOG_CARDS_QUERY,
-} from "../../../../shared/cms-queries";
+} from "~/cms-queries/cms-queries";
 import {
   HowItWorksItem,
   SubHeadline,
@@ -56,7 +56,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const howItWorksItems: HowItWorksItem[] =
     dataResponse[2]?.data?.howItWorksItems || [];
-    
+
   const features: Feature[] = dataResponse[0]?.data?.features || [];
   const postHowItWorks: PostHowItWorksItem = dataResponse[3]?.data
     ?.postHowItWorksSection?.[0] || {

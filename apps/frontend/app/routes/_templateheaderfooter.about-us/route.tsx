@@ -8,7 +8,7 @@ import {
   GET_HOW_WE_MAKE_DIFF_QUERY,
   GET_MEET_THE_TEAM_QUERY,
   GET_WANT_TO_JOIN_US_QUERY,
-} from "../../../../shared/cms-queries";
+} from "~/cms-queries/cms-queries";
 import {
   Achievement,
   Mawaheb,

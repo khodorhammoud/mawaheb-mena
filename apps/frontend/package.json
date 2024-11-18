@@ -38,6 +38,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "docusaurus": "^1.14.7",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.32.0",
     "framer-motion": "^11.3.31",
     "get-port": "^7.1.0",
@@ -95,5 +96,6 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "packageManager": "npm@10.2.4"
 }

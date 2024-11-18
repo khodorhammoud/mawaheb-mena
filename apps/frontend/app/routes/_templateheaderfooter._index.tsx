@@ -11,7 +11,7 @@ import {
   GET_FAQS_QUERY,
   GET_TESTIMONIALS_QUERY,
   GET_BLOG_CARDS_QUERY,
-} from "../../../shared/cms-queries";
+} from "~/cms-queries/cms-queries";
 import {
   HowItWorksItem,
   SubHeadline,

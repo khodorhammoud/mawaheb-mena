@@ -1,0 +1,51 @@
+# Ignore node_modules at the root and in all subdirectories
+node_modules
+**/node_modules
+
+# Ignore build artifacts
+dist
+build
+apps/*/build
+apps/*/dist
+
+# Ignore local environment files
+.env.local
+.env.*.local
+
+# Ignore log files
+*.log
+logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore editor files
+.vscode
+.idea
+*.swp
+
+# Ignore cache directories
+.cache
+.pnpm-store
+.turbo
+
+# Ignore Docker-specific files
+Dockerfile*
+docker-compose.yml
+
+# Ignore other unnecessary files
+.git
+.gitignore
+coverage
+test
+tests
+*.test.js
+*.spec.js
+__tests__
+.keystone
+.dockerignore
+Dockerfile

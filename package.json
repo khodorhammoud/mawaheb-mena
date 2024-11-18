@@ -4,8 +4,12 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "build:frontend": "cd apps/frontend && npm run build",
+    "build:cms": "cd apps/cms && npm run build",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prune:frontend": "turbo prune frontend --docker",
+    "prune:cms": "turbo prune cms --docker"
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",

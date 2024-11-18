@@ -1,0 +1,72 @@
+# Stage 1: Build
+FROM node:21-alpine AS base
+ 
+FROM base AS builder
+
+RUN apk update
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+RUN npm install -g turbo@^2
+COPY . .
+
+# Generate a partial monorepo with a pruned lockfile for a target workspace.
+# Assuming "web" is the name entered in the project's package.json: { name: "web" }
+RUN npm run prune:frontend --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk update
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# First install the dependencies (as they change less often)
+COPY --from=builder /app/out/json .
+
+# WORKDIR /app/out/json
+
+RUN npm install --omit=dev
+
+WORKDIR /app/apps/frontend
+RUN npm install remix-serve
+WORKDIR /app
+COPY --from=builder /app/out/full .
+
+# WORKDIR /app/apps/frontend
+
+# RUN npm install
+
+# WORKDIR /app
+# Build the project
+# COPY --from=builder /app/out/full/ .
+RUN npx turbo run build --filter=frontend...
+
+FROM node:21-bullseye-slim AS runner
+
+# RUN apk update
+# RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+
+COPY --from=installer /app/node_modules .
+COPY --from=installer /app/package.json .
+COPY --from=installer /app/turbo.json .
+COPY --from=installer /app/apps/frontend/build ./apps/frontend/build
+COPY --from=installer /app/apps/frontend/node_modules ./apps/frontend/node_modules
+COPY --from=installer /app/apps/frontend/public ./apps/frontend/public
+COPY --from=installer /app/apps/frontend/package.json ./apps/frontend/package.json
+# COPY --from=installer /app/apps/frontend/package-lock.json ./apps/frontend/package-lock.json
+COPY --from=installer /app/apps/frontend/.env ./apps/frontend/.env
+
+WORKDIR /app/apps/frontend
+
+# Set the environment variable for production
+ENV NODE_ENV=production
+
+# Expose the port Remix Run uses
+EXPOSE 3000
+
+# Start the Remix Run server
+CMD ["npm", "start"]

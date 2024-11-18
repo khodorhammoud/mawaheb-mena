@@ -4,7 +4,7 @@ import { fetchCMSData } from "~/api/fetch-cms-data.server";
 import {
   GET_CONTACT_US_FORM_QUERY,
   GET_LOCATION_SECTION_QUERY,
-} from "../../../../shared/cms-queries";
+} from "~/cms-queries/cms-queries";
 import { ContactUsForm, Location } from "../../types/PageContent";
 
 interface LoaderData {
