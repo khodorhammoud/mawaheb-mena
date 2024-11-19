@@ -32,43 +32,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import EducationComponent from "./EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
+import { FilledCardFactory } from "./filledCardFactory";
+import { EmptyCardFactory } from "./emptyCardFactory";
+import { GeneralizableFormCardProps } from "./types";
 
-interface GeneralizableFormCardProps {
-  formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
-  cardTitle: string;
-  cardSubtitle?: string;
-  popupTitle: string;
-  triggerLabel: string;
-  triggerIcon?: React.ReactNode;
-  formName: string;
-  fieldName: string;
-  minVal?: number;
-  maxVal?: number;
-  repeatableFieldName?: string;
-}
-
-function GeneralizableFormCard({
-  formType,
-  cardTitle,
-  cardSubtitle,
-  popupTitle,
-  triggerLabel,
-  formName,
-  fieldName,
-  triggerIcon,
-  minVal,
-  maxVal,
-  repeatableFieldName,
-}: GeneralizableFormCardProps) {
+function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
     OnboardingEmployerFields | OnboardingFreelancerFields
   >();
@@ -80,8 +48,9 @@ function GeneralizableFormCard({
   in case of repeatable, repeatableinputValue is used
    */
   const [inputValue, setInputValue] = useState<number | string | File>(
-    formType !== "repeatable"
-      ? (initialData?.[fieldName] ?? (formType === "increment" ? 0 : ""))
+    props.formType !== "repeatable"
+      ? (initialData?.[props.fieldName] ??
+          (props.formType === "increment" ? 0 : ""))
       : null
   );
 
@@ -139,7 +108,7 @@ function GeneralizableFormCard({
   // =========== repeatable fields handlers =============
 
   const handleAddRepeatableField = () => {
-    switch (repeatableFieldName) {
+    switch (props.repeatableFieldName) {
       case "portfolio":
         setRepeatableInputValues((prevValues) => [
           ...(prevValues as PortfolioFormFieldType[]),
@@ -212,7 +181,7 @@ function GeneralizableFormCard({
       | PortfolioFormFieldType[]
       | CertificateFormFieldType[]
       | EducationFormFieldType[];
-    switch (repeatableFieldName) {
+    switch (props.repeatableFieldName) {
       case "portfolio":
         updatedInputValues = [
           ...repeatableInputValues,
@@ -244,11 +213,11 @@ function GeneralizableFormCard({
 
   // Initialize repeatable fields with existing data
   useEffect(() => {
-    if (formType === "repeatable") {
+    if (props.formType === "repeatable") {
       let dataParsed = false;
-      if (initialData && initialData[fieldName]) {
+      if (initialData && initialData[props.fieldName]) {
         try {
-          const repeatableData = JSON.parse(initialData[fieldName]) as
+          const repeatableData = JSON.parse(initialData[props.fieldName]) as
             | PortfolioFormFieldType[]
             | WorkHistoryFormFieldType[]
             | CertificateFormFieldType[]
@@ -261,7 +230,7 @@ function GeneralizableFormCard({
         }
       }
       if (!dataParsed) {
-        switch (repeatableFieldName) {
+        switch (props.repeatableFieldName) {
           case "portfolio":
             setRepeatableInputValues([portfolioFormFields]);
             break;
@@ -285,11 +254,11 @@ function GeneralizableFormCard({
   const fetcher = useFetcher<{
     success?: boolean;
     error?: { message: string };
-  }>(); // Fetcher for bio form
+  }>();
 
-  const [showStatusMessage, setShowStatusMessage] = useState(false); // Track bio message visibility
+  const [showStatusMessage, setShowStatusMessage] = useState(false);
 
-  // Handle showing the bio submission message
+  // Handle showing the submission message
   useEffect(() => {
     if (fetcher.data?.success || fetcher.data?.error) {
       setShowStatusMessage(true);
@@ -301,10 +270,16 @@ function GeneralizableFormCard({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(formRef.current!);
-    formData.append(repeatableFieldName, JSON.stringify(repeatableInputValues));
+    formData.append(
+      props.repeatableFieldName,
+      JSON.stringify(repeatableInputValues)
+    );
     // add files
     repeatableInputFiles.forEach((file, index) => {
-      formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
+      formData.append(
+        `${props.repeatableFieldName}-attachment[${index}]`,
+        file
+      );
     });
 
     fetcher.submit(formData, {
@@ -316,8 +291,8 @@ function GeneralizableFormCard({
   const handleIncrement = (step: number) => {
     fetcher.submit(
       {
-        "target-updated": formName,
-        [fieldName]: ((inputValue as number) + step).toString(),
+        "target-updated": props.formName,
+        [props.fieldName]: ((inputValue as number) + step).toString(),
       },
       { method: "post" }
     );
@@ -333,8 +308,32 @@ function GeneralizableFormCard({
     });
   };
 
+  // Helper function to check if the field is filled
+  const isFieldFilled = () => {
+    if (props.formType === "repeatable") {
+      return repeatableInputValues.length > 0;
+    }
+
+    switch (props.formType) {
+      case "text":
+      case "textArea":
+        return typeof inputValue === "string" && inputValue.trim().length > 0;
+      case "number":
+      case "increment":
+        return typeof inputValue === "number" && inputValue > 0;
+      case "range":
+        return typeof inputValue === "number" && inputValue >= props.minVal;
+      case "video":
+        return typeof inputValue === "string" && inputValue.trim().length > 0;
+      case "file":
+        return inputValue instanceof File;
+      default:
+        return false;
+    }
+  };
+
   const renderFormField = () => {
-    switch (formType) {
+    switch (props.formType) {
       case "text":
         return (
           <Input
@@ -342,7 +341,7 @@ function GeneralizableFormCard({
             placeholder="Enter text"
             value={inputValue as string}
             onChange={(e) => setInputValue(e.target.value)}
-            name={fieldName}
+            name={props.fieldName}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         );
@@ -352,7 +351,7 @@ function GeneralizableFormCard({
             type="number"
             placeholder="Enter a number"
             value={inputValue as number}
-            name={fieldName}
+            name={props.fieldName}
             onChange={(e) => setInputValue(Number(e.target.value))}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
@@ -365,7 +364,7 @@ function GeneralizableFormCard({
                 <AppFormField
                   type="number"
                   id="number-input"
-                  name={fieldName}
+                  name={props.fieldName}
                   label="Hourly Rate"
                   placeholder="Hourly Rate"
                   onChange={(e) => setInputValue(Number(e.target.value))}
@@ -376,9 +375,9 @@ function GeneralizableFormCard({
             </div>
 
             <p className="mb-14 text-base">
-              The median {popupTitle} for a designer is:
+              The median {props.popupTitle} for a designer is:
             </p>
-            <RangeComponent minVal={minVal} maxVal={maxVal} />
+            <RangeComponent minVal={props.minVal} maxVal={props.maxVal} />
           </div>
         );
       case "textArea":
@@ -387,7 +386,7 @@ function GeneralizableFormCard({
             <AppFormField
               type="textarea"
               id="description"
-              name={fieldName}
+              name={props.fieldName}
               label="Add content to describe yourself"
               placeholder="Add content to describe yourself"
               col={6} // Represents rows as height (in rem units)
@@ -453,7 +452,7 @@ function GeneralizableFormCard({
                 <AppFormField
                   type="text"
                   id="youtube-url"
-                  name={fieldName}
+                  name={props.fieldName}
                   label="Paste YouTube URL or upload video"
                   placeholder="Paste YouTube URL or upload video"
                   defaultValue={inputValue as string}
@@ -469,7 +468,7 @@ function GeneralizableFormCard({
         return (
           <Input
             type="file"
-            name={fieldName}
+            name={props.fieldName}
             onChange={(e) =>
               setInputValue(e.target.files ? e.target.files[0] : null)
             }
@@ -533,7 +532,7 @@ function GeneralizableFormCard({
                           className="overflow-hidden mt-4"
                         >
                           {/* PORTFILIO SECTION */}
-                          {repeatableFieldName === "portfolio" ? (
+                          {props.repeatableFieldName === "portfolio" ? (
                             <PortfolioComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -544,7 +543,7 @@ function GeneralizableFormCard({
                               }
                             />
                           ) : // WORK HISTORYSECTION
-                          repeatableFieldName === "workHistory" ? (
+                          props.repeatableFieldName === "workHistory" ? (
                             <WorkHistoryComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -552,7 +551,7 @@ function GeneralizableFormCard({
                               }
                             />
                           ) : // CERTIFICATES
-                          repeatableFieldName === "certificates" ? (
+                          props.repeatableFieldName === "certificates" ? (
                             <CertificateComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -563,7 +562,7 @@ function GeneralizableFormCard({
                               }
                             />
                           ) : // EDUCATION
-                          repeatableFieldName === "educations" ? (
+                          props.repeatableFieldName === "educations" ? (
                             <EducationComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -594,6 +593,26 @@ function GeneralizableFormCard({
     }
   };
 
+  // If field is filled, render the appropriate filled card component
+  if (isFieldFilled()) {
+    return (
+      <FilledCardFactory
+        {...props}
+        inputValue={inputValue}
+        repeatableInputValues={repeatableInputValues}
+      />
+    );
+  }
+
+  return (
+    <EmptyCardFactory
+      {...props}
+      renderFormField={renderFormField}
+      formRef={formRef}
+      handleSubmit={props.formType === "repeatable" ? handleSubmit : undefined}
+    />
+  );
+
   return (
     // THE CARDS
     <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid">
@@ -601,12 +620,12 @@ function GeneralizableFormCard({
       <CardHeader className="p-0">
         {/* TITLE */}
         <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
-          {cardTitle}
+          {props.cardTitle}
         </CardTitle>
         {/* SUBTITLE IF EXISTS */}
-        {cardSubtitle && (
+        {props.cardSubtitle && (
           <CardDescription className="md:w-[300px]">
-            {cardSubtitle}
+            {props.cardSubtitle}
           </CardDescription>
         )}
       </CardHeader>
@@ -619,8 +638,8 @@ function GeneralizableFormCard({
             variant="outline"
             className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
           >
-            {triggerIcon}
-            <span>{triggerLabel}</span>
+            {props.triggerIcon}
+            <span>{props.triggerLabel}</span>
           </Button>
         </DialogTrigger>
 
@@ -628,7 +647,7 @@ function GeneralizableFormCard({
         <DialogContent className="bg-white">
           {/* POPUP TITLE + ERROR/SUCCESS MESSAGES*/}
           <DialogTitle className="mt-3 tracking-normal">
-            {popupTitle}
+            {props.popupTitle}
           </DialogTitle>
 
           {/* ERROR */}
@@ -652,11 +671,11 @@ function GeneralizableFormCard({
             method="post"
             className="space-y-6"
             ref={formRef}
-            {...(formType === "repeatable"
+            {...(props.formType === "repeatable"
               ? { encType: "multipart/form-data", onSubmit: handleSubmit }
               : {})}
           >
-            <input type="hidden" name="target-updated" value={formName} />
+            <input type="hidden" name="target-updated" value={props.formName} />
             {renderFormField()}
 
             {/* SAVE BUTTON */}

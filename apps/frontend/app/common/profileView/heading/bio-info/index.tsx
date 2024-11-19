@@ -19,7 +19,7 @@ import {
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
 import { AccountBio } from "~/types/User";
 import { parseHTTP } from "~/lib/utils";
-import AppFormField from "../../../../../common/form-fields";
+import AppFormField from "~/common/form-fields";
 
 export default function Heading() {
   const [open, setOpen] = useState(false); // Bio dialog state

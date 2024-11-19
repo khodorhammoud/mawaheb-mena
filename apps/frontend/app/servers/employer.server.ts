@@ -12,7 +12,7 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
-  languagesTable,
+  // languagesTable,
   // skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";

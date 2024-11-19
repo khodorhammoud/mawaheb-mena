@@ -8,11 +8,8 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { RiPencilFill } from "react-icons/ri";
-// import { Input } from "~/components/ui/input";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-// import { FaSearch } from "react-icons/fa";
 import { Industry } from "~/types/User";
-// import { Badge } from "~/components/ui/badge";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 
 export default function Languages() {
