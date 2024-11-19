@@ -48,7 +48,7 @@ export default function EmployerOnboardingScreen() {
             popupTitle="Introductory video"
             triggerLabel="Add Video"
             formName="freelancer-video"
-            fieldName="introductoryVideo"
+            fieldName="videoLink"
           />
 
           {/* About */}

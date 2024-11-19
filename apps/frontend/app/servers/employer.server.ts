@@ -494,7 +494,7 @@ export async function updateFreelancerVideoLink(
 ): Promise<{ success: boolean }> {
   return db
     .update(freelancersTable)
-    .set({ introductoryVideo: videoLink })
+    .set({ videoLink: videoLink })
     .where(eq(freelancersTable.accountId, freelancerId))
     .then(() => ({ success: true }))
     .catch((error) => {
