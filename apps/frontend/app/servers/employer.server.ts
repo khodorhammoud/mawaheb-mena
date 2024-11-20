@@ -519,7 +519,6 @@ export async function updateFreelancerYearsOfExperience(
     if (yearsOfExperience > 30) {
       throw new Error("Years experience must be less than 30");
     }
-    console.log("updating years of experience", yearsOfExperience);
     await db
       .update(freelancersTable)
       .set({ yearsOfExperience })
