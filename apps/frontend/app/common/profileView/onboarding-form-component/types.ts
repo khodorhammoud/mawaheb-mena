@@ -88,3 +88,15 @@ export interface FormFieldProps {
   name: string;
   props?: GeneralizableFormCardProps;
 }
+
+export interface FieldTemplateProps {
+  value: FormStateType | RepeatableInputType[];
+  fieldName: string;
+  cardTitle: string;
+  cardSubtitle?: string;
+}
+
+export interface FieldTemplateState {
+  FilledState: React.FC<FieldTemplateProps>;
+  EmptyState: React.FC<FieldTemplateProps>;
+}
