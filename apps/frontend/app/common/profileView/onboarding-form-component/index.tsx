@@ -32,8 +32,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import EducationComponent from "./EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
-import { FilledCardFactory } from "./filledCardFactory";
-import { EmptyCardFactory } from "./emptyCardFactory";
+// import { FilledCardFactory } from "./filledCardFactory";
+// import { EmptyCardFactory } from "./emptyCardFactory";
 import { GeneralizableFormCardProps } from "./types";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
@@ -42,6 +42,10 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   >();
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  // state used to switch between empty and filled card
+  // const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // const [shouldShowFilled, setShouldShowFilled] = useState(false);
 
   /* 
   set the initial value of the input field based on the form type
@@ -262,6 +266,8 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   useEffect(() => {
     if (fetcher.data?.success || fetcher.data?.error) {
       setShowStatusMessage(true);
+      // setShouldShowFilled(true);
+      // setIsDialogOpen(false);
     }
   }, [fetcher.data]);
 
@@ -270,23 +276,34 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(formRef.current!);
-    formData.append(
-      props.repeatableFieldName,
-      JSON.stringify(repeatableInputValues)
-    );
-    // add files
-    repeatableInputFiles.forEach((file, index) => {
+
+    if (props.formType === "repeatable") {
       formData.append(
-        `${props.repeatableFieldName}-attachment[${index}]`,
-        file
+        props.repeatableFieldName,
+        JSON.stringify(repeatableInputValues)
       );
-    });
+      repeatableInputFiles.forEach((file, index) => {
+        formData.append(
+          `${props.repeatableFieldName}-attachment[${index}]`,
+          file
+        );
+      });
+    }
 
     fetcher.submit(formData, {
       method: "post",
       encType: "multipart/form-data",
     });
   };
+
+  // Handle dialog state
+  /* const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    console.log("fetcher.data", fetcher.data);
+    // if (!open && fetcher.data?.success) {
+    //   setShouldShowFilled(true);
+    // }
+  }; */
 
   const handleIncrement = (step: number) => {
     fetcher.submit(
@@ -309,7 +326,15 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   };
 
   // Helper function to check if the field is filled
-  const isFieldFilled = () => {
+  /* const isFieldFilled = () => {
+    // check if this hourly rate is filled
+    if (props.formName === "freelancer-hourly-rate") {
+      console.log("hourly rate is filled:", inputValue);
+      console.log("hourly rate shouldShowFilled:", shouldShowFilled);
+    }
+
+    if (!shouldShowFilled) return false;
+
     if (props.formType === "repeatable") {
       return repeatableInputValues.length > 0;
     }
@@ -330,7 +355,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
       default:
         return false;
     }
-  };
+  }; */
 
   const renderFormField = () => {
     switch (props.formType) {
@@ -365,8 +390,9 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                   type="number"
                   id="number-input"
                   name={props.fieldName}
-                  label="Hourly Rate"
-                  placeholder="Hourly Rate"
+                  label={props.cardTitle}
+                  placeholder={props.popupTitle}
+                  inputValue={inputValue as number}
                   onChange={(e) => setInputValue(Number(e.target.value))}
                   className="no-spinner"
                 />
@@ -390,7 +416,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
               label="Add content to describe yourself"
               placeholder="Add content to describe yourself"
               col={6} // Represents rows as height (in rem units)
-              defaultValue={inputValue as string}
+              inputValue={inputValue as string}
               onChange={(e) => setInputValue(e.target.value)}
             />
 
@@ -594,7 +620,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   };
 
   // If field is filled, render the appropriate filled card component
-  if (isFieldFilled()) {
+  /* if (isFieldFilled()) {
     return (
       <FilledCardFactory
         {...props}
@@ -602,17 +628,19 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         repeatableInputValues={repeatableInputValues}
       />
     );
-  }
+  } */
 
-  return (
+  /* return (
     <EmptyCardFactory
       {...props}
       renderFormField={renderFormField}
       formRef={formRef}
       handleSubmit={props.formType === "repeatable" ? handleSubmit : undefined}
+      isDialogOpen={isDialogOpen}
+      onDialogOpenChange={handleDialogOpenChange}
     />
   );
-
+ */
   return (
     // THE CARDS
     <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid">

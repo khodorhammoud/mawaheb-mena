@@ -20,6 +20,8 @@ interface EmptyCardFactoryProps extends GeneralizableFormCardProps {
   renderFormField: () => React.ReactNode;
   formRef: React.RefObject<HTMLFormElement>;
   handleSubmit?: (e: React.FormEvent) => void;
+  isDialogOpen: boolean;
+  onDialogOpenChange: (open: boolean) => void;
 }
 
 export function EmptyCardFactory({
@@ -33,6 +35,8 @@ export function EmptyCardFactory({
   renderFormField,
   formRef,
   handleSubmit,
+  isDialogOpen,
+  onDialogOpenChange,
 }: EmptyCardFactoryProps) {
   const fetcher = useFetcher<{
     success?: boolean;
@@ -61,8 +65,8 @@ export function EmptyCardFactory({
         )}
       </CardHeader>
 
-      <Dialog>
-        <DialogTrigger>
+      <Dialog open={isDialogOpen} onOpenChange={onDialogOpenChange}>
+        <DialogTrigger asChild>
           <Button
             variant="outline"
             className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
@@ -77,7 +81,6 @@ export function EmptyCardFactory({
             {popupTitle}
           </DialogTitle>
 
-          {/* Error Message */}
           {showStatusMessage && fetcher.data?.error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-6">
               <span className="block sm:inline">
@@ -86,29 +89,28 @@ export function EmptyCardFactory({
             </div>
           )}
 
-          {/* Success Message */}
           {showStatusMessage && fetcher.data?.success && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-6">
-              <span className="block sm:inline">updated successfully</span>
+              <span className="block sm:inline">Updated successfully</span>
             </div>
           )}
 
-          {/* Form */}
           <fetcher.Form
             method="post"
             className="space-y-6"
             ref={formRef}
-            {...(formType === "repeatable"
-              ? { encType: "multipart/form-data", onSubmit: handleSubmit }
-              : {})}
+            onSubmit={(e) => {
+              handleSubmit(e);
+              // Don't close the dialog immediately, wait for the fetcher response
+            }}
           >
             <input type="hidden" name="target-updated" value={formName} />
             {renderFormField()}
 
             <DialogFooter>
               <Button
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
                 type="submit"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
               >
                 Save
               </Button>
