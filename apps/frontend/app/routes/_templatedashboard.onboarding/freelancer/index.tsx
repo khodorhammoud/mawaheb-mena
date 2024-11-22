@@ -12,7 +12,13 @@ export default function EmployerOnboardingScreen() {
 
   return (
     <div className="mt-24">
-      <div className="bg-primaryColor md:h-40 sm:h-36 h-32 w-auto sm:m-4 m-2 rounded-xl border-2"></div>
+      <div
+        className="bg-gradient-to-r from-primaryColor to-white md:h-40 sm:h-36 h-32 w-auto sm:m-4 m-2 rounded-xl border-2"
+        style={{
+          background: "linear-gradient(to right, primaryColor, white)",
+        }}
+      ></div>
+
       <Heading />
       <div className="grid grid-cols-1 mb-4">
         <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
@@ -49,7 +55,7 @@ export default function EmployerOnboardingScreen() {
             popupTitle="Introductory video"
             triggerLabel="Add Video"
             formName="freelancer-video"
-            fieldName="videoLink"
+            fieldName="introductoryVideo"
           />
 
           {/* About */}

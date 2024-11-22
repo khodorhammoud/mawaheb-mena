@@ -40,7 +40,7 @@ export const TextAreaFieldTemplate: FieldTemplateState = {
 export const NumberFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col">
-      <span className="text-base font-medium">{cardTitle}</span>
+      <span className="text-xl font-medium">{cardTitle}</span>
       <span className="font-medium">{value as number}</span>
     </div>
   ),

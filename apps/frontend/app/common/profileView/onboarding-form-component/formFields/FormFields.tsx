@@ -38,7 +38,6 @@ export const FormFields = {
           name={name}
           label={props.cardTitle}
           placeholder={props.popupTitle}
-          inputValue={value as number}
           onChange={onChange}
           className="no-spinner"
         />
@@ -60,7 +59,6 @@ export const FormFields = {
         label="Add content to describe yourself"
         placeholder="Add content to describe yourself"
         col={6} // Represents rows as height (in rem units)
-        inputValue={value as string}
         onChange={onChange}
       />
 

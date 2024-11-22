@@ -8,7 +8,6 @@ import {
 import Upload from "~/common/upload/Upload";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import RangeComponent from "./RangeComponent";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Dialog,
@@ -25,14 +24,17 @@ import {
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
-import PortfolioComponent from "./PortfolioComponent";
-import WorkHistoryComponent from "./WorkHistory";
-import CertificateComponent from "./CertificateComponent";
+
 import { motion, AnimatePresence } from "framer-motion";
-import EducationComponent from "./EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
 import Or from "~/common/or/Or";
+import { GeneralizableFormCardProps } from "./types";
+import RangeComponent from "./formFields/RangeComponent";
+import PortfolioComponent from "./formFields/repeatables/PortfolioComponent";
+import EducationComponent from "./formFields/repeatables/EducationComponent";
+import CertificateComponent from "./formFields/repeatables/CertificateComponent";
+import WorkHistoryComponent from "./formFields/repeatables/WorkHistory";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
@@ -343,7 +345,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                   name={props.fieldName}
                   label={props.cardTitle}
                   placeholder={props.popupTitle}
-                  inputValue={inputValue as number}
                   onChange={(e) => setInputValue(Number(e.target.value))}
                   className="no-spinner"
                 />
@@ -367,7 +368,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
               label="Add content to describe yourself"
               placeholder="Add content to describe yourself"
               col={6} // Represents rows as height (in rem units)
-              inputValue={inputValue as string}
+              defaultValue={inputValue as string}
               onChange={(e) => setInputValue(e.target.value)}
             />
 
@@ -573,12 +574,12 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
       <CardHeader className="p-0">
         {/* TITLE */}
         <CardTitle className="text-lg font-semibold mb-2 xl:w-[60%] w-[80%]">
-          {cardTitle}
+          {props.cardTitle}
         </CardTitle>
         {/* SUBTITLE IF EXISTS */}
-        {cardSubtitle && (
+        {props.cardSubtitle && (
           <CardDescription className="xl:w-[300px] lg:w-[250px] md:w-[300px] w-[250px]">
-            {cardSubtitle}
+            {props.cardSubtitle}
           </CardDescription>
         )}
       </CardHeader>
@@ -589,7 +590,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         <DialogTrigger>
           <Button
             variant="outline"
-            className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
+            className="sm:text-sm text-xs rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
           >
             {props.triggerIcon}
             <span>{props.triggerLabel}</span>
