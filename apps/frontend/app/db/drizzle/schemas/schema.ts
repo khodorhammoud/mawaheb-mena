@@ -59,6 +59,7 @@ export const UsersTable = pgTable("users", {
  * @property id - serial primary key
  * @property user_id - integer referencing the UsersTable id
  * @property account_type - accountTypeEnum (freelancer or employer)
+ * @property slug - varchar with length 60 the slug of the freelancer used in the url
  * @property location - varchar with length 150
  * @property country - countryEnum
  * @property region - varchar with length 100
@@ -70,6 +71,7 @@ export const UsersTable = pgTable("users", {
 export const accountsTable = pgTable("accounts", {
   id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
   userId: integer("user_id").references(() => UsersTable.id), // foreign key
+  slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
   // freelancerId: integer("freelancerId").references(() => freelancersTable.id),
   // employerId: integer("employerId").references(() => employersTable.id),

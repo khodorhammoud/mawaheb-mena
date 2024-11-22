@@ -122,6 +122,22 @@ export async function getUserAccountInfo(
 }
 
 /**
+ * get the account from the slug
+ * @param slug : the slug of the account to get the type for
+ * @returns UserAccount | null: the account with the given slug or null if the account does not exist
+ */
+export async function getAccountBySlug(
+  slug: string
+): Promise<UserAccount | null> {
+  const account = await db
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.slug, slug));
+  if (account.length === 0) return null;
+  return account[0] as unknown as UserAccount;
+}
+
+/**
  * get the current account info from the session
  * @param request : the request object
  * @param withPassword : boolean to determine if the password hash should be included in the response
@@ -403,6 +419,40 @@ export async function registerEmployer({
 }
 
 /**
+ * create a new account slug
+ * @param firstName : the first name of the account
+ * @param lastName : the last name of the account
+ * @returns string: the newly created slug
+ */
+export async function createAccountSlug(
+  firstName: string,
+  lastName: string
+): Promise<string> {
+  let slug = `${firstName}-${lastName}`;
+  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  // remove any trailing hyphens
+  slug = slug.replace(/-+$/, "");
+  // if the slug is longer than 60 characters, truncate it
+  if (slug.length > 60) {
+    slug = slug.substring(0, 60);
+  }
+  // if the slug already exists, add a random number to the end of the slug
+  // failsafe: this should never happen, but if it does, we don't want to get stuck in an infinite loop
+  let counter = 0;
+  while (
+    (await db.select().from(accountsTable).where(eq(accountsTable.slug, slug)))
+      .length > 0
+  ) {
+    slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
+    counter++;
+    if (counter > 1000) {
+      throw new Error("Failed to create a unique slug for the account");
+    }
+  }
+  return slug;
+}
+
+/**
  * creates a new freelancer account. This creates a new account record first, which in turn creates a new user record, before finally adding a new freelancer record.
  * @param param0 : object containing user info: firstName, lastName, email, password
  * @returns Freelancer: the newly created freelancer
@@ -443,6 +493,7 @@ export async function registerFreelancer({
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
     .returning();
+
   return (await getProfileInfo({
     // freelancerId: result[0].id,
     accountId,
@@ -478,6 +529,20 @@ export async function createUserAccount(
     .insert(accountsTable)
     .values(newAccount)
     .returning()) as unknown as NewAccount;
+
+  // get firstName and Lastname from userId
+  const user = await getUser({ userId: result[0].userId });
+  if (!user)
+    throw new RegistrationError(
+      ErrorCode.INTERNAL_ERROR,
+      "Failed to get user after creating account"
+    );
+  const slug = await createAccountSlug(user.firstName, user.lastName);
+  // insert the slug into the freelancers table
+  await db
+    .update(accountsTable)
+    .set({ slug })
+    .where(eq(accountsTable.id, result[0].id));
   return result[0];
 }
 

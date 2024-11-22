@@ -30,6 +30,7 @@ export interface PreferredWorkingTimes {
 export interface UserAccount {
   id: number;
   accountType: AccountType;
+  slug: string;
   isCreationComplete: boolean;
   location?: string;
   country?: string;
