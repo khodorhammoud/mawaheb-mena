@@ -32,8 +32,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import EducationComponent from "./EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
-// import { FilledCardFactory } from "./filledCardFactory";
-// import { EmptyCardFactory } from "./emptyCardFactory";
 import { GeneralizableFormCardProps } from "./types";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
@@ -50,7 +48,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const [inputValue, setInputValue] = useState<number | string | File>(
     props.formType !== "repeatable"
       ? (initialData?.[props.fieldName] ??
-        (props.formType === "increment" ? 0 : ""))
+          (props.formType === "increment" ? 0 : ""))
       : null
   );
 
@@ -395,7 +393,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
               {/* Input Display */}
               <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
                 {typeof inputValue === "number" ||
-                  typeof inputValue === "string"
+                typeof inputValue === "string"
                   ? inputValue
                   : ""}
               </div>
@@ -479,10 +477,11 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                         variant="secondary"
                         type="button"
                         onClick={() => toggleCollapse(index)}
-                        className={`border rounded-xl not-active-gradient ${expandedIndex === index
+                        className={`border rounded-xl not-active-gradient ${
+                          expandedIndex === index
                             ? "bg-primaryColor text-white" // Active state styles
                             : "text-primaryColor border-primaryColor hover:text-white" // Default state styles
-                          }`}
+                        }`}
                       >
                         {expandedIndex === index ? "Collapse" : "Expand"}{" "}
                         Project Form {index + 1}
@@ -521,33 +520,33 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                               }
                             />
                           ) : // WORK HISTORYSECTION
-                            props.repeatableFieldName === "workHistory" ? (
-                              <WorkHistoryComponent
-                                data={dataItem}
-                                onTextChange={(updatedData) =>
-                                  handleDataChange(index, updatedData)
-                                }
-                              />
-                            ) : // CERTIFICATES
-                              props.repeatableFieldName === "certificates" ? (
-                                <CertificateComponent
-                                  data={dataItem}
-                                  onTextChange={(updatedData) =>
-                                    handleDataChange(index, updatedData)
-                                  }
-                                  onFileChange={(file) =>
-                                    handleFileChange(index, file)
-                                  }
-                                />
-                              ) : // EDUCATION
-                                props.repeatableFieldName === "educations" ? (
-                                  <EducationComponent
-                                    data={dataItem}
-                                    onTextChange={(updatedData) =>
-                                      handleDataChange(index, updatedData)
-                                    }
-                                  />
-                                ) : null}
+                          props.repeatableFieldName === "workHistory" ? (
+                            <WorkHistoryComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : // CERTIFICATES
+                          props.repeatableFieldName === "certificates" ? (
+                            <CertificateComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                              onFileChange={(file) =>
+                                handleFileChange(index, file)
+                              }
+                            />
+                          ) : // EDUCATION
+                          props.repeatableFieldName === "educations" ? (
+                            <EducationComponent
+                              data={dataItem}
+                              onTextChange={(updatedData) =>
+                                handleDataChange(index, updatedData)
+                              }
+                            />
+                          ) : null}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -570,7 +569,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         return null;
     }
   };
-
 
   return (
     // THE CARDS

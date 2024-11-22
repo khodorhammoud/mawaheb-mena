@@ -8,7 +8,8 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { RiGitlabFill, RiPencilFill } from "react-icons/ri";
+import { RiGitlabFill } from "react-icons/ri";
+import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
   FaMapMarkerAlt,
@@ -85,7 +86,7 @@ export default function Heading() {
             {/* ✏️ */}
             <DialogTrigger asChild>
               <Button variant="link">
-                <RiPencilFill className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+                <IoPencilSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
               </Button>
             </DialogTrigger>
             {/* POPUP CONTENT */}

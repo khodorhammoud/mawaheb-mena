@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { RiPencilFill } from "react-icons/ri";
+import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import { Industry } from "~/types/User";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
@@ -87,7 +87,7 @@ export default function Languages() {
         >
           <DialogTrigger asChild>
             <Button variant="link">
-              <RiPencilFill className="text-large" />
+              <IoPencilSharp className="text-large" />
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white">

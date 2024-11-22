@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { RiPencilFill } from "react-icons/ri";
+import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 import { Language } from "~/types/enums";
@@ -72,7 +72,7 @@ export default function Languages() {
           {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <RiPencilFill className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+              <IoPencilSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
             </Button>
           </DialogTrigger>
           {/* POPUP */}
