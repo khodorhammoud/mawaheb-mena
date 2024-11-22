@@ -12,6 +12,7 @@ const AppFormField = ({
   showPasswordHint = true,
   col = 4,
   defaultValue = "", // New prop to handle default values
+  inputValue = null,
   onChange, // Add the `onChange` prop
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,6 +55,7 @@ const AppFormField = ({
           className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix no-spinner`} // Add no-spinner class here
           autoComplete="on"
           spellCheck="false"
+          value={inputValue !== null ? inputValue : undefined}
           defaultValue={defaultValue} // Handle default value for input
           onChange={onChange} // Attach `onChange` here
         />
@@ -66,6 +68,7 @@ const AppFormField = ({
           style={{ height: textareaHeight }} // Apply dynamic height style
           className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix resize-none`}
           spellCheck="false"
+          value={inputValue !== null ? inputValue : undefined}
           defaultValue={defaultValue} // Handle default value for textarea
           onChange={onChange} // Attach `onChange` here
         ></textarea>
@@ -79,6 +82,7 @@ const AppFormField = ({
           className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
           autoComplete="on"
           spellCheck="false"
+          value={inputValue !== null ? inputValue : undefined}
           defaultValue={defaultValue} // Handle default value for input
           onChange={onChange} // Attach `onChange` here
         />
@@ -145,6 +149,7 @@ AppFormField.propTypes = {
   col: PropTypes.number, // New prop for dynamic height of textarea
   placeholderTextSize: PropTypes.string, // Prop type for custom placeholder text size
   defaultValue: PropTypes.string, // New prop for default values
+  inputValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func, // Prop type for `onChange` event
 };
 

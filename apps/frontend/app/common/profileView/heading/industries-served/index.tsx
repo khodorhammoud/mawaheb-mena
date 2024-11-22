@@ -5,103 +5,115 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { RiPencilFill } from "react-icons/ri";
+import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
+import { Industry } from "~/types/User";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
-import { Language } from "~/types/enums";
 
 export default function Languages() {
-  const [languagesServedOpen, setLanguagesServedOpen] = useState(false); // Language dialog state
-  const [showLanguageMessage, setShowLanguageMessage] = useState(false); // Track Language message visibility
+  const [industriesServedOpen, setIndustriesServedOpen] = useState(false); // Industry dialog state
+  const [showIndustryMessage, setShowIndustryMessage] = useState(false); // Track industry message visibility
 
-  const languageFetcher = useFetcher<{
+  const industryFetcher = useFetcher<{
     success?: boolean;
     error?: { message: string };
-  }>(); // Fetcher for Language form
+  }>(); // Fetcher for industry form
 
-  const bioFetcher = useFetcher<{
-    success?: boolean;
-    error?: { message: string };
-  }>(); // Fetcher for bio form
-
-  // const LanguageFormRef = useRef<HTMLFormElement>(null); // Ref for Language form
+  // const industryFormRef = useRef<HTMLFormElement>(null); // Ref for industry form
 
   // Load data
-  const { employerLanguages, allLanguages } = useLoaderData() as {
-    employerLanguages: Language[];
-    allLanguages: Language[];
+  const { employerIndustries, allIndustries } = useLoaderData() as {
+    employerIndustries: Industry[];
+    allIndustries: Industry[];
   };
 
-  const [selectedLanguages, setSelectedLanguages] = useState<Language[]>([]);
+  const [selectedIndustries, setSelectedIndustries] = useState<number[]>([]);
 
-  // Set initial Languages selected
+  // Set initial industries selected
   useEffect(() => {
-    setSelectedLanguages(employerLanguages);
-  }, [employerLanguages]);
+    setSelectedIndustries(employerIndustries.map((i) => i.id));
+  }, [employerIndustries]);
 
-  // Handle showing the Language submission message
-  useEffect(() => {
-    if (languageFetcher.data?.success || languageFetcher.data?.error) {
-      setShowLanguageMessage(true);
+  // const [searchTerm, setSearchTerm] = useState<string>("");
+
+  /* const filteredIndustries = allIndustries.filter(
+    (industry) =>
+      industry.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      industry.metadata.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+  ); */
+
+  /* const toggleIndustry = (industryId: number) => {
+    if (selectedIndustries.includes(industryId)) {
+      setSelectedIndustries(selectedIndustries.filter((i) => i !== industryId));
+    } else {
+      setSelectedIndustries([...selectedIndustries, industryId]);
     }
-  }, [languageFetcher.data]);
+    // wait for the state to update before submitting the industries form programmatically
+    setTimeout(() => {
+      if (industryFormRef.current) {
+        industryFetcher.submit(industryFormRef.current);
+      }
+    }, 100);
+  }; */
 
-  // Reset messages when the Language dialog is closed
-  const handleLanguageDialogChange = (isOpen: boolean) => {
-    setLanguagesServedOpen(isOpen);
+  // Handle showing the industry submission message
+  useEffect(() => {
+    if (industryFetcher.data?.success || industryFetcher.data?.error) {
+      setShowIndustryMessage(true);
+    }
+  }, [industryFetcher.data]);
+
+  // Reset messages when the industry dialog is closed
+  const handleIndustryDialogChange = (isOpen: boolean) => {
+    setIndustriesServedOpen(isOpen);
     if (!isOpen) {
-      setShowLanguageMessage(false); // Clear Language message when dialog is closed
+      setShowIndustryMessage(false); // Clear industry message when dialog is closed
       // setSearchTerm(""); // Clear search term when dialog is closed
     }
   };
 
   return (
     <>
-      {/* LANGUAGES SERVED ✏️ */}
-      <div className="ml-auto flex items-center md:mb-[66px] mb-10 xl:mr-20 md:mr-10 mr-5 md:mt-6">
-        {/* LANGUAGES */}
-        <span className="lg:text-lg text-base">Languages</span>
-        {/* ✏️ + POPUP */}
+      {/* Industries Served ✏️ */}
+      <div className="ml-auto text-sm flex items-center">
+        <span>Industries Served</span>
         <Dialog
-          open={languagesServedOpen}
-          onOpenChange={handleLanguageDialogChange}
+          open={industriesServedOpen}
+          onOpenChange={handleIndustryDialogChange}
         >
-          {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <RiPencilFill className="lg:h-9 lg:w-8 h-8 w-7 lg:ml-0 -ml-1 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+              <IoPencilSharp className="text-large" />
             </Button>
           </DialogTrigger>
-          {/* POPUP */}
-          <DialogContent className="bg-white w-80">
+          <DialogContent className="bg-white">
             <DialogHeader>
-              <DialogTitle className="mt-3">Languages</DialogTitle>
+              <DialogTitle>Industries</DialogTitle>
             </DialogHeader>
 
-            {/* ERROR MESSAGE */}
-            {showLanguageMessage && languageFetcher.data?.error && (
+            {/* Display Error Message */}
+            {showIndustryMessage && industryFetcher.data?.error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                 <strong className="font-bold">Error: </strong>
                 <span className="block sm:inline">
-                  {languageFetcher.data.error.message}
+                  {industryFetcher.data.error.message}
                 </span>
               </div>
             )}
 
-            {/* THE FORM */}
-            <SearcheableTagSelector<Language>
-              data={allLanguages || []}
-              selectedKeys={selectedLanguages || []}
-              itemLabel={(item) => item}
-              itemKey={(item) => item}
-              formName="employer-languages"
-              fieldName="employer-languages"
-              searchPlaceholder="Search or type language"
+            <SearcheableTagSelector<Industry>
+              data={allIndustries}
+              selectedKeys={selectedIndustries}
+              itemLabel={(item: Industry) => item.label}
+              itemKey={(item) => item.id}
+              formName="employer-industries"
+              fieldName="employer-industries"
+              searchPlaceholder="Search or type industry"
             />
-
             {/* Display Success Message for Industries */}
             {/* {showIndustryMessage && industryFetcher.data?.success && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -169,15 +181,6 @@ export default function Languages() {
                   Save
                 </Button>
               </DialogFooter> */}
-            <DialogFooter>
-              <Button
-                disabled={bioFetcher.state === "submitting"}
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-                type="submit"
-              >
-                Save
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

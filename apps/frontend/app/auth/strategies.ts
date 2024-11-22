@@ -17,7 +17,6 @@ export const loginStrategy = new FormStrategy(
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
     const user = await getUser({ userEmail: email }, true);
-
     if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }

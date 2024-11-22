@@ -12,7 +12,7 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
-  languagesTable,
+  // languagesTable,
   // skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
@@ -494,7 +494,7 @@ export async function updateFreelancerVideoLink(
 ): Promise<{ success: boolean }> {
   return db
     .update(freelancersTable)
-    .set({ introductoryVideo: videoLink })
+    .set({ videoLink: videoLink })
     .where(eq(freelancersTable.accountId, freelancerId))
     .then(() => ({ success: true }))
     .catch((error) => {
@@ -519,7 +519,6 @@ export async function updateFreelancerYearsOfExperience(
     if (yearsOfExperience > 30) {
       throw new Error("Years experience must be less than 30");
     }
-    console.log("updating years of experience", yearsOfExperience);
     await db
       .update(freelancersTable)
       .set({ yearsOfExperience })

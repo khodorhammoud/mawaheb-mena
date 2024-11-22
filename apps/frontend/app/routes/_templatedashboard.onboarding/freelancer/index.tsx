@@ -1,6 +1,6 @@
-import Heading from "../common/heading/Heading";
+import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData } from "@remix-run/react";
-import GeneralizableFormCard from "../common/onboarding-form-component";
+import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
 
@@ -49,7 +49,7 @@ export default function EmployerOnboardingScreen() {
             popupTitle="Introductory video"
             triggerLabel="Add Video"
             formName="freelancer-video"
-            fieldName="introductoryVideo"
+            fieldName="videoLink"
           />
 
           {/* About */}
@@ -136,79 +136,6 @@ export default function EmployerOnboardingScreen() {
             <p className="text-red-500 mt-2">{actionData.error.message}</p>
           )}
         </div>
-
-        {/* </div>
-      <div className="grid grid-cols-3">
-        <div className="p-4">
-          <BudgetModuleForm />
-        </div>
-        <div className="p-4">
-          <YearsInBusiness />
-        </div> */}
-
-        {/* <HourlyRate /> */}
-        {/* 
-        "text"
-    | "number"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "custom";
-        */}
-
-        {/* range */}
-        {/* <GeneralizableFormCard
-          formType="range"
-          minVal={12}
-          maxVal={24}
-          cardTitle="Range Card Title"
-          popupTitle="Range Popup Title"
-          triggerLabel="Edit Range"
-          formName="employer-years-in-business"
-          fieldName="years-in-business"
-          triggerIcon={<SlBadge />}
-          onSave={() => alert("save")}
-        /> */}
-        {/* <GeneralizableFormCard
-          formType="number"
-          title="Number"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="textArea"
-          title="Text Area"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="increment"
-          title="Increment"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="video"
-          title="Video"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="file"
-          title="File"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="custom"
-          title="Custom"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-          customComponents={[
-            <div key="custom-component">Custom Component</div>,
-          ]}
-        /> */}
       </div>
     </div>
   );

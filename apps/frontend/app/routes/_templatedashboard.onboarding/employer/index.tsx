@@ -1,11 +1,7 @@
-import Heading from "../common/heading/Heading";
-// import YearsInBusiness from "./years-in-business-module/Form";
-// import About from "./about-module/Form";
-// import BudgetModuleForm from "./budget-module/Form";
+import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
-// import HourlyRate from "./hourlyRate";
-import GeneralizableFormCard from "../common/onboarding-form-component";
+import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { SlBadge } from "react-icons/sl";
 

@@ -143,6 +143,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
     if (accountType == "freelancer") {
       const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
+      console.log("target", target);
       // HOURLY RATE
       if (target == "freelancer-hourly-rate") {
         const hourlyRate = parseInt(formData.get("hourlyRate") as string, 10);
