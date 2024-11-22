@@ -63,229 +63,231 @@ export default function Heading() {
   };
 
   return (
-    <>
-      {/* CIRCLE */}
-      <div className="bg-blue-100 rounded-full w-36 h-36 flex items-center justify-center mr-5 ml-20 mb-14">
-        <span className="text-5xl font-semibold text-primaryColor">
-          {bioInfo.firstName.charAt(0).toUpperCase()}
-          {bioInfo.lastName.charAt(0).toUpperCase()}
-        </span>
-      </div>
+    <div className="">
+      <div className="md:flex -mt-14">
+        {/* CIRCLE */}
+        <div className="bg-blue-100 rounded-full lg:w-36 lg:h-36 sm:h-32 sm:w-32 flex items-center justify-center mr-5 lg:ml-20 ml-10 md:mb-14 border-4 border-white">
+          <span className="lg:text-5xl sm:text-4xl text-3xl font-semibold text-primaryColor">
+            {bioInfo.firstName.charAt(0).toUpperCase()}
+            {bioInfo.lastName.charAt(0).toUpperCase()}
+          </span>
+        </div>
 
-      {/* NAME + ✏️ + POPUP + BUTTONS */}
-      <div className="mb-14">
-        {/* NAME + ✏️ + POPUP */}
-        <div className="flex mt-10">
-          {/* NAME */}
-          <h1 className="text-3xl">
-            {bioInfo.firstName} {bioInfo.lastName}
-          </h1>
-          {/* ✏️ + POPUP */}
-          <Dialog open={open} onOpenChange={handleBioDialogChange}>
-            {/* ✏️ */}
-            <DialogTrigger asChild>
-              <Button variant="link">
-                <RiPencilFill className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
-              </Button>
-            </DialogTrigger>
-            {/* POPUP CONTENT */}
-            <DialogContent className="bg-white">
-              {/* BIO */}
-              <DialogHeader>
-                <DialogTitle className="mt-3 text-lg">Bio</DialogTitle>
-              </DialogHeader>
+        {/* NAME + ✏️ + POPUP + BUTTONS */}
+        <div className="md:mb-14 mb-4">
+          {/* NAME + ✏️ + POPUP */}
+          <div className="flex md:mt-14 mt-4">
+            {/* NAME */}
+            <h1 className="xl:text-3xl lg:text-2xl text-xl xl:mt-0 md:mt-1 mt-1 md:ml-0 ml-10">
+              {bioInfo.firstName} {bioInfo.lastName}
+            </h1>
+            {/* ✏️ + POPUP */}
+            <Dialog open={open} onOpenChange={handleBioDialogChange}>
+              {/* ✏️ */}
+              <DialogTrigger asChild>
+                <Button variant="link">
+                  <RiPencilFill className="lg:h-9 lg:w-8 h-8 w-7 lg:ml-0 -ml-1 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+                </Button>
+              </DialogTrigger>
+              {/* POPUP CONTENT */}
+              <DialogContent className="bg-white">
+                {/* BIO */}
+                <DialogHeader>
+                  <DialogTitle className="mt-3 text-lg">Bio</DialogTitle>
+                </DialogHeader>
 
-              {/* ERROR MESSAGE */}
-              {showBioMessage && bioFetcher.data?.error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                  <span className="block sm:inline">
-                    {bioFetcher.data.error.message}
-                  </span>
-                </div>
-              )}
-
-              {/* SUCCESS MESSAGE */}
-              {showBioMessage && bioFetcher.data?.success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                  <span className="block sm:inline">
-                    Bio updated successfully
-                  </span>
-                </div>
-              )}
-
-              {/* FORM */}
-              <bioFetcher.Form method="post" className="">
-                <input
-                  type="hidden"
-                  name="target-updated"
-                  value="freelancer-bio" // this value should match the target in the route.tsx
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  {/* FIRST NAME */}
-                  <div>
-                    <AppFormField
-                      id="firstName"
-                      name="firstName"
-                      label="First Name"
-                      className="peer mt-1"
-                      defaultValue={bioInfo.firstName}
-                    />
+                {/* ERROR MESSAGE */}
+                {showBioMessage && bioFetcher.data?.error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                    <span className="block sm:inline">
+                      {bioFetcher.data.error.message}
+                    </span>
                   </div>
+                )}
 
-                  {/* Last Name */}
-                  <div>
-                    <AppFormField
-                      id="lastName"
-                      name="lastName"
-                      label="Last Name"
-                      className="peer mt-1"
-                      defaultValue={bioInfo.firstName}
-                    />
+                {/* SUCCESS MESSAGE */}
+                {showBioMessage && bioFetcher.data?.success && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                    <span className="block sm:inline">
+                      Bio updated successfully
+                    </span>
                   </div>
+                )}
 
-                  {/* Location */}
-                  <div className="">
-                    <div className="relative">
-                      {/* Location */}
+                {/* FORM */}
+                <bioFetcher.Form method="post" className="">
+                  <input
+                    type="hidden"
+                    name="target-updated"
+                    value="freelancer-bio" // this value should match the target in the route.tsx
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* FIRST NAME */}
+                    <div>
                       <AppFormField
-                        id="location"
-                        name="location"
-                        label="Location"
+                        id="firstName"
+                        name="firstName"
+                        label="First Name"
                         className="peer mt-1"
-                        defaultValue={bioInfo.location}
+                        defaultValue={bioInfo.firstName}
                       />
-                      <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                      {/* ref={locationInputRef} */}
+                    </div>
+
+                    {/* Last Name */}
+                    <div>
+                      <AppFormField
+                        id="lastName"
+                        name="lastName"
+                        label="Last Name"
+                        className="peer mt-1"
+                        defaultValue={bioInfo.firstName}
+                      />
+                    </div>
+
+                    {/* Location */}
+                    <div className="">
+                      <div className="relative">
+                        {/* Location */}
+                        <AppFormField
+                          id="location"
+                          name="location"
+                          label="Location"
+                          className="peer mt-1"
+                          defaultValue={bioInfo.location}
+                        />
+                        <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                        {/* ref={locationInputRef} */}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <h3 className="text-lg mb-6 mt-6">My online profiles</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  {/* PERSONAL WEBSITE */}
-                  <div className="relative">
-                    <AppFormField
-                      id="website"
-                      name="website"
-                      label="Personal Website"
-                      className="peer mt-1"
-                      defaultValue={bioInfo.websiteURL}
-                    />
-                    <FaGlobe className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                  <h3 className="text-lg mb-6 mt-6">My online profiles</h3>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                    {/* PERSONAL WEBSITE */}
+                    <div className="relative">
+                      <AppFormField
+                        id="website"
+                        name="website"
+                        label="Personal Website"
+                        className="peer mt-1"
+                        defaultValue={bioInfo.websiteURL}
+                      />
+                      <FaGlobe className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
+
+                    {/* LinkedIn */}
+                    <div className="relative mt-1">
+                      <AppFormField
+                        id="linkedin"
+                        name="linkedin"
+                        label="LinkedIn"
+                        defaultValue={bioInfo.socialMediaLinks?.linkedin}
+                      />
+                      <FaLinkedinIn className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
+
+                    {/* GitHub */}
+                    <div className="relative">
+                      <AppFormField
+                        id="github"
+                        name="github"
+                        label="GitHub"
+                        defaultValue={bioInfo.socialMediaLinks?.github}
+                      />
+                      <TbBrandGithubFilled className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
+
+                    {/* GitLab */}
+                    <div className="relative">
+                      <AppFormField
+                        id="gitlab"
+                        name="gitlab"
+                        label="GitLab"
+                        defaultValue={bioInfo.socialMediaLinks?.gitlab}
+                      />
+                      <RiGitlabFill className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
+
+                    {/* Dribbble */}
+                    <div className="relative">
+                      <AppFormField
+                        id="dribbble"
+                        name="dribbble"
+                        defaultValue={bioInfo.socialMediaLinks?.dribbble}
+                        label="Dribbble"
+                      />
+                      <TbBrandDribbbleFilled className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
+
+                    {/* StackOverflow */}
+                    <div className="relative">
+                      <AppFormField
+                        id="stackoverflow"
+                        name="stackoverflow"
+                        label="StackOverflow"
+                        defaultValue={bioInfo.socialMediaLinks?.stackoverflow}
+                      />
+                      <FaStackOverflow className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                    </div>
                   </div>
 
-                  {/* LinkedIn */}
-                  <div className="relative mt-1">
-                    <AppFormField
-                      id="linkedin"
-                      name="linkedin"
-                      label="LinkedIn"
-                      defaultValue={bioInfo.socialMediaLinks?.linkedin}
-                    />
-                    <FaLinkedinIn className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                  </div>
+                  {/* Save */}
+                  <DialogFooter>
+                    <Button
+                      disabled={bioFetcher.state === "submitting"}
+                      className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
+                      type="submit"
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </bioFetcher.Form>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-                  {/* GitHub */}
-                  <div className="relative">
-                    <AppFormField
-                      id="github"
-                      name="github"
-                      label="GitHub"
-                      defaultValue={bioInfo.socialMediaLinks?.github}
-                    />
-                    <TbBrandGithubFilled className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                  </div>
-
-                  {/* GitLab */}
-                  <div className="relative">
-                    <AppFormField
-                      id="gitlab"
-                      name="gitlab"
-                      label="GitLab"
-                      defaultValue={bioInfo.socialMediaLinks?.gitlab}
-                    />
-                    <RiGitlabFill className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                  </div>
-
-                  {/* Dribbble */}
-                  <div className="relative">
-                    <AppFormField
-                      id="dribbble"
-                      name="dribbble"
-                      defaultValue={bioInfo.socialMediaLinks?.dribbble}
-                      label="Dribbble"
-                    />
-                    <TbBrandDribbbleFilled className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                  </div>
-
-                  {/* StackOverflow */}
-                  <div className="relative">
-                    <AppFormField
-                      id="stackoverflow"
-                      name="stackoverflow"
-                      label="StackOverflow"
-                      defaultValue={bioInfo.socialMediaLinks?.stackoverflow}
-                    />
-                    <FaStackOverflow className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                  </div>
-                </div>
-
-                {/* Save */}
-                <DialogFooter>
-                  <Button
-                    disabled={bioFetcher.state === "submitting"}
-                    className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
-                    type="submit"
-                  >
-                    Save
-                  </Button>
-                </DialogFooter>
-              </bioFetcher.Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* ADD LOCATION + ADD WEBSITE */}
-        <div className="flex space-x-2 mt-2">
-          {/* ADD LOCATION */}
-          {bioInfo.location ? (
-            <span className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white">
-              <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
-              {bioInfo.location}
-            </span>
-          ) : (
-            <button
-              onClick={() => handleTriggerClick(locationInputRef)}
-              className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white"
-            >
-              <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
-              Add Location
-            </button>
-          )}
-
-          {/* ADD WEBSITE */}
-          {bioInfo.websiteURL ? (
-            <span className="underline-none text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white">
-              <FaGlobe className="h-3 w-3 mr-2 mt-1" />
-              <a
-                href={parseHTTP(bioInfo.websiteURL)}
-                target="_blank"
-                rel="noopener noreferrer"
+          {/* ADD LOCATION + ADD WEBSITE */}
+          <div className="sm:flex mt-2 sm:h-10 md:ml-0 sm:ml-8 ml-6">
+            {/* ADD LOCATION */}
+            {bioInfo.location ? (
+              <span className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2">
+                <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
+                {bioInfo.location}
+              </span>
+            ) : (
+              <button
+                onClick={() => handleTriggerClick(locationInputRef)}
+                className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2"
               >
-                {bioInfo.websiteURL}
-              </a>
-            </span>
-          ) : (
-            <button
-              onClick={() => handleTriggerClick(websiteInputRef)}
-              className="underline-none text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white"
-            >
-              <FaGlobe className="h-3 w-3 mr-2 mt-1" />
-              Add Website
-            </button>
-          )}
+                <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
+                Add Location
+              </button>
+            )}
+
+            {/* ADD WEBSITE */}
+            {bioInfo.websiteURL ? (
+              <span className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white">
+                <FaGlobe className="h-3 w-3 mr-2 mt-1" />
+                <a
+                  href={parseHTTP(bioInfo.websiteURL)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {bioInfo.websiteURL}
+                </a>
+              </span>
+            ) : (
+              <button
+                onClick={() => handleTriggerClick(websiteInputRef)}
+                className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white"
+              >
+                <FaGlobe className="h-3 w-3 mr-2 mt-1" />
+                Add Website
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

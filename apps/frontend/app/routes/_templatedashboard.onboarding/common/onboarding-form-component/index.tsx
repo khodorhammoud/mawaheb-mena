@@ -32,6 +32,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import EducationComponent from "./EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
+import Or from "~/common/or/Or";
 
 interface GeneralizableFormCardProps {
   formType:
@@ -441,11 +442,7 @@ function GeneralizableFormCard({
             <Upload />
 
             {/* OR */}
-            <div className="relative flex items-center justify-center mt-8 mb-8">
-              <div className="flex-grow border border-gray-200 mt-1"></div>
-              <span className="px-2">or</span>
-              <div className="flex-grow border border-gray-200 mt-1"></div>
-            </div>
+            <Or />
 
             {/* FORM */}
             <div className="">
@@ -478,7 +475,7 @@ function GeneralizableFormCard({
         );
       case "repeatable":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-hidden">
             <AnimatePresence>
               {/* DETERMINE THE TYPE OF REPEATABLE */}
               {repeatableInputValues.map((dataItem, index) => (
@@ -493,7 +490,7 @@ function GeneralizableFormCard({
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="border rounded-xl"
                 >
-                  <div className="p-4">
+                  <div className="p-3">
                     {/* EXPAND/COLLAPSE BUTTON */}
                     <div className="flex justify-between items-center">
                       {/* EXPAND BUTTON */}
@@ -501,7 +498,7 @@ function GeneralizableFormCard({
                         variant="secondary"
                         type="button"
                         onClick={() => toggleCollapse(index)}
-                        className={`border rounded-xl not-active-gradient ${
+                        className={`border rounded-xl not-active-gradient py-1 ${
                           expandedIndex === index
                             ? "bg-primaryColor text-white" // Active state styles
                             : "text-primaryColor border-primaryColor hover:text-white" // Default state styles
@@ -516,7 +513,7 @@ function GeneralizableFormCard({
                         variant="outline"
                         type="button"
                         onClick={() => handleRemoveRepeatableField(index)}
-                        className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white"
+                        className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white py-1"
                       >
                         Remove
                       </Button>
@@ -596,16 +593,16 @@ function GeneralizableFormCard({
 
   return (
     // THE CARDS
-    <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid">
+    <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid w-auto">
       {/* TITLE AND SUBTITLE */}
       <CardHeader className="p-0">
         {/* TITLE */}
-        <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
+        <CardTitle className="text-lg font-semibold mb-2 xl:w-[60%] w-[80%]">
           {cardTitle}
         </CardTitle>
         {/* SUBTITLE IF EXISTS */}
         {cardSubtitle && (
-          <CardDescription className="md:w-[300px]">
+          <CardDescription className="xl:w-[300px] lg:w-[250px] md:w-[300px] w-[250px]">
             {cardSubtitle}
           </CardDescription>
         )}
@@ -662,7 +659,7 @@ function GeneralizableFormCard({
             {/* SAVE BUTTON */}
             <DialogFooter>
               <Button
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
                 type="submit"
               >
                 Save

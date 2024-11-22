@@ -9,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import AppFormField from "~/common/form-fields";
 
 interface WorkHistoryComponentProps {
   data: WorkHistoryFormFieldType;
@@ -20,26 +21,31 @@ function WorkHistoryComponent({
   onTextChange,
 }: WorkHistoryComponentProps) {
   return (
-    <div className="space-y-6">
-      <div className="flex space-x-4">
-        <Input
+    <div className="">
+      {/* forms */}
+      <div className="flex space-x-4 mt-2 mb-6">
+        <AppFormField
           type="text"
-          placeholder="Title"
-          className="w-1/2 border-gray-300 rounded-md"
-          value={data.title}
-          onChange={(e) => onTextChange({ ...data, title: e.target.value })}
+          id="title[]"
           name="title[]"
-        />
-        <Input
-          type="text"
-          placeholder="Company"
+          placeholder="Title"
+          label="Title"
           className="w-1/2 border-gray-300 rounded-md"
-          value={data.company}
-          onChange={(e) => onTextChange({ ...data, company: e.target.value })}
+          onChange={(e) => onTextChange({ ...data, title: e.target.value })}
+        />
+        <AppFormField
+          type="text"
+          id="company[]"
           name="company[]"
+          placeholder="Company"
+          label="Company"
+          className="w-1/2 border-gray-300 rounded-md"
+          onChange={(e) => onTextChange({ ...data, company: e.target.value })}
         />
       </div>
-      <div className="flex space-x-4">
+
+      {/* checkbox */}
+      <div className="flex space-x-4 text-sm items-center ml-2 mb-6">
         <Checkbox
           id="currentlyWorkingThere"
           checked={data.currentlyWorkingThere}
@@ -47,10 +53,13 @@ function WorkHistoryComponent({
             onTextChange({ ...data, currentlyWorkingThere: e })
           }
         />
-        <label htmlFor="currentlyWorkingThere">I currently work here</label>
+        <label htmlFor="currentlyWorkingThere" className="text-gray-600">
+          I currently work here
+        </label>
       </div>
-      <div className="flex space-x-4">
-        {/* start date */}
+
+      {/* start Date */}
+      <div className="flex space-x-4 mb-6">
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -103,21 +112,21 @@ function WorkHistoryComponent({
         </Popover>
       </div>
 
-      <div className="flex space-x-4">
-        <textarea
-          placeholder="Job Description"
-          className="w-full border-gray-300 rounded-md p-3 resize-none"
-          rows={4}
-          maxLength={2000}
-          name="jobDescription[]"
-          value={data.jobDescription}
-          onChange={(e) =>
-            onTextChange({ ...data, jobDescription: e.target.value })
-          }
-        />
-        <div className="text-right text-sm text-gray-500">
-          {data.jobDescription.length}/2000 words
-        </div>
+      {/* job Desc */}
+      <AppFormField
+        type="textarea"
+        id="jobDescription[]"
+        name="jobDescription[]"
+        label="Job Description"
+        placeholder="Job Description"
+        className="border-gray-300 rounded-md resize-none mt-6 mb-1"
+        col={6} // Determines the height of the textarea dynamically
+        onChange={(e) =>
+          onTextChange({ ...data, jobDescription: e.target.value })
+        }
+      />
+      <div className="ml-6 text-xs text-gray-500">
+        {data.jobDescription.length}/2000 words
       </div>
     </div>
   );

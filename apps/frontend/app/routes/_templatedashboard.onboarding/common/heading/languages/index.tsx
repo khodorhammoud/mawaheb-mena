@@ -61,9 +61,9 @@ export default function Languages() {
   return (
     <>
       {/* LANGUAGES SERVED ✏️ */}
-      <div className="ml-auto flex items-center mb-[66px] mr-20">
+      <div className="ml-auto flex items-center md:mb-[66px] mb-10 xl:mr-20 md:mr-10 mr-5 md:mt-6">
         {/* LANGUAGES */}
-        <span className="text-lg">Languages</span>
+        <span className="lg:text-lg text-base">Languages</span>
         {/* ✏️ + POPUP */}
         <Dialog
           open={languagesServedOpen}
@@ -72,7 +72,7 @@ export default function Languages() {
           {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <RiPencilFill className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+              <RiPencilFill className="lg:h-9 lg:w-8 h-8 w-7 lg:ml-0 -ml-1 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
             </Button>
           </DialogTrigger>
           {/* POPUP */}
