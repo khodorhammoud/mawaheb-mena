@@ -9,7 +9,7 @@ export default function Heading() {
   }>();
   return (
     <>
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-6 font-['Switzer-Regular']">
         {/* Bio Info ✏️ */}
         <BioInfo />
 

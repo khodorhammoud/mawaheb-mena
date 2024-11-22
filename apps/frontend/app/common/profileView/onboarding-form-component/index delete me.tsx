@@ -5,6 +5,7 @@ import {
   CardTitle,
   CardDescription,
 } from "~/common/header/card";
+import Upload from "~/common/upload/Upload";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import RangeComponent from "./RangeComponent";
@@ -29,43 +30,11 @@ import WorkHistoryComponent from "./WorkHistory";
 import CertificateComponent from "./CertificateComponent";
 import { motion, AnimatePresence } from "framer-motion";
 import EducationComponent from "./EducationComponent";
+import AppFormField from "~/common/form-fields";
+import { FaLink } from "react-icons/fa";
+import { GeneralizableFormCardProps } from "./types";
 
-interface GeneralizableFormCardProps {
-  formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
-  cardTitle: string;
-  cardSubtitle?: string;
-  popupTitle: string;
-  triggerLabel: string;
-  triggerIcon?: React.ReactNode;
-  formName: string;
-  fieldName: string;
-  minVal?: number;
-  maxVal?: number;
-  repeatableFieldName?: string;
-}
-
-function GeneralizableFormCard({
-  formType,
-  cardTitle,
-  cardSubtitle,
-  popupTitle,
-  triggerLabel,
-  formName,
-  fieldName,
-  triggerIcon,
-  minVal,
-  maxVal,
-  repeatableFieldName,
-}: GeneralizableFormCardProps) {
+function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
     OnboardingEmployerFields | OnboardingFreelancerFields
   >();
@@ -77,21 +46,14 @@ function GeneralizableFormCard({
   in case of repeatable, repeatableinputValue is used
    */
   const [inputValue, setInputValue] = useState<number | string | File>(
-    formType !== "repeatable"
-      ? (initialData?.[fieldName] ?? (formType === "increment" ? 0 : ""))
+    props.formType !== "repeatable"
+      ? (initialData?.[props.fieldName] ??
+          (props.formType === "increment" ? 0 : ""))
       : null
   );
 
-  /* 
-  INFO: repeatable fields
-  repeatable field types:
-    - portfolio
-    - work history
-    - certificate
-    - education
-  */
-
   // =========== repeatable fields default values =============
+  // PORTFOLIO
   const portfolioFormFields: PortfolioFormFieldType = {
     projectName: "",
     projectLink: "",
@@ -100,6 +62,7 @@ function GeneralizableFormCard({
     projectImageUrl: "",
   };
 
+  // WORK HISTORY
   const workHistoryFormFields: WorkHistoryFormFieldType = {
     title: "",
     company: "",
@@ -109,6 +72,7 @@ function GeneralizableFormCard({
     jobDescription: "",
   };
 
+  // CERTIFICATE
   const certificatesFormFields: CertificateFormFieldType = {
     certificateName: "",
     issuedBy: "",
@@ -117,6 +81,7 @@ function GeneralizableFormCard({
     attachmentUrl: "",
   };
 
+  // EDUCATION
   const educationFormFields: EducationFormFieldType = {
     degree: "",
     institution: "",
@@ -141,7 +106,7 @@ function GeneralizableFormCard({
   // =========== repeatable fields handlers =============
 
   const handleAddRepeatableField = () => {
-    switch (repeatableFieldName) {
+    switch (props.repeatableFieldName) {
       case "portfolio":
         setRepeatableInputValues((prevValues) => [
           ...(prevValues as PortfolioFormFieldType[]),
@@ -214,7 +179,7 @@ function GeneralizableFormCard({
       | PortfolioFormFieldType[]
       | CertificateFormFieldType[]
       | EducationFormFieldType[];
-    switch (repeatableFieldName) {
+    switch (props.repeatableFieldName) {
       case "portfolio":
         updatedInputValues = [
           ...repeatableInputValues,
@@ -246,11 +211,11 @@ function GeneralizableFormCard({
 
   // Initialize repeatable fields with existing data
   useEffect(() => {
-    if (formType === "repeatable") {
+    if (props.formType === "repeatable") {
       let dataParsed = false;
-      if (initialData && initialData[fieldName]) {
+      if (initialData && initialData[props.fieldName]) {
         try {
-          const repeatableData = JSON.parse(initialData[fieldName]) as
+          const repeatableData = JSON.parse(initialData[props.fieldName]) as
             | PortfolioFormFieldType[]
             | WorkHistoryFormFieldType[]
             | CertificateFormFieldType[]
@@ -263,7 +228,7 @@ function GeneralizableFormCard({
         }
       }
       if (!dataParsed) {
-        switch (repeatableFieldName) {
+        switch (props.repeatableFieldName) {
           case "portfolio":
             setRepeatableInputValues([portfolioFormFields]);
             break;
@@ -287,11 +252,11 @@ function GeneralizableFormCard({
   const fetcher = useFetcher<{
     success?: boolean;
     error?: { message: string };
-  }>(); // Fetcher for bio form
+  }>();
 
-  const [showStatusMessage, setShowStatusMessage] = useState(false); // Track bio message visibility
+  const [showStatusMessage, setShowStatusMessage] = useState(false);
 
-  // Handle showing the bio submission message
+  // Handle showing the submission message
   useEffect(() => {
     if (fetcher.data?.success || fetcher.data?.error) {
       setShowStatusMessage(true);
@@ -303,11 +268,19 @@ function GeneralizableFormCard({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(formRef.current!);
-    formData.append(repeatableFieldName, JSON.stringify(repeatableInputValues));
-    // add files
-    repeatableInputFiles.forEach((file, index) => {
-      formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
-    });
+
+    if (props.formType === "repeatable") {
+      formData.append(
+        props.repeatableFieldName,
+        JSON.stringify(repeatableInputValues)
+      );
+      repeatableInputFiles.forEach((file, index) => {
+        formData.append(
+          `${props.repeatableFieldName}-attachment[${index}]`,
+          file
+        );
+      });
+    }
 
     fetcher.submit(formData, {
       method: "post",
@@ -318,8 +291,8 @@ function GeneralizableFormCard({
   const handleIncrement = (step: number) => {
     fetcher.submit(
       {
-        "target-updated": formName,
-        [fieldName]: ((inputValue as number) + step).toString(),
+        "target-updated": props.formName,
+        [props.fieldName]: ((inputValue as number) + step).toString(),
       },
       { method: "post" }
     );
@@ -336,7 +309,7 @@ function GeneralizableFormCard({
   };
 
   const renderFormField = () => {
-    switch (formType) {
+    switch (props.formType) {
       case "text":
         return (
           <Input
@@ -344,7 +317,7 @@ function GeneralizableFormCard({
             placeholder="Enter text"
             value={inputValue as string}
             onChange={(e) => setInputValue(e.target.value)}
-            name={fieldName}
+            name={props.fieldName}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         );
@@ -354,89 +327,125 @@ function GeneralizableFormCard({
             type="number"
             placeholder="Enter a number"
             value={inputValue as number}
-            name={fieldName}
+            name={props.fieldName}
             onChange={(e) => setInputValue(Number(e.target.value))}
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         );
       case "range":
         return (
-          <>
-            <Input
-              type="number"
-              placeholder="Enter a number"
-              value={inputValue as number}
-              name={fieldName}
-              onChange={(e) => setInputValue(Number(e.target.value))}
-              className="w-full p-3 border border-gray-300 rounded-md mb-8"
-            />
+          <div className="flex flex-col">
+            <div className="">
+              <div className="w-[50%] mb-6 relative">
+                <AppFormField
+                  type="number"
+                  id="number-input"
+                  name={props.fieldName}
+                  label={props.cardTitle}
+                  placeholder={props.popupTitle}
+                  inputValue={inputValue as number}
+                  onChange={(e) => setInputValue(Number(e.target.value))}
+                  className="no-spinner"
+                />
+                <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+              </div>
+            </div>
 
-            <RangeComponent minVal={minVal} maxVal={maxVal} />
-          </>
+            <p className="mb-14 text-base">
+              The median {props.popupTitle} for a designer is:
+            </p>
+            <RangeComponent minVal={props.minVal} maxVal={props.maxVal} />
+          </div>
         );
       case "textArea":
         return (
-          <>
-            <textarea
-              value={inputValue as string}
-              name={fieldName}
+          <div className="flex flex-col gap-2">
+            <AppFormField
+              type="textarea"
+              id="description"
+              name={props.fieldName}
+              label="Add content to describe yourself"
               placeholder="Add content to describe yourself"
+              col={6} // Represents rows as height (in rem units)
+              inputValue={inputValue as string}
               onChange={(e) => setInputValue(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md"
-              rows={6}
-              maxLength={2000}
             />
-            <div className="text-right text-sm text-gray-500">
+
+            <div className="ml-6 text-xs text-gray-500">
               {(inputValue as string).length} / 2000 characters
             </div>
-          </>
+          </div>
         );
       case "increment":
         return (
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="w-10 h-10"
-              type="button"
-              onClick={() => handleIncrement(-1)}
-            >
-              -
-            </Button>
-            <Input
-              type="number"
-              value={inputValue as number}
-              name={fieldName}
-              readOnly
-              className="w-full p-3 border border-gray-300 rounded-md"
-            />
-            <Button
-              variant="outline"
-              className="w-10 h-10"
-              type="button"
-              onClick={() => {
-                handleIncrement(1);
-              }}
-            >
-              +
-            </Button>
+          <div className="flex flex-col items-center space-y-4 w-full">
+            <div className="flex items-center border border-gray-300 rounded-xl w-full">
+              {/* - Button */}
+              <button
+                type="button"
+                className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
+                style={{ borderRight: "none" }} // Remove the right border of the - button
+                onClick={() => handleIncrement(-1)}
+              >
+                <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
+              </button>
+
+              {/* Input Display */}
+              <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
+                {typeof inputValue === "number" ||
+                typeof inputValue === "string"
+                  ? inputValue
+                  : ""}
+              </div>
+
+              {/* + Button */}
+              <button
+                type="button"
+                className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
+                style={{ borderLeft: "none" }} // Remove the left border of the + button
+                onClick={() => handleIncrement(1)}
+              >
+                <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
+              </button>
+            </div>
           </div>
         );
       case "video":
         return (
-          <Input
-            type="text"
-            placeholder="Paste YouTube URL or upload video"
-            value={inputValue as string}
-            name={fieldName}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md"
-          />
+          <div className="">
+            {/* UPLOAD */}
+            <Upload />
+
+            {/* OR */}
+            <div className="relative flex items-center justify-center mt-8 mb-8">
+              <div className="flex-grow border border-gray-200 mt-1"></div>
+              <span className="px-2">or</span>
+              <div className="flex-grow border border-gray-200 mt-1"></div>
+            </div>
+
+            {/* FORM */}
+            <div className="">
+              <div className="relative">
+                <AppFormField
+                  type="text"
+                  id="youtube-url"
+                  name={props.fieldName}
+                  label="Paste YouTube URL or upload video"
+                  placeholder="Paste YouTube URL or upload video"
+                  defaultValue={inputValue as string}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className=""
+                />
+                <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+              </div>
+            </div>
+          </div>
         );
       case "file":
         return (
           <Input
             type="file"
-            name={fieldName}
+            name={props.fieldName}
             onChange={(e) =>
               setInputValue(e.target.files ? e.target.files[0] : null)
             }
@@ -447,6 +456,7 @@ function GeneralizableFormCard({
         return (
           <div className="space-y-4">
             <AnimatePresence>
+              {/* DETERMINE THE TYPE OF REPEATABLE */}
               {repeatableInputValues.map((dataItem, index) => (
                 <motion.div
                   key={index}
@@ -457,28 +467,38 @@ function GeneralizableFormCard({
                     backgroundColor: "#f8d7da", // Faint red color
                   }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="border rounded-md"
+                  className="border rounded-xl"
                 >
-                  <div className="p-2">
+                  <div className="p-4">
+                    {/* EXPAND/COLLAPSE BUTTON */}
                     <div className="flex justify-between items-center">
+                      {/* EXPAND BUTTON */}
                       <Button
                         variant="secondary"
                         type="button"
                         onClick={() => toggleCollapse(index)}
-                        className="text-blue-500"
+                        className={`border rounded-xl not-active-gradient ${
+                          expandedIndex === index
+                            ? "bg-primaryColor text-white" // Active state styles
+                            : "text-primaryColor border-primaryColor hover:text-white" // Default state styles
+                        }`}
                       >
-                        {expandedIndex === index ? "Collapse" : "Expand"} Form{" "}
-                        {index + 1}
+                        {expandedIndex === index ? "Collapse" : "Expand"}{" "}
+                        Project Form {index + 1}
                       </Button>
+
+                      {/* COLLAPSE BUTTON */}
                       <Button
                         variant="outline"
                         type="button"
                         onClick={() => handleRemoveRepeatableField(index)}
-                        className="border-red-500 text-red-500"
+                        className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white"
                       >
                         Remove
                       </Button>
                     </div>
+
+                    {/* THE CONTENT THAT APPEAR UNDER THE 2 BUTTONS */}
                     <AnimatePresence>
                       {expandedIndex === index && (
                         <motion.div
@@ -488,7 +508,8 @@ function GeneralizableFormCard({
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                           className="overflow-hidden mt-4"
                         >
-                          {repeatableFieldName === "portfolio" ? (
+                          {/* PORTFILIO SECTION */}
+                          {props.repeatableFieldName === "portfolio" ? (
                             <PortfolioComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -498,14 +519,16 @@ function GeneralizableFormCard({
                                 handleFileChange(index, file)
                               }
                             />
-                          ) : repeatableFieldName === "workHistory" ? (
+                          ) : // WORK HISTORYSECTION
+                          props.repeatableFieldName === "workHistory" ? (
                             <WorkHistoryComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
                                 handleDataChange(index, updatedData)
                               }
                             />
-                          ) : repeatableFieldName === "certificates" ? (
+                          ) : // CERTIFICATES
+                          props.repeatableFieldName === "certificates" ? (
                             <CertificateComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -515,7 +538,8 @@ function GeneralizableFormCard({
                                 handleFileChange(index, file)
                               }
                             />
-                          ) : repeatableFieldName === "educations" ? (
+                          ) : // EDUCATION
+                          props.repeatableFieldName === "educations" ? (
                             <EducationComponent
                               data={dataItem}
                               onTextChange={(updatedData) =>
@@ -530,10 +554,12 @@ function GeneralizableFormCard({
                 </motion.div>
               ))}
             </AnimatePresence>
+            {/* ADDING BUTTON */}
             <Button
               variant="outline"
               type="button"
               onClick={handleAddRepeatableField}
+              className="not-active-gradient-black rounded-xl ml-4 hover:text-white"
             >
               + Add Field
             </Button>
@@ -545,66 +571,75 @@ function GeneralizableFormCard({
   };
 
   return (
-    <Card
-      className="w-full p-4 bg-gray-100 border border-gray-400 border-dashed rounded-2xl"
-      style={{
-        borderWidth: "2px",
-        borderStyle: "dashed",
-        borderColor: "#cbd5e1",
-        borderSpacing: "10px",
-      }}
-    >
-      <CardHeader className="p-4">
-        <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle>
-        {/* add subtitle */}
-        {cardSubtitle && <CardDescription>{cardSubtitle}</CardDescription>}
+    // THE CARDS
+    <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid">
+      {/* TITLE AND SUBTITLE */}
+      <CardHeader className="p-0">
+        {/* TITLE */}
+        <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
+          {props.cardTitle}
+        </CardTitle>
+        {/* SUBTITLE IF EXISTS */}
+        {props.cardSubtitle && (
+          <CardDescription className="md:w-[300px]">
+            {props.cardSubtitle}
+          </CardDescription>
+        )}
       </CardHeader>
 
+      {/* BUTTON AND POPUP */}
       <Dialog>
+        {/* CARD BUTTON */}
         <DialogTrigger>
           <Button
             variant="outline"
-            className="trigger flex items-center space-x-2 border border-gray-400"
-            style={{
-              borderWidth: "2px",
-              borderColor: "#cbd5e1",
-              borderRadius: "8px",
-            }}
+            className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
           >
-            {triggerIcon}
-            <span>{triggerLabel}</span>
+            {props.triggerIcon}
+            <span>{props.triggerLabel}</span>
           </Button>
         </DialogTrigger>
+
+        {/* CARD POPUP */}
         <DialogContent className="bg-white">
-          <DialogTitle>{popupTitle}</DialogTitle>
-          {/* Display Error Message */}
+          {/* POPUP TITLE + ERROR/SUCCESS MESSAGES*/}
+          <DialogTitle className="mt-3 tracking-normal">
+            {props.popupTitle}
+          </DialogTitle>
+
+          {/* ERROR */}
           {showStatusMessage && fetcher.data?.error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-6">
               <span className="block sm:inline">
                 {fetcher.data.error.message}
               </span>
             </div>
           )}
-          {/* Display Success Message */}
+
+          {/* SUCCESS */}
           {showStatusMessage && fetcher.data?.success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-6">
               <span className="block sm:inline">updated successfully</span>
             </div>
           )}
+
+          {/* POPUP FORM + SAVE BUTTON */}
           <fetcher.Form
             method="post"
             className="space-y-6"
             ref={formRef}
-            {...(formType === "repeatable"
+            {...(props.formType === "repeatable"
               ? { encType: "multipart/form-data", onSubmit: handleSubmit }
               : {})}
           >
-            <input type="hidden" name="target-updated" value={formName} />
+            <input type="hidden" name="target-updated" value={props.formName} />
             {renderFormField()}
+
+            {/* SAVE BUTTON */}
             <DialogFooter>
               <Button
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
                 type="submit"
-                className="action bg-blue-600 text-white px-4 py-2 rounded-lg"
               >
                 Save
               </Button>
