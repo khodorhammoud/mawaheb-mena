@@ -19,11 +19,11 @@ export const useFormState = (formType: string, fieldName: string) => {
 
   const initializeRepeatableFields = (data: any, field: string) => {
     if (data?.[field]) {
-      // check if data[field] is a string, parse it
-      const maybeParsedData =
+      // if data[field] is a string, JSON Parse it
+      const parsedData =
         typeof data[field] === "string" ? JSON.parse(data[field]) : data[field];
-      setRepeatableInputValues(maybeParsedData);
-      setRepeatableInputFiles(new Array(maybeParsedData.length).fill(null));
+      setRepeatableInputValues(parsedData);
+      setRepeatableInputFiles(new Array(parsedData.length).fill(null));
     }
   };
 

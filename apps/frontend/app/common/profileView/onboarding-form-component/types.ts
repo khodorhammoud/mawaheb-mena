@@ -1,14 +1,14 @@
 export interface GeneralizableFormCardProps {
   formType:
-  | "text"
-  | "number"
-  | "range"
-  | "textArea"
-  | "increment"
-  | "video"
-  | "file"
-  | "repeatable"
-  | "custom";
+    | "text"
+    | "number"
+    | "range"
+    | "textArea"
+    | "increment"
+    | "video"
+    | "file"
+    | "repeatable"
+    | "custom";
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
@@ -23,15 +23,15 @@ export interface GeneralizableFormCardProps {
 
 export interface FilledGeneralizableFormCardProps {
   formType:
-  | "text"
-  | "number"
-  | "range"
-  | "textArea"
-  | "increment"
-  | "video"
-  | "file"
-  | "repeatable"
-  | "custom";
+    | "text"
+    | "number"
+    | "range"
+    | "textArea"
+    | "increment"
+    | "video"
+    | "file"
+    | "repeatable"
+    | "custom";
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
@@ -45,7 +45,6 @@ export interface FilledGeneralizableFormCardProps {
   repeatableInputValues: any[];
   inputValue: string | number | File | string[];
 }
-
 
 export type FormStateType = number | string | File | null;
 
