@@ -629,28 +629,4 @@ export async function getEmployerDashboardData(request: Request) {
   }
 }
 
-// fetch the jobs
-// fetch the jobs
-// fetch the jobs
-// my-jobs PAGE
-export async function getJobs(): Promise<Job[]> {
-  // Fetch all jobs from the database
-  const jobs = await db.select().from(jobsTable).execute();
 
-  // Map each job result to a structured object
-  return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    // requiredSkills: job.requiredSkills as Skill[],
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
-    status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
-  }));
-}

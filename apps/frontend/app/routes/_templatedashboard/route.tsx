@@ -17,11 +17,11 @@ export default function Layout() {
   return (
     <div>
       <Header />
-      {/* <div className="mt-[100px]"> */}
       <div className="flex mt-[12px]">
         <Sidebar accountType={accountType} />
-        <Outlet />
-        {/* </div> */}
+        <div className="mt-[91px] p-5">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

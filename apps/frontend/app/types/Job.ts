@@ -17,3 +17,9 @@ export interface Job {
   status: string;
   createdAt?: string; // Keep as string for JSON compatibility
 }
+
+export interface JobFilter {
+  projectType?: string[];
+  locationPreference?: string[];
+  experienceLevel?: string[];
+}
