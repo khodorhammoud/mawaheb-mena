@@ -10,15 +10,12 @@ import {
 } from "~/servers/user.server";
 import { AccountType } from "~/types/enums";
 import { authenticator } from "~/auth/auth.server";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import RecommendedJobs from "./recommendedJobs";
 import AllJobs from "./allJobs";
 import { useLoaderData } from "@remix-run/react";
 
-
-export async function action({ request }: ActionFunctionArgs) {
-
-}
+export async function action({ request }: ActionFunctionArgs) {}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // if the curretn user is not logged in, redirect them to the login screen
@@ -33,7 +30,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const employer = await getCurrentProfileInfo(request);
-
 
   // Return the response data
   return Response.json({ employer });
@@ -50,8 +46,12 @@ export default function Layout() {
           <TabsTrigger value="account">Recommended Jobs</TabsTrigger>
           <TabsTrigger value="password">All Jobs</TabsTrigger>
         </TabsList>
-        <TabsContent value="account"><RecommendedJobs /></TabsContent>
-        <TabsContent value="password"><AllJobs /></TabsContent>
+        <TabsContent value="account">
+          <RecommendedJobs />
+        </TabsContent>
+        <TabsContent value="password">
+          <AllJobs />
+        </TabsContent>
       </Tabs>
     </div>
   );

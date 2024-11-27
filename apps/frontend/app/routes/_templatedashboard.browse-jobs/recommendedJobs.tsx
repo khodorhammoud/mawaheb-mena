@@ -1,13 +1,28 @@
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 import { useEffect } from "react";
-import { Employer } from "~/types/User";
+// import { getEmployerJobs } from "~/servers/job.server";
+import { Job } from "~/types/Job";
+// import { Employer } from "~/types/User";
+import JobCard from "./jobCard";
 
 export default function RecommendedJobs() {
-    const employer = useLoaderData<{ employer: Employer }>();
+  // const { employer } = useLoaderData<{ employer: Employer }>();
+  const fetcher = useFetcher<{ jobs: Job[] }>();
+  const allJobs = fetcher.data?.jobs || [];
 
-    useEffect(() => {
-        console.log(employer);
-    }, []);
+  //  want to fetch from /api/jobs-filtered
+  useEffect(() => {
+    fetcher.submit(null, {
+      method: "get",
+      action: "/api/jobs-recommended",
+    });
+  }, []);
 
-    return <div>RecommendedJobs</div>;
+  return (
+    <div>
+      {allJobs.map((job) => (
+        <JobCard key={job.id} job={job} />
+      ))}
+    </div>
+  );
 }
