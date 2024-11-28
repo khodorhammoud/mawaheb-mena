@@ -22,4 +22,7 @@ export interface JobFilter {
   projectType?: string[];
   locationPreference?: string[];
   experienceLevel?: string[];
+  employerId?: number;
+  page?: number;
+  pageSize?: number;
 }

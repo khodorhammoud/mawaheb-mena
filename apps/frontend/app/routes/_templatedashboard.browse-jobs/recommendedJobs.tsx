@@ -5,7 +5,11 @@ import { Job } from "~/types/Job";
 // import { Employer } from "~/types/User";
 import JobCard from "./jobCard";
 
-export default function RecommendedJobs() {
+interface RecommendedJobsProps {
+  onJobSelect: (job: Job) => void;
+}
+
+export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
   // const { employer } = useLoaderData<{ employer: Employer }>();
   const fetcher = useFetcher<{ jobs: Job[] }>();
   const allJobs = fetcher.data?.jobs || [];
@@ -21,7 +25,7 @@ export default function RecommendedJobs() {
   return (
     <div>
       {allJobs.map((job) => (
-        <JobCard key={job.id} job={job} />
+        <JobCard onSelect={onJobSelect} key={job.id} job={job} />
       ))}
     </div>
   );

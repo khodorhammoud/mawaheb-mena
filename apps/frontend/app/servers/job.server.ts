@@ -54,15 +54,22 @@ export async function createJobPosting(
   };
 }
 
-
-export async function getEmployerJobs(employerId: number, jobStatus?: JobStatus[]): Promise<Job[]> {
+export async function getEmployerJobs(
+  employerId: number,
+  jobStatus?: JobStatus[]
+): Promise<Job[]> {
   // Fetch all jobs from the database that relate to current user
   let jobs = null;
   if (jobStatus) {
     jobs = await db
       .select()
       .from(jobsTable)
-      .where(and(eq(jobsTable.employerId, employerId), inArray(jobsTable.status, jobStatus)));
+      .where(
+        and(
+          eq(jobsTable.employerId, employerId),
+          inArray(jobsTable.status, jobStatus)
+        )
+      );
   } else {
     jobs = await db
       .select()
@@ -88,9 +95,14 @@ export async function getEmployerJobs(employerId: number, jobStatus?: JobStatus[
   }));
 }
 
-export async function getFreelancerRecommendedJobs(freelancer: Freelancer): Promise<Job[]> {
+export async function getFreelancerRecommendedJobs(
+  freelancer: Freelancer
+): Promise<Job[]> {
   // fetch recommended jobs
-  const recommendedJobs = await db.select().from(jobsTable).where(eq(jobsTable.status, JobStatus.Active));
+  const recommendedJobs = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.status, JobStatus.Active));
   return recommendedJobs.map((job) => ({
     id: job.id,
     employerId: job.employerId,
@@ -108,27 +120,42 @@ export async function getFreelancerRecommendedJobs(freelancer: Freelancer): Prom
 }
 
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
-  let query = db.select().from(jobsTable);
+  const query = db.select().from(jobsTable);
 
   const conditions = [];
+  if (!filter.pageSize) {
+    filter.pageSize = 10;
+  }
+  if (!filter.page) {
+    filter.page = 1;
+  }
 
   if (filter.projectType && filter.projectType.length > 0) {
     conditions.push(inArray(jobsTable.projectType, filter.projectType));
   }
 
   if (filter.locationPreference && filter.locationPreference.length > 0) {
-    conditions.push(inArray(jobsTable.locationPreference, filter.locationPreference));
+    conditions.push(
+      inArray(jobsTable.locationPreference, filter.locationPreference)
+    );
   }
 
   if (filter.experienceLevel && filter.experienceLevel.length > 0) {
     conditions.push(inArray(jobsTable.experienceLevel, filter.experienceLevel));
   }
 
+  if (filter.employerId) {
+    conditions.push(eq(jobsTable.employerId, filter.employerId));
+  }
+
   // Add status condition
   conditions.push(eq(jobsTable.status, JobStatus.Active));
 
   // Apply all conditions using and()
-  const jobs = await query.where(and(...conditions));
+  const jobs = await query
+    .where(and(...conditions))
+    .limit(filter.pageSize)
+    .offset((filter.page - 1) * filter.pageSize);
 
   return jobs.map((job) => ({
     id: job.id,
