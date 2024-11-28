@@ -1,10 +1,14 @@
 import { Job as JobType } from "~/types/Job";
+import { SheetTrigger } from "~/components/ui/sheet";
+import { Button } from "~/components/ui/button";
 
 interface JobProps {
   job: JobType;
+  onSelect: (job: JobType) => void;
 }
 
-export default function Job({ job }: JobProps) {
+export default function Job(props: JobProps) {
+  const { job, onSelect } = props;
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
@@ -21,7 +25,7 @@ export default function Job({ job }: JobProps) {
         {/* {jobStatus === "draft" && ( */}
         <button
           className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-        // This button has no functionality
+          // This button has no functionality
         >
           Edit
         </button>
@@ -52,11 +56,7 @@ export default function Job({ job }: JobProps) {
         </div>
       </div>
 
-      {/* APPLICANTS SECTION */}
-      <div>
-        <p className="font-semibold xl:text-base text-sm">Applicants: 4</p>
-        <p className="text-gray-500">photos</p>
-      </div>
+      <Button onClick={() => onSelect(job)}>View Details</Button>
     </div>
   );
 }
