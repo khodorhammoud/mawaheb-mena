@@ -1,5 +1,4 @@
 import { Job as JobType } from "~/types/Job";
-import { SheetTrigger } from "~/components/ui/sheet";
 import { Button } from "~/components/ui/button";
 
 interface JobProps {

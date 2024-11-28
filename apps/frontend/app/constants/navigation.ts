@@ -44,40 +44,40 @@ export const sidebarEmployerNav = function (t: TFunction) {
     },
     {
       label: t("dashboardEmployerManageJobsLable"),
-      href: "/for-freelancers",
+      href: "/manage-jobs",
     },
     {
       label: t("dashboardEmployerTimeSheetLable"),
-      href: "/for-freelancers",
+      href: "/timesheet",
     },
     {
       label: t("dashboardEmployerSettingsLable"),
-      href: "/for-freelancers",
+      href: "/settings",
     },
   ];
 };
 
-export const sidebarEmployeeNav = function (t: TFunction) {
+export const sidebarFreelancerNav = function (t: TFunction) {
   return [
     {
-      label: t("dashboardEmployeeDashboardLable"),
-      href: "/for-employers",
+      label: t("dashboardFreelancerDashboardLable"),
+      href: "/dashboard",
     },
     {
-      label: t("dashboardEmployeeBrowseJobsLable"),
-      href: "/for-employers",
+      label: t("dashboardFreelancerBrowseJobsLable"),
+      href: "/browse-jobs",
     },
     {
-      label: t("dashboardEmployeeTimeSheetLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerTimeSheetLable"),
+      href: "/timesheet",
     },
     {
-      label: t("dashboardEmployeeReportsLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerReportsLable"),
+      href: "/reports",
     },
     {
-      label: t("dashboardEmployeeSettingsLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerSettingsLable"),
+      href: "/settings",
     },
   ];
 };
