@@ -21,9 +21,10 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-  // jobStatusEnum,
-  // locationPreferenceTypeEnum,
-  // experienceLevelEnum,
+  /*  jobStatusEnum,
+  locationPreferenceTypeEnum,
+  experienceLevelEnum, */
+  // jobApplicationStatusEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -73,8 +74,6 @@ export const accountsTable = pgTable("accounts", {
   userId: integer("user_id").references(() => UsersTable.id), // foreign key
   slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
-  // freelancerId: integer("freelancerId").references(() => freelancersTable.id),
-  // employerId: integer("employerId").references(() => employersTable.id),
   location: varchar("location", { length: 150 }),
   country: countryEnum("country"), // countryEnum is a variable, and we are calling it only, and the name inside paranthesis is the one that will apear in the table schema // click on countryEnum if you want
   region: varchar("region", { length: 100 }),
@@ -126,7 +125,6 @@ export const freelancersTable = pgTable("freelancers", {
   fieldsOfExpertise: text("fields_of_expertise")
     .array()
     .default(sql`'{}'::text[]`),
-  // portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
   portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
   workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
   cvLink: text("cv_link"),
@@ -256,11 +254,7 @@ export const industriesTable = pgTable("industries", {
 });
 
 /**
- * ***********************************
- * ***********************************
  * Define the relation between employers and industries where each employer can have zero to many insudries
- * ***********************************
- * ***********************************
  * @property id - serial primary key
  * @property employer_id - integer referencing the employersTable id
  * @property industry_id - integer referencing the industriesTable id
@@ -302,6 +296,7 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property experience_level - experienceLevelEnum
  * @property status - jobStatusEnum
  * @property created_at - timestamp
+ * @property fulfilledAt - timestamp
  */
 
 export const jobsTable = pgTable("jobs", {
@@ -327,6 +322,7 @@ export const jobsTable = pgTable("jobs", {
   //experienceLevelEnum("experience_level"),
   status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
+  fulfilledAt: timestamp("fulfilled_at"),
 });
 
 export const skillsTable = pgTable("skills", {
@@ -340,4 +336,22 @@ export const jobSkillsTable = pgTable("job_skills", {
   jobId: integer("job_id").references(() => jobsTable.id),
   skillId: integer("skill_id").references(() => skillsTable.id),
   isStarred: boolean("is_starred").default(false),
+});
+
+/**
+ * Define the Jobs Applications table schema
+ *
+ * @property id - serial primary key
+ * @property job_id - integer referencing the jobsTable id
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property status - jobApplicationStatusEnum
+ * @property created_at - timestamp
+ */
+export const jobApplicationsTable = pgTable("job_applications", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobsTable.id),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  // status: jobApplicationStatusEnum("status"),
+  status: varchar("status", { length: 50 }),
+  createdAt: timestamp("created_at").default(sql`now()`),
 });

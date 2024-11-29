@@ -18,9 +18,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    const profile = await authenticator.authenticate("register", request);
+    const userId = await authenticator.authenticate("register", request);
     newFreelancer = (await getProfileInfo({
-      userId: profile.account.user.id,
+      userId,
     })) as Freelancer;
   } catch (error) {
     // handle registration errors
@@ -56,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
     ) as string;
     const userId = newFreelancer.account?.user?.id;
     const verificationToken = await generateVerificationToken(userId);
-
     sendEmail({
       type: "accountVerification",
       email: email,

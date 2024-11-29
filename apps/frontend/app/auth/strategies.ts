@@ -4,19 +4,19 @@ import {
   getUser,
   registerEmployer,
   registerFreelancer,
-  getProfileInfo,
 } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
 import { Employer, Freelancer } from "../types/User";
 import { EmployerAccountType } from "../types/enums";
 
 export const loginStrategy = new FormStrategy(
-  async ({ form }): Promise<Employer | Freelancer> => {
+  async ({ form }): Promise<number> => {
     let email = form.get("email") as string;
     const password = form.get("password") as string;
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
     const user = await getUser({ userEmail: email }, true);
+    console.log("user login", user);
     if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }
@@ -27,12 +27,14 @@ export const loginStrategy = new FormStrategy(
 
     if (!user.isVerified) throw new Error("Account not verified");
 
-    return await getProfileInfo({ userId: user.id! });
+    console.log("user id login", user.id);
+
+    return user.id;
   }
 );
 
 export const registerationStrategy = new FormStrategy(
-  async ({ form }): Promise<Employer | Freelancer> => {
+  async ({ form }): Promise<number> => {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
     const firstName = form.get("firstName") as string;
@@ -42,7 +44,7 @@ export const registerationStrategy = new FormStrategy(
       "employerAccountType"
     ) as EmployerAccountType;
 
-    let user = null;
+    let profile: Employer | Freelancer = null;
     if (!password || !firstName || !lastName || !email) {
       throw new Error("Missing required fields for registration");
     }
@@ -50,7 +52,7 @@ export const registerationStrategy = new FormStrategy(
     try {
       switch (accountType) {
         case "employer":
-          user = await registerEmployer({
+          profile = await registerEmployer({
             account: {
               user: {
                 firstName: firstName.toLowerCase().trim(),
@@ -64,7 +66,7 @@ export const registerationStrategy = new FormStrategy(
 
           break;
         case "freelancer":
-          user = await registerFreelancer({
+          profile = await registerFreelancer({
             account: {
               user: {
                 firstName: firstName.toLowerCase().trim(),
@@ -82,6 +84,6 @@ export const registerationStrategy = new FormStrategy(
       console.error(error);
       throw new Error("Failed to register user");
     }
-    return user;
+    return profile.account.user.id;
   }
 );

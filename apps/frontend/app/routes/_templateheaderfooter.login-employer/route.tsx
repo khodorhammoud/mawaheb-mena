@@ -15,7 +15,7 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (error) {
     if (error instanceof AuthorizationError) {
       // here the error is related to the authentication process
-      return json({
+      return Response.json({
         success: false,
         error: {
           code: error.cause,
@@ -23,7 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       });
     }
-    return json({
+    return Response.json({
       success: false,
       error: {
         code: (error as Response).status,

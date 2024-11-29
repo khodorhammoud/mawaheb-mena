@@ -1,25 +1,22 @@
-import { sidebarEmployerNav, sidebarEmployeeNav } from "~/constants/navigation";
+import {
+  sidebarEmployerNav,
+  sidebarFreelancerNav,
+} from "~/constants/navigation";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLoaderData, useLocation } from "@remix-run/react";
 import clsx from "clsx";
-import { User } from "~/types/User";
+import { AccountType } from "~/types/enums";
 
-type SidebarProps = {
-  accountType: string;
-};
-export default function Sidebar({ accountType }: SidebarProps) {
-  const { currentUser } = useLoaderData<{
-    currentUser: User;
-  }>();
+export default function Sidebar() {
+  const { accountType } = useLoaderData<{ accountType: string }>();
   const { t } = useTranslation();
   const location = useLocation(); // Get the current location
   let menuNavigation;
-
   switch (accountType) {
-    case "employee":
-      menuNavigation = sidebarEmployeeNav(t);
+    case AccountType.Freelancer:
+      menuNavigation = sidebarFreelancerNav(t);
       break;
-    case "employer":
+    case AccountType.Employer:
     default:
       menuNavigation = sidebarEmployerNav(t);
       break;

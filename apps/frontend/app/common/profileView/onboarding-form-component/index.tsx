@@ -27,7 +27,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     value && (Array.isArray(value) ? value.length > 0 : value)
   );
 
-  console.log("props.formType", props.formType);
   const Template = FieldTemplates[props.formType];
   const TemplateComponent = isFilled
     ? Template.FilledState
@@ -63,6 +62,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           cardSubtitle={props.cardSubtitle}
         />
 
+        {/* POPUPS */}
         <Dialog>
           <DialogTrigger>
             {isFilled ? (

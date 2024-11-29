@@ -3,7 +3,9 @@ import { DialogFooter } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";
 import RepeatableFields from "./RepeatableFields";
 import type { FormContentProps, FormStateType } from "../types";
+import { useState } from "react";
 
+// Main FormContent component
 const FormContent = ({
   formType,
   formState,
@@ -16,8 +18,6 @@ const FormContent = ({
   ...props
 }: FormContentProps) => {
   const {
-    inputValue,
-    setInputValue,
     repeatableInputValues,
     repeatableInputFiles,
     handleAddRepeatableField,
@@ -26,6 +26,7 @@ const FormContent = ({
     expandedIndex,
     setExpandedIndex,
   } = formState;
+  const [inputValue, setInputValue] = useState<FormStateType>(0); // Or whatever initial value i want
 
   // Render status messages (error/success)
   const renderStatusMessages = () => {
@@ -72,26 +73,29 @@ const FormContent = ({
     onSubmit(e, formData);
   };
 
+  // Fix: Add Type Guard to handle 'prev' correctly when it's a number
   const handleIncrement = (step: number) => {
     setInputValue((prev) => {
-      fetcher.submit(
-        {
-          "target-updated": formName,
-          [fieldName]: ((inputValue as number) + step).toString(),
-        },
-        { method: "post" }
-      );
+      // Check if prev is a number
       if (typeof prev === "number") {
+        fetcher.submit(
+          {
+            "target-updated": formName,
+            [fieldName]: (prev + step).toString(),
+          },
+          { method: "post" }
+        );
         return prev + step;
       } else {
-        // Handle the case where `prev` is not a number, if necessary
-        console.warn("Expected a number but got a different type");
-        return prev;
+        // Handle cases where prev is not a number
+        console.warn("Expected 'prev' to be a number but got:", typeof prev);
+        return prev; // Don't modify the state if it's not a number
       }
     });
   };
 
   return (
+    //POPUPS
     <fetcher.Form
       method="post"
       className="space-y-6"

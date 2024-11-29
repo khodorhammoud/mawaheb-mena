@@ -73,9 +73,7 @@ export async function sendEmailWithBrevo(mailOptions: MailOptions) {
 
   apiInstance.sendTransacEmail(sendSmtpEmail).then(
     function (data) {
-      console.log(
-        "API called successfully. Returned data: " + JSON.stringify(data)
-      );
+      console.log("API called successfully");
     },
     function (error) {
       console.error(error);

@@ -1,5 +1,5 @@
 import { Skill } from "./Skill";
-// import { JobStatus } from "./enums";
+import { JobApplicationStatus, JobStatus } from "./enums";
 
 export interface Job {
   id?: number;
@@ -16,4 +16,22 @@ export interface Job {
   // status: JobStatus;
   status: string;
   createdAt?: string; // Keep as string for JSON compatibility
+  fulfilledAt?: string;
+}
+
+export interface JobFilter {
+  projectType?: string[];
+  locationPreference?: string[];
+  experienceLevel?: string[];
+  employerId?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface JobApplication {
+  id: number;
+  jobId: number;
+  freelancerId: number;
+  status: JobApplicationStatus;
+  createdAt: string;
 }

@@ -13,7 +13,7 @@ export default function RangeComponent({
   return (
     <div className="relative w-full flex items-center mt-8">
       {/* Slider Track */}
-      <div className="relative w-full h-3 bg-blue-100 rounded-full">
+      <div className="relative w-full sm:h-3 h-2 bg-blue-100 rounded-full">
         {/* Line representing min to max values */}
         <div
           className="absolute h-full bg-primaryColor"
@@ -25,10 +25,10 @@ export default function RangeComponent({
 
         <div className="flex">
           {/* . left */}
-          <div className="absolute left-0 w-1 h-1 bg-primaryColor text-sm rounded-full mt-1 ml-1"></div>
+          <div className="absolute left-0 w-1 h-1 bg-primaryColor text-sm rounded-full sm:mt-1 mt-[2px] ml-1"></div>
 
           {/* right . */}
-          <div className="absolute right-0 w-1 h-1 bg-primaryColor text-sm rounded-full mt-1 mr-1"></div>
+          <div className="absolute right-0 w-1 h-1 bg-primaryColor text-sm rounded-full sm:mt-1 mt-[2px] mr-1"></div>
         </div>
 
         {/* Min Value Cursor */}

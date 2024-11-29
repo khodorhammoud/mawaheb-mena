@@ -20,7 +20,7 @@ export default function FreelancerOnboardingScreen() {
       ></div>
       <Heading />
       <div className="grid grid-cols-1 mb-4">
-        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3 ml-20 mr-20">
+        <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Hourly Rate */}
           <GeneralizableFormCard
             formType="range"
@@ -45,7 +45,7 @@ export default function FreelancerOnboardingScreen() {
             triggerIcon={<SlBadge />}
           />
         </div>
-        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 ml-20 mr-20">
+        <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Years of Experience */}
           <GeneralizableFormCard
             formType="video"
@@ -54,7 +54,7 @@ export default function FreelancerOnboardingScreen() {
             popupTitle="Introductory video"
             triggerLabel="Add Video"
             formName="freelancer-video"
-            fieldName="videoLink"
+            fieldName="introductoryVideo"
           />
 
           {/* About */}
@@ -70,7 +70,7 @@ export default function FreelancerOnboardingScreen() {
             fieldName="about"
           />
         </div>
-        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 ml-20 mr-20">
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Portfolio */}
           <GeneralizableFormCard
             formType="repeatable"
@@ -119,7 +119,7 @@ export default function FreelancerOnboardingScreen() {
         </div>
 
         {/* BUTTON */}
-        <div className="mt-6 flex justify-end mr-24">
+        <div className="sm:mt-6 mt-2 flex justify-end mr-24">
           {/* Form to update the user's onboard status */}
           <Form method="post">
             <input
@@ -130,7 +130,7 @@ export default function FreelancerOnboardingScreen() {
             {/* in the switch case, use value employer-onboard */}
             <button
               type="submit"
-              className="text-white py-3 px-6 rounded-xl bg-primaryColor font-medium not-active-gradient"
+              className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient"
             >
               Proceed
             </button>

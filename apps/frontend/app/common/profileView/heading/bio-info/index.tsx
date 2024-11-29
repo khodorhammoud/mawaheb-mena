@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { RiGitlabFill } from "react-icons/ri";
+import { RiGitlabFill, RiPencilFill } from "react-icons/ri";
 import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
@@ -34,6 +34,8 @@ export default function Heading() {
   const { bioInfo } = useLoaderData() as {
     bioInfo: AccountBio;
   };
+
+  console.log("here:", bioInfo);
 
   // Refs for location and website input fields
   const locationInputRef = useRef<HTMLInputElement>(null);

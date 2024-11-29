@@ -91,3 +91,10 @@ export enum JobStatus {
   Paused = "paused",
   Deleted = "deleted",
 }
+
+export enum JobApplicationStatus {
+  Pending = "pending",
+  Shortlisted = "shortlisted",
+  Approved = "approved",
+  Rejected = "rejected",
+}

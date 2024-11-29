@@ -31,7 +31,6 @@ import {
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { uploadFileToBucket } from "./cloudStorage.server";
-import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
 
@@ -78,7 +77,6 @@ export async function updateAccountBio(
 
 export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
   const userId = account.user.id;
-
   try {
     const user = await db
       .select({
@@ -627,30 +625,4 @@ export async function getEmployerDashboardData(request: Request) {
     console.error("Error fetching employer dashboard data:", error);
     throw error; // Re-throw the error for further handling
   }
-}
-
-// fetch the jobs
-// fetch the jobs
-// fetch the jobs
-// my-jobs PAGE
-export async function getJobs(): Promise<Job[]> {
-  // Fetch all jobs from the database
-  const jobs = await db.select().from(jobsTable).execute();
-
-  // Map each job result to a structured object
-  return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    // requiredSkills: job.requiredSkills as Skill[],
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
-    status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
-  }));
 }

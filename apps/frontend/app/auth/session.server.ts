@@ -1,5 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { Employer, Freelancer } from "../types/User";
+import { getUserAccountInfo } from "~/servers/user.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -18,13 +18,14 @@ export const { getSession, commitSession, destroySession } = sessionStorage;
 
 export async function createUserSession(
   request,
-  user: Employer | Freelancer,
+  userId: number,
   redirectTo: string
 ) {
   const session = await getSession(request.headers.get("cookie"));
-  session.set("user", user);
+  session.set("user", userId);
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-  if (user.account.user.isOnboarded) return redirect(redirectTo, { headers });
+  const userAccount = await getUserAccountInfo({ userId });
+  if (userAccount.user.isOnboarded) return redirect(redirectTo, { headers });
   return redirect("/dashboard", { headers }); // this is the session that direct me to the dashboard
 }
 
@@ -32,10 +33,8 @@ export async function getUserSession(request: Request) {
   return getSession(request.headers.get("Cookie"));
 }
 
-export async function getCurrentProfile(
-  request: Request
-): Promise<Employer | Freelancer> {
+export async function getCurrentUserId(request: Request): Promise<number> {
   const session = await getUserSession(request);
-  const user = session.get("user");
-  return user || null;
+  const userId = session.get("user");
+  return userId || null;
 }

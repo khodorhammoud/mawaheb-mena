@@ -8,7 +8,6 @@ import {
 import VideoUpload from "~/common/upload/videoUpload";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import RangeComponent from "./formFields/RangeComponent";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Dialog,
@@ -25,14 +24,17 @@ import {
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
-import PortfolioComponent from "./formFields/repeatables/PortfolioComponent";
-import WorkHistoryComponent from "./formFields/repeatables/WorkHistory";
-import CertificateComponent from "./formFields/repeatables/CertificateComponent";
+
 import { motion, AnimatePresence } from "framer-motion";
-import EducationComponent from "./formFields/repeatables/EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
+import Or from "~/common/or/Or";
 import { GeneralizableFormCardProps } from "./types";
+import RangeComponent from "./formFields/RangeComponent";
+import PortfolioComponent from "./formFields/repeatables/PortfolioComponent";
+import EducationComponent from "./formFields/repeatables/EducationComponent";
+import CertificateComponent from "./formFields/repeatables/CertificateComponent";
+import WorkHistoryComponent from "./formFields/repeatables/WorkHistory";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
@@ -347,7 +349,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                   name={props.fieldName}
                   label={props.cardTitle}
                   placeholder={props.popupTitle}
-                  inputValue={inputValue as number}
                   onChange={(e) => setInputValue(Number(e.target.value))}
                   className="no-spinner"
                 />
@@ -371,7 +372,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
               label="Add content to describe yourself"
               placeholder="Add content to describe yourself"
               col={6} // Represents rows as height (in rem units)
-              inputValue={inputValue as string}
+              defaultValue={inputValue as string}
               onChange={(e) => setInputValue(e.target.value)}
             />
 
@@ -421,11 +422,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             <VideoUpload onFileChange={handleVideoUpload} />
 
             {/* OR */}
-            <div className="relative flex items-center justify-center mt-8 mb-8">
-              <div className="flex-grow border border-gray-200 mt-1"></div>
-              <span className="px-2">or</span>
-              <div className="flex-grow border border-gray-200 mt-1"></div>
-            </div>
+            <Or />
 
             {/* FORM */}
             <div className="">
@@ -458,7 +455,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         );
       case "repeatable":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-hidden">
             <AnimatePresence>
               {/* DETERMINE THE TYPE OF REPEATABLE */}
               {repeatableInputValues.map((dataItem, index) => (
@@ -473,7 +470,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="border rounded-xl"
                 >
-                  <div className="p-4">
+                  <div className="p-3">
                     {/* EXPAND/COLLAPSE BUTTON */}
                     <div className="flex justify-between items-center">
                       {/* EXPAND BUTTON */}
@@ -481,7 +478,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                         variant="secondary"
                         type="button"
                         onClick={() => toggleCollapse(index)}
-                        className={`border rounded-xl not-active-gradient ${
+                        className={`border rounded-xl not-active-gradient py-1 ${
                           expandedIndex === index
                             ? "bg-primaryColor text-white" // Active state styles
                             : "text-primaryColor border-primaryColor hover:text-white" // Default state styles
@@ -496,7 +493,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                         variant="outline"
                         type="button"
                         onClick={() => handleRemoveRepeatableField(index)}
-                        className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white"
+                        className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white py-1"
                       >
                         Remove
                       </Button>
@@ -576,16 +573,16 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
 
   return (
     // THE CARDS
-    <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid">
+    <Card className="bg-gray-100 border-2 border-gray-300 rounded-xl border-dashed pl-8 pb-5 pt-5 h-auto grid w-auto">
       {/* TITLE AND SUBTITLE */}
       <CardHeader className="p-0">
         {/* TITLE */}
-        <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
+        <CardTitle className="text-lg font-semibold mb-2 xl:w-[60%] w-[80%]">
           {props.cardTitle}
         </CardTitle>
         {/* SUBTITLE IF EXISTS */}
         {props.cardSubtitle && (
-          <CardDescription className="md:w-[300px]">
+          <CardDescription className="xl:w-[300px] lg:w-[250px] md:w-[300px] w-[250px]">
             {props.cardSubtitle}
           </CardDescription>
         )}
@@ -597,7 +594,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         <DialogTrigger>
           <Button
             variant="outline"
-            className="text-sm rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
+            className="sm:text-sm text-xs rounded-xl flex text-primaryColor border border-gray-300 px-5 py-3 font-semibold tracking-wide not-active-gradient hover:text-white space-x-2 mt-6"
           >
             {props.triggerIcon}
             <span>{props.triggerLabel}</span>
@@ -642,7 +639,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             {/* SAVE BUTTON */}
             <DialogFooter>
               <Button
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
                 type="submit"
               >
                 Save

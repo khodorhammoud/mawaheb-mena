@@ -17,7 +17,7 @@ import {
 } from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
-import { AccountType } from "../types/enums";
+import { AccountStatus, AccountType } from "../types/enums";
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from "../auth/auth.server";
 
@@ -75,9 +75,9 @@ export async function getCurrentUser(
   request: Request,
   withPassword = false
 ): Promise<User | null> {
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) return null;
-  const currentUser = user.account.user;
+  const userId = await authenticator.isAuthenticated(request);
+  if (!userId) return null;
+  const currentUser = await getUser({ userId }, withPassword);
 
   if (!withPassword) return { ...currentUser, passHash: undefined };
   return currentUser;
@@ -703,4 +703,32 @@ export async function verifyUserVerificationToken(token: string) {
     message: "User verified successfully",
     userId,
   };
+}
+
+/**
+ * check user statuses: isVerified, isOnboarded,
+ * also check account status if is of a certain type
+ *
+ * @param userId: the id of the user to check the statuses for
+ * @param checkingWhat: the type of status to check for
+ * @param checkingFor: the status to check for
+ * @returns boolean: true if the status is met, false otherwise
+ */
+export async function checkUserStatuses(
+  userId: number,
+  checkingWhat: "isVerified" | "isOnboarded" | "accountStatus" | "accountType",
+  checkingFor?: AccountType | AccountStatus | boolean
+) {
+  const user = await getUser({ userId });
+  if (!user) return false;
+  if (checkingWhat === "isVerified") return user.isVerified === checkingFor;
+  if (checkingWhat === "isOnboarded") return user.isOnboarded === checkingFor;
+  if (checkingWhat === "accountType" || checkingWhat === "accountStatus") {
+    const account = await getUserAccountInfo({ userId: user.id });
+    if (checkingWhat === "accountType")
+      return account.accountType === checkingFor;
+    if (checkingWhat === "accountStatus")
+      return account.accountStatus === checkingFor;
+  }
+  return false;
 }

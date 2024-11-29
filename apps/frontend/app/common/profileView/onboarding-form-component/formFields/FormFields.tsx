@@ -8,6 +8,7 @@ import VideoUpload from "~/common/upload/videoUpload";
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
 };
+import Or from "~/common/or/Or";
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -41,7 +42,6 @@ export const FormFields = {
           name={name}
           label={props.cardTitle}
           placeholder={props.popupTitle}
-          inputValue={value as number}
           onChange={onChange}
           className="no-spinner"
         />
@@ -63,7 +63,6 @@ export const FormFields = {
         label="Add content to describe yourself"
         placeholder="Add content to describe yourself"
         col={6} // Represents rows as height (in rem units)
-        inputValue={value as string}
         onChange={onChange}
       />
 
@@ -108,11 +107,7 @@ export const FormFields = {
       <VideoUpload onFileChange={handleVideoUpload} />
 
       {/* OR */}
-      <div className="relative flex items-center justify-center mt-8 mb-8">
-        <div className="flex-grow border border-gray-200 mt-1"></div>
-        <span className="px-2">or</span>
-        <div className="flex-grow border border-gray-200 mt-1"></div>
-      </div>
+      <Or />
 
       {/* FORM */}
       <div className="">

@@ -43,8 +43,6 @@ export async function action({ request }: ActionFunctionArgs) {
         experienceLevel: formData.get("experienceLevel") as string,
         status: JobStatus.Active,
       };
-
-      console.log("Job data for insertion:", jobData);
       const jobStatus = await createJobPosting(jobData);
 
       if (jobStatus.success) {
