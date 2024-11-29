@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS "account_languages" (
 CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
+	"slug" varchar(60),
 	"account_type" "account_type",
 	"location" varchar(150),
 	"country" "country",
@@ -26,7 +27,8 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"phone" varchar(30),
 	"website_url" text,
 	"social_media_links" jsonb DEFAULT '{}'::jsonb,
-	"is_creation_complete" boolean DEFAULT false
+	"is_creation_complete" boolean DEFAULT false,
+	CONSTRAINT "accounts_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employer_industries" (

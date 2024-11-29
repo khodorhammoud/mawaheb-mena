@@ -2,7 +2,6 @@ import EmployerOnboardingScreen from "./employer";
 import FreelancerOnboardingScreen from "./freelancer";
 import { redirect, useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
-import Header from "../_templatedashboard/header";
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
@@ -60,6 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const userId = currentUser.id;
     const accountType = currentUser.account.accountType;
 
+    // EMPLOYER
     if (accountType == "employer") {
       const employer = (await getCurrentProfileInfo(request)) as Employer;
 
@@ -141,6 +141,8 @@ export async function action({ request }: ActionFunctionArgs) {
             });
       }
     }
+
+    // FREELANCER
     if (accountType == "freelancer") {
       const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
       console.log("target", target);
@@ -155,7 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // YEARS OF EXPERIENCE
-      if (target == "freelancer-years-of-experience") {
+      if (target == "freel-ancer-years-of-experience") {
         const yearsExperience =
           parseInt(formData.get("yearsOfExperience") as string) || 0;
         const yearsStatus = await updateFreelancerYearsOfExperience(
@@ -444,7 +446,6 @@ export default function Layout() {
   return (
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
-      <Header />
       {accountType === "employer" ? (
         <EmployerOnboardingScreen />
       ) : (

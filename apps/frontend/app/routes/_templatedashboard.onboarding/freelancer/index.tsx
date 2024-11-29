@@ -4,14 +4,20 @@ import GeneralizableFormCard from "~/common/profileView/onboarding-form-componen
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
 
-export default function EmployerOnboardingScreen() {
+export default function FreelancerOnboardingScreen() {
   type ActionData = {
     error?: { message: string };
   };
   const actionData = useActionData<ActionData>();
 
   return (
-    <div className="mt-52">
+    <div className="mt-24">
+      <div
+        className="bg-gradient-to-r from-primaryColor to-white md:h-40 sm:h-36 h-32 w-auto sm:m-4 m-2 rounded-xl border-2 mr-20"
+        style={{
+          background: "linear-gradient(to right, primaryColor, white)",
+        }}
+      ></div>
       <Heading />
       <div className="grid grid-cols-1 mb-4">
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3 ml-20 mr-20">

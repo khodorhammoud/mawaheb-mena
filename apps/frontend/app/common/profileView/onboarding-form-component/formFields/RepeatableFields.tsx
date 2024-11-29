@@ -5,108 +5,142 @@ import WorkHistoryComponent from "../formFields/repeatables/WorkHistory";
 import CertificateComponent from "../formFields/repeatables/CertificateComponent";
 import EducationComponent from "../formFields/repeatables/EducationComponent";
 import type { RepeatableFieldsProps } from "../types";
-import { PortfolioFormFieldType, WorkHistoryFormFieldType, CertificateFormFieldType, EducationFormFieldType } from "~/types/User";
+import {
+  PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
+} from "~/types/User";
 
 const RepeatableFields = ({
-    fieldName,
-    values,
-    files,
-    expandedIndex,
-    onAdd,
-    onRemove,
-    onDataChange,
-    onToggleExpand,
+  fieldName,
+  values,
+  files,
+  expandedIndex,
+  onAdd,
+  onRemove,
+  onDataChange,
+  onToggleExpand,
 }: RepeatableFieldsProps) => {
-    // log the type of
-    const getRepeatableComponent = (type: string, index: number) => {
-        const props = {
-            data: values[index],
-            onTextChange: (data: any) => onDataChange(index, data),
-            onFileChange: files ? (file: File) => {
-                const newFiles = [...files];
-                newFiles[index] = file;
-                onDataChange(index, { ...values[index], attachmentName: file.name });
-            } : undefined,
-        };
-
-        switch (type) {
-            case "portfolio":
-                return <PortfolioComponent {...props} data={values[index] as PortfolioFormFieldType} />;
-            case "workHistory":
-                return <WorkHistoryComponent {...props} data={values[index] as WorkHistoryFormFieldType} />;
-            case "certificates":
-                return <CertificateComponent {...props} data={values[index] as CertificateFormFieldType} />;
-            case "educations":
-                return <EducationComponent {...props} data={values[index] as EducationFormFieldType} />;
-            default:
-                return null;
-        }
+  // log the type of
+  const getRepeatableComponent = (type: string, index: number) => {
+    const props = {
+      data: values[index],
+      onTextChange: (data: any) => onDataChange(index, data),
+      onFileChange: files
+        ? (file: File) => {
+            const newFiles = [...files];
+            newFiles[index] = file;
+            onDataChange(index, {
+              ...values[index],
+              attachmentName: file.name,
+            });
+          }
+        : undefined,
     };
 
-    return (
-        <div className="space-y-4">
-            <AnimatePresence>
-                {values.map((_, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 1, backgroundColor: "transparent" }}
-                        animate={{ opacity: 1, backgroundColor: "transparent" }}
-                        exit={{ opacity: 0, backgroundColor: "#f8d7da" }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="border rounded-xl"
-                    >
-                        <div className="p-4">
-                            <div className="flex justify-between items-center">
-                                <Button
-                                    variant="secondary"
-                                    type="button"
-                                    onClick={() => onToggleExpand(expandedIndex === index ? null : index)}
-                                    className={`border rounded-xl not-active-gradient ${expandedIndex === index
-                                        ? "bg-primaryColor text-white"
-                                        : "text-primaryColor border-primaryColor hover:text-white"
-                                        }`}
-                                >
-                                    {expandedIndex === index ? "Collapse" : "Expand"} Form {index + 1}
-                                </Button>
+    switch (type) {
+      case "portfolio":
+        return (
+          <PortfolioComponent
+            {...props}
+            data={values[index] as PortfolioFormFieldType}
+          />
+        );
+      case "workHistory":
+        return (
+          <WorkHistoryComponent
+            {...props}
+            data={values[index] as WorkHistoryFormFieldType}
+          />
+        );
+      case "certificates":
+        return (
+          <CertificateComponent
+            {...props}
+            data={values[index] as CertificateFormFieldType}
+          />
+        );
+      case "educations":
+        return (
+          <EducationComponent
+            {...props}
+            data={values[index] as EducationFormFieldType}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
-                                <Button
-                                    variant="outline"
-                                    type="button"
-                                    onClick={() => onRemove(index)}
-                                    className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white"
-                                >
-                                    Remove
-                                </Button>
-                            </div>
+  return (
+    <div className="space-y-4">
+      <AnimatePresence>
+        {values.map((_, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 1, backgroundColor: "transparent" }}
+            animate={{ opacity: 1, backgroundColor: "transparent" }}
+            exit={{ opacity: 0, backgroundColor: "#f8d7da" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="border rounded-xl"
+          >
+            <div className="p-4">
+              <div className="flex justify-between items-center">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() =>
+                    onToggleExpand(expandedIndex === index ? null : index)
+                  }
+                  className={`border rounded-xl not-active-gradient ${
+                    expandedIndex === index
+                      ? "bg-primaryColor text-white"
+                      : "text-primaryColor border-primaryColor hover:text-white"
+                  }`}
+                >
+                  {expandedIndex === index ? "Collapse" : "Expand"} Form{" "}
+                  {index + 1}
+                </Button>
 
-                            <AnimatePresence>
-                                {expandedIndex === index && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                                        className="overflow-hidden mt-4"
-                                    >
-                                        {getRepeatableComponent(fieldName, index)}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </motion.div>
-                ))}
-            </AnimatePresence>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => onRemove(index)}
+                  className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white"
+                >
+                  Remove
+                </Button>
+              </div>
 
-            <Button
-                variant="outline"
-                type="button"
-                onClick={onAdd}
-                className="not-active-gradient-black rounded-xl ml-4 hover:text-white"
-            >
-                + Add Field
-            </Button>
-        </div>
-    );
+              <AnimatePresence>
+                {expandedIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden mt-4"
+                  >
+                    {getRepeatableComponent(fieldName, index)}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      <Button
+        variant="outline"
+        type="button"
+        onClick={onAdd}
+        className="not-active-gradient-black rounded-xl ml-4 hover:text-white"
+      >
+        + Add Field
+      </Button>
+    </div>
+  );
 };
 
 export default RepeatableFields;

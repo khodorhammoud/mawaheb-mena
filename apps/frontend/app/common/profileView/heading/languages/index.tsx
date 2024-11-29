@@ -61,9 +61,9 @@ export default function Languages() {
   return (
     <>
       {/* LANGUAGES SERVED ✏️ */}
-      <div className="ml-auto flex items-center mb-[66px] mr-20">
+      <div className="ml-auto flex items-center md:mb-[66px] mb-10 xl:mr-20 md:mr-10 mr-5 -mt-9">
         {/* LANGUAGES */}
-        <span className="text-lg">Languages</span>
+        <span className="lg:text-lg sm:text-base text-sm">Languages</span>
         {/* ✏️ + POPUP */}
         <Dialog
           open={languagesServedOpen}

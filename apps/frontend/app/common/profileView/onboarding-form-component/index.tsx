@@ -1,3 +1,5 @@
+// This is where the components styling exists :)
+
 import { Card } from "~/common/header/card";
 import {
   Dialog,
@@ -34,7 +36,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   return (
     <Card
       className={`
-      border-2 rounded-xl px-8 py-5 h-auto grid relative
+      border-2 rounded-xl h-auto grid relative
       ${
         isFilled
           ? "bg-[#F1F0F3] border-0"
@@ -52,7 +54,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           </CardDescription>
         )}
       </CardHeader> */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         {/* Render the appropriate template */}
         <TemplateComponent
           value={value}
@@ -68,7 +70,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             ) : (
               <Button
                 variant="outline"
-                className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white"
+                className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 ml-5"
               >
                 {props.triggerIcon}
                 <span>{props.triggerLabel}</span>

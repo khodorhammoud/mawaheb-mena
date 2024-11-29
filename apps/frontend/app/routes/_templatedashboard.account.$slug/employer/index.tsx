@@ -1,6 +1,6 @@
 // import Heading from "~/common/profileView/heading/Heading";
 
-export default function EmployerOnboardingScreen() {
+export default function EmployerPage() {
   return (
     <div className="mt-20">
       {/* <Heading /> */}

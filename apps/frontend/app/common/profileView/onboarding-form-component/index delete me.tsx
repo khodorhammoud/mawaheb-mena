@@ -5,10 +5,10 @@ import {
   CardTitle,
   CardDescription,
 } from "~/common/header/card";
-import Upload from "~/common/upload/Upload";
+import VideoUpload from "~/common/upload/videoUpload";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import RangeComponent from "./RangeComponent";
+import RangeComponent from "./formFields/RangeComponent";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Dialog,
@@ -25,11 +25,11 @@ import {
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
-import PortfolioComponent from "./PortfolioComponent";
-import WorkHistoryComponent from "./WorkHistory";
-import CertificateComponent from "./CertificateComponent";
+import PortfolioComponent from "./formFields/repeatables/PortfolioComponent";
+import WorkHistoryComponent from "./formFields/repeatables/WorkHistory";
+import CertificateComponent from "./formFields/repeatables/CertificateComponent";
 import { motion, AnimatePresence } from "framer-motion";
-import EducationComponent from "./EducationComponent";
+import EducationComponent from "./formFields/repeatables/EducationComponent";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
 import { GeneralizableFormCardProps } from "./types";
@@ -38,6 +38,10 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<
     OnboardingEmployerFields | OnboardingFreelancerFields
   >();
+
+  const handleVideoUpload = (file: File | null) => {
+    console.log("Video uploaded:", file);
+  };
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -414,7 +418,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         return (
           <div className="">
             {/* UPLOAD */}
-            <Upload />
+            <VideoUpload onFileChange={handleVideoUpload} />
 
             {/* OR */}
             <div className="relative flex items-center justify-center mt-8 mb-8">

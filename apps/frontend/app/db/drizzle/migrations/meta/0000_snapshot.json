@@ -1,5 +1,5 @@
 {
-  "id": "ed20f78c-57d3-4899-8cf1-52b664edc463",
+  "id": "b6cd4ebe-e4c8-4037-ae0d-f6d0c4d389a3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -137,6 +137,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "account_type": {
           "name": "account_type",
           "type": "account_type",
@@ -214,7 +220,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "accounts_slug_unique": {
+          "name": "accounts_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      }
     },
     "public.employer_industries": {
       "name": "employer_industries",

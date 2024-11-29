@@ -33,7 +33,7 @@ export default function Languages() {
 
   // Set initial industries selected
   useEffect(() => {
-    setSelectedIndustries(employerIndustries.map((i) => i.id));
+    setSelectedIndustries(employerIndustries.map((i) => i.id)); // comment that for the wierd error (cannot find ...)
   }, [employerIndustries]);
 
   // const [searchTerm, setSearchTerm] = useState<string>("");
