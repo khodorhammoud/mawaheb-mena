@@ -57,7 +57,63 @@ export const NumberFieldTemplate: FieldTemplateState = {
   ),
 };
 
-export const RepeatableFieldTemplate: FieldTemplateState = {
+const Project_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">This is filled</span>
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">this is filled</span>
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
+      <span className="text-lg font-medium mb-2">{cardTitle}</span>
+      <div className="grid grid-cols-2 gap-8">
+        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
+          <h1 className="text-[22px] font-normal">
+            Google user experience design, School of science
+          </h1>
+          <div className="flex gap-3 items-center">
+            <p className="">Google</p>
+            <span className="text-2xl text-gray-200 font-extralight">|</span>
+            <p className="text-sm">2022</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const Education_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
       <span className="text-lg font-medium mb-2">{cardTitle}</span>
@@ -162,6 +218,13 @@ export const VideoFieldTemplate: FieldTemplateState = {
               poster="https://via.placeholder.com/640x360.png?text=Video+Placeholder"
             >
               <source src={videoUrl} type="video/mp4" />
+              <track
+                kind="captions"
+                src=""
+                srcLang="en"
+                label="English"
+                default
+              />
               Your browser does not support the video tag.
             </video>
           )}
@@ -232,7 +295,10 @@ export const FieldTemplates: Record<string, FieldTemplateState> = {
   text: TextFieldTemplate,
   textArea: TextFieldTemplate,
   number: NumberFieldTemplate,
-  repeatable: RepeatableFieldTemplate,
+  repeatable_portfolio: Project_RepeatableFieldTemplate,
+  repeatable_workHistory: WorkHistory_RepeatableFieldTemplate,
+  repeatable_certificates: Certificate_RepeatableFieldTemplate,
+  repeatable_educations: Education_RepeatableFieldTemplate,
   increment: IncrementFieldTemplate,
   video: VideoFieldTemplate,
   file: FileFieldTemplate,
