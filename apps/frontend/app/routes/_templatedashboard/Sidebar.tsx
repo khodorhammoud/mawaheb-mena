@@ -12,7 +12,6 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const location = useLocation(); // Get the current location
   let menuNavigation;
-  console.log("accountType", accountType);
   switch (accountType) {
     case AccountType.Freelancer:
       menuNavigation = sidebarFreelancerNav(t);

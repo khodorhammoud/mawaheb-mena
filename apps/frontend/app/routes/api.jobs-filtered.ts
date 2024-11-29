@@ -1,12 +1,13 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { getJobsFiltered } from "../servers/job.server";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
 // import { AccountStatus } from "~/types/enums";
 import { JobFilter } from "~/types/Job";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) {
+  // user must be a published freelancer
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   // check if user is active

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS "account_languages" (
 CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
+	"slug" varchar(60),
 	"account_type" "account_type",
 	"location" varchar(150),
 	"country" "country",
@@ -26,7 +27,8 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"phone" varchar(30),
 	"website_url" text,
 	"social_media_links" jsonb DEFAULT '{}'::jsonb,
-	"is_creation_complete" boolean DEFAULT false
+	"is_creation_complete" boolean DEFAULT false,
+	CONSTRAINT "accounts_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employer_industries" (
@@ -88,6 +90,14 @@ CREATE TABLE IF NOT EXISTS "industries" (
 	CONSTRAINT "industries_label_unique" UNIQUE("label")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "job_applications" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"job_id" integer,
+	"freelancer_id" integer,
+	"status" varchar(50),
+	"created_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "job_categories" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"label" text,
@@ -114,7 +124,8 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"budget" integer,
 	"experience_level" text,
 	"status" text,
-	"created_at" timestamp DEFAULT now()
+	"created_at" timestamp DEFAULT now(),
+	"fulfilled_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "languages" (
@@ -195,6 +206,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "freelancers" ADD CONSTRAINT "freelancers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_applications" ADD CONSTRAINT "job_applications_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "job_applications" ADD CONSTRAINT "job_applications_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

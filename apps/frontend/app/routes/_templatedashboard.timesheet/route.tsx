@@ -1,29 +1,20 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
-import {
-  getCurrentUserAccountType,
-} from "~/servers/user.server";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { getCurrentUserAccountType } from "~/servers/user.server";
 import { AccountType } from "~/types/enums";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserAccountStatusPublished } from "~/auth/auth.server";
 import { useLoaderData } from "@remix-run/react";
 import FreelancerTimesheet from "./freelancer";
 import EmployerTimesheet from "./employer";
 
-export async function action({ request }: ActionFunctionArgs) {
-
-}
+// export async function action({ request }: ActionFunctionArgs) {}
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // if the curretn user is not logged in, redirect them to the login screen
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) {
+  // current user must be published
+  const userId = await requireUserAccountStatusPublished(request);
+  if (!userId) {
     return redirect("/login-employer");
   }
   const accountType: AccountType = await getCurrentUserAccountType(request);
-
 
   // Return the response data
   return Response.json({ accountType });

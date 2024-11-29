@@ -1,21 +1,16 @@
-import { LoaderFunction, redirect } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import JobManagement from "./jobs-displaying";
 import { getEmployerJobs } from "~/servers/job.server"; // Assume this is where your database fetching function resides
 import { Job } from "~/types/Job";
-import { authenticator } from "~/auth/auth.server";
-import { getCurrentUserAccountType } from "~/servers/user.server";
+import { requireUserIsEmployerPublished } from "~/auth/auth.server";
+import { getProfileInfo } from "~/servers/user.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // if the current user is not an employer, redirect them to the dashboard
-  const profile = await authenticator.isAuthenticated(request);
-  if (!profile) {
-    return redirect("/login-employer");
-  }
-  const accountType = await getCurrentUserAccountType(request);
-  if (accountType !== "employer") {
-    return redirect("/dashboard");
-  }
+  // require current user is a published employer
+  const userId = await requireUserIsEmployerPublished(request);
+
+  const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
   // Fetch jobs from the database
   const jobs = await getEmployerJobs(employerId); // This function should return jobs in the format defined in `Job`

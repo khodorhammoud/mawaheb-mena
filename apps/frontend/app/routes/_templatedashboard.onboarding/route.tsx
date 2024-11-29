@@ -23,7 +23,7 @@ import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
 } from "~/types/User";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserVerified } from "~/auth/auth.server";
 import {
   getAccountBio,
   getEmployerIndustries,
@@ -49,19 +49,20 @@ import {
   updateFreelancerCertificates,
   updateFreelancerEducation,
 } from "~/servers/employer.server";
-import { getCurrentProfile } from "~/auth/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
+  // user must be verified
+  await requireUserVerified(request);
   try {
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
-    const currentUser = await getCurrentProfile(request);
+    const currentProfile = await getCurrentProfileInfo(request);
 
-    const userId = currentUser.id;
-    const accountType = currentUser.account.accountType;
+    const userId = currentProfile.account.user.id;
+    const accountType = currentProfile.account.accountType;
 
     if (accountType == "employer") {
-      const employer = (await getCurrentProfileInfo(request)) as Employer;
+      const employer = currentProfile as Employer;
 
       // ABOUT
       if (target == "employer-about") {
@@ -121,14 +122,15 @@ export async function action({ request }: ActionFunctionArgs) {
       }
       // ONBOARDING -> TRUE ✅
       if (target == "employer-onboard") {
-        const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
-        if (!userExists.length)
+        if (!userExists.length) {
+          console.warn("User not found.");
           return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
           });
+        }
 
         const result = await updateOnboardingStatus(userId);
         return result.length
@@ -142,8 +144,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }
     if (accountType == "freelancer") {
-      const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
-      console.log("target", target);
+      const freelancer = currentProfile as Freelancer;
       // HOURLY RATE
       if (target == "freelancer-hourly-rate") {
         const hourlyRate = parseInt(formData.get("hourlyRate") as string, 10);
@@ -310,14 +311,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // ONBOARDING -> TRUE ✅
       if (target == "freelancer-onboard") {
-        const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
-        if (!userExists.length)
+        if (!userExists.length) {
+          console.warn("User not found 2.");
           return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
           });
+        }
 
         const result = await updateOnboardingStatus(userId);
         return result.length
@@ -349,14 +351,12 @@ export async function loader({
   | TypedResponse<LoaderFunctionError>
   | TypedResponse<never>
 > {
-  const currentUser = await authenticator.isAuthenticated(request);
-  if (!currentUser) {
-    return redirect("/login-employer");
-  }
+  // user must be verified
+  await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
-
   if (!profile) {
+    console.warn("Profile information not found.");
     return Response.json({
       success: false,
       error: { message: "Profile information not found." },
@@ -386,7 +386,6 @@ export async function loader({
     // Check if employer.account exists before accessing nested properties
     const accountOnboarded = profile.account.user.isOnboarded;
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
-
     // Return the response data
     return Response.json({
       accountType,
@@ -428,6 +427,7 @@ export async function loader({
       workHistory,
     });
   }
+  console.warn("Account type not found.");
   return Response.json({
     success: false,
     error: { message: "Account type not found." },

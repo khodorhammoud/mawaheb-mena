@@ -51,8 +51,6 @@ async function seed() {
         .limit(1);
       const lastEmployerID = lastEmployerIDinDB[0].id + 1;
 
-      console.log(lastUserID, lastAccountID, lastFreelancerID, lastEmployerID);
-
       // Seed Users
       for (let i = lastUserID; i < lastUserID + 10; i++) {
         await tx.insert(UsersTable).values({

@@ -1,20 +1,14 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useState } from "react";
 import {
   getCurrentProfileInfo,
-  getCurrentUser,
   getCurrentUserAccountType,
 } from "~/servers/user.server";
 import { AccountType } from "~/types/enums";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import RecommendedJobs from "./recommendedJobs";
 import AllJobs from "./allJobs";
-import { useLoaderData } from "@remix-run/react";
 import {
   Sheet,
   SheetContent,
@@ -25,12 +19,12 @@ import {
 import { Job } from "~/types/Job";
 import SingleJobView from "./singleJobView";
 
-export async function action({ request }: ActionFunctionArgs) {}
+// export async function action({ request }: ActionFunctionArgs) {}
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // if the curretn user is not logged in, redirect them to the login screen
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) {
+  // current user must be a published
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) {
     return redirect("/login-employer");
   }
   const accountType: AccountType = await getCurrentUserAccountType(request);
@@ -47,8 +41,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 // Layout component
 export default function Layout() {
-  const { employer } = useLoaderData<typeof loader>();
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  // const { employer } = useLoaderData<typeof loader>();
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false); // Add this for controlling Sheet state
 

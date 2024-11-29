@@ -2,6 +2,7 @@ import { useFetcher } from "@remix-run/react";
 import { useEffect } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
+import { Button } from "~/components/ui/button";
 
 interface JobCardProps {
   job: Job;
@@ -78,10 +79,20 @@ export default function SingleJobView({ job }: JobCardProps) {
         </ul>
       </div>
 
-      {/* Interested Button */}
-      <button className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700">
+      {/* Interested Button clicking on it should send a post request to /api/jobs/:jobId/interested */}
+      <Button
+        onClick={() => {
+          fetcher.submit(null, {
+            method: "post",
+            action: `/api/jobs/${job.id}/interested`,
+          });
+        }}
+        className={`w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 ${
+          fetcher.state === "submitting" ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
         Interested
-      </button>
+      </Button>
 
       {/* Related Jobs */}
       <div className="mb-6">

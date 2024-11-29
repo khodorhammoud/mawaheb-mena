@@ -31,7 +31,6 @@ import {
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { uploadFileToBucket } from "./cloudStorage.server";
-import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
 
@@ -78,7 +77,6 @@ export async function updateAccountBio(
 
 export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
   const userId = account.user.id;
-
   try {
     const user = await db
       .select({
@@ -628,5 +626,3 @@ export async function getEmployerDashboardData(request: Request) {
     throw error; // Re-throw the error for further handling
   }
 }
-
-

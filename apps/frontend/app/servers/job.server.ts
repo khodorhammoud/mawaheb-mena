@@ -1,8 +1,12 @@
-import { Job, JobFilter } from "~/types/Job";
+import { Job, JobApplication, JobFilter } from "~/types/Job";
 import { db } from "../db/drizzle/connector";
-import { jobCategoriesTable, jobsTable } from "../db/drizzle/schemas/schema";
+import {
+  jobApplicationsTable,
+  jobCategoriesTable,
+  jobsTable,
+} from "../db/drizzle/schemas/schema";
 import { Freelancer, JobCategory } from "../types/User";
-import { JobStatus } from "~/types/enums";
+import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import { and, eq, inArray } from "drizzle-orm";
 import { getProfileInfo } from "./user.server";
 
@@ -119,6 +123,20 @@ export async function getFreelancerRecommendedJobs(
   }));
 }
 
+/**
+ * get a single job by its ID
+ *
+ * @param jobId - the ID of the job to get
+ * @returns the job with the given ID or null if it doesn't exist
+ */
+export async function getJobById(jobId: number): Promise<Job | null> {
+  const job = await db.select().from(jobsTable).where(eq(jobsTable.id, jobId));
+  if (!job) {
+    return null;
+  }
+  return job[0] as unknown as Job;
+}
+
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
 
@@ -171,4 +189,55 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     status: job.status as JobStatus,
     createdAt: job.createdAt?.toISOString(),
   }));
+}
+
+/**
+ * get a job application by job ID and freelancer ID
+ *
+ * @param jobId - the ID of the job
+ * @param freelancerId - the ID of the freelancer
+ * @returns the job application or null if it doesn't exist
+ */
+export async function getJobApplicationByJobIdAndFreelancerId(
+  jobId: number,
+  freelancerId: number
+): Promise<JobApplication | null> {
+  const jobApplication = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(
+      and(
+        eq(jobApplicationsTable.jobId, jobId),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    );
+  if (!jobApplication) {
+    return null;
+  }
+  return jobApplication[0] as unknown as JobApplication;
+}
+
+/**
+ * create a job application
+ *
+ * @param jobId - the ID of the job
+ * @param freelancerId - the ID of the freelancer
+ * @returns the job application
+ */
+export async function createJobApplication(
+  jobId: number,
+  freelancerId: number
+): Promise<JobApplication> {
+  const [jobApplication] = await db
+    .insert(jobApplicationsTable)
+    .values({
+      jobId,
+      freelancerId,
+      status: JobApplicationStatus.Pending,
+    })
+    .returning();
+  if (!jobApplication) {
+    throw new Error("Failed to create job application");
+  }
+  return jobApplication as unknown as JobApplication;
 }

@@ -16,7 +16,6 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  console.log("params", params);
   // check params for slug
   const slug = params.slug;
   if (!slug) {

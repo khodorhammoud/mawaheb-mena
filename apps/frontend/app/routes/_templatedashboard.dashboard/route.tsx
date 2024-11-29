@@ -28,15 +28,14 @@ import {
   updateOnboardingStatus,
   getEmployerDashboardData,
 } from "~/servers/employer.server";
-import { Employer } from "~/types/User";
+import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserOnboarded } from "~/auth/auth.server";
 import { Job } from "~/types/Job";
 import { createJobPosting } from "~/servers/job.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    console.log("action");
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the if and else, to not use this sentence 2 thousand times :)
     const currentUser = await getCurrentUser(request);
@@ -81,10 +80,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return Response.json({ success: industriesStatus.success });
     }
     // YEARS IN BUSINESS
-    console.log("target", target);
     if (target == "years-in-business") {
       const fetchedValue = formData.get("years-in-business");
-      console.log("fetchedValue", fetchedValue);
       const yearsInBusiness = parseInt(fetchedValue as string) || 0;
 
       const yearsStatus = await updateEmployerYearsInBusiness(
@@ -104,11 +101,13 @@ export async function action({ request }: ActionFunctionArgs) {
     // ONBOARDING -> TRUE ✅
     if (target == "employer-onboard") {
       const userExists = await checkUserExists(userId);
-      if (!userExists.length)
+      if (!userExists.length) {
+        console.warn("User not found.");
         return Response.json(
           { success: false, error: { message: "User not found." } },
           { status: 404 }
         );
+      }
 
       const result = await updateOnboardingStatus(userId);
       return result.length
@@ -165,61 +164,49 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // if the curretn user is not logged in, redirect them to the login screen
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) {
-    return redirect("/login-employer");
-  }
+  // require that the current user is verified
+  await requireUserOnboarded(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
-  const employer = (await getCurrentProfileInfo(request)) as Employer;
+  let correntProfile = await getCurrentProfileInfo(request);
+  const accountOnboarded = correntProfile?.account?.user?.isOnboarded;
+  const bioInfo = await getAccountBio(correntProfile.account);
 
-  // !!IMPortant!! If the employer object is not available, return an error response early
-  if (!employer) {
-    return Response.json(
-      {
-        success: false,
-        error: { message: "Employer information not found." },
-      },
-      { status: 404 }
-    );
+  if (accountType === AccountType.Employer) {
+    correntProfile = correntProfile as Employer;
+    const employerIndustries = await getEmployerIndustries(correntProfile);
+    const allIndustries = (await getAllIndustries()) || [];
+    const yearsInBusiness = await getEmployerYearsInBusiness(correntProfile);
+    const employerBudget = await getEmployerBudget(correntProfile);
+    const aboutContent = await getEmployerAbout(correntProfile);
+    const { activeJobCount, draftedJobCount, closedJobCount } =
+      await getEmployerDashboardData(request);
+
+    const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
+
+    return Response.json({
+      accountType,
+      bioInfo,
+      employerIndustries,
+      allIndustries,
+      currentUser: correntProfile,
+      yearsInBusiness,
+      employerBudget,
+      aboutContent,
+      accountOnboarded,
+      activeJobCount,
+      draftedJobCount,
+      closedJobCount,
+      totalJobCount,
+    });
+  } else {
+    correntProfile = correntProfile as Freelancer;
+    return Response.json({
+      accountType,
+      currentUser: correntProfile,
+      accountOnboarded: correntProfile.account?.user?.isOnboarded,
+      bioInfo,
+    });
   }
-
-  // if the current user is not onboarded, redirect them to the onboarding screen
-  if (!employer.account.user.isOnboarded) {
-    return redirect("/onboarding");
-  }
-
-  // Fetch all the necessary data safely
-  const bioInfo = await getAccountBio(employer.account);
-  const employerIndustries = await getEmployerIndustries(employer);
-  const allIndustries = (await getAllIndustries()) || [];
-  const yearsInBusiness = await getEmployerYearsInBusiness(employer);
-  const employerBudget = await getEmployerBudget(employer);
-  const aboutContent = await getEmployerAbout(employer);
-  const { activeJobCount, draftedJobCount, closedJobCount } =
-    await getEmployerDashboardData(request);
-
-  // Check if employer.account exists before accessing nested properties
-  const accountOnboarded = employer?.account?.user?.isOnboarded;
-  const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
-
-  // Return the response data
-  return Response.json({
-    accountType,
-    bioInfo,
-    employerIndustries,
-    allIndustries,
-    currentUser: employer,
-    yearsInBusiness,
-    employerBudget,
-    aboutContent,
-    accountOnboarded,
-    employer,
-    activeJobCount,
-    draftedJobCount,
-    closedJobCount,
-    totalJobCount,
-  });
 }
 
 // Layout component
