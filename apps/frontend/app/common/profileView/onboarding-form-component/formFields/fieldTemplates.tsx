@@ -253,6 +253,16 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
             <p className="text-sm">2022</p>
           </div>
         </div>
+        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
+          <h1 className="text-[22px] font-normal">
+            Google user experience design :D
+          </h1>
+          <div className="flex gap-3 items-center">
+            <p className="">Google</p>
+            <span className="text-2xl text-gray-200 font-extralight">|</span>
+            <p className="text-sm">2022</p>
+          </div>
+        </div>
       </div>
     </div>
   ),

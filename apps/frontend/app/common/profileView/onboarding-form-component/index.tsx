@@ -27,8 +27,8 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   );
   console.log(props.repeatableFieldName);
   console.log(
-    "repeatable_${props.repeatableFieldName}",
-    "repeatable_${props.repeatableFieldName}"
+    "`repeatable_${props.repeatableFieldName}`",
+    `repeatable_${props.repeatableFieldName}`
   );
   const Template =
     props.formType === "repeatable"
