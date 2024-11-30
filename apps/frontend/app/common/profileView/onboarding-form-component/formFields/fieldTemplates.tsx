@@ -1,3 +1,4 @@
+import React from "react";
 import { RepeatableInputType } from "../types";
 import type { FieldTemplateState, FormStateType } from "../types";
 import Or from "~/common/or/Or";
@@ -5,6 +6,7 @@ import { IoLinkSharp } from "react-icons/io5";
 import { IoBriefcaseSharp } from "react-icons/io5";
 import { RiAwardFill } from "react-icons/ri";
 import { FaGraduationCap } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 
 interface FieldTemplateProps {
   value: FormStateType | RepeatableInputType[];
@@ -301,7 +303,11 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 // }
 
 export const VideoFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+  // FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+  // const videoUrl = value as string;
+  FilledState: ({ cardTitle }: FieldTemplateProps) => {
+    const value =
+      "https://storage.googleapis.com/mawaheb-dev/4074364-hd_1280_720_25fps.mp4";
     const videoUrl = value as string;
 
     // Check if the URL is a YouTube video
@@ -317,15 +323,46 @@ export const VideoFieldTemplate: FieldTemplateState = {
     };
 
     const videoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
+
+    // State for managing modal visibility and thumbnail
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [thumbnail, setThumbnail] = React.useState<string | null>(null);
+
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
+
+    // Generate thumbnail for non-YouTube videos
+    const captureThumbnail = (url: string) => {
+      const video = document.createElement("video");
+      video.src = url;
+      video.crossOrigin = "anonymous"; // Ensure cross-origin is handled
+      video.currentTime = 1; // Capture a frame at the 1-second mark
+
+      video.addEventListener("loadeddata", () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnailUrl = canvas.toDataURL("image/png");
+        setThumbnail(thumbnailUrl);
+      });
+    };
+
+    // Capture the thumbnail when the component mounts (only for non-YouTube videos)
+    React.useEffect(() => {
+      if (!isYouTube) {
+        captureThumbnail(videoUrl);
+      }
+    }, [videoUrl, isYouTube]);
+
     return (
       <div className="flex flex-col w-full h-auto">
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
           {isYouTube && videoId ? (
-            <a
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full h-full"
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none"
             >
               <img
                 className="w-full h-full object-cover"
@@ -333,10 +370,10 @@ export const VideoFieldTemplate: FieldTemplateState = {
                 alt="YouTube Thumbnail"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primaryColor">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6 text-black"
+                    className="w-6 h-6 text-white"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -344,34 +381,215 @@ export const VideoFieldTemplate: FieldTemplateState = {
                   </svg>
                 </div>
               </div>
-            </a>
+            </button>
           ) : (
-            <video
-              className="w-full h-full object-cover"
-              controls
-              poster="https://via.placeholder.com/640x360.png?text=Video+Placeholder"
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none"
             >
-              <source src={videoUrl} type="video/mp4" />
-              <track
-                kind="captions"
-                src=""
-                srcLang="en"
-                label="English"
-                default
-              />
-              Your browser does not support the video tag.
-            </video>
+              {thumbnail ? (
+                <img
+                  src={thumbnail}
+                  alt="Video Thumbnail"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                  Loading thumbnail...
+                </div>
+              )}
+            </button>
           )}
         </div>
+
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div
+              className="relative bg-primaryColor shadow-2xl max-w-4xl w-full p-7 transform scale-100 transition-all duration-300"
+              style={{
+                animation: "fadeIn 0.3s ease-in-out",
+              }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute -top-1 -right-1 rounded-full focus:outline-none hover:scale-105 transition-transform bg-transparent"
+                style={{
+                  padding: "8px",
+                }}
+              >
+                <FaTimes className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-white hover:text-primaryColor" />
+              </button>
+              <div className="w-full h-64 sm:h-96 rounded-xl">
+                {isYouTube && videoId ? (
+                  <iframe
+                    className="w-full h-full rounded-lg"
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="YouTube Video"
+                  />
+                ) : (
+                  <video
+                    className="w-full h-full object-cover rounded-lg"
+                    controls
+                    autoPlay
+                  >
+                    <source src={videoUrl} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   },
-  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col py-4 pl-5 pr-8">
-      <span className="text-xl font-medium">{cardTitle}</span>
-      <span className="text-base text-gray-400 italic">No video added</span>
-    </div>
-  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => {
+    const value = "https://youtu.be/3ZJQ7ey4a80?si=SbRU_z5hQcpHMQ-X";
+    const videoUrl = value as string;
+
+    // Check if the URL is a YouTube video
+    const isYouTube =
+      videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
+
+    // Function to extract YouTube video ID for thumbnails
+    const getYouTubeVideoId = (url: string) => {
+      const regex =
+        /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      return match ? match[1] : "";
+    };
+
+    const videoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
+
+    // State for managing modal visibility and thumbnail
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [thumbnail, setThumbnail] = React.useState<string | null>(null);
+
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
+
+    // Generate thumbnail for non-YouTube videos
+    const captureThumbnail = (url: string) => {
+      const video = document.createElement("video");
+      video.src = url;
+      video.crossOrigin = "anonymous"; // Ensure cross-origin is handled
+      video.currentTime = 1; // Capture a frame at the 1-second mark
+
+      video.addEventListener("loadeddata", () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnailUrl = canvas.toDataURL("image/png");
+        setThumbnail(thumbnailUrl);
+      });
+    };
+
+    // Capture the thumbnail when the component mounts (only for non-YouTube videos)
+    React.useEffect(() => {
+      if (!isYouTube) {
+        captureThumbnail(videoUrl);
+      }
+    }, [videoUrl, isYouTube]);
+
+    return (
+      <div className="flex flex-col w-full h-auto">
+        <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
+          {isYouTube && videoId ? (
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none"
+            >
+              <img
+                className="w-full h-full object-cover"
+                src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                alt="YouTube Thumbnail"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primaryColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9.5 7.5v9l7-4.5-7-4.5z" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none"
+            >
+              {thumbnail ? (
+                <img
+                  src={thumbnail}
+                  alt="Video Thumbnail"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                  Loading thumbnail...
+                </div>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div
+              className="relative bg-primaryColor shadow-2xl max-w-4xl w-full p-7 transform scale-100 transition-all duration-300"
+              style={{
+                animation: "fadeIn 0.3s ease-in-out",
+              }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute -top-1 -right-1 rounded-full focus:outline-none hover:scale-105 transition-transform bg-transparent"
+                style={{
+                  padding: "8px",
+                }}
+              >
+                <FaTimes className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-white hover:text-primaryColor" />
+              </button>
+              <div className="w-full h-64 sm:h-96 rounded-xl">
+                {isYouTube && videoId ? (
+                  <iframe
+                    className="w-full h-full rounded-lg"
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="YouTube Video"
+                  />
+                ) : (
+                  <video
+                    className="w-full h-full object-cover rounded-lg"
+                    controls
+                    autoPlay
+                  >
+                    <source src={videoUrl} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  },
 };
 
 export const FileFieldTemplate: FieldTemplateState = {

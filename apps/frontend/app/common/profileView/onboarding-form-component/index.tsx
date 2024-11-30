@@ -1,4 +1,4 @@
-// This is where the components styling exists :)
+// This is where the popup styling exists :)
 
 import { Card } from "~/common/header/card";
 import {
@@ -67,11 +67,11 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           cardSubtitle={props.cardSubtitle}
         />
 
-        {/* POPUPS */}
+        {/* Button of the components and its border */}
         <Dialog>
           <DialogTrigger>
             {isFilled ? (
-              <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-[#41474D] hover:bg-[#E4E3E6] transition-all hover:rounded-xl p-1" />
+              <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all hover:rounded-xl p-1" />
             ) : (
               <Button
                 variant="outline"

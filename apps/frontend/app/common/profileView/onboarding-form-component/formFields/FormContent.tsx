@@ -1,3 +1,5 @@
+// This is the file of the popup that opens when pressing on the button, or on the pencel ✏️
+
 import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";

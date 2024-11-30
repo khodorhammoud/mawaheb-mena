@@ -24,7 +24,6 @@ import {
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
 } from "~/types/User";
-
 import { motion, AnimatePresence } from "framer-motion";
 import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
@@ -624,7 +623,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             </div>
           )}
 
-          {/* POPUP FORM + SAVE BUTTON */}
+          {/* SAVE BUTTON */}
           <fetcher.Form
             method="post"
             className="space-y-6"

@@ -87,6 +87,7 @@ const RepeatableFields = ({
           >
             <div className="p-4">
               <div className="flex justify-between items-center">
+                {/* Collapse/Expand */}
                 <Button
                   variant="secondary"
                   type="button"
@@ -103,6 +104,7 @@ const RepeatableFields = ({
                   {index + 1}
                 </Button>
 
+                {/* Remove */}
                 <Button
                   variant="outline"
                   type="button"
@@ -131,6 +133,7 @@ const RepeatableFields = ({
         ))}
       </AnimatePresence>
 
+      {/* Add field */}
       <Button
         variant="outline"
         type="button"
