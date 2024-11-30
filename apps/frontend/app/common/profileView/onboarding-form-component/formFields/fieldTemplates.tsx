@@ -1,7 +1,10 @@
 import { RepeatableInputType } from "../types";
 import type { FieldTemplateState, FormStateType } from "../types";
 import Or from "~/common/or/Or";
-// import { Pencil } from "lucide-react";
+import { IoLinkSharp } from "react-icons/io5";
+import { IoBriefcaseSharp } from "react-icons/io5";
+import { RiAwardFill } from "react-icons/ri";
+import { FaGraduationCap } from "react-icons/fa";
 
 interface FieldTemplateProps {
   value: FormStateType | RepeatableInputType[];
@@ -57,13 +60,191 @@ export const NumberFieldTemplate: FieldTemplateState = {
   ),
 };
 
-export const RepeatableFieldTemplate: FieldTemplateState = {
+const Project_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col pt-8 pb-6 pl-7 pr-10">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
+        {/* Image Section */}
+        <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
+          <img
+            className="w-full h-full object-cover"
+            src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+            alt={value as string}
+          />
+        </div>
+
+        {/* Content Section */}
+        <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
+          <h1 className="flex items-center text-xl mb-4 gap-4">
+            E-commerce Website redesign
+            <button
+              className="flex items-center justify-center"
+              aria-label="Link"
+            >
+              <IoLinkSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+            </button>
+          </h1>
+          <p className="mb-2 text-sm">
+            As a UI/UX freelancer, I successfully redesigned the UI/UX of an
+            established e-commerce website, resulting in a significant
+            improvement in user engagement and conversion rates, and a
+            freelancer, I successfully redesigned the UI/UX of an established
+            e-commerc
+          </p>
+          <ul className="list-disc text-sm pl-8">
+            <li className="leading-relaxed text-indent-0">
+              Conducted comprehensive user research and analyzed website
+              analytics to identify key pain points and opportunities for
+              improvement.
+            </li>
+            <li className="leading-relaxed">
+              Developed detailed wireframes, prototypes, and high-fidelity
+              mockups that enhanced the visual appeal and usability of the site.
+            </li>
+            <li className="leading-relaxed">
+              Conducted comprehensive user research and analyzed website
+              analytics to identify key pain points and opportunities for
+              improvement.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col pt-7 pb-8 pl-7 pr-10">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
+        <h1 className="flex items-center text-xl mb-4 gap-2">
+          <button
+            className="flex items-center justify-center"
+            aria-label="Link"
+          >
+            <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+          </button>
+          UI UX Designer
+        </h1>
+        <div className="flex gap-3 items-center">
+          <p className="">Media Lab manU</p>
+          <span className="text-2xl text-gray-200 font-extralight">|</span>
+          <p className="text-sm">Oct 2022 - Dec 2023</p>
+        </div>
+        <div className="text-sm leading-6">
+          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
+          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
+          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
+          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
+          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
+          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
+        </div>
+      </div>
+      {/* Line if there is another Work experience */}
+      {/* <div className="flex-grow border border-gray-300 mt-5 mb-1"></div>
+      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
+        <h1 className="flex items-center text-lg mb-4 gap-4">
+          <button
+            className="flex items-center justify-center"
+            aria-label="Link"
+          >
+            <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1 text-primaryColor" />
+          </button>
+          UI UX Designer
+        </h1>
+        <div className="flex gap-3 items-center">
+          <p className="test-lg">Media Lab manU</p>
+          <span className="text-2xl text-gray-200 font-extralight">|</span>
+          <p className="text-sm">Oct 2022 - Dec 2023</p>
+        </div>
+        <div className="text-sm leading-6">
+          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
+          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
+          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
+          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
+          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
+          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
+        </div>
+      </div> */}
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
       <span className="text-lg font-medium mb-2">{cardTitle}</span>
       <div className="grid grid-cols-2 gap-8">
         <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="text-[22px] font-normal">
+          <h1 className="flex text-xl mb-4 gap-1">
+            <button
+              className="flex items-center justify-center self-start mb-2"
+              aria-label="Link"
+            >
+              <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+            </button>
+            Google user experience design, School of science
+          </h1>
+          <div className="flex gap-3 items-center">
+            <p className="">Google</p>
+            <span className="text-2xl text-gray-200 font-extralight">|</span>
+            <p className="text-sm">2022</p>
+          </div>
+        </div>
+        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
+          <h1 className="flex text-xl mb-4 gap-1">
+            <button
+              className="flex items-center justify-center self-start mb-2"
+              aria-label="Link"
+            >
+              <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+            </button>
+            Google user experience design :D
+          </h1>
+          <div className="flex gap-3 items-center">
+            <p className="">Google</p>
+            <span className="text-2xl text-gray-200 font-extralight">|</span>
+            <p className="text-sm">2022</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+  EmptyState: ({ cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col py-4 pl-5 pr-8">
+      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="text-base text-gray-400 italic">No items added</span>
+    </div>
+  ),
+};
+
+const Education_RepeatableFieldTemplate: FieldTemplateState = {
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
+    <div className="flex flex-col pt-5 pb-4 pl-7 pr-28">
+      <span className="text-lg font-medium mb-2">{cardTitle}</span>
+      <div className="grid grid-cols-2 gap-8">
+        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
+          <h1 className="flex text-xl mb-4 gap-1">
+            <button
+              className="flex items-center justify-center self-start"
+              aria-label="Link"
+            >
+              <FaGraduationCap className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+            </button>
             Google user experience design, School of science
           </h1>
           <div className="flex gap-3 items-center">
@@ -126,7 +307,6 @@ export const VideoFieldTemplate: FieldTemplateState = {
     };
 
     const videoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
-
     return (
       <div className="flex flex-col w-full h-auto">
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
@@ -162,6 +342,13 @@ export const VideoFieldTemplate: FieldTemplateState = {
               poster="https://via.placeholder.com/640x360.png?text=Video+Placeholder"
             >
               <source src={videoUrl} type="video/mp4" />
+              <track
+                kind="captions"
+                src=""
+                srcLang="en"
+                label="English"
+                default
+              />
               Your browser does not support the video tag.
             </video>
           )}
@@ -232,134 +419,13 @@ export const FieldTemplates: Record<string, FieldTemplateState> = {
   text: TextFieldTemplate,
   textArea: TextFieldTemplate,
   number: NumberFieldTemplate,
-  repeatable: RepeatableFieldTemplate,
+  repeatable_portfolio: Project_RepeatableFieldTemplate,
+  repeatable_workHistory: WorkHistory_RepeatableFieldTemplate,
+  repeatable_certificates: Certificate_RepeatableFieldTemplate,
+  repeatable_educations: Education_RepeatableFieldTemplate,
   increment: IncrementFieldTemplate,
   video: VideoFieldTemplate,
   file: FileFieldTemplate,
   range: RangeFieldTemplate,
   custom: CustomFieldTemplate,
 };
-
-{
-  // PORTFOLIO PART
-  /* <div className="flex flex-col pt-8 pb-6 pl-7 pr-10">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-        <div className="h-72 overflow-hidden rounded-l-xl">
-          <img
-            className="w-full h-full object-cover"
-            src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-            alt={value as string}
-          />
-        </div>
-        <div className="text-base text-gray-700 pl-6 pr-10 py-8">
-          <h1 className="text-lg text-black mb-4"></h1>
-          <p className="mb-2 text-sm">
-            As a UI/UX freelancer, I successfully redesigned the UI/UX of an
-            established e-commerce website, resulting in a significant
-            improvement in user engagement and conversion rates.
-          </p>
-          <ul className="list-disc list-inside text-sm ml-4">
-            <li>
-              Conducted comprehensive user research and analyzed website
-              analytics to identify key pain points and opportunities for
-              improvement.
-            </li>
-            <li>
-              Developed detailed wireframes, prototypes, and high-fidelity
-              mockups that enhanced the visual appeal and usability of the site.
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div> */
-}
-
-{
-  // Work Hisory
-  /* <div className="flex flex-col pt-7 pb-8 pl-7 pr-10">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-        <h1 className="text-xl">UI UX Designer</h1>
-        <div className="flex gap-3 items-center">
-          <p className="">Media Lab manU</p>
-          <span className="text-2xl text-gray-200 font-extralight">|</span>
-          <p className="text-sm">Oct 2022 - Dec 2023</p>
-        </div>
-        <div className="text-sm leading-6">
-          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
-          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
-          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
-          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
-          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
-          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
-        </div>
-      </div>
-      // Line if there is another Work experience
-      <div className="flex-grow border border-gray-300 mt-5 mb-1"></div>
-      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-        <h1 className="text-xl">UI UX Designer</h1>
-        <div className="flex gap-3 items-center">
-          <p className="test-lg">Media Lab manU</p>
-          <span className="text-2xl text-gray-200 font-extralight">|</span>
-          <p className="text-sm">Oct 2022 - Dec 2023</p>
-        </div>
-        <div className="text-sm leading-6">
-          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
-          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
-          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
-          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
-          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
-          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
-        </div>
-      </div>
-    </div> */
-}
-
-{
-  // Certificates
-  /* <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
-      <span className="text-lg font-medium mb-2">{cardTitle}</span>
-      <div className="grid grid-cols-2 gap-8">
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="text-[22px] font-normal">
-            Google user experience design, School of science
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
-        </div>
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="text-[22px] font-normal">
-            Google user experience design :D
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
-        </div>
-      </div>
-    </div> */
-}
-
-{
-  // Education
-  /* <div className="flex flex-col pt-5 pb-4 pl-7 pr-28">
-      <span className="text-lg font-medium mb-2">{cardTitle}</span>
-      <div className="grid grid-cols-2 gap-8">
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="text-[22px] font-normal">
-            Google user experience design, School of science
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
-        </div>
-      </div>
-    </div> */
-}

@@ -18,7 +18,6 @@ import type { GeneralizableFormCardProps } from "./types";
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const formState = useFormState(props.formType, props.fieldName);
   const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
-
   // Get values from formState instead of props
   const { inputValue, repeatableInputValues } = formState;
   const value =
@@ -26,12 +25,18 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const isFilled = Boolean(
     value && (Array.isArray(value) ? value.length > 0 : value)
   );
-
-  const Template = FieldTemplates[props.formType];
+  console.log(props.repeatableFieldName);
+  console.log(
+    "repeatable_${props.repeatableFieldName}",
+    "repeatable_${props.repeatableFieldName}"
+  );
+  const Template =
+    props.formType === "repeatable"
+      ? FieldTemplates[`repeatable_${props.repeatableFieldName}`]
+      : FieldTemplates[props.formType];
   const TemplateComponent = isFilled
     ? Template.FilledState
     : Template.EmptyState;
-
   return (
     <Card
       className={`
@@ -96,5 +101,4 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     </Card>
   );
 }
-
 export default GeneralizableFormCard;

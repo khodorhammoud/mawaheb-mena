@@ -8,11 +8,10 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-// import { IoPencilSharp } from "react-icons/io5";
+import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 import { Language } from "~/types/enums";
-import { RiPencilFill } from "react-icons/ri";
 
 export default function Languages() {
   const [languagesServedOpen, setLanguagesServedOpen] = useState(false); // Language dialog state
@@ -73,7 +72,7 @@ export default function Languages() {
           {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <RiPencilFill className="lg:h-9 lg:w-8 sm:h-8 sm:w-7 h-7 w-6 lg:ml-0 -ml-3 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />
+              <IoPencilSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />{" "}
             </Button>
           </DialogTrigger>
           {/* POPUP */}
