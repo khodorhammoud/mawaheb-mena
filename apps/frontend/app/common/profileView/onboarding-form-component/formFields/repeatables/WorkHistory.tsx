@@ -29,6 +29,7 @@ function WorkHistoryComponent({
           id="title[]"
           name="title[]"
           placeholder="Title"
+          defaultValue={data.title}
           label="Title"
           className="w-1/2 border-gray-300 rounded-md"
           onChange={(e) => onTextChange({ ...data, title: e.target.value })}
@@ -38,6 +39,7 @@ function WorkHistoryComponent({
           id="company[]"
           name="company[]"
           placeholder="Company"
+          defaultValue={data.company}
           label="Company"
           className="w-1/2 border-gray-300 rounded-md"
           onChange={(e) => onTextChange({ ...data, company: e.target.value })}
@@ -119,6 +121,7 @@ function WorkHistoryComponent({
         name="jobDescription[]"
         label="Job Description"
         placeholder="Job Description"
+        defaultValue={data.jobDescription}
         className="border-gray-300 rounded-md resize-none mt-6 mb-1"
         col={6} // Determines the height of the textarea dynamically
         onChange={(e) =>

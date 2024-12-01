@@ -28,6 +28,7 @@ function PortfolioComponent({ data, onTextChange }: PortfolioComponentProps) {
             name="projectName[]"
             label="Project Name"
             placeholder="Project Name"
+            defaultValue={data.projectName}
             onChange={(e) =>
               onTextChange({ ...data, projectName: e.target.value })
             }

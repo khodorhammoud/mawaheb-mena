@@ -32,6 +32,7 @@ function CertificateComponent({
           name="certificateName[]"
           placeholder="Certificate Name"
           label="Certificate Name"
+          defaultValue={data.certificateName}
           onChange={(e) =>
             onTextChange({ ...data, certificateName: e.target.value })
           }
@@ -43,6 +44,7 @@ function CertificateComponent({
           label="Certificate Issued by"
           id="issuedBy[]"
           name="issuedBy[]"
+          defaultValue={data.issuedBy}
           onChange={(e) => onTextChange({ ...data, issuedBy: e.target.value })}
         />
 
@@ -52,6 +54,7 @@ function CertificateComponent({
           name="yearIssued[]"
           placeholder="Year Issued"
           label="Year Issued"
+          defaultValue={data.yearIssued.toString()}
           onChange={(e) =>
             onTextChange({ ...data, yearIssued: parseInt(e.target.value) })
           }

@@ -14,6 +14,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         id="degree[]"
         name="degree[]"
         placeholder="Degree"
+        defaultValue={data.degree}
         label="Degree"
         onChange={(e) => onTextChange({ ...data, degree: e.target.value })}
       />
@@ -23,6 +24,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         label="Institution"
         id="institution[]"
         name="institution[]"
+        defaultValue={data.institution}
         onChange={(e) => onTextChange({ ...data, institution: e.target.value })}
       />
       <AppFormField
@@ -31,6 +33,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         id="graduationYear[]"
         placeholder="Graduation Year"
         label="Graduation Year"
+        defaultValue={data.graduationYear.toString()}
         onChange={(e) =>
           onTextChange({ ...data, graduationYear: parseInt(e.target.value) })
         }

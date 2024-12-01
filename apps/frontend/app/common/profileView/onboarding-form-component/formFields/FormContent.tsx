@@ -20,6 +20,8 @@ const FormContent = ({
   ...props
 }: FormContentProps) => {
   const {
+    inputValue,
+    setInputValue,
     repeatableInputValues,
     repeatableInputFiles,
     handleAddRepeatableField,
@@ -28,7 +30,6 @@ const FormContent = ({
     expandedIndex,
     setExpandedIndex,
   } = formState;
-  const [inputValue, setInputValue] = useState<FormStateType>(0); // Or whatever initial value i want
 
   // Render status messages (error/success)
   const renderStatusMessages = () => {

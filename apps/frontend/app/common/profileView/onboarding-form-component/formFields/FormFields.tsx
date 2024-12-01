@@ -44,6 +44,7 @@ export const FormFields = {
           placeholder={props.popupTitle}
           onChange={onChange}
           className="no-spinner"
+          defaultValue={value as string}
         />
         <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
       </div>
