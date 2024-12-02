@@ -305,16 +305,12 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
     const videoUrl = value as string;
-    /* FilledState: ({ cardTitle }: FieldTemplateProps) => {
-    const value =
-      "https://storage.googleapis.com/mawaheb-dev/4074364-hd_1280_720_25fps.mp4";
-    const videoUrl = value as string; */
 
     // Check if the URL is a YouTube video
     const isYouTube =
       videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
 
-    // Function to extract YouTube video ID for thumbnails
+    // Extract YouTube video ID for thumbnail
     const getYouTubeVideoId = (url: string) => {
       const regex =
         /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -324,19 +320,19 @@ export const VideoFieldTemplate: FieldTemplateState = {
 
     const videoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
 
-    // State for managing modal visibility and thumbnail
+    // States
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
 
-    // Generate thumbnail for non-YouTube videos
+    // Generate a thumbnail for non-YouTube videos
     const captureThumbnail = (url: string) => {
       const video = document.createElement("video");
       video.src = url;
-      video.crossOrigin = "anonymous"; // Ensure cross-origin is handled
-      video.currentTime = 1; // Capture a frame at the 1-second mark
+      video.crossOrigin = "anonymous";
+      video.currentTime = 1;
 
       video.addEventListener("loadeddata", () => {
         const canvas = document.createElement("canvas");
@@ -349,7 +345,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
       });
     };
 
-    // Capture the thumbnail when the component mounts (only for non-YouTube videos)
+    // Generate thumbnail on mount for non-YouTube videos
     React.useEffect(() => {
       if (!isYouTube) {
         captureThumbnail(videoUrl);
@@ -359,6 +355,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
     return (
       <div className="flex flex-col w-full h-auto">
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
+          {/* YouTube Video Stylings */}
           {isYouTube && videoId ? (
             <button
               onClick={openModal}
@@ -383,22 +380,22 @@ export const VideoFieldTemplate: FieldTemplateState = {
               </div>
             </button>
           ) : (
-            <button
-              onClick={openModal}
-              className="block w-full h-full focus:outline-none"
-            >
-              {thumbnail ? (
-                <img
-                  src={thumbnail}
-                  alt="Video Thumbnail"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                  Loading thumbnail...
-                </div>
-              )}
-            </button>
+            // Non-YouTube Video Stylings
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center bg-primaryColor cursor-pointer"
+                onClick={openModal}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6 text-white"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M9.5 7.5v9l7-4.5-7-4.5z" />
+                </svg>
+              </div>
+            </div>
           )}
         </div>
 
