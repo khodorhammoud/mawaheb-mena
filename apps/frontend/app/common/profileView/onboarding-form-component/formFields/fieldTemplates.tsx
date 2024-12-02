@@ -310,6 +310,20 @@ export const VideoFieldTemplate: FieldTemplateState = {
     const isYouTube =
       videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
 
+    // Validate if the URL is a valid video file
+    const isValidVideoUrl = (url: string) => {
+      const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".mkv"];
+      return videoExtensions.some((ext) => url.endsWith(ext));
+    };
+
+    if (!isYouTube && !isValidVideoUrl(videoUrl)) {
+      return (
+        <div className="flex items-center justify-center w-full h-56 rounded-xl bg-red-100 text-red-500">
+          Invalid video URL. Please provide a valid video link.
+        </div>
+      );
+    }
+
     // Extract YouTube video ID for thumbnail
     const getYouTubeVideoId = (url: string) => {
       const regex =
