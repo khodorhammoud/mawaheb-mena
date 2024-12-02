@@ -1,6 +1,5 @@
 // this is the page of PROJECTS
 
-import { useState } from "react";
 import { PortfolioFormFieldType } from "~/types/User";
 import { FaLink } from "react-icons/fa";
 import AppFormField from "~/common/form-fields";

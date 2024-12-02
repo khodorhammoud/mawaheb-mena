@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { CertificateFormFieldType } from "~/types/User";
 import Or from "~/common/or/Or";
 import AppFormField from "~/common/form-fields";
