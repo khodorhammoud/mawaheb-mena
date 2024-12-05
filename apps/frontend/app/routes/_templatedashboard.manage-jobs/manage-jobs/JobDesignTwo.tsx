@@ -5,31 +5,23 @@ import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import AvatarList from "../../../common/avatar/AvatarList";
 
-interface JobProps {
-  job: JobType;
-}
-
-export default function JobDesignTwo({ job }: JobProps) {
+export default function JobDesignTwo({
+  job,
+}: {
+  job: JobType & { applicants: any[]; interviewedCount: number };
+}) {
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
-  // const [jobStatus, setJobStatus] = useState<
-  //   "active" | "draft" | "paused" | "close"
-  // >(job.isDraft ? "draft" : "active");
+  const [jobStatus, setJobStatus] = useState<
+    "active" | "draft" | "paused" | "close"
+  >(job.status ? "active" : "draft");
 
-  // const handleStatusChange = (
-  //   newStatus: "active" | "draft" | "paused" | "close"
-  // ) => {
-  //   setJobStatus(newStatus);
-  // };
-
-  const applicantsPhotos = [
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  ];
+  const handleStatusChange = (
+    newStatus: "active" | "draft" | "paused" | "close"
+  ) => {
+    setJobStatus(newStatus);
+  };
 
   const interviewedPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
@@ -42,12 +34,12 @@ export default function JobDesignTwo({ job }: JobProps) {
     <div className="md:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
+        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
         {jobStatus === "draft" && (
           <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
             Edit
           </button>
-        )} */}
+        )}
       </div>
 
       {/* JOB INFO */}
@@ -86,9 +78,13 @@ export default function JobDesignTwo({ job }: JobProps) {
       <div className="lg:grid lg:grid-cols-10 gap-4">
         <div className="col-span-3 text-left">
           <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-            Applicants: {applicantsPhotos.length}
+            Applicants: {job.applicants.length}
           </p>
-          <AvatarList photos={applicantsPhotos} />
+          <AvatarList
+            photos={Array(job.applicants.length).fill(
+              "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+            )}
+          />
 
           <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">
             Interviewed: {interviewedPhotos.length}

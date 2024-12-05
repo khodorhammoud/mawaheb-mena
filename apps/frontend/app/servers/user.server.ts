@@ -261,6 +261,15 @@ export async function getCurrentProfileInfo(
   return currentProfile;
 }
 
+export async function getProfileInfoByAccountId(accountId: number) {
+  // Replace this with the actual implementation to fetch profile
+  const profile = await getProfileInfo({ accountId });
+  if (!profile) {
+    throw new Error(`Profile not found for account ID: ${accountId}`);
+  }
+  return profile;
+}
+
 /**
  * Check if the provided user is an employee or a freelancer
  * @param userId : the id of the user to check

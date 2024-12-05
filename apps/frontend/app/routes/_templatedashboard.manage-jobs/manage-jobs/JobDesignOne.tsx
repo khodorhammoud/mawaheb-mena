@@ -4,24 +4,27 @@ import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import AvatarList from "../../../common/avatar/AvatarList";
+import { useNavigate } from "react-router-dom";
 
-interface JobProps {
-  job: JobType;
-}
-
-export default function JobDesignOne({ job }: JobProps) {
+export default function JobDesignOne({
+  job,
+}: {
+  job: JobType & { applicants: any[]; interviewedCount: number };
+}) {
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
-  // const [jobStatus, setJobStatus] = useState<
-  //   "active" | "draft" | "paused" | "close"
-  // >(job.isActive ? "active" : "draft");
+  const [jobStatus, setJobStatus] = useState<
+    "active" | "draft" | "paused" | "close"
+  >(job.status ? "active" : "draft");
 
-  // const handleStatusChange = (
-  //   newStatus: "active" | "draft" | "paused" | "close"
-  // ) => {
-  //   // setJobStatus(newStatus);
-  // };
+  const handleStatusChange = (
+    newStatus: "active" | "draft" | "paused" | "close"
+  ) => {
+    setJobStatus(newStatus);
+  };
+
+  const navigate = useNavigate();
 
   const applicantsPhotos = [
     // Dummy data or replace with actual applicant photos if available
@@ -34,7 +37,13 @@ export default function JobDesignOne({ job }: JobProps) {
   return (
     <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-4 mb-10">
       <div className="xl:w-[42%] lg:w-[30%] mr-2">
-        <h3 className="xl:text-2xl md:text-xl text-lg mb-2">{job.title}</h3>
+        <h3
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
+          {job.title}
+        </h3>
+
         <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
           Fixed price - Posted {formattedDate.toDateString()}
         </p>
@@ -68,9 +77,13 @@ export default function JobDesignOne({ job }: JobProps) {
 
       <div className="lg:w-[18%] text-left">
         <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-          Applicants: {applicantsPhotos.length}
+          Applicants: {job.applicants.length}
         </p>
-        <AvatarList photos={applicantsPhotos} />
+        <AvatarList
+          photos={Array(job.applicants.length).fill(
+            "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+          )}
+        />
 
         <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">
           Interviewed: 2
@@ -85,14 +98,14 @@ export default function JobDesignOne({ job }: JobProps) {
         <Calendar highlightedDates={interviewDates} />
       </div>
 
-      <div className="w-[16%] flex justify-end h-min xl:-ml-4 xl:mr-4 space-x-2">
-        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} /> */}
+      <div className="w-[16%] flex justify-end h-min xl:ml-4 lg:ml-8 space-x-2 ">
+        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
 
-        {/* {jobStatus === "draft" && ( */}
-        <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
-          Edit
-        </button>
-        {/* )} */}
+        {jobStatus === "draft" && (
+          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
+            Edit
+          </button>
+        )}
       </div>
     </div>
   );

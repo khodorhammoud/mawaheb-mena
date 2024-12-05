@@ -8,7 +8,8 @@ import {
 import { Freelancer, JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import { and, eq, inArray } from "drizzle-orm";
-import { getProfileInfo } from "./user.server";
+import { freelancersTable } from "../db/drizzle/schemas/schema";
+import { sql } from "drizzle-orm";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -240,4 +241,91 @@ export async function createJobApplication(
     throw new Error("Failed to create job application");
   }
   return jobApplication as unknown as JobApplication;
+}
+
+/**
+ * Fetch job applications by job ID.
+ * @param jobId - The ID of the job to fetch applications for.
+ * @returns The list of job applications.
+ */
+export async function fetchJobApplications(jobId: number) {
+  const applications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  return applications;
+}
+
+// take the content from the jobApplicationsTable table
+// take the content from the jobApplicationsTable table
+// take the content from the jobApplicationsTable table
+export async function fetchJobsWithApplicants(jobs: Job[]) {
+  return Promise.all(
+    jobs.map(async (job) => {
+      const applicants = await fetchJobApplications(job.id);
+      return {
+        ...job,
+        applicants: applicants.map((applicant) => ({
+          id: applicant.id,
+          freelancerId: applicant.freelancerId,
+          photoUrl: `https://example.com/photos/${applicant.freelancerId}`, // Replace with actual logic
+          status: applicant.status,
+        })),
+        interviewedCount: applicants.filter(
+          (app) => app.status === "interviewed"
+        ).length,
+      };
+    })
+  );
+}
+
+// The below 3 functions see if there is a freelancer that is interested in a jobId (job)
+// Step 1: Get Freelancer IDs
+export async function getFreelancersByJob(jobId: number) {
+  const applications = await db
+    .select({ freelancerId: jobApplicationsTable.freelancerId })
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  const freelancerIds = applications.map(
+    (application) => application.freelancerId
+  );
+
+  if (freelancerIds.length === 0) {
+    throw new Error(`No freelancers found for job ID: ${jobId}`);
+  }
+
+  return freelancerIds;
+}
+
+// Step 2: Get Freelancer Details
+export async function getFreelancerDetails(freelancerIds: number[]) {
+  if (freelancerIds.length === 0) {
+    return [];
+  }
+
+  const query = sql`SELECT * FROM ${freelancersTable} WHERE id IN (${sql.join(
+    freelancerIds,
+    ", "
+  )})`;
+
+  const result = await db.execute(query); // Execute the raw SQL query
+
+  return result; // Return the raw result directly
+}
+
+export async function getFreelancersForJob(jobId: number) {
+  try {
+    // Step 1: Fetch Freelancer IDs
+    const freelancerIds = await getFreelancersByJob(jobId);
+
+    // Step 2: Fetch Freelancer Details
+    const freelancers = await getFreelancerDetails(freelancerIds);
+
+    return freelancers;
+  } catch (error) {
+    console.error(`Error fetching freelancers for job ID: ${jobId}`, error);
+    return [];
+  }
 }
