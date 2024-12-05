@@ -40,7 +40,7 @@ const ApplicantSheet: React.FC<ApplicantSheetProps> = ({ isOpen, onClose }) => {
               }}
             ></div>
 
-            <Heading />
+            {/* <Heading /> */}
 
             {/* // comment that for the wierd error (cannot find ...) */}
             <div className="grid grid-cols-1 mb-4">

@@ -11,8 +11,18 @@ export default function JobDesignOne({
 }: {
   job: JobType & { applicants: any[]; interviewedCount: number };
 }) {
-  const formattedDate =
-    typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
+  console.log("Job passed to JobDesignOne:", job);
+
+  if (!job) {
+    console.warn("No job data passed to JobDesignOne");
+    return <p>Job details are not available.</p>;
+  }
+
+  const formattedDate = job?.createdAt
+    ? typeof job.createdAt === "string"
+      ? new Date(job.createdAt)
+      : job.createdAt
+    : null;
 
   const [jobStatus, setJobStatus] = useState<
     "active" | "draft" | "paused" | "close"
@@ -27,7 +37,6 @@ export default function JobDesignOne({
   const navigate = useNavigate();
 
   const applicantsPhotos = [
-    // Dummy data or replace with actual applicant photos if available
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
   ];
@@ -45,7 +54,7 @@ export default function JobDesignOne({
         </h3>
 
         <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
-          Fixed price - Posted {formattedDate.toDateString()}
+          Fixed price - Posted {formattedDate?.toDateString() || "N/A"}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6">
           <div>
@@ -65,24 +74,32 @@ export default function JobDesignOne({
           {job.description}
         </p>
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
-          {job.requiredSkills.map((skill, index) => (
-            <SkillBadge
-              key={index}
-              name={skill.name}
-              isStarred={skill.isStarred}
-            />
-          ))}
+          {job.requiredSkills && job.requiredSkills.length > 0 ? (
+            job.requiredSkills.map((skill, index) => (
+              <SkillBadge
+                key={index}
+                name={skill.name}
+                isStarred={skill.isStarred}
+              />
+            ))
+          ) : (
+            <p>No skills provided.</p>
+          )}
         </div>
       </div>
 
       <div className="lg:w-[18%] text-left">
         <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-          Applicants: {job.applicants.length}
+          Applicants: {job.applicants ? job.applicants.length : 0}
         </p>
         <AvatarList
-          photos={Array(job.applicants.length).fill(
-            "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-          )}
+          photos={
+            job.applicants
+              ? Array(job.applicants.length).fill(
+                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                )
+              : []
+          }
         />
 
         <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">

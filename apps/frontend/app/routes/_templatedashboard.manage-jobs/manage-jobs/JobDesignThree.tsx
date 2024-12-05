@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Job as JobType } from "../../../types/Job";
 import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import AvatarList from "~/common/avatar/AvatarList";
+import { useNavigate } from "react-router";
 
 export default function JobDesignThree({
   job,
@@ -22,6 +23,8 @@ export default function JobDesignThree({
   ) => {
     setJobStatus(newStatus);
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
@@ -45,7 +48,10 @@ export default function JobDesignThree({
 
       {/* JOB INFORMATION */}
       <div>
-        <h3 className="xl:text-2xl lg:text-xl text-base leading-tight mb-4">
+        <h3
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className="xl:text-2xl lg:text-xl text-base leading-tight mb-4  cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
           {job.title}
         </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">

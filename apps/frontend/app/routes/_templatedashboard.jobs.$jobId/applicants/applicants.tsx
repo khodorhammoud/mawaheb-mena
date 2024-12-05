@@ -20,87 +20,89 @@ const Applicants = () => {
 
   return (
     <div>
-      {freelancers.map((freelancer, index) => (
-        <div className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl gap-8">
-          <div key={index} className="mt-8 mx-7">
-            {/* FREELANCER PROFILE CONTENT */}
-            <div className="flex gap-10 justify-between">
-              {/* Image Container - 10% Width */}
-              <div className="flex-shrink-0 w-[8%]">
-                <img
-                  src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-                  alt="image"
-                  className="w-24 h-24 rounded-xl"
-                />
-              </div>
+      {freelancers && freelancers.length > 0 ? (
+        freelancers.map((freelancer, index) => (
+          <div
+            className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl gap-8"
+            key={index}
+          >
+            <div className="mt-8 mx-7">
+              {/* FREELANCER PROFILE CONTENT */}
+              <div className="flex gap-10 justify-between">
+                {/* Image Container - 10% Width */}
+                <div className="flex-shrink-0 w-[8%]">
+                  <img
+                    src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                    alt="image"
+                    className="w-24 h-24 rounded-xl"
+                  />
+                </div>
 
-              {/* Freelancer Details - 40% Width */}
-              <div className="w-[40%]">
-                <h1
-                  className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300"
-                  onClick={() => handleApplicantClick(freelancer)}
-                >
-                  {accountBio.firstName}{" "}
-                  {accountBio.lastName?.charAt(0).toUpperCase()}.
-                </h1>
-                <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
-                <p className="text-sm leading-6">{about}</p>
-              </div>
+                {/* Freelancer Details - 40% Width */}
+                <div className="w-[40%]">
+                  <h1
+                    className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300"
+                    onClick={() => handleApplicantClick(freelancer)}
+                  >
+                    {accountBio.firstName}{" "}
+                    {accountBio.lastName?.charAt(0).toUpperCase()}.
+                  </h1>
+                  <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
+                  <p className="text-sm leading-6">{about}</p>
+                </div>
 
-              {/* Additional Details - 30% Width */}
-              <div className="w-[25%]">
-                <h1 className="text-xl font-semibold tracking-wide mb-4">
-                  Skills
-                </h1>
-                {/*  <Badge className="px-4 py-1 rounded-full text-sm h-8 bg-cyan-600 text-white mr-2">
-                  <span className="mr-2 text-xl">★</span>
-                  JavaScript
-                </Badge>
-                <Badge className="px-4 py-1 rounded-full text-sm h-8 bg-gray-200 text-gray-800 mb-1">
-                  Css
-                </Badge> */}
-              </div>
+                {/* Additional Details - 30% Width */}
+                <div className="w-[25%]">
+                  <h1 className="text-xl font-semibold tracking-wide mb-4">
+                    Skills
+                  </h1>
+                </div>
 
-              {/* Action / Other Information - 20% Width */}
-              <div className="w-[10%]">
-                <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-                  shortlisted
-                </button>
+                {/* Action / Other Information - 20% Width */}
+                <div className="w-[10%]">
+                  <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
+                    shortlisted
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ApplicantSheet Component */}
+            <ApplicantSheet
+              isOpen={isSheetOpen}
+              onClose={() => setIsSheetOpen(false)}
+            />
+
+            {/* DATES */}
+            <div className="mx-7 mb-6">
+              <div className="flex justify-between">
+                <div>
+                  <p className="mb-1 text-sm text-gray-400">Invitation sent</p>
+                  <p className="">date 1</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-sm text-gray-400">
+                    Invitation accepted
+                  </p>
+                  <p className="">date 2</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-sm text-gray-400">Interview booked</p>
+                  <p className="">date 3</p>
+                </div>
+                <div className="mr-5">
+                  <p className="mb-1 text-sm text-gray-400">Interviewed</p>
+                  <p className="">date 4</p>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* ApplicantSheet Component */}
-          <ApplicantSheet
-            isOpen={isSheetOpen}
-            onClose={() => setIsSheetOpen(false)}
-          />
-
-          {/* DATES */}
-          <div className="mx-7 mb-6">
-            <div className="flex justify-between">
-              <div className="">
-                <p className="mb-1 text-sm text-gray-400">Invitation sent</p>
-                <p className="">date 1</p>
-              </div>
-              <div className="">
-                <p className="mb-1 text-sm text-gray-400">
-                  Invitation accepted
-                </p>
-                <p className="">date 2</p>
-              </div>
-              <div className="">
-                <p className="mb-1 text-sm text-gray-400">Interview booked</p>
-                <p className="">date 3</p>
-              </div>
-              <div className="mr-5">
-                <p className="mb-1 text-sm text-gray-400">Interviewed</p>
-                <p className="">date 4</p>
-              </div>
-            </div>
-          </div>
+        ))
+      ) : (
+        <div className="text-center text-gray-500 mt-10">
+          <p>Nothing to map through.</p>
         </div>
-      ))}
+      )}
     </div>
   );
 };
