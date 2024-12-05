@@ -25,71 +25,62 @@ export type LoaderData = {
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  // Step 1: Authenticate the user
+  console.log("params:", params); // Debug line
+
+  // Authenticate the user
   const userId = await requireUserIsEmployerPublished(request);
-  if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  console.log("Authenticated user ID:", userId);
 
   const { jobId } = params;
-
   if (!jobId) {
+    console.log("Job ID is required");
     return Response.json({ error: "Job ID is required" }, { status: 400 });
   }
 
-  // Fetch freelancers who applied for the job
-  const freelancers = (await getFreelancersForJob(parseInt(jobId))) || [];
-
-  if (freelancers.length === 0) {
-    return Response.json(
-      { error: "No freelancers found for this job" },
-      { status: 404 }
-    );
+  const job = await getJobById(parseInt(jobId));
+  if (!job) {
+    console.log("Job not found for ID:", jobId);
+    return Response.json({ error: "Job not found" }, { status: 404 });
   }
+  console.log("Job fetched successfully:", job);
 
-  // Fetch the profile for the first freelancer (as an example)
+  // Fetch freelancers
+  const freelancers = (await getFreelancersForJob(parseInt(jobId))) || [];
+  console.log("Freelancers fetched for job:", freelancers);
+
+  // Fetch applicants
+  const applicants = await fetchJobApplications(parseInt(jobId));
+  console.log("Applicants fetched for job:", applicants);
+
   let profile = null;
   let accountBio = null;
   let about = null;
 
-  try {
-    profile = await getProfileInfoByAccountId(freelancers[0].account_id); // Assuming the first freelancer for this example
-    accountBio = await getAccountBio(profile.account);
-  } catch (error) {
-    console.error("Error fetching account bio:", error);
+  if (freelancers.length > 0) {
+    try {
+      // Fetch the profile for the first freelancer (as an example)
+      profile = await getProfileInfoByAccountId(freelancers[0].account_id);
+      if (profile && profile.account) {
+        accountBio = await getAccountBio(profile.account);
+        about = await getFreelancerAbout(profile);
+      }
+    } catch (error) {
+      console.error("Error fetching profile or account bio:", error);
+    }
+  } else {
+    console.log("No freelancers available for this job.");
   }
 
-  about = await getFreelancerAbout(profile);
-
-  // Fetch the job details
-  const job = await getJobById(parseInt(jobId));
-  if (!job) {
-    return Response.json({ error: "Job not found" }, { status: 404 });
-  }
-
-  // Verify the job belongs to the employer
-  const employer = await getProfileInfo({ userId });
-  if (job.employerId !== employer.id) {
-    return Response.json(
-      { error: "Job does not belong to the employer" },
-      { status: 403 }
-    );
-  }
-
-  // Fetch the applicants for the job
-  const applicants = await fetchJobApplications(parseInt(jobId));
-
-  // Enrich the job details
   const enrichedJob = {
     ...job,
     applicants,
   };
+  console.log("Enriched job object:", enrichedJob);
 
-  // Return the enriched job, freelancers, and accountBio
   return Response.json({
     job: enrichedJob,
-    freelancers,
     accountBio,
+    freelancers,
     about,
   });
 }
@@ -98,6 +89,9 @@ const Layout = () => {
   const { job } = useLoaderData<{
     job: Job & { applicants: any[]; interviewedCount: number };
   }>();
+
+  console.log("lanshooooof 2iza fi jobay");
+  console.log("Loaded Job:", job); // Add this line to inspect the job object
 
   const navigate = useNavigate();
 
@@ -118,9 +112,13 @@ const Layout = () => {
       {/* SINGLE JOB */}
       <div>
         {/* Show JobDesignOne on md and larger screens */}
-        <div className="hidden md:block">
+        {job ? (
           <JobDesignOne job={job} />
-        </div>
+        ) : (
+          <p className="text-center text-gray-500">
+            Job details not available.
+          </p>
+        )}
         {/* Show JobDesignTwo only on sm screens */}
         <div className="hidden sm:block md:hidden">
           <JobDesignTwo job={job} />

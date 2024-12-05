@@ -4,6 +4,7 @@ import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import AvatarList from "../../../common/avatar/AvatarList";
+import { useNavigate } from "react-router";
 
 export default function JobDesignTwo({
   job,
@@ -22,6 +23,8 @@ export default function JobDesignTwo({
   ) => {
     setJobStatus(newStatus);
   };
+
+  const navigate = useNavigate();
 
   const interviewedPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
@@ -44,7 +47,12 @@ export default function JobDesignTwo({
 
       {/* JOB INFO */}
       <div>
-        <h3 className="xl:text-2xl md:text-xl text-lg">{job.title}</h3>
+        <h3
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
+          {job.title}
+        </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - Posted {formattedDate.toDateString()}
         </p>
