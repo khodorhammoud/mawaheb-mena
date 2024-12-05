@@ -5,7 +5,7 @@ import JobDesignTwo from "./JobDesignTwo";
 import JobDesignThree from "./JobDesignThree";
 
 interface JobProps {
-  job: JobType;
+  job: JobType & { applicants: any[]; interviewedCount: number };
   viewMode: string;
 }
 
