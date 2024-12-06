@@ -8,29 +8,27 @@ import { getProfileInfo } from "~/servers/user.server";
 import { fetchJobsWithApplicants } from "~/servers/job.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // Verify the user is a published employer
+  // Step 1: Verify the user is a published employer
   const userId = await requireUserIsEmployerPublished(request);
 
-  // Fetch employer profile
+  // Step 2: Fetch employer profile
   const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
 
-  // Fetch jobs for the employer
+  // Step 3: Fetch jobs for the employer
   const jobs = await getEmployerJobs(employerId);
 
   // For each job, fetch applicants
   const jobsWithApplicants = await fetchJobsWithApplicants(jobs);
 
   // Return the fetched data
-  return new Response(JSON.stringify({ jobs: jobsWithApplicants }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return Response.json({ jobs: jobsWithApplicants });
 };
 
 // Layout component
 export default function Layout() {
   const { jobs } = useLoaderData<{
-    jobs: (Job & { applicants: any[]; interviewedCount: number })[];
+    jobs: (Job & { applicants })[];
   }>();
 
   return (

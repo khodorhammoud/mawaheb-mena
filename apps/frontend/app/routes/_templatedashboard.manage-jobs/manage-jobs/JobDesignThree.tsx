@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { Job as JobType } from "../../../types/Job";
 import JobStateButton from "../../../common/job-state-button/JobStateButton";
-import AvatarList from "~/common/avatar/AvatarList";
 import { useNavigate } from "react-router";
+import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
 export default function JobDesignThree({
   job,
 }: {
-  job: JobType & { applicants: any[]; interviewedCount: number };
+  job: JobType & { applicants };
 }) {
+  if (!job) {
+    return <p>Job details are not available.</p>;
+  }
+
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
@@ -25,6 +29,11 @@ export default function JobDesignThree({
   };
 
   const navigate = useNavigate();
+
+  const applicantsPhotos = [
+    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+  ];
 
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
@@ -74,16 +83,12 @@ export default function JobDesignThree({
       </div>
 
       {/* APPLICANTS SECTION */}
-      <div>
-        <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-          Applicants: {job.applicants.length}
-        </p>
-        <AvatarList
-          photos={Array(job.applicants.length).fill(
-            "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-          )}
-        />
-      </div>
+      {/* Applicants ProfilePhotosSection */}
+      <ProfilePhotosSection
+        label="Applicants"
+        images={applicantsPhotos}
+        profiles={job.applicants}
+      />
     </div>
   );
 }

@@ -3,18 +3,15 @@ import { Job as JobType } from "../../../types/Job";
 import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import AvatarList from "../../../common/avatar/AvatarList";
 import { useNavigate } from "react-router-dom";
+import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
 export default function JobDesignOne({
   job,
 }: {
-  job: JobType & { applicants: any[]; interviewedCount: number };
+  job: JobType & { applicants };
 }) {
-  console.log("Job passed to JobDesignOne:", job);
-
   if (!job) {
-    console.warn("No job data passed to JobDesignOne");
     return <p>Job details are not available.</p>;
   }
 
@@ -88,24 +85,20 @@ export default function JobDesignOne({
         </div>
       </div>
 
-      <div className="lg:w-[18%] text-left">
-        <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-          Applicants: {job.applicants ? job.applicants.length : 0}
-        </p>
-        <AvatarList
-          photos={
-            job.applicants
-              ? Array(job.applicants.length).fill(
-                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-                )
-              : []
-          }
+      <div className="flex flex-col gap-8 lg:w-[18%] text-left">
+        {/* Applicants ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={job.applicants}
         />
 
-        <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">
-          Interviewed: 2
-        </p>
-        <AvatarList photos={applicantsPhotos.slice(0, 2)} />
+        {/* Interviewed ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Interviewed"
+          images={applicantsPhotos}
+          profiles={job.applicants}
+        />
       </div>
 
       <div className="lg:w-[30%] lg:-mr-10">
