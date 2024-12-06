@@ -10,12 +10,13 @@ import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDes
 import { fetchJobApplications } from "~/servers/job.server";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Applicants from "./applicants/applicants";
 import { Freelancer } from "~/types/User";
-import { getFreelancersForJob } from "~/servers/job.server";
+import { getFreelancersIdsByJobId } from "~/servers/job.server";
+import { getFreelancerDetails } from "~/servers/job.server";
 import { getProfileInfoByAccountId } from "~/servers/user.server";
 import { getAccountBio } from "~/servers/employer.server";
 import { getFreelancerAbout } from "~/servers/employer.server";
+import ApplicantComponent from "~/common/applicant/ApplicantComponent";
 
 export type LoaderData = {
   job: Job & { applicants: any[] };
@@ -25,32 +26,26 @@ export type LoaderData = {
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  console.log("params:", params); // Debug line
-
   // Authenticate the user
   const userId = await requireUserIsEmployerPublished(request);
-  console.log("Authenticated user ID:", userId);
 
   const { jobId } = params;
   if (!jobId) {
-    console.log("Job ID is required");
     return Response.json({ error: "Job ID is required" }, { status: 400 });
   }
 
   const job = await getJobById(parseInt(jobId));
   if (!job) {
-    console.log("Job not found for ID:", jobId);
     return Response.json({ error: "Job not found" }, { status: 404 });
   }
-  console.log("Job fetched successfully:", job);
+
+  const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
 
   // Fetch freelancers
-  const freelancers = (await getFreelancersForJob(parseInt(jobId))) || [];
-  console.log("Freelancers fetched for job:", freelancers);
+  const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
   // Fetch applicants
   const applicants = await fetchJobApplications(parseInt(jobId));
-  console.log("Applicants fetched for job:", applicants);
 
   let profile = null;
   let accountBio = null;
@@ -59,7 +54,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (freelancers.length > 0) {
     try {
       // Fetch the profile for the first freelancer (as an example)
-      profile = await getProfileInfoByAccountId(freelancers[0].account_id);
+      profile = await getProfileInfoByAccountId(freelancers[0].accountId);
       if (profile && profile.account) {
         accountBio = await getAccountBio(profile.account);
         about = await getFreelancerAbout(profile);
@@ -75,7 +70,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ...job,
     applicants,
   };
-  console.log("Enriched job object:", enrichedJob);
 
   return Response.json({
     job: enrichedJob,
@@ -89,9 +83,7 @@ const Layout = () => {
   const { job } = useLoaderData<{
     job: Job & { applicants: any[]; interviewedCount: number };
   }>();
-
-  console.log("lanshooooof 2iza fi jobay");
-  console.log("Loaded Job:", job); // Add this line to inspect the job object
+  const { freelancers, accountBio, about } = useLoaderData<LoaderData>(); // needed for the ApplicantComponent
 
   const navigate = useNavigate();
 
@@ -129,24 +121,13 @@ const Layout = () => {
         </div>
       </div>
 
-      {/* TITLE and BUTTONS */}
-      <div className="mt-20 mb-10 md:flex md:gap-10 gap-4 items-center">
-        <h2 className="font-semibold xl:text-3xl md:text-2xl text-xl ml-1">
-          Applicants
-        </h2>
-        <div className="sm:flex grid grid-cols-1 w-[60%] xs:w-[60%] ml-0 gap-1 xl:space-x-2 lg:space-x-1 md:mt-0 mt-4">
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Interviewed
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            shortlisted
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Hired
-          </button>
-        </div>
-      </div>
-      <Applicants />
+      <ApplicantComponent
+        job={job}
+        freelancers={freelancers}
+        accountBio={accountBio}
+        about={about}
+        state="default" // only for now // this should be job.state, or something like that, so that the satte will be decided from the database, and the component will act with respect to it :D
+      />
     </div>
   );
 };

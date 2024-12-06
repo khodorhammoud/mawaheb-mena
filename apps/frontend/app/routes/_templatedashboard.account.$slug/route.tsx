@@ -357,8 +357,6 @@ export async function loader({
   | TypedResponse<LoaderFunctionError>
   | TypedResponse<never>
 > {
-  console.log("params", params);
-
   // Check if params contains a slug
   const slug = params?.slug;
 

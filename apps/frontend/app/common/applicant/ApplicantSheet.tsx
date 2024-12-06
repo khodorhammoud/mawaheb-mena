@@ -1,6 +1,6 @@
 import React from "react";
 import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
-import FreelancerPage from "./../../_templatedashboard.account.$slug/freelancer/index";
+import FreelancerPage from "~/routes/_templatedashboard.account.$slug/freelancer";
 import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData } from "@remix-run/react";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";

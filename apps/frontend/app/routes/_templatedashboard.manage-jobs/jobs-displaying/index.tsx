@@ -4,7 +4,7 @@ import { useState } from "react";
 import Header from "../manage-jobs-heading/Header";
 
 interface JobManagementProps {
-  jobs: (JobType & { applicants: any[]; interviewedCount: number })[];
+  jobs: (JobType & { applicants })[];
 }
 
 export default function JobManagement({ jobs }: JobManagementProps) {

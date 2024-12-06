@@ -257,9 +257,13 @@ export async function fetchJobApplications(jobId: number) {
   return applications;
 }
 
-// take the content from the jobApplicationsTable table
-// take the content from the jobApplicationsTable table
-// take the content from the jobApplicationsTable table
+/**
+ *
+ * take the content of jobs and there applicants
+ * @param jobs
+ * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
+ *
+ */
 export async function fetchJobsWithApplicants(jobs: Job[]) {
   return Promise.all(
     jobs.map(async (job) => {
@@ -275,18 +279,21 @@ export async function fetchJobsWithApplicants(jobs: Job[]) {
         interviewedCount: applicants.filter(
           (app) => app.status === "interviewed"
         ).length,
+        // bl mabda2, hayde ma 2ila 3azze 3ashen ma fi interviewed aplicants yet
       };
     })
   );
 }
 
-// The below 3 functions see if there is a freelancer that is interested in a jobId (job)
-// Step 1: Get Freelancer IDs
-export async function getFreelancersByJob(jobId: number) {
-  const applications = await db
-    .select({ freelancerId: jobApplicationsTable.freelancerId })
-    .from(jobApplicationsTable)
-    .where(eq(jobApplicationsTable.jobId, jobId));
+/**
+ *
+ * get freelancers id's that are linked to a job using the same job id
+ * @param jobId
+ * @returns
+ * @throws Error
+ */
+export async function getFreelancersIdsByJobId(jobId: number) {
+  const applications = await fetchJobApplications(jobId);
 
   const freelancerIds = applications.map(
     (application) => application.freelancerId
@@ -299,33 +306,22 @@ export async function getFreelancersByJob(jobId: number) {
   return freelancerIds;
 }
 
-// Step 2: Get Freelancer Details
+/**
+ *
+ * get freelancers content
+ * @param freelancerIds
+ * @returns
+ * @throws Error
+ */
 export async function getFreelancerDetails(freelancerIds: number[]) {
   if (freelancerIds.length === 0) {
     return [];
   }
 
-  const query = sql`SELECT * FROM ${freelancersTable} WHERE id IN (${sql.join(
-    freelancerIds,
-    ", "
-  )})`;
+  const freelancers = await db
+    .select()
+    .from(freelancersTable)
+    .where(inArray(freelancersTable.id, freelancerIds));
 
-  const result = await db.execute(query); // Execute the raw SQL query
-
-  return result; // Return the raw result directly
-}
-
-export async function getFreelancersForJob(jobId: number) {
-  try {
-    // Step 1: Fetch Freelancer IDs
-    const freelancerIds = await getFreelancersByJob(jobId);
-
-    // Step 2: Fetch Freelancer Details
-    const freelancers = await getFreelancerDetails(freelancerIds);
-
-    return freelancers;
-  } catch (error) {
-    console.error(`Error fetching freelancers for job ID: ${jobId}`, error);
-    return [];
-  }
+  return freelancers; // Return the raw result directly
 }
