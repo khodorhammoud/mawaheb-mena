@@ -36,8 +36,6 @@ export default function Heading() {
     bioInfo: AccountBio;
   };
 
-  console.log("here:", bioInfo);
-
   // Refs for location and website input fields
   const locationInputRef = useRef<HTMLInputElement>(null);
   const websiteInputRef = useRef<HTMLInputElement>(null);

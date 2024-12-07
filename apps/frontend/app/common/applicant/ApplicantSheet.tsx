@@ -1,14 +1,9 @@
 import React from "react";
-import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
-import FreelancerPage from "~/routes/_templatedashboard.account.$slug/freelancer";
-import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData } from "@remix-run/react";
+import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
-import { useLoaderData } from "@remix-run/react";
-import { LoaderData } from "~/routes/_templatedashboard.jobs.$jobId/route";
-import ForFreelancersPage from "~/routes/_templateheaderfooter.for-freelancers/ForFreelancers";
 
 type ApplicantSheetProps = {
   isOpen: boolean; // Whether the sheet is open

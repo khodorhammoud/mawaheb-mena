@@ -1,15 +1,14 @@
-import { Job, JobApplication, JobFilter } from "~/types/Job";
 import { db } from "../db/drizzle/connector";
+import { and, eq, inArray } from "drizzle-orm";
+import { Job, JobApplication, JobFilter } from "~/types/Job";
+import { Freelancer, JobCategory } from "../types/User";
+import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import {
   jobApplicationsTable,
   jobCategoriesTable,
   jobsTable,
+  freelancersTable,
 } from "../db/drizzle/schemas/schema";
-import { Freelancer, JobCategory } from "../types/User";
-import { JobApplicationStatus, JobStatus } from "~/types/enums";
-import { and, eq, inArray } from "drizzle-orm";
-import { freelancersTable } from "../db/drizzle/schemas/schema";
-import { sql } from "drizzle-orm";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {

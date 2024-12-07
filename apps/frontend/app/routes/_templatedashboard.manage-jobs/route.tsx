@@ -1,11 +1,10 @@
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import JobManagement from "./jobs-displaying";
-import { getEmployerJobs } from "~/servers/job.server";
 import { Job } from "~/types/Job";
+import { getEmployerJobs, fetchJobsWithApplicants } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import { getProfileInfo } from "~/servers/user.server";
-import { fetchJobsWithApplicants } from "~/servers/job.server";
+import JobManagement from "./jobs-displaying";
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Step 1: Verify the user is a published employer
