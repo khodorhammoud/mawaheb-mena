@@ -1,5 +1,4 @@
-// Job.tsx
-import { Job as JobType } from "../../../types/Job";
+import { Job as JobType } from "~/types/Job";
 import JobDesignOne from "./JobDesignOne";
 import JobDesignTwo from "./JobDesignTwo";
 import JobDesignThree from "./JobDesignThree";

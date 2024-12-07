@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Job as JobType } from "../../../types/Job";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import { useNavigate } from "react-router-dom";
+import StatusButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
 export default function JobDesignOne({
@@ -41,8 +41,8 @@ export default function JobDesignOne({
   const interviewDates = ["2024-11-5", "2024-11-17", "2024-11-28"];
 
   return (
-    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-4 mb-10">
-      <div className="xl:w-[42%] lg:w-[30%] mr-2">
+    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
+      <div className="xl:w-[42%] w-[30%] mr-2">
         <h3
           onClick={() => navigate(`/jobs/${job.id}`)}
           className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
@@ -85,7 +85,7 @@ export default function JobDesignOne({
         </div>
       </div>
 
-      <div className="flex flex-col gap-8 lg:w-[18%] text-left">
+      <div className="flex flex-col gap-8 w-[18%] text-left">
         {/* Applicants ProfilePhotosSection */}
         <ProfilePhotosSection
           label="Applicants"
@@ -108,11 +108,11 @@ export default function JobDesignOne({
         <Calendar highlightedDates={interviewDates} />
       </div>
 
-      <div className="w-[16%] flex justify-end h-min xl:ml-4 lg:ml-8 space-x-2 ">
+      <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
         <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
 
         {jobStatus === "draft" && (
-          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
+          <button className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2">
             Edit
           </button>
         )}

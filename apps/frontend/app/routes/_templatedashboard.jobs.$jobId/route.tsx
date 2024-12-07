@@ -1,22 +1,22 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getJobById } from "~/servers/job.server";
-import { requireUserIsEmployerPublished } from "~/auth/auth.server";
-import { getProfileInfo } from "~/servers/user.server";
-import { Job } from "~/types/Job";
 import { useLoaderData } from "@remix-run/react";
+import { Job } from "~/types/Job";
+import { Freelancer } from "~/types/User";
+import {
+  getJobById,
+  fetchJobApplications,
+  getFreelancerDetails,
+  getFreelancersIdsByJobId,
+} from "~/servers/job.server";
+import { requireUserIsEmployerPublished } from "~/auth/auth.server";
+import { getProfileInfoByAccountId } from "~/servers/user.server";
+import { getAccountBio, getFreelancerAbout } from "~/servers/employer.server";
 import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
 import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
-import { fetchJobApplications } from "~/servers/job.server";
+import ApplicantComponent from "~/common/applicant/ApplicantComponent";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { Freelancer } from "~/types/User";
-import { getFreelancersIdsByJobId } from "~/servers/job.server";
-import { getFreelancerDetails } from "~/servers/job.server";
-import { getProfileInfoByAccountId } from "~/servers/user.server";
-import { getAccountBio } from "~/servers/employer.server";
-import { getFreelancerAbout } from "~/servers/employer.server";
-import ApplicantComponent from "~/common/applicant/ApplicantComponent";
 
 export type LoaderData = {
   job: Job & { applicants: any[] };
@@ -26,9 +26,6 @@ export type LoaderData = {
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  // Authenticate the user
-  const userId = await requireUserIsEmployerPublished(request);
-
   const { jobId } = params;
   if (!jobId) {
     return Response.json({ error: "Job ID is required" }, { status: 400 });
@@ -102,24 +99,24 @@ const Layout = () => {
       </div>
 
       {/* SINGLE JOB */}
-      <div>
-        {/* Show JobDesignOne on md and larger screens */}
-        {job ? (
-          <JobDesignOne job={job} />
-        ) : (
-          <p className="text-center text-gray-500">
-            Job details not available.
-          </p>
-        )}
-        {/* Show JobDesignTwo only on sm screens */}
-        <div className="hidden sm:block md:hidden">
-          <JobDesignTwo job={job} />
+      {job ? (
+        <div>
+          {/* Show JobDesignOne on md and larger screens */}
+          <div className="hidden md:block">
+            <JobDesignOne job={job} />
+          </div>
+          {/* Show JobDesignTwo only on sm screens */}
+          <div className="hidden sm:block md:hidden">
+            <JobDesignTwo job={job} />
+          </div>
+          {/* Show JobDesignThree on screens smaller than sm */}
+          <div className="block sm:hidden">
+            <JobDesignThree job={job} />
+          </div>
         </div>
-        {/* Show JobDesignThree on screens smaller than sm */}
-        <div className="block sm:hidden">
-          <JobDesignThree job={job} />
-        </div>
-      </div>
+      ) : (
+        <p className="text-center text-gray-500">Job details not available.</p>
+      )}
 
       <ApplicantComponent
         job={job}

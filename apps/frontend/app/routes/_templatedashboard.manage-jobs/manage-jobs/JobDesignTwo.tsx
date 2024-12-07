@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Job as JobType } from "../../../types/Job";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
+import StatusButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
-import { useNavigate } from "react-router";
 
 export default function JobDesignTwo({
   job,

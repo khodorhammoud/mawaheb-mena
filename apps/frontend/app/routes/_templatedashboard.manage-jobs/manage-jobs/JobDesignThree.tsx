@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Job as JobType } from "../../../types/Job";
 import JobStateButton from "../../../common/job-state-button/JobStateButton";
-import { useNavigate } from "react-router";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
 export default function JobDesignThree({
