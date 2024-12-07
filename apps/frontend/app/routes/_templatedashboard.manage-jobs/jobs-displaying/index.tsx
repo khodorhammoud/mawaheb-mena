@@ -1,10 +1,10 @@
-import { Job as JobType } from "../../../types/Job";
-import Job from "../manage-jobs/Job";
 import { useState } from "react";
+import { Job as JobType } from "~/types/Job";
+import Job from "../manage-jobs/Job";
 import Header from "../manage-jobs-heading/Header";
 
 interface JobManagementProps {
-  jobs: JobType[];
+  jobs: (JobType & { applicants })[];
 }
 
 export default function JobManagement({ jobs }: JobManagementProps) {

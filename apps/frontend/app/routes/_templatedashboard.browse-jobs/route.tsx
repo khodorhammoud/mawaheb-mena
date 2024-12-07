@@ -23,10 +23,12 @@ import SingleJobView from "./singleJobView";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // current user must be a published
+
   const userId = await requireUserIsFreelancerPublished(request);
   if (!userId) {
     return redirect("/login-employer");
   }
+
   const accountType: AccountType = await getCurrentUserAccountType(request);
   // return if user is not freelancer
   if (accountType !== "freelancer") {

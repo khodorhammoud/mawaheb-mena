@@ -1,49 +1,149 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getJobById } from "~/servers/job.server";
-import { requireUserIsEmployerPublished } from "~/auth/auth.server";
-import { getProfileInfo } from "~/servers/user.server";
-import { Job } from "~/types/Job";
 import { useLoaderData } from "@remix-run/react";
+import { Job } from "~/types/Job";
+import { Freelancer } from "~/types/User";
+import {
+  getJobById,
+  fetchJobApplications,
+  getFreelancerDetails,
+  getFreelancersIdsByJobId,
+} from "~/servers/job.server";
+import { requireUserIsEmployerPublished } from "~/auth/auth.server";
+import {
+  getProfileInfoByAccountId,
+  getCurrentProfileInfo,
+} from "~/servers/user.server";
+import { getAccountBio, getFreelancerAbout } from "~/servers/employer.server";
+import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
+import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
+import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
+import JobApplicants from "~/common/applicant/JobApplicants";
+import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { redirect } from "@remix-run/node";
+import Applicants from "~/common/applicant/Applicants";
+
+export type LoaderData = {
+  job: Job & { applicants: any[] };
+  freelancers: Freelancer[];
+  accountBio;
+  about;
+};
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  // user must be a published freelancer
-  const userId = await requireUserIsEmployerPublished(request);
-  if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // ensures that the user is an employer
+  await requireUserIsEmployerPublished(request);
 
-  const { jobId } = params; // Extract the jobId
+  // Fetch the logged-in employer profile
+  const currentProfile = await getCurrentProfileInfo(request);
 
+  const { jobId } = params;
   if (!jobId) {
-    console.log("Job ID is required");
     return Response.json({ error: "Job ID is required" }, { status: 400 });
   }
 
-  // check if the job exists
   const job = await getJobById(parseInt(jobId));
   if (!job) {
     return Response.json({ error: "Job not found" }, { status: 404 });
   }
 
-  const employer = await getProfileInfo({ userId });
-
-  // check if the job belongs to the employer
-  if (job.employerId !== employer.id) {
-    return Response.json(
-      { error: "Job does not belong to the employer" },
-      { status: 403 }
-    );
+  // Restrict access: Ensure the job belongs to the logged-in employer, if not, redirect to the all jobs page
+  if (job.employerId !== currentProfile.id) {
+    return redirect(`/manage-jobs`);
   }
 
-  return Response.json({ job });
+  const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
+
+  // Fetch freelancers
+  const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
+
+  // Fetch applicants
+  const applicants = await fetchJobApplications(parseInt(jobId));
+
+  let profile = null;
+  let accountBio = null;
+  let about = null;
+
+  if (freelancers.length > 0) {
+    try {
+      // Fetch the profile for the first freelancer (as an example)
+      profile = await getProfileInfoByAccountId(freelancers[0].accountId);
+      if (profile && profile.account) {
+        accountBio = await getAccountBio(profile.account);
+        about = await getFreelancerAbout(profile);
+      }
+    } catch (error) {
+      console.error("Error fetching profile or account bio:", error);
+    }
+  } else {
+    console.log("No freelancers available for this job.");
+  }
+
+  const enrichedJob = {
+    ...job,
+    applicants,
+  };
+
+  return Response.json({
+    job: enrichedJob,
+    accountBio,
+    freelancers,
+    about,
+  });
 }
 
 const Layout = () => {
   const { job } = useLoaderData<{
-    job: Job;
+    job: Job & { applicants: any[]; interviewedCount: number };
   }>();
 
-  return <div>{JSON.stringify(job)}</div>;
+  const { freelancers, accountBio, about } = useLoaderData<LoaderData>(); // needed for the ApplicantComponent
+
+  const navigate = useNavigate();
+
+  const handleBackClick = () => {
+    navigate("/manage-jobs"); // Navigate to the manage-jobs page
+  };
+
+  return (
+    <div>
+      {/* BACKWARDS ICON */}
+      <div className="mb-8">
+        <FaArrowLeft
+          onClick={handleBackClick}
+          className="h-7 w-7 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer"
+        />
+      </div>
+
+      {/* SINGLE JOB */}
+      {job ? (
+        <div>
+          {/* Show JobDesignOne on md and larger screens */}
+          <div className="hidden md:block">
+            <JobDesignOne job={job} />
+          </div>
+          {/* Show JobDesignTwo only on sm screens */}
+          <div className="hidden sm:block md:hidden">
+            <JobDesignTwo job={job} />
+          </div>
+          {/* Show JobDesignThree on screens smaller than sm */}
+          <div className="block sm:hidden">
+            <JobDesignThree job={job} />
+          </div>
+        </div>
+      ) : (
+        <p className="text-center text-gray-500">Job details not available.</p>
+      )}
+
+      <JobApplicants
+        job={job}
+        freelancers={freelancers}
+        accountBio={accountBio}
+        about={about}
+        state="default" // only for now // this should be job.state, or something like that, so that the satte will be decided from the database, and the component will act with respect to it :D
+      />
+    </div>
+  );
 };
 
 export default Layout;

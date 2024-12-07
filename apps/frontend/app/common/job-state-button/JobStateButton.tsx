@@ -47,7 +47,7 @@ const JobStateButton: React.FC<StatusButtonProps> = ({
     <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className={`lg:px-4 lg:py-2 px-2 py-1 rounded flex items-center ${statusStyles[status]}`}
+        className={`px-2 py-1 rounded lg:text-base text-sm flex items-center ${statusStyles[status]}`}
       >
         {status === "close"
           ? "Closed"

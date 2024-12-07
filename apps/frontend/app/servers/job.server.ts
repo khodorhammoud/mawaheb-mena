@@ -1,14 +1,14 @@
-import { Job, JobApplication, JobFilter } from "~/types/Job";
 import { db } from "../db/drizzle/connector";
+import { and, eq, inArray } from "drizzle-orm";
+import { Job, JobApplication, JobFilter } from "~/types/Job";
+import { Freelancer, JobCategory } from "../types/User";
+import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import {
   jobApplicationsTable,
   jobCategoriesTable,
   jobsTable,
+  freelancersTable,
 } from "../db/drizzle/schemas/schema";
-import { Freelancer, JobCategory } from "../types/User";
-import { JobApplicationStatus, JobStatus } from "~/types/enums";
-import { and, eq, inArray } from "drizzle-orm";
-import { getProfileInfo } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -240,4 +240,87 @@ export async function createJobApplication(
     throw new Error("Failed to create job application");
   }
   return jobApplication as unknown as JobApplication;
+}
+
+/**
+ * Fetch job applications by job ID.
+ * @param jobId - The ID of the job to fetch applications for.
+ * @returns The list of job applications.
+ */
+export async function fetchJobApplications(jobId: number) {
+  const applications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  return applications;
+}
+
+/**
+ *
+ * take the content of jobs and there applicants
+ * @param jobs
+ * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
+ *
+ */
+export async function fetchJobsWithApplicants(jobs: Job[]) {
+  return Promise.all(
+    jobs.map(async (job) => {
+      const applicants = await fetchJobApplications(job.id);
+      return {
+        ...job,
+        applicants: applicants.map((applicant) => ({
+          id: applicant.id,
+          freelancerId: applicant.freelancerId,
+          photoUrl: `https://example.com/photos/${applicant.freelancerId}`, // Replace with actual logic
+          status: applicant.status,
+        })),
+        interviewedCount: applicants.filter(
+          (app) => app.status === "interviewed"
+        ).length,
+        // bl mabda2, hayde ma 2ila 3azze 3ashen ma fi interviewed aplicants yet
+      };
+    })
+  );
+}
+
+/**
+ *
+ * get freelancers id's that are linked to a job using the same job id
+ * @param jobId
+ * @returns
+ * @throws Error
+ */
+export async function getFreelancersIdsByJobId(jobId: number) {
+  const applications = await fetchJobApplications(jobId);
+
+  const freelancerIds = applications.map(
+    (application) => application.freelancerId
+  );
+
+  if (freelancerIds.length === 0) {
+    throw new Error(`No freelancers found for job ID: ${jobId}`);
+  }
+
+  return freelancerIds;
+}
+
+/**
+ *
+ * get freelancers content
+ * @param freelancerIds
+ * @returns
+ * @throws Error
+ */
+export async function getFreelancerDetails(freelancerIds: number[]) {
+  if (freelancerIds.length === 0) {
+    return [];
+  }
+
+  const freelancers = await db
+    .select()
+    .from(freelancersTable)
+    .where(inArray(freelancersTable.id, freelancerIds));
+
+  return freelancers; // Return the raw result directly
 }

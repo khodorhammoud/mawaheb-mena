@@ -1,37 +1,36 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Job as JobType } from "../../../types/Job";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import AvatarList from "../../../common/avatar/AvatarList";
+import StatusButton from "../../../common/job-state-button/JobStateButton";
+import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
-interface JobProps {
-  job: JobType;
-}
+export default function JobDesignTwo({
+  job,
+}: {
+  job: JobType & { applicants };
+}) {
+  if (!job) {
+    return <p>Job details are not available.</p>;
+  }
 
-export default function JobDesignTwo({ job }: JobProps) {
   const formattedDate =
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
-  // const [jobStatus, setJobStatus] = useState<
-  //   "active" | "draft" | "paused" | "close"
-  // >(job.isDraft ? "draft" : "active");
+  const [jobStatus, setJobStatus] = useState<
+    "active" | "draft" | "paused" | "close"
+  >(job.status ? "active" : "draft");
 
-  // const handleStatusChange = (
-  //   newStatus: "active" | "draft" | "paused" | "close"
-  // ) => {
-  //   setJobStatus(newStatus);
-  // };
+  const handleStatusChange = (
+    newStatus: "active" | "draft" | "paused" | "close"
+  ) => {
+    setJobStatus(newStatus);
+  };
+
+  const navigate = useNavigate();
 
   const applicantsPhotos = [
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-  ];
-
-  const interviewedPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
   ];
@@ -42,17 +41,22 @@ export default function JobDesignTwo({ job }: JobProps) {
     <div className="md:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
+        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
         {jobStatus === "draft" && (
           <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
             Edit
           </button>
-        )} */}
+        )}
       </div>
 
       {/* JOB INFO */}
       <div>
-        <h3 className="xl:text-2xl md:text-xl text-lg">{job.title}</h3>
+        <h3
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
+          {job.title}
+        </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - Posted {formattedDate.toDateString()}
         </p>
@@ -84,23 +88,25 @@ export default function JobDesignTwo({ job }: JobProps) {
 
       {/* APPLICANTS AND CALENDAR */}
       <div className="lg:grid lg:grid-cols-10 gap-4">
-        <div className="col-span-3 text-left">
-          <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-            Applicants: {applicantsPhotos.length}
-          </p>
-          <AvatarList photos={applicantsPhotos} />
+        {/* Applicants ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={job.applicants}
+        />
 
-          <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">
-            Interviewed: {interviewedPhotos.length}
-          </p>
-          <AvatarList photos={interviewedPhotos} />
-        </div>
-        <div className="col-span-7">
-          <p className="font-semibold mb-4 xl:text-base text-sm mt-6">
-            Pending Interviews: {interviewDates.length}
-          </p>
-          <Calendar highlightedDates={interviewDates} />
-        </div>
+        {/* Interviewed ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Interviewed"
+          images={applicantsPhotos}
+          profiles={job.applicants}
+        />
+      </div>
+      <div className="col-span-7">
+        <p className="font-semibold mb-4 xl:text-base text-sm mt-6">
+          Pending Interviews: {interviewDates.length}
+        </p>
+        <Calendar highlightedDates={interviewDates} />
       </div>
     </div>
   );

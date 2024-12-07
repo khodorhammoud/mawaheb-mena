@@ -135,7 +135,7 @@ const Calendar = ({ highlightedDates = [] }) => {
 
   return (
     <motion.div
-      className="border rounded-xl p-4 w-full max-w-md mx-auto"
+      className="border rounded-xl lg:p-4 py-3 px-2 w-full max-w-md mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

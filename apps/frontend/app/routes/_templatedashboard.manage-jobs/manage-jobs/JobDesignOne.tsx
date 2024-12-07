@@ -1,30 +1,39 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Job as JobType } from "../../../types/Job";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import AvatarList from "../../../common/avatar/AvatarList";
+import StatusButton from "../../../common/job-state-button/JobStateButton";
+import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 
-interface JobProps {
-  job: JobType;
-}
+export default function JobDesignOne({
+  job,
+}: {
+  job: JobType & { applicants };
+}) {
+  if (!job) {
+    return <p>Job details are not available.</p>;
+  }
 
-export default function JobDesignOne({ job }: JobProps) {
-  const formattedDate =
-    typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
+  const formattedDate = job?.createdAt
+    ? typeof job.createdAt === "string"
+      ? new Date(job.createdAt)
+      : job.createdAt
+    : null;
 
-  // const [jobStatus, setJobStatus] = useState<
-  //   "active" | "draft" | "paused" | "close"
-  // >(job.isActive ? "active" : "draft");
+  const [jobStatus, setJobStatus] = useState<
+    "active" | "draft" | "paused" | "close"
+  >(job.status ? "active" : "draft");
 
-  // const handleStatusChange = (
-  //   newStatus: "active" | "draft" | "paused" | "close"
-  // ) => {
-  //   // setJobStatus(newStatus);
-  // };
+  const handleStatusChange = (
+    newStatus: "active" | "draft" | "paused" | "close"
+  ) => {
+    setJobStatus(newStatus);
+  };
+
+  const navigate = useNavigate();
 
   const applicantsPhotos = [
-    // Dummy data or replace with actual applicant photos if available
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
   ];
@@ -32,11 +41,17 @@ export default function JobDesignOne({ job }: JobProps) {
   const interviewDates = ["2024-11-5", "2024-11-17", "2024-11-28"];
 
   return (
-    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-4 mb-10">
-      <div className="xl:w-[42%] lg:w-[30%] mr-2">
-        <h3 className="xl:text-2xl md:text-xl text-lg mb-2">{job.title}</h3>
+    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
+      <div className="xl:w-[42%] w-[30%] mr-2">
+        <h3
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
+          {job.title}
+        </h3>
+
         <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
-          Fixed price - Posted {formattedDate.toDateString()}
+          Fixed price - Posted {formattedDate?.toDateString() || "N/A"}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6">
           <div>
@@ -56,26 +71,34 @@ export default function JobDesignOne({ job }: JobProps) {
           {job.description}
         </p>
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
-          {job.requiredSkills.map((skill, index) => (
-            <SkillBadge
-              key={index}
-              name={skill.name}
-              isStarred={skill.isStarred}
-            />
-          ))}
+          {job.requiredSkills && job.requiredSkills.length > 0 ? (
+            job.requiredSkills.map((skill, index) => (
+              <SkillBadge
+                key={index}
+                name={skill.name}
+                isStarred={skill.isStarred}
+              />
+            ))
+          ) : (
+            <p>No skills provided.</p>
+          )}
         </div>
       </div>
 
-      <div className="lg:w-[18%] text-left">
-        <p className="font-semibold xl:text-base text-sm flex items-center mb-2">
-          Applicants: {applicantsPhotos.length}
-        </p>
-        <AvatarList photos={applicantsPhotos} />
+      <div className="flex flex-col gap-8 w-[18%] text-left">
+        {/* Applicants ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={job.applicants}
+        />
 
-        <p className="font-semibold xl:text-base text-sm mt-4 flex items-center mb-2">
-          Interviewed: 2
-        </p>
-        <AvatarList photos={applicantsPhotos.slice(0, 2)} />
+        {/* Interviewed ProfilePhotosSection */}
+        <ProfilePhotosSection
+          label="Interviewed"
+          images={applicantsPhotos}
+          profiles={job.applicants}
+        />
       </div>
 
       <div className="lg:w-[30%] lg:-mr-10">
@@ -85,14 +108,14 @@ export default function JobDesignOne({ job }: JobProps) {
         <Calendar highlightedDates={interviewDates} />
       </div>
 
-      <div className="w-[16%] flex justify-end h-min xl:-ml-4 xl:mr-4 space-x-2">
-        {/* <StatusButton status={jobStatus} onStatusChange={handleStatusChange} /> */}
+      <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
+        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
 
-        {/* {jobStatus === "draft" && ( */}
-        <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
-          Edit
-        </button>
-        {/* )} */}
+        {jobStatus === "draft" && (
+          <button className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2">
+            Edit
+          </button>
+        )}
       </div>
     </div>
   );

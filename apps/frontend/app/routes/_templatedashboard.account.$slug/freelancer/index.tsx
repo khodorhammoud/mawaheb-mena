@@ -3,6 +3,8 @@ import { Form, useActionData } from "@remix-run/react";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
+import { useLoaderData } from "@remix-run/react";
+import { LoaderData } from "~/routes/_templatedashboard.jobs.$jobId/route";
 
 export default function FreelancerPage() {
   type ActionData = {
