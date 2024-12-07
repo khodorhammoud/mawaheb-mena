@@ -9,14 +9,19 @@ import {
   getFreelancersIdsByJobId,
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
-import { getProfileInfoByAccountId } from "~/servers/user.server";
+import {
+  getProfileInfoByAccountId,
+  getCurrentProfileInfo,
+} from "~/servers/user.server";
 import { getAccountBio, getFreelancerAbout } from "~/servers/employer.server";
 import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
 import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
-import ApplicantComponent from "~/common/applicant/ApplicantComponent";
+import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { redirect } from "@remix-run/node";
+import Applicants from "~/common/applicant/Applicants";
 
 export type LoaderData = {
   job: Job & { applicants: any[] };
@@ -26,6 +31,12 @@ export type LoaderData = {
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  // ensures that the user is an employer
+  await requireUserIsEmployerPublished(request);
+
+  // Fetch the logged-in employer profile
+  const currentProfile = await getCurrentProfileInfo(request);
+
   const { jobId } = params;
   if (!jobId) {
     return Response.json({ error: "Job ID is required" }, { status: 400 });
@@ -34,6 +45,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const job = await getJobById(parseInt(jobId));
   if (!job) {
     return Response.json({ error: "Job not found" }, { status: 404 });
+  }
+
+  // Restrict access: Ensure the job belongs to the logged-in employer, if not, redirect to the all jobs page
+  if (job.employerId !== currentProfile.id) {
+    return redirect(`/manage-jobs`);
   }
 
   const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
@@ -80,6 +96,7 @@ const Layout = () => {
   const { job } = useLoaderData<{
     job: Job & { applicants: any[]; interviewedCount: number };
   }>();
+
   const { freelancers, accountBio, about } = useLoaderData<LoaderData>(); // needed for the ApplicantComponent
 
   const navigate = useNavigate();
@@ -118,7 +135,7 @@ const Layout = () => {
         <p className="text-center text-gray-500">Job details not available.</p>
       )}
 
-      <ApplicantComponent
+      <JobApplicants
         job={job}
         freelancers={freelancers}
         accountBio={accountBio}

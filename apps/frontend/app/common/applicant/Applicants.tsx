@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ApplicantSheet from "./ApplicantSheet";
 
-type ApplicantComponentProps = {
+type ApplicantsProps = {
   job;
   freelancers;
   accountBio;
@@ -9,7 +9,7 @@ type ApplicantComponentProps = {
   state: "default" | "hired" | "interviewed" | "pending";
 };
 
-const ApplicantComponent: React.FC<ApplicantComponentProps> = ({
+const Applicants: React.FC<ApplicantsProps> = ({
   job,
   freelancers,
   accountBio,
@@ -24,27 +24,8 @@ const ApplicantComponent: React.FC<ApplicantComponentProps> = ({
     setSelectedFreelancer(freelancer); // Set the selected freelancer
     setIsSheetOpen(true); // Open the sheet
   };
-
   return (
-    <div>
-      {/* TITLE and BUTTONS */}
-      <div className="mt-20 mb-10 md:flex md:gap-10 gap-4 items-center">
-        <h2 className="font-semibold xl:text-3xl md:text-2xl text-xl ml-1">
-          Applicants
-        </h2>
-        <div className="sm:flex grid grid-cols-1 w-[60%] xs:w-[60%] ml-0 gap-1 xl:space-x-2 lg:space-x-1 md:mt-0 mt-4">
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Interviewed
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            shortlisted
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Hired
-          </button>
-        </div>
-      </div>
-
+    <div className="">
       {freelancers && freelancers.length > 0 ? (
         freelancers.map((freelancer, index) => {
           // Check if the state is default; otherwise, skip processing.
@@ -149,11 +130,10 @@ const ApplicantComponent: React.FC<ApplicantComponentProps> = ({
         })
       ) : (
         <div className="text-center text-gray-500 mt-10">
-          <p>Nothing to map through.</p>
+          <p>This job has no applicants yet</p>
         </div>
       )}
     </div>
   );
 };
-
-export default ApplicantComponent;
+export default Applicants;
