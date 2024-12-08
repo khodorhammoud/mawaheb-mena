@@ -206,7 +206,6 @@ export async function updateFreelancerEducation(
   education: EducationFormFieldType[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    console.log("saving education", education);
     const res = await db
       .update(freelancersTable)
       .set({ educations: JSON.stringify(education) })

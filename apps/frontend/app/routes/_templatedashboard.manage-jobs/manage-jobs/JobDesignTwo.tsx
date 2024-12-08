@@ -1,34 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Job as JobType } from "../../../types/Job";
+import { JobCardData } from "../../../types/Job";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import StatusButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
+import { Link } from "@remix-run/react/dist/components";
+import { parseDate } from "~/lib/utils";
+import { JobStatus } from "~/types/enums";
 
 export default function JobDesignTwo({
-  job,
+  data,
+  status,
+  onStatusChange,
 }: {
-  job: JobType & { applicants };
+  data: JobCardData;
+  status?: JobStatus;
+  onStatusChange?: (newStatus: JobStatus) => void;
 }) {
-  if (!job) {
-    return <p>Job details are not available.</p>;
-  }
+  const { job } = data;
 
-  const formattedDate =
-    typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
-
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.status ? "active" : "draft");
-
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
-
-  const navigate = useNavigate();
+  const formattedDate = parseDate(job.createdAt);
 
   const applicantsPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
@@ -37,12 +27,16 @@ export default function JobDesignTwo({
 
   const interviewDates = ["2024-11-11", "2024-11-17", "2024-11-24"];
 
-  return (
+  return !data ? (
+    <p>Job details are not available.</p>
+  ) : (
     <div className="md:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
-        {jobStatus === "draft" && (
+        {status && (
+          <StatusButton status={status} onStatusChange={onStatusChange} />
+        )}
+        {status === JobStatus.Draft && (
           <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
             Edit
           </button>
@@ -51,11 +45,8 @@ export default function JobDesignTwo({
 
       {/* JOB INFO */}
       <div>
-        <h3
-          onClick={() => navigate(`/jobs/${job.id}`)}
-          className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300"
-        >
-          {job.title}
+        <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300">
+          <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - Posted {formattedDate.toDateString()}
@@ -76,13 +67,15 @@ export default function JobDesignTwo({
 
         {/* SKILLS */}
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
-          {job.requiredSkills.map((skill, index) => (
-            <SkillBadge
-              key={index}
-              name={skill.name}
-              isStarred={skill.isStarred}
-            />
-          ))}
+          {job.requiredSkills &&
+            Array.isArray(job.requiredSkills) &&
+            job.requiredSkills.map((skill, index) => (
+              <SkillBadge
+                key={index}
+                name={skill.name}
+                isStarred={skill.isStarred}
+              />
+            ))}
         </div>
       </div>
 
@@ -92,14 +85,14 @@ export default function JobDesignTwo({
         <ProfilePhotosSection
           label="Applicants"
           images={applicantsPhotos}
-          profiles={job.applicants}
+          profiles={data.applications}
         />
 
         {/* Interviewed ProfilePhotosSection */}
         <ProfilePhotosSection
           label="Interviewed"
           images={applicantsPhotos}
-          profiles={job.applicants}
+          profiles={data.applications}
         />
       </div>
       <div className="col-span-7">

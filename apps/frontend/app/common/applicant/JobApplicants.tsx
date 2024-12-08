@@ -1,20 +1,20 @@
+import { JobApplicationStatus } from "~/types/enums";
 import Applicants from "./Applicants";
+import { AccountBio, Freelancer } from "~/types/User";
 
 type JobApplicansProps = {
-  job;
-  freelancers;
-  accountBio;
+  freelancers: Freelancer[];
+  accountBio: AccountBio;
   about: string;
-  state: "default" | "hired" | "interviewed" | "pending";
+  status: JobApplicationStatus;
 };
 
-const JobApplicants: React.FC<JobApplicansProps> = ({
-  job,
+export default function JobApplicants({
   freelancers,
   accountBio,
   about,
-  state,
-}) => {
+  status,
+}: JobApplicansProps) {
   return (
     <div>
       {/* TITLE and BUTTONS */}
@@ -36,14 +36,11 @@ const JobApplicants: React.FC<JobApplicansProps> = ({
       </div>
 
       <Applicants
-        job={job} // Web
         freelancers={freelancers} // wassim
         accountBio={accountBio} // wassim T Jaaava
         about={about} // FFFFF
-        state="default"
+        status={status}
       />
     </div>
   );
-};
-
-export default JobApplicants;
+}

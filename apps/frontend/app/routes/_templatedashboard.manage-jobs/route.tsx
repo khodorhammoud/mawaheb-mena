@@ -1,7 +1,7 @@
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Job } from "~/types/Job";
-import { getEmployerJobs, fetchJobsWithApplicants } from "~/servers/job.server";
+import { JobCardData } from "~/types/Job";
+import { fetchJobsWithApplications } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import { getProfileInfo } from "~/servers/user.server";
 import JobManagement from "./jobs-displaying";
@@ -14,25 +14,20 @@ export const loader: LoaderFunction = async ({ request }) => {
   const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
 
-  // Step 3: Fetch jobs for the employer
-  const jobs = await getEmployerJobs(employerId);
-
   // For each job, fetch applicants
-  const jobsWithApplicants = await fetchJobsWithApplicants(jobs);
+  const jobsWithApplications = await fetchJobsWithApplications(employerId);
 
   // Return the fetched data
-  return Response.json({ jobs: jobsWithApplicants });
+  return Response.json(jobsWithApplications);
 };
 
 // Layout component
 export default function Layout() {
-  const { jobs } = useLoaderData<{
-    jobs: (Job & { applicants })[];
-  }>();
+  const jobsWithApplications = useLoaderData<JobCardData[]>();
 
   return (
     <div className="xl:p-8 p-2 mx-2 xl:mt-20 mt-24 font-['Switzer-Regular'] w-full">
-      <JobManagement jobs={jobs} />
+      <JobManagement data={jobsWithApplications} />
     </div>
   );
 }

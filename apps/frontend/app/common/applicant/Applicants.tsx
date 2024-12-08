@@ -1,27 +1,28 @@
 import { useState } from "react";
 import ApplicantSheet from "./ApplicantSheet";
+import { AccountBio, Freelancer } from "~/types/User";
+import { JobApplicationStatus } from "~/types/enums";
+import { Button } from "~/components/ui/button";
 
 type ApplicantsProps = {
-  job;
-  freelancers;
-  accountBio;
+  freelancers: Freelancer[];
+  accountBio: AccountBio;
   about: string;
-  state: "default" | "hired" | "interviewed" | "pending";
+  status: JobApplicationStatus;
 };
 
-const Applicants: React.FC<ApplicantsProps> = ({
-  job,
+export default function Applicants({
   freelancers,
   accountBio,
   about,
-  state,
-}) => {
+  status,
+}: ApplicantsProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for the sheet visibility
-  const [selectedFreelancer, setSelectedFreelancer] = useState(null); // State for the selected freelancer
+  // const [selectedFreelancer, setSelectedFreelancer] = useState(null); // State for the selected freelancer
 
   // Handle the click event to open the sheet with selected freelancer
-  const handleApplicantClick = (freelancer) => {
-    setSelectedFreelancer(freelancer); // Set the selected freelancer
+  const handleApplicantClick = (/* freelancer */) => {
+    // setSelectedFreelancer(freelancer); // Set the selected freelancer
     setIsSheetOpen(true); // Open the sheet
   };
   return (
@@ -29,7 +30,7 @@ const Applicants: React.FC<ApplicantsProps> = ({
       {freelancers && freelancers.length > 0 ? (
         freelancers.map((freelancer, index) => {
           // Check if the state is default; otherwise, skip processing.
-          if (state === "default") {
+          if (status === JobApplicationStatus.Pending) {
             return (
               <div
                 className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl gap-8 mb-6"
@@ -45,23 +46,23 @@ const Applicants: React.FC<ApplicantsProps> = ({
                     <div className="">
                       <img
                         src={
-                          freelancer.photoUrl ||
+                          // freelancer.photoUrl ||
                           "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
                         }
-                        alt="image"
+                        alt="profile 1"
                         className="h-24 w-auto rounded-xl"
                       />
                     </div>
 
                     {/* Freelancer Details */}
                     <div className="lg:w-[40%] md:w-[30%]">
-                      <h1
-                        className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300"
-                        onClick={() => handleApplicantClick(freelancer)}
+                      <Button
+                        className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300 p-0"
+                        onClick={() => handleApplicantClick(/* freelancer */)}
                       >
                         {accountBio.firstName}{" "}
                         {accountBio.lastName?.charAt(0).toUpperCase()}.
-                      </h1>
+                      </Button>
                       <p className="mb-4 text-sm text-gray-400">
                         Invitation sent
                       </p>
@@ -120,9 +121,9 @@ const Applicants: React.FC<ApplicantsProps> = ({
                 </div>
               </div>
             );
-          } else if (state === "hired") {
-            <h1>state is hired :D</h1>;
-          } else if (state === "interviewed") {
+          } else if (status === JobApplicationStatus.Shortlisted) {
+            <h1>state is shortlisted :D</h1>;
+          } else if (status === JobApplicationStatus.Approved) {
             <h1>state is interviewed</h1>;
           } else {
             <h1>state is pending</h1>;
@@ -135,5 +136,4 @@ const Applicants: React.FC<ApplicantsProps> = ({
       )}
     </div>
   );
-};
-export default Applicants;
+}

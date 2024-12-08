@@ -1,6 +1,6 @@
 import { db } from "../db/drizzle/connector";
 import { and, eq, inArray } from "drizzle-orm";
-import { Job, JobApplication, JobFilter } from "~/types/Job";
+import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import { Freelancer, JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import {
@@ -106,20 +106,15 @@ export async function getFreelancerRecommendedJobs(
   const recommendedJobs = await db
     .select()
     .from(jobsTable)
-    .where(eq(jobsTable.status, JobStatus.Active));
+    .where(
+      and(
+        eq(jobsTable.status, JobStatus.Active),
+        eq(jobsTable.employerId, freelancer.id)
+      )
+    );
   return recommendedJobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
+    ...job,
     status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
   }));
 }
 
@@ -176,18 +171,8 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     .offset((filter.page - 1) * filter.pageSize);
 
   return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
+    ...job,
     status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
   }));
 }
 
@@ -247,35 +232,42 @@ export async function createJobApplication(
  * @param jobId - The ID of the job to fetch applications for.
  * @returns The list of job applications.
  */
-export async function fetchJobApplications(jobId: number) {
+export async function fetchJobApplications(
+  jobId: number
+): Promise<JobApplication[]> {
   const applications = await db
     .select()
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.jobId, jobId));
 
-  return applications;
+  return applications as JobApplication[];
 }
 
 /**
  *
- * take the content of jobs and there applicants
- * @param jobs
+ * Fetches the applicants for a given jobs list
+ * @param employerId
  * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
  *
  */
-export async function fetchJobsWithApplicants(jobs: Job[]) {
+export async function fetchJobsWithApplications(
+  employerId: number
+): Promise<JobCardData[]> {
+  const jobs = await getEmployerJobs(employerId);
   return Promise.all(
     jobs.map(async (job) => {
-      const applicants = await fetchJobApplications(job.id);
+      const applications = await fetchJobApplications(job.id);
       return {
-        ...job,
-        applicants: applicants.map((applicant) => ({
+        job: job,
+        applications: applications,
+        /* .map((applicant) => ({
           id: applicant.id,
           freelancerId: applicant.freelancerId,
-          photoUrl: `https://example.com/photos/${applicant.freelancerId}`, // Replace with actual logic
+          // TODO: Replace with actual logic
+          photoUrl: `https://example.com/photos/${applicant.freelancerId}`,
           status: applicant.status,
-        })),
-        interviewedCount: applicants.filter(
+        })), */
+        interviewedCount: applications.filter(
           (app) => app.status === "interviewed"
         ).length,
         // bl mabda2, hayde ma 2ila 3azze 3ashen ma fi interviewed aplicants yet

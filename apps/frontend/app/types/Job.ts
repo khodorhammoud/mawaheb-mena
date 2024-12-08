@@ -1,22 +1,12 @@
-import { Skill } from "./Skill";
-import { JobApplicationStatus, JobStatus } from "./enums";
+import { jobApplicationsTable, jobsTable } from "~/db/drizzle/schemas/schema";
+import { InferSelectModel } from "drizzle-orm";
 
-export interface Job {
-  id?: number;
-  employerId: number;
-  title: string;
-  description: string;
-  jobCategoryId?: number;
-  workingHoursPerWeek: number;
-  locationPreference: string;
-  requiredSkills: Skill[];
-  projectType: string;
-  budget: number;
-  experienceLevel: string;
-  // status: JobStatus;
-  status: string;
-  createdAt?: string; // Keep as string for JSON compatibility
-  fulfilledAt?: string;
+export type Job = InferSelectModel<typeof jobsTable>;
+
+export interface JobCardData {
+  job: Job;
+  applications: JobApplication[];
+  interviewedCount?: number;
 }
 
 export interface JobFilter {
@@ -28,10 +18,4 @@ export interface JobFilter {
   pageSize?: number;
 }
 
-export interface JobApplication {
-  id: number;
-  jobId: number;
-  freelancerId: number;
-  status: JobApplicationStatus;
-  createdAt: string;
-}
+export type JobApplication = InferSelectModel<typeof jobApplicationsTable>;
