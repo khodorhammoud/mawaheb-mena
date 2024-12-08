@@ -1,37 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Job as JobType } from "../../../types/Job";
+import { JobCardData } from "../../../types/Job";
+import { parseDate } from "~/lib/utils";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import StatusButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
+import { Link } from "@remix-run/react";
+import { JobStatus } from "~/types/enums";
 
 export default function JobDesignOne({
-  job,
+  data,
+  status,
+  onStatusChange,
 }: {
-  job: JobType & { applicants };
+  data: JobCardData;
+  status?: JobStatus;
+  onStatusChange?: (newStatus: JobStatus) => void;
 }) {
-  if (!job) {
-    return <p>Job details are not available.</p>;
-  }
+  const { job } = data;
 
-  const formattedDate = job?.createdAt
-    ? typeof job.createdAt === "string"
-      ? new Date(job.createdAt)
-      : job.createdAt
-    : null;
-
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.status ? "active" : "draft");
-
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
-
-  const navigate = useNavigate();
+  const formattedDate = parseDate(job.createdAt);
 
   const applicantsPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
@@ -40,14 +27,13 @@ export default function JobDesignOne({
 
   const interviewDates = ["2024-11-5", "2024-11-17", "2024-11-28"];
 
-  return (
+  return !data ? (
+    <p>Job details are not available.</p>
+  ) : (
     <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
       <div className="xl:w-[42%] w-[30%] mr-2">
-        <h3
-          onClick={() => navigate(`/jobs/${job.id}`)}
-          className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
-        >
-          {job.title}
+        <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+          <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
 
         <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
@@ -71,7 +57,9 @@ export default function JobDesignOne({
           {job.description}
         </p>
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
-          {job.requiredSkills && job.requiredSkills.length > 0 ? (
+          {job.requiredSkills &&
+          Array.isArray(job.requiredSkills) &&
+          job.requiredSkills.length > 0 ? (
             job.requiredSkills.map((skill, index) => (
               <SkillBadge
                 key={index}
@@ -90,14 +78,14 @@ export default function JobDesignOne({
         <ProfilePhotosSection
           label="Applicants"
           images={applicantsPhotos}
-          profiles={job.applicants}
+          profiles={data.applications}
         />
 
         {/* Interviewed ProfilePhotosSection */}
         <ProfilePhotosSection
           label="Interviewed"
           images={applicantsPhotos}
-          profiles={job.applicants}
+          profiles={data.applications}
         />
       </div>
 
@@ -109,9 +97,11 @@ export default function JobDesignOne({
       </div>
 
       <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
-        <StatusButton status={jobStatus} onStatusChange={handleStatusChange} />
+        {status && (
+          <StatusButton status={status} onStatusChange={onStatusChange} />
+        )}
 
-        {jobStatus === "draft" && (
+        {status === JobStatus.Draft && (
           <button className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2">
             Edit
           </button>

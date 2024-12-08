@@ -48,7 +48,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   // const jobId = url.searchParams.get("jobId");
   if (!jobId) {
-    console.log("Job ID is required");
+    console.error("Job ID is required");
     return Response.json({ error: "Job ID is required" }, { status: 400 });
   }
 

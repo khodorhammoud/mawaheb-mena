@@ -14,10 +14,10 @@ export default function ProfilePhotosSection({
   return (
     <div>
       {/* Label and Count */}
-      <p className="font-semibold xl:text-base text-sm flex items-center mb-2 gap-1">
+      <div className="font-semibold xl:text-base text-sm flex items-center mb-2 gap-1">
         <p>{label}:</p>
         <p>{profiles.length}</p>
-      </p>
+      </div>
 
       {/* Avatar List */}
       <AvatarList photos={images} />

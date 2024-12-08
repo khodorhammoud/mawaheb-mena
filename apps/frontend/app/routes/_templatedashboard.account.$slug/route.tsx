@@ -146,7 +146,6 @@ export async function action({ request }: ActionFunctionArgs) {
     // FREELANCER
     if (accountType == "freelancer") {
       const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
-      console.log("target", target);
 
       // BIO
       if (target == "freelancer-bio") {

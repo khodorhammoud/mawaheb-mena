@@ -1,51 +1,38 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Job as JobType } from "../../../types/Job";
-import JobStateButton from "../../../common/job-state-button/JobStateButton";
+import { JobCardData } from "~/types/Job";
+import JobStateButton from "~/common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
+import { Link } from "@remix-run/react";
+import { JobStatus } from "~/types/enums";
+import { parseDate } from "~/lib/utils";
 
 export default function JobDesignThree({
-  job,
+  data,
+  status,
+  onStatusChange,
 }: {
-  job: JobType & { applicants };
+  data: JobCardData;
+  status?: JobStatus;
+  onStatusChange?: (newStatus: JobStatus) => void;
 }) {
-  if (!job) {
-    return <p>Job details are not available.</p>;
-  }
-
-  const formattedDate =
-    typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
-
-  // State to manage job status, including "close" as a selectable option
-  const [jobStatus, setJobStatus] = useState<
-    "active" | "draft" | "paused" | "close"
-  >(job.status ? "active" : "draft");
-
-  // Handle status change to toggle the visibility of the Edit button
-  const handleStatusChange = (
-    newStatus: "active" | "draft" | "paused" | "close"
-  ) => {
-    setJobStatus(newStatus);
-  };
-
-  const navigate = useNavigate();
-
   const applicantsPhotos = [
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
     "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
   ];
 
+  const { job } = data;
+
+  const formattedDate = parseDate(job.createdAt);
+
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
-        <JobStateButton
-          status={jobStatus}
-          onStatusChange={handleStatusChange}
-        />
+        {status && (
+          <JobStateButton status={status} onStatusChange={onStatusChange} />
+        )}
 
         {/* Show Edit button only when the job status is "draft" */}
-        {jobStatus === "draft" && (
+        {status === JobStatus.Draft && (
           <button
             className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
             // This button has no functionality
@@ -57,11 +44,8 @@ export default function JobDesignThree({
 
       {/* JOB INFORMATION */}
       <div>
-        <h3
-          onClick={() => navigate(`/jobs/${job.id}`)}
-          className="xl:text-2xl lg:text-xl text-base leading-tight mb-4  cursor-pointer hover:underline inline-block transition-transform duration-300"
-        >
-          {job.title}
+        <h3 className="xl:text-2xl lg:text-xl text-base leading-tight mb-4  cursor-pointer hover:underline inline-block transition-transform duration-300">
+          <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - Posted {formattedDate.toDateString()}
@@ -87,7 +71,7 @@ export default function JobDesignThree({
       <ProfilePhotosSection
         label="Applicants"
         images={applicantsPhotos}
-        profiles={job.applicants}
+        profiles={data.applications}
       />
     </div>
   );

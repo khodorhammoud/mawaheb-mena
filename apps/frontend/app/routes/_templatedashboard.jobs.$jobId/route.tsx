@@ -1,6 +1,6 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { Job } from "~/types/Job";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import { JobCardData } from "~/types/Job";
 import { Freelancer } from "~/types/User";
 import {
   getJobById,
@@ -19,12 +19,10 @@ import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesig
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
 import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { redirect } from "@remix-run/node";
-import Applicants from "~/common/applicant/Applicants";
+import { JobApplicationStatus } from "~/types/enums";
 
 export type LoaderData = {
-  job: Job & { applicants: any[] };
+  jobData: JobCardData;
   freelancers: Freelancer[];
   accountBio;
   about;
@@ -58,7 +56,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
   // Fetch applicants
-  const applicants = await fetchJobApplications(parseInt(jobId));
+  const jobApplications = await fetchJobApplications(parseInt(jobId));
 
   let profile = null;
   let accountBio = null;
@@ -79,13 +77,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     console.log("No freelancers available for this job.");
   }
 
-  const enrichedJob = {
-    ...job,
-    applicants,
+  const jobData: JobCardData = {
+    job: {
+      ...job,
+    },
+    applications: jobApplications,
   };
 
   return Response.json({
-    job: enrichedJob,
+    jobData,
     accountBio,
     freelancers,
     about,
@@ -93,42 +93,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 const Layout = () => {
-  const { job } = useLoaderData<{
-    job: Job & { applicants: any[]; interviewedCount: number };
+  const { jobData } = useLoaderData<{
+    jobData: JobCardData;
   }>();
 
   const { freelancers, accountBio, about } = useLoaderData<LoaderData>(); // needed for the ApplicantComponent
-
-  const navigate = useNavigate();
-
-  const handleBackClick = () => {
-    navigate("/manage-jobs"); // Navigate to the manage-jobs page
-  };
 
   return (
     <div>
       {/* BACKWARDS ICON */}
       <div className="mb-8">
-        <FaArrowLeft
-          onClick={handleBackClick}
-          className="h-7 w-7 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer"
-        />
+        <Link to="/manage-jobs">
+          <FaArrowLeft className="h-7 w-7 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer" />
+        </Link>
       </div>
 
       {/* SINGLE JOB */}
-      {job ? (
+      {jobData ? (
         <div>
           {/* Show JobDesignOne on md and larger screens */}
           <div className="hidden md:block">
-            <JobDesignOne job={job} />
+            <JobDesignOne data={jobData} />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
           <div className="hidden sm:block md:hidden">
-            <JobDesignTwo job={job} />
+            <JobDesignTwo data={jobData} />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
           <div className="block sm:hidden">
-            <JobDesignThree job={job} />
+            <JobDesignThree data={jobData} />
           </div>
         </div>
       ) : (
@@ -136,11 +129,11 @@ const Layout = () => {
       )}
 
       <JobApplicants
-        job={job}
         freelancers={freelancers}
         accountBio={accountBio}
         about={about}
-        state="default" // only for now // this should be job.state, or something like that, so that the satte will be decided from the database, and the component will act with respect to it :D
+        // TODO: only for now // this should be job.state, or something like that, so that the satte will be decided from the database, and the component will act with respect to it :D
+        status={JobApplicationStatus.Pending}
       />
     </div>
   );

@@ -16,7 +16,6 @@ export const loginStrategy = new FormStrategy(
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
     const user = await getUser({ userEmail: email }, true);
-    console.log("user login", user);
     if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }
@@ -26,8 +25,6 @@ export const loginStrategy = new FormStrategy(
     }
 
     if (!user.isVerified) throw new Error("Account not verified");
-
-    console.log("user id login", user.id);
 
     return user.id;
   }
