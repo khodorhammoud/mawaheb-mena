@@ -30,11 +30,15 @@ export default function JobDesignTwo({
   return !data ? (
     <p>Job details are not available.</p>
   ) : (
-    <div className="md:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
+    <div className="xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
         {status && (
-          <StatusButton status={status} onStatusChange={onStatusChange} />
+          <StatusButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+          />
         )}
         {status === JobStatus.Draft && (
           <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
@@ -80,7 +84,7 @@ export default function JobDesignTwo({
       </div>
 
       {/* APPLICANTS AND CALENDAR */}
-      <div className="lg:grid lg:grid-cols-10 gap-4">
+      <div className="lg:grid lg:grid-cols-10 gap-28">
         {/* Applicants ProfilePhotosSection */}
         <ProfilePhotosSection
           label="Applicants"

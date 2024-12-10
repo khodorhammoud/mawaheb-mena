@@ -28,7 +28,11 @@ export default function JobDesignThree({
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
         {status && (
-          <JobStateButton status={status} onStatusChange={onStatusChange} />
+          <JobStateButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+          />
         )}
 
         {/* Show Edit button only when the job status is "draft" */}

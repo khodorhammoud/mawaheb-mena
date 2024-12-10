@@ -123,9 +123,13 @@ export async function action({ request }: ActionFunctionArgs) {
     if (target == "post-job") {
       // TODO: Add validation for the form fields
       const jobData: Job = {
+        id: Date.now(),
+        createdAt: new Date(),
         employerId: employer.id,
         title: formData.get("jobTitle") as string,
         description: formData.get("jobDescription") as string,
+        jobCategoryId:
+          parseInt(formData.get("jobCategoryId") as string, 10) || 0,
         workingHoursPerWeek:
           parseInt(formData.get("workingHours") as string, 10) || 0,
         locationPreference: formData.get("location") as string,
@@ -137,6 +141,7 @@ export async function action({ request }: ActionFunctionArgs) {
         budget: parseInt(formData.get("budget") as string, 10) || 0,
         experienceLevel: formData.get("experienceLevel") as string,
         status: JobStatus.Active,
+        fulfilledAt: null, // Assuming this can be null initially
       };
 
       const jobStatus = await createJobPosting(jobData);

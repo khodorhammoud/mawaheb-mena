@@ -316,3 +316,18 @@ export async function getFreelancerDetails(freelancerIds: number[]) {
 
   return freelancers; // Return the raw result directly
 }
+
+export async function updateJobStatus(
+  jobId: number,
+  newStatus: string
+): Promise<void> {
+  try {
+    await db
+      .update(jobsTable)
+      .set({ status: newStatus })
+      .where(eq(jobsTable.id, jobId));
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    throw new Error("Failed to update job status.");
+  }
+}

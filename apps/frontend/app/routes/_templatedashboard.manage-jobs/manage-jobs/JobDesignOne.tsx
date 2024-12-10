@@ -98,7 +98,11 @@ export default function JobDesignOne({
 
       <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
         {status && (
-          <StatusButton status={status} onStatusChange={onStatusChange} />
+          <StatusButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+          />
         )}
 
         {status === JobStatus.Draft && (
