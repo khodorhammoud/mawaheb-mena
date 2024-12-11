@@ -1,5 +1,6 @@
 import { Job as JobType } from "~/types/Job";
 import { Button } from "~/components/ui/button";
+import SkillBadge from "~/common/skill/SkillBadge";
 
 interface JobProps {
   job: JobType;
@@ -12,25 +13,7 @@ export default function Job(props: JobProps) {
     typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
 
   return (
-    <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
-      {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center mb-6">
-        {/* <JobStateButton
-          status={jobStatus}
-          onStatusChange={handleStatusChange}
-        /> */}
-
-        {/* Show Edit button only when the job status is "draft" */}
-        {/* {jobStatus === "draft" && ( */}
-        <button
-          className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-          // This button has no functionality
-        >
-          Edit
-        </button>
-        {/* )} */}
-      </div>
-
+    <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10 w-auto">
       {/* JOB INFORMATION */}
       <div>
         <h3 className="xl:text-2xl lg:text-xl text-base leading-tight mb-4">
@@ -54,8 +37,30 @@ export default function Job(props: JobProps) {
           </div>
         </div>
       </div>
+      <div className="">{job.description}</div>
+      <div className="mt-4">
+        {job.requiredSkills &&
+        Array.isArray(job.requiredSkills) &&
+        job.requiredSkills.length > 0 ? (
+          job.requiredSkills.map((skill, index) => (
+            <SkillBadge
+              key={index}
+              name={skill.name}
+              isStarred={skill.isStarred}
+            />
+          ))
+        ) : (
+          <p>No skills provided.</p>
+        )}
+      </div>
+      <Button
+        onClick={() => onSelect(job)}
+        className="text-primaryColor mt-4 rounded-xl xl:px-4 md:px-2 md:py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm xl:text-base w-fit border border-gray-200 hover:text-white"
+      >
+        Intrested
+      </Button>
 
-      <Button onClick={() => onSelect(job)}>View Details</Button>
+      {/* <Button onClick={() => onSelect(job)}>View Details</Button> */}
     </div>
   );
 }

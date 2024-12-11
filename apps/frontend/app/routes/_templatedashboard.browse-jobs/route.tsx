@@ -80,7 +80,7 @@ export default function Layout() {
           </SheetHeader>
         </SheetContent>
       </Sheet>
-      <Tabs defaultValue="account" className="w-[400px]">
+      <Tabs defaultValue="account" className="min-w-full">
         <TabsList>
           <TabsTrigger value="account">Recommended Jobs</TabsTrigger>
           <TabsTrigger value="password">All Jobs</TabsTrigger>

@@ -23,7 +23,7 @@ export default function AllJobs({ onJobSelect }: RecommendedJobsProps) {
   }, []);
 
   return (
-    <div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:gap-x-12 md:gap-x-8 gap-4 mt-4">
       {allJobs.map((job) => (
         <JobCard onSelect={onJobSelect} key={job.id} job={job} />
       ))}

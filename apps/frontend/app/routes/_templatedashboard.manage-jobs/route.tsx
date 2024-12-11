@@ -1,11 +1,13 @@
 import { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { JobCardData } from "~/types/Job";
-import { fetchJobsWithApplications } from "~/servers/job.server";
+import {
+  fetchJobsWithApplications,
+  updateJobStatus,
+} from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import { getProfileInfo } from "~/servers/user.server";
 import JobManagement from "./jobs-displaying";
-import { updateJobStatus } from "~/servers/job.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();

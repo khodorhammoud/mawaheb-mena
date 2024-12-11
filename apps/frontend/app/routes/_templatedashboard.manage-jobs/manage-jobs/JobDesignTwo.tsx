@@ -1,7 +1,7 @@
 import { JobCardData } from "../../../types/Job";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
+import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 import { Link } from "@remix-run/react/dist/components";
 import { parseDate } from "~/lib/utils";
@@ -45,7 +45,7 @@ export default function JobDesignTwo({
           }`}
         >
           {status && (
-            <StatusButton
+            <JobStateButton
               status={status}
               onStatusChange={onStatusChange}
               jobId={job.id}
@@ -157,7 +157,7 @@ export default function JobDesignTwo({
         }`}
       >
         {status && (
-          <StatusButton
+          <JobStateButton
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}

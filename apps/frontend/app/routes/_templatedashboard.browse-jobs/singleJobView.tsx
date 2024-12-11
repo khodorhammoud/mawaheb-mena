@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import { Button } from "~/components/ui/button";
+import { json } from "drizzle-orm/mysql-core";
 
 interface JobCardProps {
   job: Job;

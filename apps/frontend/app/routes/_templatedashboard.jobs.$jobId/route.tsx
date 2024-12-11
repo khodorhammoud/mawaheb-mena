@@ -19,8 +19,7 @@ import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesig
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
 import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
-import { JobApplicationStatus } from "~/types/enums";
-import { JobStatus } from "~/types/enums";
+import { JobApplicationStatus, JobStatus } from "~/types/enums";
 
 export type LoaderData = {
   jobData: JobCardData;

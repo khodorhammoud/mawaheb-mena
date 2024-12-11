@@ -2,7 +2,7 @@ import { JobCardData } from "../../../types/Job";
 import { parseDate } from "~/lib/utils";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
+import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 import { Link } from "@remix-run/react";
 import { JobStatus } from "~/types/enums";
@@ -138,7 +138,7 @@ export default function JobDesignOne({
 
       <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
         {status && (
-          <StatusButton
+          <JobStateButton
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
