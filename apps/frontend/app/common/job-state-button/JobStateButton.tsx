@@ -5,7 +5,7 @@ import { JobStatus } from "~/types/enums";
 
 interface StatusButtonProps {
   status: JobStatus;
-  jobId: number; // Pass jobId as a prop
+  jobId: number;
   onStatusChange?: (newStatus: JobStatus) => void;
 }
 
@@ -16,7 +16,7 @@ export default function JobStateButton({
 }: StatusButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const fetcher = useFetcher(); // Use Remix fetcher for server-side communication
+  const fetcher = useFetcher();
 
   const statusStyles: Record<JobStatus, string> = {
     active: "bg-green-800 text-white",
@@ -35,7 +35,7 @@ export default function JobStateButton({
       onStatusChange(newStatus);
     }
 
-    // Use fetcher to call action
+    // Use fetcher to do action
     fetcher.submit(
       { jobId: jobId.toString(), status: newStatus },
       { method: "post", action: "/manage-jobs" }
@@ -62,9 +62,10 @@ export default function JobStateButton({
 
   return (
     <div className="relative inline-block" ref={dropdownRef}>
+      {/* THE BUTTON */}
       <Button
         onClick={toggleDropdown}
-        className={`px-2 py-1 rounded lg:text-base text-sm flex items-center ${statusStyles[status]}`}
+        className={`lg:px-3 px-1 lg:py-2 py-1 rounded lg:text-base text-sm flex items-center ${statusStyles[status]} hover:backdrop-brightness-50 transition-all`}
       >
         {status.charAt(0).toUpperCase() + status.slice(1)}
         <svg className="ml-2 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -76,15 +77,16 @@ export default function JobStateButton({
         </svg>
       </Button>
 
+      {/* BUTTON DROPDOWN */}
       {isOpen && (
-        <div className="absolute mt-2 w-32 bg-white border rounded shadow-lg z-10">
+        <div className="absolute mt-2 bg-white border rounded shadow-lg z-10">
           <ul>
             {(Object.values(JobStatus) as JobStatus[]).map((option) => (
               <Button
                 key={option}
                 type="button"
                 onClick={() => handleStatusChange(option)}
-                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
+                className={`flex items-center justify-center px-4 py-2 cursor-pointer hover:bg-gray-100 ${
                   option === status ? "font-semibold text-primaryColor" : ""
                 }`}
               >

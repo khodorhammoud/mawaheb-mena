@@ -37,10 +37,7 @@ export default function JobDesignThree({
 
         {/* Show Edit button only when the job status is "draft" */}
         {status === JobStatus.Draft && (
-          <button
-            className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-            // This button has no functionality
-          >
+          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:brightness-90">
             Edit
           </button>
         )}
@@ -72,11 +69,23 @@ export default function JobDesignThree({
 
       {/* APPLICANTS SECTION */}
       {/* Applicants ProfilePhotosSection */}
-      <ProfilePhotosSection
-        label="Applicants"
-        images={applicantsPhotos}
-        profiles={data.applications}
-      />
+      <div
+        className={`${status === JobStatus.Draft ? "hidden" : "flex lg:gap-8 gap-4"}`}
+      >
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={data.applications}
+        />
+
+        <div className={`${status === JobStatus.Active ? "hidden" : ""}`}>
+          <ProfilePhotosSection
+            label="Hired"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        </div>
+      </div>
     </div>
   );
 }

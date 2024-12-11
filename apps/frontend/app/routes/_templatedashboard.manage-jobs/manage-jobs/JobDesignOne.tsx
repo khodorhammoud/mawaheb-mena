@@ -30,27 +30,43 @@ export default function JobDesignOne({
   return !data ? (
     <p>Job details are not available.</p>
   ) : (
-    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
-      <div className="xl:w-[42%] w-[30%] mr-2">
-        <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
-          <Link to={`/jobs/${job.id}`}>{job.title}</Link>
-        </h3>
+    <div
+      className={`${
+        status === JobStatus.Draft
+          ? "md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10"
+          : "md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10"
+      }`}
+    >
+      <div
+        className={`${
+          status === JobStatus.Draft
+            ? "flex justify-between gap-10"
+            : "xl:w-[42%] w-[30%] mr-2"
+        }`}
+      >
+        <div className="">
+          <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+            <Link to={`/jobs/${job.id}`}>{job.title}</Link>
+          </h3>
 
-        <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
-          Fixed price - Posted {formattedDate?.toDateString() || "N/A"}
-        </p>
-        <div className="flex xl:gap-10 lg:gap-8 gap-6">
-          <div>
-            <p className="xl:text-xl lg:text-lg text-base mt-4">
-              ${job.budget}
-            </p>
-            <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
-          </div>
-          <div>
-            <p className="xl:text-xl lg:text-lg text-base mt-4">
-              {job.experienceLevel}
-            </p>
-            <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
+          <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
+            Fixed price - Posted {formattedDate?.toDateString() || "N/A"}
+          </p>
+          <div className="flex xl:gap-10 lg:gap-8 gap-6">
+            <div>
+              <p className="xl:text-xl lg:text-lg text-base mt-4">
+                ${job.budget}
+              </p>
+              <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
+            </div>
+            <div>
+              <p className="xl:text-xl lg:text-lg text-base mt-4">
+                {job.experienceLevel}
+              </p>
+              <p className="text-gray-400 xl:text-sm text-xs">
+                Experience level
+              </p>
+            </div>
           </div>
         </div>
         <p className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm">
@@ -73,23 +89,47 @@ export default function JobDesignOne({
         </div>
       </div>
 
-      <div className="flex flex-col gap-8 w-[18%] text-left">
+      <div
+        className={`${
+          status === JobStatus.Draft
+            ? "hidden"
+            : "flex flex-col gap-8 w-[18%] text-left"
+        }`}
+      >
         {/* Applicants ProfilePhotosSection */}
-        <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
+        <div>
+          <ProfilePhotosSection
+            label="Applicants"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        </div>
 
         {/* Interviewed ProfilePhotosSection */}
-        <ProfilePhotosSection
-          label="Interviewed"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
+        <div>
+          <ProfilePhotosSection
+            label="Interviewed"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        </div>
+
+        <div className={`${status === JobStatus.Paused ? "" : "hidden"}`}>
+          <ProfilePhotosSection
+            label="Hired"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        </div>
       </div>
 
-      <div className="lg:w-[30%] lg:-mr-10">
+      <div
+        className={`${
+          status === JobStatus.Draft || status === JobStatus.Closed
+            ? "hidden"
+            : "lg:w-[30%] lg:-mr-10"
+        }`}
+      >
         <p className="font-semibold mb-4 xl:text-base text-sm">
           Pending Interviews: 3
         </p>
@@ -106,7 +146,7 @@ export default function JobDesignOne({
         )}
 
         {status === JobStatus.Draft && (
-          <button className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2">
+          <button className="bg-blue-500 text-white px-3 py-2 lg:text-base text-sm rounded lg:mt-0 mt-2 hover:bg-blue-600">
             Edit
           </button>
         )}
