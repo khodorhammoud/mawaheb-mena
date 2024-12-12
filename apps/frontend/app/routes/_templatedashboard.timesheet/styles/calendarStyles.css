@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+    .flex {
+        flex-direction: column;
+    }
+
+    .flex-1,
+    [class*="flex-"] {
+        width: 100%;
+    }
+}

@@ -17,6 +17,9 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Calendar } from "~/components/ui/calendar";
+import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
+
+import styles from "./styles/calendarStyles.css?url";
 
 interface TimesheetProps {
   allowOverlap?: boolean;
@@ -25,6 +28,10 @@ interface TimesheetProps {
 const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
   const START_HOUR = 10; // Specify the start hour
   const END_HOUR = 18; // Specify the end hour
+  // Update the initial state to use today's date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set time to midnight for consistent comparison
+
 
   /* const days = [
     "Monday",
@@ -36,7 +43,7 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
     "Sunday",
   ];
   const [startDayIndex, setStartDayIndex] = useState(0); */
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
 
   type Entry = {
     id: number;
@@ -117,6 +124,21 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
       };
     }
   );
+  // check if a date has any entries
+  const hasEntriesForDate = (date: Date) => {
+    const dateKey = date.toISOString().split('T')[0];
+    return timesheet[dateKey]?.entries?.length > 0;
+  };
+
+  // determine the modifier styles for each date
+  const getDayClassNames = (date: Date) => {
+    const isToday = date.toDateString() === new Date().toDateString();
+    const hasEntries = hasEntriesForDate(date);
+
+    if (isToday) return "bg-blue-100 hover:bg-blue-150";
+    if (hasEntries) return "bg-gray-100 hover:bg-gray-200";
+    return "";
+  };
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -149,8 +171,8 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
     console.log("dateKey", dateKey);
     const entryIndex = isEdit
       ? (timesheet[dateKey]?.entries.findIndex(
-          (e) => e.id === clickedEntry.id
-        ) ?? null)
+        (e) => e.id === clickedEntry.id
+      ) ?? null)
       : null;
 
     setPopup({
@@ -355,16 +377,8 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col gap-8">
-        <div className="w-[300px]">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            className="rounded-md border"
-          />
-        </div>
-        <div className="flex flex-col gap-4 flex-1">
+      <div className="flex gap-8 h-full">
+        <div className="flex-[2] flex flex-col gap-4">
           {/* <header className="flex justify-between items-center">
           <button onClick={handlePrevDays} className="text-gray-600 text-xl">
             &lt;
@@ -374,6 +388,7 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
             &gt;
           </button>
         </header> */}
+          {/* Timesheet content */}
           <header className="flex justify-between items-center">
             <h1 className="text-xl font-semibold">Timesheet</h1>
           </header>
@@ -442,17 +457,16 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
                           const totalGap =
                             (totalColumns - 1) * gapBetweenEntries;
                           const width = `calc((100% - ${totalGap}px) / ${totalColumns})`;
-                          const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${
-                            gapBetweenEntries * entry.column
-                          }px)`;
+                          const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${gapBetweenEntries * entry.column
+                            }px)`;
                           const truncationLength =
                             totalColumns == 1 ? 20 : totalColumns == 2 ? 10 : 5;
                           const truncatedDescription =
                             entry.description.length > truncationLength
                               ? entry.description.substring(
-                                  0,
-                                  truncationLength
-                                ) + "..."
+                                0,
+                                truncationLength
+                              ) + "..."
                               : entry.description;
                           const isDescriptionTruncated =
                             entry.description.length > truncationLength;
@@ -581,6 +595,24 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
             </DialogContent>
           </Dialog>
         </div>
+        <div className="flex-1">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => date && setSelectedDate(date)}
+            className="shadow-md rounded-lg p-3 transition-all duration-75"
+            modifiers={{
+              today: (date) => date.toDateString() === new Date().toDateString(),
+              hasEntries: hasEntriesForDate,
+              selected: (date) => date.toDateString() === selectedDate.toDateString(),
+            }}
+            modifiersClassNames={{
+              today: "bg-blue-100 hover:bg-blue-150 transition-colors duration-75",
+              hasEntries: "bg-gray-100 hover:bg-gray-200 transition-colors duration-75",
+              selected: "bg-green-100 hover:bg-green-150 transition-colors duration-75",
+            }}
+          />
+        </div>
       </div>
       <Toaster />
     </TooltipProvider>
@@ -588,3 +620,7 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
 };
 
 export default Timesheet;
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: styles },
+];
