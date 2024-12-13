@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CaptionProps, DayPicker, DayPickerProps } from "react-day-picker";
 import { cn } from "~/lib/utils";
@@ -17,6 +17,7 @@ interface CustomCaptionProps {
   locale?: string;
   displayMonth: Date;
   onMonthChange: (date: Date) => void;
+  selected: Date;
 }
 
 function CustomCaption({
@@ -29,19 +30,17 @@ function CustomCaption({
   );
 
   const years = [];
-  for (let y = 1900; y <= 2100; y++) {
+  for (let y = 2024; y <= 2100; y++) {
     years.push(y);
   }
 
   const handleMonthChange = (_month) => {
-    console.log(_month);
     const month = parseInt(_month, 10);
     const year = displayMonth.getFullYear();
     onMonthChange(new Date(year, month));
   };
 
   const handleYearChange = (_year) => {
-    console.log(_year);
     const year = parseInt(_year, 10);
     const month = displayMonth.getMonth();
     onMonthChange(new Date(year, month));
@@ -65,17 +64,6 @@ function CustomCaption({
             ))}
           </SelectContent>
         </Select>
-        {/* <select
-          className="appearance-none bg-transparent text-sm font-medium focus:outline-none hover:cursor-pointer px-4 py-2 pr-8"
-          onChange={handleMonthChange}
-          value={displayMonth.getMonth()}
-        >
-          {months.map((monthName, index) => (
-            <option key={index} value={index}>
-              {monthName}
-            </option>
-          ))}
-        </select> */}
       </div>
       <div className="relative">
         <Select
@@ -93,17 +81,6 @@ function CustomCaption({
             ))}
           </SelectContent>
         </Select>
-        {/* <select
-          className="appearance-none bg-transparent text-sm font-medium focus:outline-none hover:cursor-pointer px-4 py-2 pr-8"
-          onChange={handleYearChange}
-          value={displayMonth.getFullYear()}
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select> */}
       </div>
     </div>
   );
@@ -118,14 +95,15 @@ export function Calendar({
 }: DayPickerProps & {
   className?: string;
   classNames?: object;
+  selected?: Date;
 }) {
-  const [currentMonth, setCurrentMonth] = React.useState(defaultMonth);
+  // const [currentMonth, setCurrentMonth] = useState(defaultMonth);
 
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      month={currentMonth}
-      onMonthChange={setCurrentMonth}
+      month={props.month}
+      onMonthChange={props.onMonthChange}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -164,11 +142,12 @@ export function Calendar({
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
-        Caption: (props: CaptionProps) => (
+        Caption: (_props: CaptionProps) => (
           <CustomCaption
-            displayMonth={props.displayMonth}
+            displayMonth={_props.displayMonth}
             locale="en-US"
-            onMonthChange={setCurrentMonth}
+            onMonthChange={props.onMonthChange}
+            selected={props.selected}
           />
         ),
       }}

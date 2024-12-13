@@ -23,3 +23,14 @@ export type EntryPopup = {
 export interface TimesheetProps {
   allowOverlap?: boolean;
 }
+
+export type TimeSlot = {
+  totalMinutes: number;
+  displayString: string;
+};
+
+export type DisplayedDaysType = {
+  date: Date;
+  dayName: string;
+  formattedDate: string;
+};
