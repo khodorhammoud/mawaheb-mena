@@ -18,7 +18,7 @@ export default function Layout() {
       <Header />
       <div className="flex mt-[12px]">
         <Sidebar />
-        <div className="mt-[91px] p-5">
+        <div className="container mt-[91px] p-5 mr-8">
           <Outlet />
         </div>
       </div>
