@@ -20,52 +20,29 @@ import { Calendar } from "~/components/ui/calendar";
 import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import styles from "./styles/calendarStyles.css?url";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface TimesheetProps {
   allowOverlap?: boolean;
 }
 
 const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
-  const START_HOUR = 10; // Specify the start hour
-  const END_HOUR = 18; // Specify the end hour
-  // Update the initial state to use today's date
+  const START_HOUR = 10;
+  const END_HOUR = 18;
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to midnight for consistent comparison
-
-
-  /* const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const [startDayIndex, setStartDayIndex] = useState(0); */
+  today.setHours(0, 0, 0, 0);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
 
   type Entry = {
     id: number;
-    date: Date; // Add this field
+    date: Date;
     startTime: Date;
     endTime: Date;
     description: string;
     column?: number;
     totalColumns?: number;
   };
-
-  /* const [timesheet, setTimesheet] = useState<{
-    [key: string]: { entries: Entry[] };
-  }>({
-    Monday: { entries: [] },
-    Tuesday: { entries: [] },
-    Wednesday: { entries: [] },
-    Thursday: { entries: [] },
-    Friday: { entries: [] },
-    Saturday: { entries: [] },
-    Sunday: { entries: [] },
-  }); */
 
   const [timesheet, setTimesheet] = useState<{
     [key: string]: { entries: Entry[] };
@@ -126,18 +103,8 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
   );
   // check if a date has any entries
   const hasEntriesForDate = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = date.toISOString().split("T")[0];
     return timesheet[dateKey]?.entries?.length > 0;
-  };
-
-  // determine the modifier styles for each date
-  const getDayClassNames = (date: Date) => {
-    const isToday = date.toDateString() === new Date().toDateString();
-    const hasEntries = hasEntriesForDate(date);
-
-    if (isToday) return "bg-blue-100 hover:bg-blue-150";
-    if (hasEntries) return "bg-gray-100 hover:bg-gray-200";
-    return "";
   };
 
   useEffect(() => {
@@ -149,18 +116,6 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
     }
   }, []);
 
-  /* const handlePrevDays = () => {
-    setStartDayIndex((prevIndex) =>
-      prevIndex === 0 ? days.length - 3 : prevIndex - 1
-    );
-  };
-
-  const handleNextDays = () => {
-    setStartDayIndex((prevIndex) =>
-      prevIndex === days.length - 3 ? 0 : prevIndex + 1
-    );
-  }; */
-
   const handleGridClick = (
     date: Date,
     time,
@@ -171,8 +126,8 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
     console.log("dateKey", dateKey);
     const entryIndex = isEdit
       ? (timesheet[dateKey]?.entries.findIndex(
-        (e) => e.id === clickedEntry.id
-      ) ?? null)
+          (e) => e.id === clickedEntry.id
+        ) ?? null)
       : null;
 
     setPopup({
@@ -377,241 +332,349 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
 
   return (
     <TooltipProvider>
-      <div className="flex gap-8 h-full">
-        <div className="flex-[2] flex flex-col gap-4">
-          {/* <header className="flex justify-between items-center">
-          <button onClick={handlePrevDays} className="text-gray-600 text-xl">
-            &lt;
-          </button>
-          <h1 className="text-xl font-semibold">Timesheet</h1>
-          <button onClick={handleNextDays} className="text-gray-600 text-xl">
-            &gt;
-          </button>
-        </header> */}
-          {/* Timesheet content */}
-          <header className="flex justify-between items-center">
-            <h1 className="text-xl font-semibold">Timesheet</h1>
-          </header>
-          <div className="grid grid-cols-4 gap-[8px]" ref={scrollContainerRef}>
-            <div></div>
-            {displayedDays.map((day, index) => (
-              <div key={index} className="text-center">
-                <div className="font-semibold">{day.dayName}</div>
-                <div className="text-sm text-gray-500">{day.formattedDate}</div>
-              </div>
-            ))}
-            {/* <div
-          ref={scrollContainerRef}
-          className={`grid grid-cols-4 gap-[8px] overflow-y-auto max-h-[600px] border border-gray-300`}
-        >
-          <div></div>
-          {displayedDays.map((day, index) => (
-            <div key={index} className="text-center font-semibold">
-              {day}
-            </div>
-          ))} */}
-            {timeSlots.map((time, timeIndex) => (
-              <React.Fragment key={timeIndex}>
-                <div className="text-right pr-2">{time.displayString}</div>
-                {displayedDays.map((day, dayIndex) => {
-                  const entries =
-                    timesheet[day.date.toISOString().split("T")[0]]?.entries ||
-                    [];
-                  const processedEntries = processEntriesForDay(entries);
-                  const entriesToRender = processedEntries.filter((entry) => {
-                    const calcResult = calculateContinuousFill(
-                      entry.startTime,
-                      entry.endTime,
-                      timeSlots
-                    );
-                    if (!calcResult) return false;
-                    return calcResult.firstSlotIndex === timeIndex;
-                  });
+      <header className="flex justify-between items-center p-4">
+        <h1 className="text-xl font-semibold">Timesheet</h1>
+      </header>
 
-                  if (entriesToRender.length > 0) {
-                    return (
-                      <div
-                        key={`${dayIndex}-${timeIndex}`}
-                        className="h-12 border border-gray-200 relative"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleGridClick(day.date, time)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            handleGridClick(day.date, time);
-                          }
-                        }}
-                      >
-                        {entriesToRender.map((entry) => {
-                          const {
-                            topPercentage,
-                            heightPercentage,
-                            heightPixelsToBeAdded,
-                          } = calculateContinuousFill(
+      <div className="flex  gap-4 mb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setDate(newDate.getDate() - 1);
+            setSelectedDate(newDate);
+          }}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        <span className="text-lg">
+          {(() => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(selectedDate);
+            selected.setHours(0, 0, 0, 0);
+
+            const diffDays = Math.round(
+              (selected.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            switch (diffDays) {
+              case -1:
+                return "Yesterday";
+              case 0:
+                return "Today";
+              case 1:
+                return "Tomorrow";
+              default:
+                return selected.toLocaleDateString("en-GB");
+            }
+          })()}
+        </span>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setDate(newDate.getDate() + 1);
+            setSelectedDate(newDate);
+          }}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="my-2">
+        <Button
+          onClick={() => {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(now.setDate(diff));
+            monday.setHours(0, 0, 0, 0);
+            setSelectedDate(monday);
+          }}
+        >
+          This Week
+        </Button>
+        <Button
+          onClick={() => {
+            const now = new Date();
+            const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            setSelectedDate(firstOfMonth);
+          }}
+          className="mx-2"
+        >
+          This Month
+        </Button>
+        <Button
+          onClick={() => {
+            const now = new Date();
+            const firstOfYear = new Date(now.getFullYear(), 0, 1);
+            setSelectedDate(firstOfYear);
+          }}
+        >
+          This Year
+        </Button>
+      </div>
+
+      <div className="">
+        <div className="flex gap-8 h-full">
+          <div className="flex-[2] flex flex-col gap-4">
+            {/* Timesheet content */}
+            <ScrollArea className="h-[500px] px-2">
+              <div
+                className="grid grid-cols-4 gap-[8px]"
+                ref={scrollContainerRef}
+              >
+                {/* Sticky Day Names */}
+                <div className="col-span-4 bg-white sticky top-0 z-10">
+                  <div className="grid grid-cols-4 gap-[8px]">
+                    <div></div>
+                    {displayedDays.map((day, index) => (
+                      <div key={index} className="text-center bg-white ">
+                        <div className="font-semibold">{day.dayName}</div>
+                        <div className="text-sm text-gray-500">
+                          {day.formattedDate}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Time slots and grid */}
+                {timeSlots.map((time, timeIndex) => (
+                  <React.Fragment key={timeIndex}>
+                    <div className="text-right pr-2">{time.displayString}</div>
+                    {displayedDays.map((day, dayIndex) => {
+                      const entries =
+                        timesheet[day.date.toISOString().split("T")[0]]
+                          ?.entries || [];
+                      const processedEntries = processEntriesForDay(entries);
+                      const entriesToRender = processedEntries.filter(
+                        (entry) => {
+                          const calcResult = calculateContinuousFill(
                             entry.startTime,
                             entry.endTime,
                             timeSlots
                           );
-                          const totalColumns = entry.totalColumns!;
-                          const gapBetweenEntries = 2;
-                          const totalGap =
-                            (totalColumns - 1) * gapBetweenEntries;
-                          const width = `calc((100% - ${totalGap}px) / ${totalColumns})`;
-                          const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${gapBetweenEntries * entry.column
-                            }px)`;
-                          const truncationLength =
-                            totalColumns == 1 ? 20 : totalColumns == 2 ? 10 : 5;
-                          const truncatedDescription =
-                            entry.description.length > truncationLength
-                              ? entry.description.substring(
-                                0,
-                                truncationLength
-                              ) + "..."
-                              : entry.description;
-                          const isDescriptionTruncated =
-                            entry.description.length > truncationLength;
+                          if (!calcResult) return false;
+                          return calcResult.firstSlotIndex === timeIndex;
+                        }
+                      );
 
-                          return (
-                            <Tooltip key={entry.id}>
-                              <TooltipTrigger asChild className="w-full h-full">
-                                <div
-                                  className="absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center"
-                                  style={{
-                                    top: `${topPercentage}%`,
-                                    height: `calc(${heightPercentage}% + ${heightPixelsToBeAdded}px)`,
-                                    width: width,
-                                    left: left,
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGridClick(day.date, time, entry);
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                      e.stopPropagation();
-                                      handleGridClick(day.date, time, entry);
-                                    }
-                                  }}
-                                  role="button"
-                                  tabIndex={0}
-                                >
-                                  <p className="text-center">
-                                    {truncatedDescription}
-                                  </p>
-                                </div>
-                              </TooltipTrigger>
-                              {isDescriptionTruncated && (
-                                <TooltipContent className="max-w-[200px] bg-white">
-                                  <p>{entry.description}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          );
-                        })}
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <div
-                        key={`${dayIndex}-${timeIndex}`}
-                        className="h-12 border border-gray-200 relative"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleGridClick(day.date, time)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            handleGridClick(day.date, time);
-                          }
-                        }}
-                      ></div>
-                    );
-                  }
-                })}
-              </React.Fragment>
-            ))}
-          </div>
+                      if (entriesToRender.length > 0) {
+                        return (
+                          <div
+                            key={`${dayIndex}-${timeIndex}`}
+                            className="h-12 border border-gray-200 relative"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleGridClick(day.date, time)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                handleGridClick(day.date, time);
+                              }
+                            }}
+                          >
+                            {entriesToRender.map((entry) => {
+                              const {
+                                topPercentage,
+                                heightPercentage,
+                                heightPixelsToBeAdded,
+                              } = calculateContinuousFill(
+                                entry.startTime,
+                                entry.endTime,
+                                timeSlots
+                              );
+                              const totalColumns = entry.totalColumns!;
+                              const gapBetweenEntries = 2;
+                              const totalGap =
+                                (totalColumns - 1) * gapBetweenEntries;
+                              const width = `calc((100% - ${totalGap}px) / ${totalColumns})`;
+                              const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${
+                                gapBetweenEntries * entry.column
+                              }px)`;
+                              const truncationLength =
+                                totalColumns == 1
+                                  ? 20
+                                  : totalColumns == 2
+                                    ? 10
+                                    : 5;
+                              const truncatedDescription =
+                                entry.description.length > truncationLength
+                                  ? entry.description.substring(
+                                      0,
+                                      truncationLength
+                                    ) + "..."
+                                  : entry.description;
+                              const isDescriptionTruncated =
+                                entry.description.length > truncationLength;
 
-          <Dialog
-            open={popup.isOpen}
-            onOpenChange={(open) => !open && handleClosePopup()}
-          >
-            <DialogContent className="bg-white">
-              <DialogHeader>
-                <DialogTitle>
-                  {popup.isEdit ? "Edit Entry" : "Add Entry"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="flex flex-col gap-2 mt-4">
-                <label htmlFor="startTime" className="block">
-                  <span className="text-gray-700">Start Time:</span>
-                  <TimePicker
-                    date={formData.startTime}
-                    setDate={(date) =>
-                      setFormData({
-                        ...formData,
-                        startTime: date || new Date(),
-                      })
-                    }
-                  />
-                </label>
-                <label htmlFor="endTime" className="block">
-                  <span className="text-gray-700">End Time:</span>
-                  <TimePicker
-                    date={formData.endTime}
-                    setDate={(date) =>
-                      setFormData({
-                        ...formData,
-                        endTime: date || new Date(),
-                      })
-                    }
-                  />
-                </label>
-                <label htmlFor="description" className="block">
-                  <span className="text-gray-700">Description:</span>
-                  <input
-                    type="text"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        description: e.target.value,
-                      })
-                    }
-                    className="block w-full border border-gray-300 p-2 rounded-md mt-1"
-                  />
-                </label>
+                              return (
+                                <Tooltip key={entry.id}>
+                                  <TooltipTrigger
+                                    asChild
+                                    className="w-full h-full"
+                                  >
+                                    <div
+                                      className="absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center"
+                                      style={{
+                                        top: `${topPercentage}%`,
+                                        height: `calc(${heightPercentage}% + ${heightPixelsToBeAdded}px)`,
+                                        width: width,
+                                        left: left,
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGridClick(day.date, time, entry);
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (
+                                          e.key === "Enter" ||
+                                          e.key === " "
+                                        ) {
+                                          e.stopPropagation();
+                                          handleGridClick(
+                                            day.date,
+                                            time,
+                                            entry
+                                          );
+                                        }
+                                      }}
+                                      role="button"
+                                      tabIndex={0}
+                                    >
+                                      <p className="text-center">
+                                        {truncatedDescription}
+                                      </p>
+                                    </div>
+                                  </TooltipTrigger>
+                                  {isDescriptionTruncated && (
+                                    <TooltipContent className="max-w-[200px] bg-white">
+                                      <p>{entry.description}</p>
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div
+                            key={`${dayIndex}-${timeIndex}`}
+                            className="h-12 border border-gray-200 relative"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleGridClick(day.date, time)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                handleGridClick(day.date, time);
+                              }
+                            }}
+                          ></div>
+                        );
+                      }
+                    })}
+                  </React.Fragment>
+                ))}
               </div>
-              <DialogFooter className="mt-4">
-                {popup.isEdit && (
-                  <Button variant="destructive" onClick={handleDelete}>
-                    Delete
+            </ScrollArea>
+
+            <Dialog
+              open={popup.isOpen}
+              onOpenChange={(open) => !open && handleClosePopup()}
+            >
+              <DialogContent className="bg-white">
+                <DialogHeader>
+                  <DialogTitle>
+                    {popup.isEdit ? "Edit Entry" : "Add Entry"}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-2 mt-4">
+                  <label htmlFor="startTime" className="block">
+                    <span className="text-gray-700">Start Time:</span>
+                    <TimePicker
+                      date={formData.startTime}
+                      setDate={(date) =>
+                        setFormData({
+                          ...formData,
+                          startTime: date || new Date(),
+                        })
+                      }
+                    />
+                  </label>
+                  <label htmlFor="endTime" className="block">
+                    <span className="text-gray-700">End Time:</span>
+                    <TimePicker
+                      date={formData.endTime}
+                      setDate={(date) =>
+                        setFormData({
+                          ...formData,
+                          endTime: date || new Date(),
+                        })
+                      }
+                    />
+                  </label>
+                  <label htmlFor="description" className="block">
+                    <span className="text-gray-700">Description:</span>
+                    <input
+                      type="text"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      className="block w-full border border-gray-300 p-2 rounded-md mt-1"
+                    />
+                  </label>
+                </div>
+                <DialogFooter className="mt-4">
+                  {popup.isEdit && (
+                    <Button variant="destructive" onClick={handleDelete}>
+                      Delete
+                    </Button>
+                  )}
+                  <Button variant="secondary" onClick={handleClosePopup}>
+                    Cancel
                   </Button>
-                )}
-                <Button variant="secondary" onClick={handleClosePopup}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave}>Save</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className="flex-1">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            className="shadow-md rounded-lg p-3 transition-all duration-75"
-            modifiers={{
-              today: (date) => date.toDateString() === new Date().toDateString(),
-              hasEntries: hasEntriesForDate,
-              selected: (date) => date.toDateString() === selectedDate.toDateString(),
-            }}
-            modifiersClassNames={{
-              today: "bg-blue-100 hover:bg-blue-150 transition-colors duration-75",
-              hasEntries: "bg-gray-100 hover:bg-gray-200 transition-colors duration-75",
-              selected: "bg-green-100 hover:bg-green-150 transition-colors duration-75",
-            }}
-          />
+                  <Button onClick={handleSave}>Save</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="flex-1">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              className="shadow-md rounded-lg p-3 transition-all duration-75 float-right"
+              classNames={{
+                day_selected:
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+              }}
+              modifiers={{
+                today: (date) =>
+                  date.toDateString() === new Date().toDateString(),
+                hasEntries: hasEntriesForDate,
+                selected: (date) =>
+                  date.toDateString() === selectedDate.toDateString(),
+              }}
+              modifiersClassNames={{
+                today:
+                  "bg-blue-100 hover:bg-blue-150 transition-colors duration-75",
+                hasEntries:
+                  "bg-gray-100 hover:bg-gray-200 transition-colors duration-75",
+                selected:
+                  "bg-green-100 hover:bg-green-150 transition-colors duration-75",
+              }}
+            />
+          </div>
         </div>
       </div>
       <Toaster />
@@ -621,6 +684,4 @@ const Timesheet: React.FC<TimesheetProps> = ({ allowOverlap = true }) => {
 
 export default Timesheet;
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
-];
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
