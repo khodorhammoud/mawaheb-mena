@@ -9,6 +9,7 @@ import {
   timestamp,
   jsonb,
   json,
+  date,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -21,6 +22,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  timesheetStatusEnum,
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
@@ -325,12 +327,26 @@ export const jobsTable = pgTable("jobs", {
   fulfilledAt: timestamp("fulfilled_at"),
 });
 
+/**
+ * Define the Skills table schema
+ *
+ * @property id - serial primary key
+ * @property name - text
+ * @property metaData - jsonb
+ */
 export const skillsTable = pgTable("skills", {
   id: serial("id").primaryKey(),
   name: text("name"),
   metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
 });
 
+/**
+ * Define the relation between jobs and skills where each job can have zero to many skills
+ * @property id - serial primary key
+ * @property job_id - integer referencing the jobsTable id
+ * @property skill_id - integer referencing the skillsTable id
+ * @property isStarred - boolean
+ */
 export const jobSkillsTable = pgTable("job_skills", {
   id: serial("id").primaryKey(),
   jobId: integer("job_id").references(() => jobsTable.id),
@@ -353,5 +369,27 @@ export const jobApplicationsTable = pgTable("job_applications", {
   freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
   // status: jobApplicationStatusEnum("status"),
   status: varchar("status", { length: 50 }),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+/**
+ * Define the Timesheets table schema
+ *
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property job_id - integer referencing the jobsTable id
+ * @property start_time - timestamp
+ * @property end_time - timestamp
+ * @property description - text
+ * @property status - timesheetStatusEnum indicates the status of the timesheet entry
+ * @property created_at - timestamp
+ */
+export const timesheetEntriesTable = pgTable("timesheet_entries", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  date: date("date"),
+  hoursWorked: integer("hours_worked"),
+  description: text("description"),
+  status: timesheetStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
