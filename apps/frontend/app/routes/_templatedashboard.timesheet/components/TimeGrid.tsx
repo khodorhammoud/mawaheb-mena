@@ -8,6 +8,9 @@ import type {
   TimeSlot,
 } from "../types/timesheet";
 import { useTimeSlots } from "../hooks/useTimeSlots";
+import { DayTotal } from "./DayTotal";
+import { calculateDayTotal } from "../utils";
+
 
 interface TimeGridProps {
   timesheet: TimesheetData;
@@ -31,31 +34,60 @@ export function TimeGrid({
           <div className="col-span-4 bg-white sticky top-0 z-10">
             <div className="grid grid-cols-4 gap-[8px]">
               <div></div>
-              {displayedDays.map((day, index) => (
-                <div key={index} className="text-center bg-white">
+              {displayedDays.map((day, index) => {
+
+                return (<div key={index} className="text-center bg-white"
+                // className="flex flex-col min-h-full border-l border-gray-200"
+                >
                   <div className="font-semibold">{day.dayName}</div>
                   <div className="text-sm text-gray-500">
                     {day.formattedDate}
                   </div>
-                </div>
-              ))}
+                </div>)
+              })}
             </div>
           </div>
 
           {/* Time slots */}
           {timeSlots.map((time, timeIndex) => (
-            <TimeGridRow
-              key={timeIndex}
-              time={time}
-              timeIndex={timeIndex}
-              displayedDays={displayedDays}
-              timesheet={timesheet}
-              timeSlots={timeSlots}
-              onEntryClick={onEntryClick}
-            />
+            <>
+              <TimeGridRow
+                key={timeIndex}
+                time={time}
+                timeIndex={timeIndex}
+                displayedDays={displayedDays}
+                timesheet={timesheet}
+                timeSlots={timeSlots}
+                onEntryClick={onEntryClick}
+              />
+              {/* <DayTotal total={calculateDayTotal(dayEntries)} /> */}
+            </>
+
           ))}
+
         </div>
       </ScrollArea>
+      <div className="grid grid-cols-4 gap-[8px]">
+        <div className="mt-auto">
+
+        </div>
+        {displayedDays.map((day) => {
+          const dateKey = day.date.toISOString().split('T')[0];
+          const dayEntries = timesheet[dateKey]?.entries || [];
+
+          return (<div key={dateKey} className="text-center bg-white"
+          // className="flex flex-col min-h-full border-l border-gray-200"
+          >
+            <div className="mt-auto">
+              <DayTotal
+                total={calculateDayTotal(dayEntries)}
+                className="bg-gray-50"
+              />
+            </div>
+          </div>)
+        })}
+      </div>
+
     </div>
   );
 }

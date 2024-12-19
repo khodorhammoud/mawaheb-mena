@@ -241,3 +241,30 @@ export async function createJobApplication(
   }
   return jobApplication as unknown as JobApplication;
 }
+
+/**
+ * get a job application by freelancer ID
+ *
+ * @param freelancerId - the ID of the freelancer
+ * @param jobStatus - the status of the job
+ * @returns the job application or null if it doesn't exist
+ */
+export async function getJobApplicationsByFreelancerId(
+  freelancerId: number,
+  jobStatus?: JobStatus[]
+): Promise<JobApplication[]> {
+  if (!jobStatus) {
+    jobStatus = [JobStatus.Active];
+  }
+  const jobApplications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(
+      and(
+        eq(jobApplicationsTable.freelancerId, freelancerId),
+        inArray(jobApplicationsTable.status, jobStatus)
+      )
+    );
+  return jobApplications as unknown as JobApplication[];
+}
+

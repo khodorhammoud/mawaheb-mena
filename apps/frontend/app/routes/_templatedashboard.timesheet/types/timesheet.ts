@@ -1,3 +1,5 @@
+import { Job } from "~/types/Job";
+
 export type Entry = {
   id: number;
   date: Date;
@@ -22,6 +24,7 @@ export type EntryPopup = {
 
 export interface TimesheetProps {
   allowOverlap?: boolean;
+  job?: Job;
 }
 
 export type TimeSlot = {
@@ -34,3 +37,8 @@ export type DisplayedDaysType = {
   dayName: string;
   formattedDate: string;
 };
+
+export interface DayTotalProps {
+  total: number;
+  className?: string;
+}

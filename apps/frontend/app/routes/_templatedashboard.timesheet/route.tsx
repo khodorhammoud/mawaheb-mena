@@ -1,65 +1,50 @@
-import { useState } from "react";
-import { useTimesheet } from "./hooks/useTimesheet";
-import { TimeEntryDialog } from "./components/TimeEntryDialog";
-import { TimeGrid } from "./components/TimeGrid";
-import { TimeHeader } from "./components/TimeHeader";
-import { TimesheetCalendar } from "./components/TimesheetCalendar";
 import type { TimesheetProps } from "./types/timesheet";
-import { Toaster } from "~/components/ui/toaster";
-import { TooltipProvider } from "~/components/ui/tooltip";
-import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
+import type { LoaderFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
 
-import styles from "./styles/calendarStyles.css?url";
+import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
+import { getJobApplicationsByFreelancerId, getJobApplicationByJobIdAndFreelancerId } from "~/servers/job.server";
+import { useLoaderData } from "@remix-run/react";
+import TimeSheetPage from "./components/TimeSheetPage";
+import JobsPage from "./components/JobsPage";
+import { Job } from "~/types/Job";
+import { useState } from "react";
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  // user must be a published freelancer
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-const Timesheet: React.FC<TimesheetProps> = ({
+  // get current freelancer job applications
+  const jobApplications = await getJobApplicationsByFreelancerId(userId);
+
+  const jobs = await Promise.all(jobApplications.map(async (jobApplication) => {
+    const job = await getJobApplicationByJobIdAndFreelancerId(jobApplication.jobId, userId);
+    return job;
+  }));
+
+  return Response.json({ jobs });
+  const { jobId } = params; // Extract the jobId
+
+  if (!jobId) {
+    console.log("Job ID is required");
+    return Response.json({ error: "Job ID is required" }, { status: 400 });
+  }
+}
+
+const Page: React.FC<TimesheetProps> = ({
   allowOverlap = true,
 }: TimesheetProps) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
-  const {
-    timesheet,
-    popup,
-    handleSave,
-    handleDelete,
-    handleGridClick,
-    handleClosePopup,
-    formData,
-    setFormData,
-  } = useTimesheet(allowOverlap);
+  const { jobs } = useLoaderData<typeof loader>();
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  console.log(jobs);
+
 
   return (
-    <TooltipProvider>
-      <TimeHeader selectedDate={selectedDate} onDateChange={setSelectedDate} />
-
-      <div className="flex gap-4 h-full">
-        <TimeGrid
-          timesheet={timesheet}
-          selectedDate={selectedDate}
-          onEntryClick={handleGridClick}
-        />
-
-        <TimesheetCalendar
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-          timesheet={timesheet}
-        />
-      </div>
-
-      <TimeEntryDialog
-        popup={popup}
-        formData={formData}
-        setFormData={setFormData}
-        onSave={handleSave}
-        onDelete={handleDelete}
-        onClose={handleClosePopup}
-      />
-
-      <Toaster />
-    </TooltipProvider>
+    <div>
+      {selectedJob ? <TimeSheetPage job={selectedJob} /> : <JobsPage onJobSelect={setSelectedJob} />}
+    </div>
   );
 };
 
-export default Timesheet;
-
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
+export default Page;

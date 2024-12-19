@@ -64,3 +64,10 @@ export const handleGridClick = (
     });
   }
 };
+
+export const calculateDayTotal = (entries: Entry[]): number => {
+  return entries.reduce((total, entry) => {
+    const duration = entry.endTime.getTime() - entry.startTime.getTime();
+    return total + (duration / (1000 * 60 * 60)); // Convert milliseconds to hours
+  }, 0);
+};

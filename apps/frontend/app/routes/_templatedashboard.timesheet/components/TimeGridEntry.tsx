@@ -50,6 +50,7 @@ export function TimeGridEntry({
           onEntryClick(day.date, time, null);
         }
       }}
+      key={timeIndex}
     >
       {entriesToRender.map((entry) => (
         <EntryBlock
@@ -89,9 +90,8 @@ function EntryBlock({
   const gapBetweenEntries = 2;
   const totalGap = (totalColumns - 1) * gapBetweenEntries;
   const width = `calc((100% - ${totalGap}px) / ${totalColumns})`;
-  const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${
-    gapBetweenEntries * entry.column
-  }px)`;
+  const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${gapBetweenEntries * entry.column
+    }px)`;
 
   const truncationLength =
     totalColumns === 1 ? 20 : totalColumns === 2 ? 10 : 5;
