@@ -102,9 +102,12 @@ export default function JobDesignOne({
         )}
 
         {status === JobStatus.Draft && (
-          <button className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2">
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2 hover:bg-blue-600 flex items-center justify-center"
+          >
             Edit
-          </button>
+          </Link>
         )}
       </div>
     </div>

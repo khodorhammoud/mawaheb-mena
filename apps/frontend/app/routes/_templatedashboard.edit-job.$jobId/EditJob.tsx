@@ -8,11 +8,28 @@ import {
 } from "@remix-run/react";
 import AppFormField from "~/common/form-fields";
 import { Badge } from "~/components/ui/badge";
-import RequiredSkills from "../required-skills";
+import RequiredSkills from "../_templatedashboard.new-job/required-skills";
 import { JobCategory } from "~/types/User";
 import { ActionData } from "~/types/SuccessError";
 
-export default function NewJob() {
+// this is to call the content of the job from the database :D, and because of that, there is no LoaderData inside New Job file, where there is no content from the Loader of the route i am taking (database)
+interface LoaderData {
+  job: {
+    id;
+    title: string;
+    description: string;
+    locationPreference: string;
+    workingHoursPerWeek: number;
+    requiredSkills: { name: string }[]; // Add requiredSkills
+    projectType: string;
+    budget: number;
+    experienceLevel: string;
+    jobCategoryId: number | null;
+  };
+  jobCategories: JobCategory[];
+}
+
+export default function EditJob() {
   const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
 
@@ -20,11 +37,15 @@ export default function NewJob() {
 
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level"];
 
-  const { jobCategories } = useLoaderData<{ jobCategories: JobCategory[] }>();
+  const { job, jobCategories } = useLoaderData<LoaderData>();
 
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null); // Set as number type
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(
+    job.jobCategoryId || null
+  );
 
-  const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedExperience, setSelectedExperience] = useState(
+    job.experienceLevel || ""
+  ); // this is for the value of the Experience level taken from the db
 
   const handleExperienceClick = (level) => {
     setSelectedExperience(level);
@@ -35,7 +56,7 @@ export default function NewJob() {
   };
 
   const handleSkillsChange = (skills) => {
-    setRequiredSkills(skills); // Update selected skills
+    setRequiredSkills(skills);
   };
 
   return (
@@ -43,14 +64,15 @@ export default function NewJob() {
       <div className="p-6 bg-white">
         <div className="mt-10">
           <h1 className="md:text-2xl text-xl font-semibold mb-8 self-center">
-            Job Posting Form
+            Edit Job Posting
           </h1>
 
           <Form
             method="post"
             className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
-            <input type="hidden" name="target-updated" value="post-job" />
+            {/* Hidden Inputs */}
+            <input type="hidden" name="jobId" value={job.id} />
             <input
               type="hidden"
               name="experienceLevel"
@@ -69,6 +91,7 @@ export default function NewJob() {
               id="jobTitle"
               name="jobTitle"
               label="Job Title"
+              defaultValue={job.title}
               className="w-full"
             />
 
@@ -78,6 +101,7 @@ export default function NewJob() {
               id="workingHours"
               name="workingHours"
               label="Working Hours per week"
+              defaultValue={String(job.workingHoursPerWeek)} // Convert number to string
               className="col-span-1 w-full"
             />
 
@@ -87,9 +111,11 @@ export default function NewJob() {
               id="jobDescription"
               name="jobDescription"
               label="Job Description"
+              defaultValue={job.description}
               className="w-full"
               col={10}
             />
+
             <div className="flex flex-col gap-6">
               {/* LOCATION */}
               <AppFormField
@@ -97,6 +123,7 @@ export default function NewJob() {
                 id="location"
                 name="location"
                 label="Location Preferences"
+                defaultValue={job.locationPreference}
                 className="col-span-1 w-full"
               />
 
@@ -117,6 +144,7 @@ export default function NewJob() {
                   { value: "long-term", label: "long-term" },
                   { value: "short-term", label: "short-term" },
                 ]}
+                defaultValue={job.projectType}
                 className="col-span-1 w-full"
               />
 
@@ -126,6 +154,7 @@ export default function NewJob() {
                 id="budget"
                 name="budget"
                 label="Budget"
+                defaultValue={String(job.budget)}
                 className="col-span-1 w-full"
               />
             </div>
@@ -190,12 +219,13 @@ export default function NewJob() {
             )}
             {actionData?.success && (
               <div className="text-green-600 mt-4 col-span-2">
-                Job posted successfully!
+                Job updated successfully!
               </div>
             )}
 
             {/* BUTTONS */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
+              {/* Save as Draft Button */}
               <Button
                 type="submit"
                 name="target"
@@ -205,11 +235,16 @@ export default function NewJob() {
                 Save as Draft
               </Button>
 
+              {/* Update Job Button */}
               <Button
                 type="submit"
+                name="target"
+                value="update-job" // This value indicates the Update Job action
                 className="bg-primaryColor text-white not-active-gradient rounded-xl hover:text-white hover:bg-primaryColor"
               >
-                {navigation.state === "submitting" ? "Posting..." : "Post Job"}
+                {navigation.state === "submitting"
+                  ? "Updating..."
+                  : "Update Job"}
               </Button>
             </div>
           </Form>

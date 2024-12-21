@@ -1,4 +1,4 @@
-import JobPostingForm from "./NewJob";
+import NewJob from "./NewJob";
 export default function Layout() {
-  return <JobPostingForm />;
+  return <NewJob />;
 }

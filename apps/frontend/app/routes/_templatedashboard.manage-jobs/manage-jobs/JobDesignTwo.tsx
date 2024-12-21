@@ -37,9 +37,12 @@ export default function JobDesignTwo({
           <StatusButton status={status} onStatusChange={onStatusChange} />
         )}
         {status === JobStatus.Draft && (
-          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="bg-blue-500 text-white px-3 lg:py-2 py-[10px] ml-1 lg:text-base text-sm rounded lg:mt-0 hover:bg-blue-600 flex items-center justify-center"
+          >
             Edit
-          </button>
+          </Link>
         )}
       </div>
 

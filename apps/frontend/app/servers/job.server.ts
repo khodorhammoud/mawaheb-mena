@@ -58,6 +58,63 @@ export async function createJobPosting(
   };
 }
 
+// Update a job posting
+export async function updateJob(
+  jobId: number,
+  jobData: Partial<Job>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const requiredSkills = Array.isArray(jobData.requiredSkills)
+      ? jobData.requiredSkills
+      : [];
+
+    const updatedJob = await db
+      .update(jobsTable)
+      .set({
+        ...(jobData.title && { title: jobData.title }),
+        ...(jobData.description && { description: jobData.description }),
+        ...(jobData.jobCategoryId !== undefined && {
+          jobCategoryId: jobData.jobCategoryId,
+        }),
+        ...(jobData.workingHoursPerWeek !== undefined && {
+          workingHoursPerWeek: jobData.workingHoursPerWeek,
+        }),
+        ...(jobData.locationPreference && {
+          locationPreference: jobData.locationPreference,
+        }),
+        ...(requiredSkills.length > 0 && {
+          requiredSkills: {
+            set: [], // Clear existing skills
+            create: requiredSkills.map((skill) => ({
+              name: skill.name,
+              isStarred: skill.isStarred,
+            })),
+          },
+        }),
+        ...(jobData.projectType && { projectType: jobData.projectType }),
+        ...(jobData.budget !== undefined && { budget: jobData.budget }),
+        ...(jobData.experienceLevel && {
+          experienceLevel: jobData.experienceLevel,
+        }),
+        ...(jobData.status && { status: jobData.status }),
+      })
+      .where(eq(jobsTable.id, jobId))
+      .returning();
+
+    if (!updatedJob) {
+      console.error("Job update failed: No rows returned after update.");
+      throw new Error("Job update failed, no rows returned.");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Detailed error during job update:", error);
+    return {
+      success: false,
+      error: "Failed to update job posting",
+    };
+  }
+}
+
 export async function getEmployerJobs(
   employerId: number,
   jobStatus?: JobStatus[]

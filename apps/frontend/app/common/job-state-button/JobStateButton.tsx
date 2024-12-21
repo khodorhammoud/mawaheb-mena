@@ -15,11 +15,11 @@ export default function JobStateButton({
   const dropdownRef = useRef(null);
 
   const statusStyles: Record<JobStatus, string> = {
-    active: "bg-green-800 text-white",
-    draft: "bg-gray-400 text-white",
-    paused: "bg-yellow-600 text-white",
-    closed: "bg-red-400 text-white",
-    deleted: "bg-red-800 text-white",
+    active: "bg-green-800 text-white hover:bg-green-900",
+    draft: "bg-gray-400 text-white hover:bg-gray-500",
+    paused: "bg-yellow-600 text-white hover:bg-yellow-700",
+    closed: "bg-red-400 text-white hover:bg-red-500",
+    deleted: "bg-red-800 text-white hover:bg-red-900",
   };
 
   const toggleDropdown = () => {
