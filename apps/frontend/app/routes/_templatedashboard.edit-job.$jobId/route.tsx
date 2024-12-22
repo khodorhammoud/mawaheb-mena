@@ -8,6 +8,8 @@ export async function loader({ params }: { params: { jobId: number } }) {
   const job = await getJobById(jobId);
   const jobCategories = await getAllJobCategories();
 
+  console.log(job);
+
   if (!job) {
     throw new Response("Job not found", { status: 404 });
   }
