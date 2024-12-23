@@ -334,6 +334,25 @@ export async function getUserIdFromFreelancerId_Depricated(
   // return result[0].userId;
 }
 
+/**
+ * get the freelancerId from the userId
+ * @param userId : the id of the user to get the freelancerId for
+ * @returns number: the freelancerId of the user
+ */
+export async function getFreelancerIdFromUserId(
+  userId: number
+): Promise<number | null> {
+  // left join freelancers table with accounts table left join with users table on userId
+  const result = await db
+    .select({ freelancerId: freelancersTable.id })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(eq(UsersTable.id, userId));
+  if (result.length === 0) return null;
+  return result[0].freelancerId;
+}
+
 export async function getCurrentEmployerAccountInfo_Depricated(
   request: Request
 ): Promise<Employer | null> {

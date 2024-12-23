@@ -7,7 +7,11 @@ import {
   calculateContinuousFill,
   processEntriesForDay,
 } from "../utils/timeEntryCalculations";
-import { Entry, TimesheetData, TimeSlot } from "../types/timesheet";
+import {
+  TimesheetEntry,
+  TimesheetData,
+  TimeSlot,
+} from "../../../types/Timesheet";
 
 interface TimeGridEntryProps {
   day: { date: Date };
@@ -15,7 +19,7 @@ interface TimeGridEntryProps {
   timeIndex: number;
   timesheet: TimesheetData;
   timeSlots: TimeSlot[];
-  onEntryClick: (date: Date, time: TimeSlot, entry: Entry) => void;
+  onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
 }
 
 export function TimeGridEntry({
@@ -47,6 +51,7 @@ export function TimeGridEntry({
       onClick={() => onEntryClick(day.date, time, null)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
+          console.log("day inside", day);
           onEntryClick(day.date, time, null);
         }
       }}
@@ -73,11 +78,11 @@ function EntryBlock({
   time,
   onEntryClick,
 }: {
-  entry: Entry;
+  entry: TimesheetEntry;
   timeSlots: TimeSlot[];
   day: { date: Date };
   time: TimeSlot;
-  onEntryClick: (date: Date, time: TimeSlot, entry: Entry) => void;
+  onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
 }) {
   const calcResult = calculateContinuousFill(
     entry.startTime,
@@ -90,8 +95,9 @@ function EntryBlock({
   const gapBetweenEntries = 2;
   const totalGap = (totalColumns - 1) * gapBetweenEntries;
   const width = `calc((100% - ${totalGap}px) / ${totalColumns})`;
-  const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${gapBetweenEntries * entry.column
-    }px)`;
+  const left = `calc(((100% - ${totalGap}px) / ${totalColumns}) * ${entry.column} + ${
+    gapBetweenEntries * entry.column
+  }px)`;
 
   const truncationLength =
     totalColumns === 1 ? 20 : totalColumns === 2 ? 10 : 5;

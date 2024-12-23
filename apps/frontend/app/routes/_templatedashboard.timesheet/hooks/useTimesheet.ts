@@ -1,17 +1,70 @@
-import { useState } from "react";
-import type { Entry, EntryPopup, TimeSlot } from "../types/timesheet";
+import { useEffect, useState } from "react";
+import type { TimesheetEntry, EntryPopup, TimeSlot } from "~/types/Timesheet";
 import { useToast } from "~/components/hooks/use-toast";
+import { useFetcher } from "@remix-run/react";
+import { JobApplication } from "~/types/Job";
+import { subDays, addDays } from "date-fns";
 
-export const useTimesheet = (allowOverlap = true) => {
+export const useTimesheet = (
+  allowOverlap = true,
+  jobApplication: JobApplication,
+  selectedDate: Date
+) => {
+  const timesheetFetcher = useFetcher<{
+    success?: boolean;
+    error?: { message: string };
+    timesheetEntries: (TimesheetEntry & {
+      startTime: Date;
+      endTime: Date;
+    })[];
+  }>();
+
+  useEffect(() => {
+    if (timesheetFetcher.data?.timesheetEntries) {
+      const entries = timesheetFetcher.data?.timesheetEntries || [];
+
+      const groupedEntriesByDate = entries.reduce(
+        (acc, entry) => {
+          const dateKey = new Date(entry.startTime).toISOString().split("T")[0];
+          if (!acc[dateKey]) {
+            acc[dateKey] = { entries: [] };
+          }
+          acc[dateKey].entries.push({
+            ...entry,
+            startTime: new Date(entry.startTime).getTime(),
+            endTime: new Date(entry.endTime).getTime(),
+          });
+          return acc;
+        },
+        {} as { [key: string]: { entries: TimesheetEntry[] } }
+      );
+
+      console.log("groupedEntriesByDate", groupedEntriesByDate);
+
+      setTimesheet(groupedEntriesByDate);
+    }
+  }, [timesheetFetcher.data]);
+
+  // fetch timesheet entries from db
+  useEffect(() => {
+    const jobApplicationId = jobApplication.id;
+    // fromTime is selectedDate -1 day
+    const fromTime = subDays(selectedDate, 1);
+    const toTime = addDays(selectedDate, 2);
+    timesheetFetcher.load(
+      `/api/timesheet?jobApplicationId=${jobApplicationId}&fromTime=${fromTime}&toTime=${toTime}`
+    );
+  }, [selectedDate]);
+
   const [timesheet, setTimesheet] = useState<{
-    [key: string]: { entries: Entry[] };
+    [key: string]: { entries: TimesheetEntry[] };
   }>({});
 
-  const [formData, setFormData] = useState<Entry>({
+  const [formData, setFormData] = useState<TimesheetEntry>({
     id: Date.now(),
     date: new Date(),
-    startTime: new Date(),
-    endTime: new Date(),
+    startTime: new Date().getTime(),
+    endTime: new Date().getTime(),
     description: "",
   });
 
@@ -27,7 +80,7 @@ export const useTimesheet = (allowOverlap = true) => {
   const handleGridClick = (
     date: Date,
     time: TimeSlot,
-    clickedEntry: Entry | null = null
+    clickedEntry: TimesheetEntry | null = null
   ) => {
     const isEdit = clickedEntry !== null;
     const dateKey = date.toISOString().split("T")[0];
@@ -56,14 +109,14 @@ export const useTimesheet = (allowOverlap = true) => {
       setFormData({
         id: Date.now(),
         date: date,
-        startTime: newDate,
-        endTime: new Date(newDate.getTime() + 30 * 60000),
+        startTime: newDate.getTime(),
+        endTime: new Date(newDate.getTime() + 30 * 60000).getTime(),
         description: "",
       });
     }
   };
 
-  const handleSave = (formData: Entry) => {
+  const handleSave = (formData: TimesheetEntry) => {
     const { selectedDay, isEdit, entryIndex } = popup;
 
     if (!formData.startTime || !formData.endTime) {
@@ -75,15 +128,15 @@ export const useTimesheet = (allowOverlap = true) => {
 
     if (!allowOverlap) {
       const entries = timesheet[selectedDay]?.entries || [];
-      const newEntryStart = formData.startTime.getTime();
-      const newEntryEnd = formData.endTime.getTime();
+      const newEntryStart = formData.startTime;
+      const newEntryEnd = formData.endTime;
 
       const isOverlapping = entries.some((entry, index) => {
         if (isEdit && index === entryIndex) {
           return false;
         }
-        const entryStart = entry.startTime.getTime();
-        const entryEnd = entry.endTime.getTime();
+        const entryStart = entry.startTime;
+        const entryEnd = entry.endTime;
         return (
           (newEntryStart < entryEnd && newEntryEnd > entryStart) ||
           (newEntryStart === entryStart && newEntryEnd === entryEnd)
@@ -115,6 +168,18 @@ export const useTimesheet = (allowOverlap = true) => {
         ...prev,
         [selectedDay]: { ...prev[selectedDay], entries },
       };
+    });
+    // save to db
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append("date", formData.date.toDateString());
+    formDataToSubmit.append("startTime", String(formData.startTime));
+    formDataToSubmit.append("endTime", String(formData.endTime));
+    formDataToSubmit.append("description", formData.description);
+    formDataToSubmit.append("jobApplicationId", String(jobApplication.id));
+
+    timesheetFetcher.submit(formDataToSubmit, {
+      method: "POST",
+      action: "/api/timesheet",
     });
 
     handleClosePopup();

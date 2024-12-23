@@ -146,7 +146,6 @@ export async function action({ request }: ActionFunctionArgs) {
     // FREELANCER
     if (accountType == "freelancer") {
       const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
-      console.log("target", target);
 
       // BIO
       if (target == "freelancer-bio") {
@@ -357,8 +356,6 @@ export async function loader({
   | TypedResponse<LoaderFunctionError>
   | TypedResponse<never>
 > {
-  console.log("params", params);
-
   // Check if params contains a slug
   const slug = params?.slug;
 

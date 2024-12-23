@@ -60,18 +60,18 @@ export const experienceLevelEnum = pgEnum(
   Object.values(ExperienceLevel) as [string, ...string[]]
 );
 
-export const jobStatusEnum = pgEnum(
-  "job_status",
-  Object.values(JobStatus) as [string, ...string[]]
-);
-
 export const timesheetStatusEnum = pgEnum(
   "timesheet_status",
   Object.values(TimesheetStatus) as [string, ...string[]]
 );
 
+export const jobStatusEnum = pgEnum(
+  "job_status",
+  Object.values(JobStatus) as [string, ...string[]]
+);
+
 /* export const jobApplicationStatusEnum = pgEnum(
   "job_application_status",
   Object.values(JobApplicationStatus) as [string, ...string[]]
-);
+  );
  */

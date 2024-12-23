@@ -1,12 +1,14 @@
-import { Entry } from "../types/timesheet";
+import { TimesheetEntry } from "~/types/Timesheet";
 
 const gridGap = 8;
 
 export const calculateContinuousFill = (
-  startTime: Date,
-  endTime: Date,
+  startTimestamp: number,
+  endTimestamp: number,
   timeSlots
 ) => {
+  const startTime = new Date(startTimestamp);
+  const endTime = new Date(endTimestamp);
   const startTotalMinutes = startTime.getHours() * 60 + startTime.getMinutes();
   const endTotalMinutes = endTime.getHours() * 60 + endTime.getMinutes();
 
@@ -38,12 +40,10 @@ export const calculateContinuousFill = (
   };
 };
 
-export const processEntriesForDay = (entries: Entry[]) => {
-  const sortedEntries = [...entries].sort(
-    (a, b) => a.startTime.getTime() - b.startTime.getTime()
-  );
-  const processedEntries: Entry[] = [];
-  const ongoingEntries: Entry[] = [];
+export const processEntriesForDay = (entries: TimesheetEntry[]) => {
+  const sortedEntries = [...entries].sort((a, b) => a.startTime - b.startTime);
+  const processedEntries: TimesheetEntry[] = [];
+  const ongoingEntries: TimesheetEntry[] = [];
 
   for (const entry of sortedEntries) {
     for (let i = ongoingEntries.length - 1; i >= 0; i--) {

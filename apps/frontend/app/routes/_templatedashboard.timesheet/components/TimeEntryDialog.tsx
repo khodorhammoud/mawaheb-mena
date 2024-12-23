@@ -7,13 +7,13 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { TimePicker } from "~/components/ui/time-picker";
-import type { Entry, EntryPopup } from "../types/timesheet";
+import type { TimesheetEntry, EntryPopup } from "../../../types/Timesheet";
 
 interface TimeEntryDialogProps {
   popup: EntryPopup;
-  formData: Entry;
-  setFormData: (data: Entry) => void;
-  onSave: (formData: Entry) => void;
+  formData: TimesheetEntry;
+  setFormData: (data: TimesheetEntry) => void;
+  onSave: (formData: TimesheetEntry) => void;
   onDelete: () => void;
   onClose: () => void;
 }
@@ -36,11 +36,12 @@ export function TimeEntryDialog({
           <label htmlFor="startTime" className="block">
             <span className="text-gray-700">Start Time:</span>
             <TimePicker
-              date={formData.startTime}
+              date={new Date(Number(formData.startTime))}
+              timeFields="hm"
               setDate={(date) =>
                 setFormData({
                   ...formData,
-                  startTime: date || new Date(),
+                  startTime: date.getTime() || new Date().getTime(),
                 })
               }
             />
@@ -48,11 +49,12 @@ export function TimeEntryDialog({
           <label htmlFor="endTime" className="block">
             <span className="text-gray-700">End Time:</span>
             <TimePicker
-              date={formData.endTime}
+              date={new Date(Number(formData.endTime))}
+              timeFields="hm"
               setDate={(date) =>
                 setFormData({
                   ...formData,
-                  endTime: date || new Date(),
+                  endTime: date.getTime() || new Date().getTime(),
                 })
               }
             />
@@ -68,6 +70,8 @@ export function TimeEntryDialog({
                   description: e.target.value,
                 })
               }
+              /* value={description}
+              onChange={(e) => setDescription(e.target.value)} */
               className="block w-full border border-gray-300 p-2 rounded-md mt-1"
             />
           </label>

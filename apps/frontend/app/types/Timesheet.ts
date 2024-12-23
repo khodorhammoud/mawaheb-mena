@@ -1,17 +1,17 @@
-import { Job } from "~/types/Job";
+import { JobApplication } from "~/types/Job";
 
-export type Entry = {
-  id: number;
+export type TimesheetEntry = {
+  id?: number;
   date: Date;
-  startTime: Date;
-  endTime: Date;
+  startTime: number;
+  endTime: number;
   description: string;
   column?: number;
   totalColumns?: number;
 };
 
 export type TimesheetData = {
-  [key: string]: { entries: Entry[] };
+  [key: string]: { entries: TimesheetEntry[] };
 };
 
 export type EntryPopup = {
@@ -24,7 +24,7 @@ export type EntryPopup = {
 
 export interface TimesheetProps {
   allowOverlap?: boolean;
-  job?: Job;
+  jobApplication?: JobApplication;
 }
 
 export type TimeSlot = {

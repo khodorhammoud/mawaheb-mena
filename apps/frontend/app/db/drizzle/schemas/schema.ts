@@ -22,7 +22,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-  timesheetStatusEnum,
+  // timesheetStatusEnum,
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
@@ -377,19 +377,40 @@ export const jobApplicationsTable = pgTable("job_applications", {
  *
  * @property id - serial primary key
  * @property freelancer_id - integer referencing the freelancersTable id
- * @property job_id - integer referencing the jobsTable id
+ * @property jobApplicationId - integer referencing the jobApplicationsTable id
  * @property start_time - timestamp
  * @property end_time - timestamp
  * @property description - text
- * @property status - timesheetStatusEnum indicates the status of the timesheet entry
  * @property created_at - timestamp
  */
 export const timesheetEntriesTable = pgTable("timesheet_entries", {
   id: serial("id").primaryKey(),
   freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  jobApplicationId: integer("job_application_id").references(
+    () => jobApplicationsTable.id
+  ),
   date: date("date"),
-  hoursWorked: integer("hours_worked"),
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
   description: text("description"),
-  status: timesheetStatusEnum("status"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+/**
+ * Define the daily submission of timesheet entries for a job application
+ * @property id - serial primary key
+ * @property timesheetEntriesIds - an array of integers referencing the timesheetEntriesTable ids
+ * @property day - date
+ * @property notes - text
+ * @property status - timesheetStatusEnum
+ * @property createdAt - timestamp
+ */
+export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
+  id: serial("id").primaryKey(),
+  timesheetEntriesIds: integer("timesheet_entries_ids").array(),
+  day: date("day"),
+  notes: text("notes"),
+  // status: timesheetStatusEnum("status"),
+  status: varchar("status", { length: 50 }), //timesheetStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });

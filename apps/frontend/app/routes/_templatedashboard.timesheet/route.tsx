@@ -1,12 +1,14 @@
-import type { TimesheetProps } from "./types/timesheet";
+import type { TimesheetProps } from "../../types/Timesheet";
 import type { LoaderFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
 
 import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
-import { getJobApplicationsByFreelancerId, getJobApplicationByJobIdAndFreelancerId } from "~/servers/job.server";
-import { useLoaderData } from "@remix-run/react";
+import {
+  getJobApplicationsByFreelancerId,
+  getJobApplicationByJobIdAndFreelancerId,
+} from "~/servers/job.server";
 import TimeSheetPage from "./components/TimeSheetPage";
 import JobsPage from "./components/JobsPage";
-import { Job } from "~/types/Job";
+import { JobApplication } from "~/types/Job";
 import { useState } from "react";
 export async function loader({ request, params }: LoaderFunctionArgs) {
   // user must be a published freelancer
@@ -16,14 +18,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   // get current freelancer job applications
-  const jobApplications = await getJobApplicationsByFreelancerId(userId);
+  const jobApplicationsPartialData =
+    await getJobApplicationsByFreelancerId(userId);
+  const jobApplications = await Promise.all(
+    jobApplicationsPartialData.map(async (jobApp) => {
+      const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
+        jobApp.jobId,
+        userId
+      );
+      return jobApplication;
+    })
+  );
 
-  const jobs = await Promise.all(jobApplications.map(async (jobApplication) => {
-    const job = await getJobApplicationByJobIdAndFreelancerId(jobApplication.jobId, userId);
-    return job;
-  }));
-
-  return Response.json({ jobs });
+  return Response.json({ jobApplications });
   const { jobId } = params; // Extract the jobId
 
   if (!jobId) {
@@ -35,14 +42,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 const Page: React.FC<TimesheetProps> = ({
   allowOverlap = true,
 }: TimesheetProps) => {
-  const { jobs } = useLoaderData<typeof loader>();
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  console.log(jobs);
-
+  console.log("allowOverlap", allowOverlap);
+  const [selectedJobApplication, setSelectedJobApplication] =
+    useState<JobApplication | null>(null);
 
   return (
     <div>
-      {selectedJob ? <TimeSheetPage job={selectedJob} /> : <JobsPage onJobSelect={setSelectedJob} />}
+      {selectedJobApplication ? (
+        <TimeSheetPage jobApplication={selectedJobApplication} />
+      ) : (
+        <JobsPage onJobSelect={setSelectedJobApplication} />
+      )}
     </div>
   );
 };

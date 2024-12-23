@@ -1,14 +1,22 @@
 import { useLoaderData } from "@remix-run/react";
-import JobCard from "~/routes/_templatedashboard.browse-jobs/jobCard";
-import { Job } from "~/types/Job";
-export default function JobsPage(
-  { onJobSelect }: { onJobSelect: (job: Job) => void }
-) {
-  const { jobs } = useLoaderData<{ jobs: Job[] }>();
+import JobApplicationCard from "./jobApplicationCard";
+import { JobApplication } from "~/types/Job";
+export default function JobsPage({
+  onJobSelect,
+}: {
+  onJobSelect: (jobApplication: JobApplication) => void;
+}) {
+  const { jobApplications } = useLoaderData<{
+    jobApplications: JobApplication[];
+  }>();
   return (
     <div>
-      {jobs.map((job) => (
-        <JobCard onSelect={onJobSelect} key={job.id} job={job} />
+      {jobApplications.map((jobApplication) => (
+        <JobApplicationCard
+          onSelect={onJobSelect}
+          key={jobApplication.id}
+          jobApplication={jobApplication}
+        />
       ))}
     </div>
   );

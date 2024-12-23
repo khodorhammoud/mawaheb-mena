@@ -5,10 +5,10 @@ import {
   jobCategoriesTable,
   jobsTable,
 } from "../db/drizzle/schemas/schema";
-import { Freelancer, JobCategory } from "../types/User";
+import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import { and, eq, inArray } from "drizzle-orm";
-import { getProfileInfo } from "./user.server";
+// import { getProfileInfo } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -99,9 +99,8 @@ export async function getEmployerJobs(
   }));
 }
 
-export async function getFreelancerRecommendedJobs(
-  freelancer: Freelancer
-): Promise<Job[]> {
+export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
+  // freelancer: Freelancer
   // fetch recommended jobs
   const recommendedJobs = await db
     .select()
@@ -205,6 +204,7 @@ export async function getJobApplicationByJobIdAndFreelancerId(
   const jobApplication = await db
     .select()
     .from(jobApplicationsTable)
+    .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
     .where(
       and(
         eq(jobApplicationsTable.jobId, jobId),
@@ -214,7 +214,15 @@ export async function getJobApplicationByJobIdAndFreelancerId(
   if (!jobApplication) {
     return null;
   }
-  return jobApplication[0] as unknown as JobApplication;
+  const returnedJobApplication: JobApplication = {
+    id: jobApplication[0].job_applications.id,
+    jobId: jobApplication[0].job_applications.jobId,
+    freelancerId: jobApplication[0].job_applications.freelancerId,
+    status: jobApplication[0].job_applications.status as JobApplicationStatus,
+    createdAt: jobApplication[0].job_applications.createdAt.toISOString(),
+    job: jobApplication[0].jobs as unknown as Job,
+  };
+  return returnedJobApplication;
 }
 
 /**
@@ -267,4 +275,3 @@ export async function getJobApplicationsByFreelancerId(
     );
   return jobApplications as unknown as JobApplication[];
 }
-
