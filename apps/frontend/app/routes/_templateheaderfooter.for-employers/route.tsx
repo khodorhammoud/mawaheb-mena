@@ -56,7 +56,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const howItWorksItems: HowItWorksItem[] =
     dataResponse[2]?.data?.howItWorksItems || [];
-    
+
   const features: Feature[] = dataResponse[0]?.data?.features || [];
   const postHowItWorks: PostHowItWorksItem = dataResponse[3]?.data
     ?.postHowItWorksSection?.[0] || {
