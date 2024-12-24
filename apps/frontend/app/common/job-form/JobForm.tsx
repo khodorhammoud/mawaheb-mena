@@ -210,10 +210,10 @@ export default function JobForm({
               <Button
                 type="submit"
                 name="target"
-                value={isEdit ? "update-job" : "save-draft"}
+                value="save-draft"
                 className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor"
               >
-                {isEdit ? "Update Job" : "Save as Draft"}
+                Save as Draft
               </Button>
               <Button
                 type="submit"

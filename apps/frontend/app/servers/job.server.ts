@@ -58,59 +58,63 @@ export async function createJobPosting(
   };
 }
 
-// Update a job posting
+/**
+ * update a job posting
+ *
+ * @param jobId the Id of the job i wanna update
+ * @param jobData the data i'll update in the job
+ * @returns success or failure :)
+ */
 export async function updateJob(
   jobId: number,
   jobData: Partial<Job>
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // validating and cleaning data before passing them to drizzle update or insert script 🍔
     const requiredSkills = Array.isArray(jobData.requiredSkills)
-      ? jobData.requiredSkills
+      ? jobData.requiredSkills.map((skill) => ({
+          name: skill.name.trim(),
+          isStarred: !!skill.isStarred,
+        }))
       : [];
 
+    const validatedJobData = {
+      title: jobData.title?.trim(),
+      description: jobData.description?.trim(),
+      jobCategoryId: jobData.jobCategoryId || null,
+      workingHoursPerWeek: jobData.workingHoursPerWeek || null,
+      locationPreference: jobData.locationPreference?.trim(),
+      requiredSkills:
+        requiredSkills.length > 0
+          ? {
+              set: [], // Clear existing skills
+              create: requiredSkills,
+            }
+          : undefined,
+      projectType: jobData.projectType?.trim(),
+      budget: jobData.budget || null,
+      experienceLevel: jobData.experienceLevel?.trim(),
+      status: jobData.status || null,
+    };
+
+    // Step 2: Perform the update using validated data
     const updatedJob = await db
       .update(jobsTable)
-      .set({
-        ...(jobData.title && { title: jobData.title }),
-        ...(jobData.description && { description: jobData.description }),
-        ...(jobData.jobCategoryId !== undefined && {
-          jobCategoryId: jobData.jobCategoryId,
-        }),
-        ...(jobData.workingHoursPerWeek !== undefined && {
-          workingHoursPerWeek: jobData.workingHoursPerWeek,
-        }),
-        ...(jobData.locationPreference && {
-          locationPreference: jobData.locationPreference,
-        }),
-        ...(requiredSkills.length > 0 && {
-          requiredSkills: {
-            set: [], // Clear existing skills
-            create: requiredSkills.map((skill) => ({
-              name: skill.name,
-              isStarred: skill.isStarred,
-            })),
-          },
-        }),
-        ...(jobData.projectType && { projectType: jobData.projectType }),
-        ...(jobData.budget !== undefined && { budget: jobData.budget }),
-        ...(jobData.experienceLevel && {
-          experienceLevel: jobData.experienceLevel,
-        }),
-        ...(jobData.status && { status: jobData.status }),
-      })
+      .set(validatedJobData)
       .where(eq(jobsTable.id, jobId))
       .returning();
 
-    if (!updatedJob) {
-      console.error("Job update failed: No rows returned after update.");
-      throw new Error("Job update failed, no rows returned.");
+    // Step 3: Check if the update was successful
+    if (!updatedJob || updatedJob.length === 0) {
+      throw new Error("Job update failed: No rows returned.");
     }
+
     return { success: true };
   } catch (error) {
-    console.error("Detailed error during job update:", error);
+    console.error("Error during job update:", error);
     return {
       success: false,
-      error: "Failed to update job posting",
+      error: "Failed to update job posting.",
     };
   }
 }
@@ -178,7 +182,7 @@ export async function getFreelancerRecommendedJobs(
 /**
  * get a single job by its ID
  *
- * @param jobId - the ID of the job to get
+ * @param jobId the ID of the job to get
  * @returns the job with the given ID or null if it doesn't exist
  */
 export async function getJobById(jobId: number): Promise<Job | null> {
@@ -372,4 +376,19 @@ export async function getFreelancerDetails(freelancerIds: number[]) {
     .where(inArray(freelancersTable.id, freelancerIds));
 
   return freelancers; // Return the raw result directly
+}
+
+export async function updateJobStatus(
+  jobId: number,
+  newStatus: string
+): Promise<void> {
+  try {
+    await db
+      .update(jobsTable)
+      .set({ status: newStatus })
+      .where(eq(jobsTable.id, jobId));
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    throw new Error("Failed to update job status.");
+  }
 }

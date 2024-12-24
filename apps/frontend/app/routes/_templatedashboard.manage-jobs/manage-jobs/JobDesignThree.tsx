@@ -28,17 +28,18 @@ export default function JobDesignThree({
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center mb-6">
         {status && (
-          <JobStateButton status={status} onStatusChange={onStatusChange} />
+          <JobStateButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+          />
         )}
 
         {/* Show Edit button only when the job status is "draft" */}
         {status === JobStatus.Draft && (
-          <Link
-            to={`/edit-job/${job.id}`}
-            className="bg-blue-500 text-white px-3 lg:py-2 py-[10px] ml-1 lg:text-base text-sm rounded lg:mt-0 hover:bg-blue-600 flex items-center justify-center"
-          >
+          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:brightness-90">
             Edit
-          </Link>
+          </button>
         )}
       </div>
 
@@ -68,11 +69,23 @@ export default function JobDesignThree({
 
       {/* APPLICANTS SECTION */}
       {/* Applicants ProfilePhotosSection */}
-      <ProfilePhotosSection
-        label="Applicants"
-        images={applicantsPhotos}
-        profiles={data.applications}
-      />
+      <div
+        className={`${status === JobStatus.Draft ? "hidden" : "flex lg:gap-8 gap-4"}`}
+      >
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={data.applications}
+        />
+
+        <div className={`${status === JobStatus.Active ? "hidden" : ""}`}>
+          <ProfilePhotosSection
+            label="Hired"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,22 @@
-import { getAllJobCategories } from "~/servers/job.server";
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import EditJob from "./EditJob";
-import { getJobById, updateJob } from "~/servers/job.server";
+import {
+  getAllJobCategories,
+  getJobById,
+  updateJob,
+} from "~/servers/job.server";
+import { JobStatus, AccountType } from "~/types/enums";
+import { requireUserIsEmployerPublished } from "~/auth/auth.server";
+import {
+  getCurrentUserAccountInfo,
+  getProfileInfo,
+} from "~/servers/user.server";
 
 export async function loader({ params }: { params: { jobId: number } }) {
   const { jobId } = params;
+
   const job = await getJobById(jobId);
   const jobCategories = await getAllJobCategories();
-
-  console.log(job);
 
   if (!job) {
     throw new Response("Job not found", { status: 404 });
@@ -22,10 +30,74 @@ export async function loader({ params }: { params: { jobId: number } }) {
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
+    await requireUserIsEmployerPublished(request);
+
+    // step 1 to get the employerId of the current login user
+    const currentAccount = await getCurrentUserAccountInfo(request);
+    if (!currentAccount) {
+      return Response.json(
+        { success: false, error: { message: "User not authenticated" } },
+        { status: 401 }
+      );
+    }
+
+    // step 2 to get the employerId of the current login user
+    const profile = await getProfileInfo({ accountId: currentAccount.id });
+    if (!profile || profile.account.accountType !== "employer") {
+      return Response.json(
+        { success: false, error: { message: "Employer profile not found" } },
+        { status: 404 }
+      );
+    }
+
+    // last step to get the employerId of the current login user
+    const employerId = profile.id;
+
     const formData = await request.formData();
+
     const jobId = parseInt(formData.get("jobId") as string, 10);
+    if (!jobId) {
+      return Response.json(
+        { success: false, error: { message: "Job ID is required" } },
+        { status: 400 }
+      );
+    }
+
+    // take the job to take its employerId
+    const job = await getJobById(jobId);
+    if (!job) {
+      return Response.json(
+        { success: false, error: { message: "Job not found" } },
+        { status: 404 }
+      );
+    }
+
+    // compare the employerId of the job with the logged-in employerId
+    if (job.employerId !== employerId) {
+      // ToDo: remove console later
+      // ToDo: remove console later
+      console.log("ma fik bro");
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: "You are not authorized to edit this job. Access denied.",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    // ToDo: remove console later
+    // ToDo: remove console later
+    console.log("wix");
+    console.log(
+      `Employer ID matches: Logged-in Employer ID (${employerId}) is the owner of the job (${jobId}).`
+    );
+
     const target = formData.get("target") as string;
-    const jobStatus = target === "save-draft" ? "draft" : "active";
+    const jobStatus =
+      target === "save-draft" ? JobStatus.Draft : JobStatus.Active;
 
     if (!jobId) {
       return Response.json(
@@ -35,6 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const jobData = {
+      employerId, // Use the employer ID as part of the job data
       title: formData.get("jobTitle") as string,
       description: formData.get("jobDescription") as string,
       locationPreference: formData.get("location") as string,

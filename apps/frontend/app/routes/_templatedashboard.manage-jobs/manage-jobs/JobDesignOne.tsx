@@ -2,7 +2,7 @@ import { JobCardData } from "../../../types/Job";
 import { parseDate } from "~/lib/utils";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
-import StatusButton from "../../../common/job-state-button/JobStateButton";
+import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 import { Link } from "@remix-run/react";
 import { JobStatus } from "~/types/enums";
@@ -31,6 +31,7 @@ export default function JobDesignOne({
     <p>Job details are not available.</p>
   ) : (
     <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
+      {/* Left Section */}
       <div className="xl:w-[42%] w-[30%] mr-2">
         <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
@@ -73,32 +74,54 @@ export default function JobDesignOne({
         </div>
       </div>
 
+      {/* Middle Section */}
       <div className="flex flex-col gap-8 w-[18%] text-left">
-        {/* Applicants ProfilePhotosSection */}
+        {/* Applicants Section */}
         <ProfilePhotosSection
           label="Applicants"
           images={applicantsPhotos}
           profiles={data.applications}
         />
 
-        {/* Interviewed ProfilePhotosSection */}
+        {/* Interviewed Section */}
         <ProfilePhotosSection
           label="Interviewed"
           images={applicantsPhotos}
           profiles={data.applications}
         />
+
+        {/* Hired Section */}
+        {status === JobStatus.Paused && (
+          <ProfilePhotosSection
+            label="Hired"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        )}
       </div>
 
-      <div className="lg:w-[30%] lg:-mr-10">
+      {/* Right Section */}
+      <div
+        className={`${
+          status === JobStatus.Draft || status === JobStatus.Closed
+            ? "hidden"
+            : "lg:w-[30%] lg:-mr-10"
+        }`}
+      >
         <p className="font-semibold mb-4 xl:text-base text-sm">
           Pending Interviews: 3
         </p>
         <Calendar highlightedDates={interviewDates} />
       </div>
 
+      {/* Action Section */}
       <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
         {status && (
-          <StatusButton status={status} onStatusChange={onStatusChange} />
+          <JobStateButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+          />
         )}
 
         {status === JobStatus.Draft && (
