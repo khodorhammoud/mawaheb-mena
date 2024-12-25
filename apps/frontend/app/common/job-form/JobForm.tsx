@@ -213,7 +213,7 @@ export default function JobForm({
                 value="save-draft"
                 className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor"
               >
-                Save as Draft
+                {isEdit ? "Cancel" : "Save as Draft"}
               </Button>
               <Button
                 type="submit"

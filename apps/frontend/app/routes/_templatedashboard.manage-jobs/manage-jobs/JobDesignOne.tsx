@@ -1,10 +1,10 @@
-import { JobCardData } from "../../../types/Job";
+import { Link } from "@remix-run/react";
 import { parseDate } from "~/lib/utils";
+import { JobCardData } from "../../../types/Job";
 import Calendar from "~/common/calender/Calender";
 import SkillBadge from "~/common/skill/SkillBadge";
 import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
-import { Link } from "@remix-run/react";
 import { JobStatus } from "~/types/enums";
 
 export default function JobDesignOne({

@@ -5,23 +5,52 @@ import {
   getJobById,
   updateJob,
 } from "~/servers/job.server";
-import { JobStatus, AccountType } from "~/types/enums";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import {
   getCurrentUserAccountInfo,
   getProfileInfo,
 } from "~/servers/user.server";
 
-export async function loader({ params }: { params: { jobId: number } }) {
+export async function loader({
+  params,
+  request,
+}: {
+  params: { jobId: number };
+  request: Request;
+}) {
   const { jobId } = params;
 
-  const job = await getJobById(jobId);
-  const jobCategories = await getAllJobCategories();
+  // Step 1: Ensure the user is logged in and an employer
+  await requireUserIsEmployerPublished(request);
 
+  const currentAccount = await getCurrentUserAccountInfo(request);
+  if (!currentAccount) {
+    throw new Response("User not authenticated", { status: 401 });
+  }
+
+  const profile = await getProfileInfo({ accountId: currentAccount.id });
+  if (!profile || profile.account.accountType !== "employer") {
+    const referrer = "/";
+    return redirect(referrer);
+  }
+
+  const employerId = profile.id;
+
+  // Step 2: Fetch the job and check if the logged-in employer owns it
+  const job = await getJobById(jobId);
   if (!job) {
     throw new Response("Job not found", { status: 404 });
   }
 
+  if (job.employerId !== employerId) {
+    const referrer = "/manage-jobs";
+    return redirect(referrer);
+  }
+
+  // Step 3: Fetch job categories
+  const jobCategories = await getAllJobCategories();
+
+  // Step 4: Return the job and categories if all checks pass
   return Response.json({
     job,
     jobCategories: jobCategories || [],
@@ -55,6 +84,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const formData = await request.formData();
 
+    const target = formData.get("target") as string;
+    if (target === "save-draft") {
+      return redirect("/manage-jobs");
+    }
+
     const jobId = parseInt(formData.get("jobId") as string, 10);
     if (!jobId) {
       return Response.json(
@@ -74,9 +108,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // compare the employerId of the job with the logged-in employerId
     if (job.employerId !== employerId) {
-      // ToDo: remove console later
-      // ToDo: remove console later
-      console.log("ma fik bro");
       return Response.json(
         {
           success: false,
@@ -87,17 +118,6 @@ export async function action({ request }: ActionFunctionArgs) {
         { status: 403 }
       );
     }
-
-    // ToDo: remove console later
-    // ToDo: remove console later
-    console.log("wix");
-    console.log(
-      `Employer ID matches: Logged-in Employer ID (${employerId}) is the owner of the job (${jobId}).`
-    );
-
-    const target = formData.get("target") as string;
-    const jobStatus =
-      target === "save-draft" ? JobStatus.Draft : JobStatus.Active;
 
     if (!jobId) {
       return Response.json(
@@ -122,12 +142,12 @@ export async function action({ request }: ActionFunctionArgs) {
       projectType: formData.get("projectType") as string,
       budget: parseInt(formData.get("budget") as string, 10) || undefined,
       experienceLevel: formData.get("experienceLevel") as string,
-      status: jobStatus,
+      status: job.status,
       jobCategoryId:
         parseInt(formData.get("jobCategory") as string, 10) || null,
     };
 
-    // Use the updateJobPosting function
+    // Use the updateJob now :)
     const updatingJob = await updateJob(jobId, jobData);
 
     if (updatingJob.success) {
