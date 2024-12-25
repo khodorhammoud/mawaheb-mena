@@ -24,15 +24,8 @@ export async function loader({
   await requireUserIsEmployerPublished(request);
 
   const currentAccount = await getCurrentUserAccountInfo(request);
-  if (!currentAccount) {
-    throw new Response("User not authenticated", { status: 401 });
-  }
 
   const profile = await getProfileInfo({ accountId: currentAccount.id });
-  if (!profile || profile.account.accountType !== "employer") {
-    const referrer = "/";
-    return redirect(referrer);
-  }
 
   const employerId = profile.id;
 
@@ -63,21 +56,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // step 1 to get the employerId of the current login user
     const currentAccount = await getCurrentUserAccountInfo(request);
-    if (!currentAccount) {
-      return Response.json(
-        { success: false, error: { message: "User not authenticated" } },
-        { status: 401 }
-      );
-    }
 
     // step 2 to get the employerId of the current login user
     const profile = await getProfileInfo({ accountId: currentAccount.id });
-    if (!profile || profile.account.accountType !== "employer") {
-      return Response.json(
-        { success: false, error: { message: "Employer profile not found" } },
-        { status: 404 }
-      );
-    }
 
     // last step to get the employerId of the current login user
     const employerId = profile.id;
@@ -89,7 +70,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return redirect("/manage-jobs");
     }
 
-    const jobId = parseInt(formData.get("jobId") as string, 10);
+    const jobId = parseInt(formData.get("jobId") as string);
     if (!jobId) {
       return Response.json(
         { success: false, error: { message: "Job ID is required" } },
@@ -101,8 +82,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const job = await getJobById(jobId);
     if (!job) {
       return Response.json(
-        { success: false, error: { message: "Job not found" } },
-        { status: 404 }
+        { success: false, error: { message: "Access denied" } },
+        { status: 403 }
       );
     }
 
@@ -112,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
         {
           success: false,
           error: {
-            message: "You are not authorized to edit this job. Access denied.",
+            message: "Access denied.",
           },
         },
         { status: 403 }
