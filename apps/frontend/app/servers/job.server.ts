@@ -58,6 +58,67 @@ export async function createJobPosting(
   };
 }
 
+/**
+ * update a job posting
+ *
+ * @param jobId the Id of the job i wanna update
+ * @param jobData the data i'll update in the job
+ * @returns success or failure :)
+ */
+export async function updateJob(
+  jobId: number,
+  jobData: Partial<Job>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // validating and cleaning data before passing them to drizzle update or insert script 🍔
+    const requiredSkills = Array.isArray(jobData.requiredSkills)
+      ? jobData.requiredSkills.map((skill) => ({
+          name: skill.name.trim(),
+          isStarred: !!skill.isStarred,
+        }))
+      : [];
+
+    const validatedJobData = {
+      title: jobData.title?.trim(),
+      description: jobData.description?.trim(),
+      jobCategoryId: jobData.jobCategoryId || null,
+      workingHoursPerWeek: jobData.workingHoursPerWeek || null,
+      locationPreference: jobData.locationPreference?.trim(),
+      requiredSkills:
+        requiredSkills.length > 0
+          ? {
+              set: [], // Clear existing skills
+              create: requiredSkills,
+            }
+          : undefined,
+      projectType: jobData.projectType?.trim(),
+      budget: jobData.budget || null,
+      experienceLevel: jobData.experienceLevel?.trim(),
+      status: jobData.status || null,
+    };
+
+    // Step 2: Perform the update using validated data
+    const updatedJob = await db
+      .update(jobsTable)
+      .set(validatedJobData)
+      .where(eq(jobsTable.id, jobId))
+      .returning();
+
+    // Step 3: Check if the update was successful
+    if (!updatedJob || updatedJob.length === 0) {
+      throw new Error("Job update failed: No rows returned.");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error during job update:", error);
+    return {
+      success: false,
+      error: "Failed to update job posting.",
+    };
+  }
+}
+
 export async function getEmployerJobs(
   employerId: number,
   jobStatus?: JobStatus[]
@@ -121,7 +182,7 @@ export async function getFreelancerRecommendedJobs(
 /**
  * get a single job by its ID
  *
- * @param jobId - the ID of the job to get
+ * @param jobId the ID of the job to get
  * @returns the job with the given ID or null if it doesn't exist
  */
 export async function getJobById(jobId: number): Promise<Job | null> {
@@ -315,4 +376,19 @@ export async function getFreelancerDetails(freelancerIds: number[]) {
     .where(inArray(freelancersTable.id, freelancerIds));
 
   return freelancers; // Return the raw result directly
+}
+
+export async function updateJobStatus(
+  jobId: number,
+  newStatus: string
+): Promise<void> {
+  try {
+    await db
+      .update(jobsTable)
+      .set({ status: newStatus })
+      .where(eq(jobsTable.id, jobId));
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    throw new Error("Failed to update job status.");
+  }
 }
