@@ -85,8 +85,8 @@ export default function Dashboard() {
       {/* <div className="flex-1 p-6">
           {accountOnboarded ? <DashboardScreen /> : <OnboardingScreen />}
         </div> */}
-      <div className="flex-1 p-6">
-        <div className="min-h-screen flex flex-col mt-20">
+      <div className="flex-1 pl-6">
+        <div className="min-h-screen flex flex-col">
           {/* Conditionally render the welcome message and button only if there are no jobs */}
           {totalJobCount === 0 && (
             <>

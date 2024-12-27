@@ -5,72 +5,56 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import "~/styles/wavy/wavy.css";
-/* import { Link } from "@remix-run/react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import JobPostingForm from "../_templatedashboard.dashboard/jobs/NewJob"; // Import your JobPostingForm component */
+import { Link, useLoaderData } from "@remix-run/react";
+import AppFormField from "~/common/form-fields";
+import { BsSearch, BsBell, BsPersonCircle } from "react-icons/bs";
 
 export default function Layout() {
   const { t } = useTranslation();
   const menuNavigation = navigation(t); // this is the place where i link the buttons i have to their pages // (routes)
   const [isOpen, setIsOpen] = useState(false);
+  const isOnboarded = useLoaderData();
 
   return (
-    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-2 pt-2 fixed top-0 left-0 w-full z-[1px]">
-      <div className="container flex lg:gap-24 md:gap-8 gap-2 items-center py-4">
-        <div className="xl:text-2xl lg:text-lg md:text-base font-extrabold font-['BespokeSerif-Regular']">
-          {t("siteTitle")}
-        </div>
-
-        {/* search box */}
+    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-20">
+      <div className="grid lg:grid-cols-[2fr,1fr] grid-cols-[9fr,4fr] md:gap-8 gap-2 items-center justify-around py-4">
         <div className="flex items-center">
-          <input
-            type="text"
-            placeholder="hinted search text"
-            className="border border-gray-300 p-2 rounded-[10px] focus:outline-none"
-          />
-          <button className="bg-primaryColor text-white px-2 py-1 rounded-[10px] ml-2">
-            Search
-          </button>
+          <div className="xl:text-2xl lg:text-lg md:text-base text-sm font-extrabold font-['BespokeSerif-Regular'] xl:mr-20 lg:mr-14 xl:ml-10 lg:ml-8 ml-4 md:mr-10 sm:mr-4 mr-2 whitespace-nowrap">
+            {t("siteTitle")}
+          </div>
+          <div className="sm:w-[40%] w-full">
+            <AppFormField
+              id="email"
+              name="email"
+              label={
+                <div className="flex items-center justify-center">
+                  <BsSearch />{" "}
+                  <div className="md:block ml-4 hidden">Hinted search text</div>
+                </div>
+              }
+            />
+          </div>
         </div>
 
-        {/* Dialog for Post Job Button */}
-        {/* <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient justify-end">
-              Post Job
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl mx-auto">
-            <DialogHeader>
-              <DialogTitle className="text-center font-semibold text-xl mb-4">
-                Create a New Job
-              </DialogTitle>
-            </DialogHeader>
+        <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
+          <Link
+            to="/new-job"
+            // className="absolute bg-primaryColor rounded-[10px] text-white px-1 md:px-2 lg:px-4 py-1 xl:px-6 xl:py-2 gradient-box not-active-gradient w-fit right-10 -top-5"
+            className="bg-primaryColor rounded-[10px] md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
+          >
+            Post Job
+          </Link>
 
-            <div className="overflow-y-auto max-h-[70vh] px-4">
-              <JobPostingForm />
+          {/* Conditionally Render Icons if NOT Onboarded */}
+          {!isOnboarded && (
+            <div className="flex lg:gap-6 gap-1">
+              <BsBell className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
+
+              {/* Profile Icon */}
+              <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
             </div>
-
-            <DialogFooter className="flex justify-center mt-4">
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500"
-              >
-                Cancel
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog> */}
+          )}
+        </div>
       </div>
 
       {/* Mobile Menu - Framer Motion */}
