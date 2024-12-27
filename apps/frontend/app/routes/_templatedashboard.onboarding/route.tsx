@@ -70,6 +70,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const aboutStatus = await updateEmployerAbout(employer, aboutContent);
         return Response.json({ success: aboutStatus.success });
       }
+
       // BIO
       if (target == "employer-bio") {
         const bio = {
@@ -86,9 +87,18 @@ export async function action({ request }: ActionFunctionArgs) {
           },
           userId: userId,
         };
+        // Validate required fields
+        if (!bio.firstName || !bio.lastName || !bio.location) {
+          return Response.json(
+            { success: false, error: { message: "All fields are required." } },
+            { status: 400 }
+          );
+        }
+
         const bioStatus = await updateAccountBio(bio, employer.account);
         return Response.json({ success: bioStatus.success });
       }
+
       // INDUSTRIES
       if (target == "employer-industries") {
         const industries = formData.get("employer-industries") as string;
@@ -101,17 +111,34 @@ export async function action({ request }: ActionFunctionArgs) {
         );
         return Response.json({ success: industriesStatus.success });
       }
+
       // YEARS IN BUSINESS
-      if (target == "employer-years-in-business") {
-        const yearsInBusiness =
-          parseInt(formData.get("yearsInBusiness") as string) || 0;
+      if (target === "employer-years-in-business") {
+        const yearsInBusiness = parseInt(
+          formData.get("yearsInBusiness") as string
+        );
+
+        if (isNaN(yearsInBusiness)) {
+          return Response.json({
+            success: true,
+          });
+        }
 
         const yearsStatus = await updateEmployerYearsInBusiness(
           employer,
           yearsInBusiness
         );
-        return Response.json({ success: yearsStatus.success });
+
+        if (yearsStatus.success) {
+          return Response.json({ success: true });
+        } else {
+          return Response.json({
+            success: false,
+            error: { message: "Failed to update years in business" },
+          });
+        }
       }
+
       // BUDGET
       if (target == "employer-budget") {
         const budgetValue = formData.get("employerBudget");
@@ -120,6 +147,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const budgetStatus = await updateEmployerBudget(employer, budget);
         return Response.json({ success: budgetStatus.success });
       }
+
       // ONBOARDING -> TRUE ✅
       if (target == "employer-onboard") {
         const userExists = await checkUserExists(userId);
@@ -177,6 +205,7 @@ export async function action({ request }: ActionFunctionArgs) {
         );
         return Response.json({ success: aboutStatus.success });
       }
+
       // VIDEO LINK
       if (target == "freelancer-video") {
         const videoLink = formData.get("videoLink") as string;
@@ -206,6 +235,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const bioStatus = await updateAccountBio(bio, freelancer.account);
         return Response.json({ success: bioStatus.success });
       }
+
       // PORTFOLIO
       if (target == "freelancer-portfolio") {
         const portfolio = formData.get("portfolio") as string;

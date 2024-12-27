@@ -175,7 +175,7 @@ AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
+  label: PropTypes.node.isRequired,
   placeholder: PropTypes.string,
   showPasswordHint: PropTypes.bool,
   options: PropTypes.arrayOf(

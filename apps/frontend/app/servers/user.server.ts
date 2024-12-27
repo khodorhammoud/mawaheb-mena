@@ -249,6 +249,7 @@ export async function getProfileInfo(
   return null;
 }
 
+// get profile
 export async function getCurrentProfileInfo(
   request: Request
 ): Promise<Employer | Freelancer | null> {

@@ -2,6 +2,8 @@
 // this is the navigation of our home Pages 😎
 
 import { TFunction } from "i18next";
+import { FaBriefcase, FaCog, FaFileAlt } from "react-icons/fa";
+import { AiOutlineLayout } from "react-icons/ai";
 
 // this is the main navigation
 export const navigation = function (t: TFunction) {
@@ -41,18 +43,22 @@ export const sidebarEmployerNav = function (t: TFunction) {
     {
       label: t("dashboardEmployerDashboardLable"),
       href: "/dashboard",
+      icon: AiOutlineLayout, // Dashboard icon
     },
     {
       label: t("dashboardEmployerManageJobsLable"),
       href: "/manage-jobs",
+      icon: FaBriefcase, // Manage Jobs icon
     },
     {
       label: t("dashboardEmployerTimeSheetLable"),
       href: "/timesheet",
+      icon: FaFileAlt, // Time Sheet icon
     },
     {
       label: t("dashboardEmployerSettingsLable"),
       href: "/settings",
+      icon: FaCog, // Settings icon
     },
   ];
 };

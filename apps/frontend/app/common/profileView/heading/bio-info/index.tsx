@@ -50,7 +50,8 @@ export default function Heading() {
 
   // Handle showing the bio submission message
   useEffect(() => {
-    if (bioFetcher.data?.success || bioFetcher.data?.error) {
+    if (bioFetcher.data) {
+      console.log("Full bioFetcher response:", bioFetcher.data);
       setShowBioMessage(true);
     }
   }, [bioFetcher.data]);
@@ -64,7 +65,7 @@ export default function Heading() {
   };
 
   return (
-    <div className="">
+    <div className="z-20">
       <div className="md:flex -mt-14">
         {/* CIRCLE */}
         <div className="bg-blue-100 rounded-full lg:w-36 lg:h-36 sm:h-32 sm:w-32 h-28 w-28 flex items-center justify-center mr-5 lg:ml-20 ml-10 md:mb-14 border-4 border-white">
@@ -122,7 +123,7 @@ export default function Heading() {
                   <input
                     type="hidden"
                     name="target-updated"
-                    value="freelancer-bio" // this value should match the target in the route.tsx
+                    value="employer-bio" // this value should match the target in the route.tsx
                   />
                   <div className="grid grid-cols-2 gap-4">
                     {/* FIRST NAME */}
@@ -173,7 +174,7 @@ export default function Heading() {
                         name="website"
                         label="Personal Website"
                         className="peer mt-1"
-                        defaultValue={bioInfo.websiteURL} // comment that for the wierd error (cannot find ...)
+                        defaultValue={bioInfo.websiteURL || ""} // comment that for the wierd error (cannot find ...)
                       />
                       <FaGlobe className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                     </div>
@@ -254,8 +255,8 @@ export default function Heading() {
             {/* ADD LOCATION */}
             {bioInfo.location ? (
               // comment that for the wierd error (cannot find ...)
-              <span className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit">
-                <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
+              <span className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit">
+                <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2 mt-1" />
                 {bioInfo.location}
                 {/* // comment that for the wierd error (cannot find ...) */}
               </span>
@@ -263,9 +264,9 @@ export default function Heading() {
               // comment that for the wierd error (cannot find ...)
               <button
                 onClick={() => handleTriggerClick(locationInputRef)}
-                className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
               >
-                <FaMapMarkerAlt className="h-3 w-3 mr-2 mt-1" />
+                <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
                 Add Location
               </button>
             )}
@@ -274,8 +275,8 @@ export default function Heading() {
             {/* ADD WEBSITE */}
             {bioInfo.websiteURL ? (
               // comment that for the wierd error (cannot find ...)
-              <span className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
-                <FaGlobe className="h-3 w-3 mr-2 mt-1" />
+              <span className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
+                <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2 mt-1" />
                 <a
                   href={parseHTTP(bioInfo.websiteURL)} // comment that for the wierd error (cannot find ...)
                   target="_blank"
@@ -288,9 +289,9 @@ export default function Heading() {
             ) : (
               <button
                 onClick={() => handleTriggerClick(websiteInputRef)}
-                className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white w-fit"
+                className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit"
               >
-                <FaGlobe className="h-3 w-3 mr-2 mt-1" />
+                <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
                 Add Website
               </button>
             )}
