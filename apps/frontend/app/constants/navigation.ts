@@ -3,7 +3,7 @@
 
 import { TFunction } from "i18next";
 import { FaBriefcase, FaCog, FaFileAlt } from "react-icons/fa";
-import { AiOutlineLayout } from "react-icons/ai";
+import { MdSpaceDashboard } from "react-icons/md";
 
 // this is the main navigation
 export const navigation = function (t: TFunction) {
@@ -43,7 +43,7 @@ export const sidebarEmployerNav = function (t: TFunction) {
     {
       label: t("dashboardEmployerDashboardLable"),
       href: "/dashboard",
-      icon: AiOutlineLayout, // Dashboard icon
+      icon: MdSpaceDashboard, // Dashboard icon
     },
     {
       label: t("dashboardEmployerManageJobsLable"),
@@ -68,22 +68,27 @@ export const sidebarFreelancerNav = function (t: TFunction) {
     {
       label: t("dashboardFreelancerDashboardLable"),
       href: "/dashboard",
+      icon: MdSpaceDashboard,
     },
     {
       label: t("dashboardFreelancerBrowseJobsLable"),
       href: "/browse-jobs",
+      icon: FaBriefcase,
     },
     {
       label: t("dashboardFreelancerTimeSheetLable"),
       href: "/timesheet",
+      icon: FaFileAlt,
     },
     {
       label: t("dashboardFreelancerReportsLable"),
       href: "/reports",
+      icon: FaFileAlt,
     },
     {
       label: t("dashboardFreelancerSettingsLable"),
       href: "/settings",
+      icon: FaCog,
     },
   ];
 };

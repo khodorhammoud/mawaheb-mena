@@ -3,7 +3,7 @@ import {
   sidebarFreelancerNav,
 } from "~/constants/navigation";
 import { useTranslation } from "react-i18next";
-import { NavLink, useLoaderData, useLocation } from "@remix-run/react";
+import { NavLink, useLoaderData } from "@remix-run/react";
 import clsx from "clsx";
 import { AccountType } from "~/types/enums";
 import { FaUser } from "react-icons/fa6";
@@ -14,7 +14,7 @@ export default function Sidebar() {
     profile;
   }>();
   const { t } = useTranslation();
-  const location = useLocation(); // Get the current location
+  // const location = useLocation(); // Get the current location
   let menuNavigation;
   switch (accountType) {
     case AccountType.Freelancer:
@@ -67,7 +67,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="mt-8">
-          {menuNavigation.map((navItem, index) => (
+          {menuNavigation.map((navItem) => (
             <NavLink
               key={navItem.label}
               to={navItem.href}

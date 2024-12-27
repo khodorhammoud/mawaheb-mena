@@ -24,12 +24,10 @@ export default function Layout() {
   const { isOnboarded } = useLoaderData<{
     isOnboarded: boolean;
   }>();
-
   return (
     <div>
       <Header />
       <div className="flex mt-[12px]">
-        {/* Conditionally render Sidebar */}
         {isOnboarded ? (
           <>
             <Sidebar />
@@ -38,7 +36,8 @@ export default function Layout() {
             </div>
           </>
         ) : (
-          <div className="container mt-10 p-5 lg:mr-8">
+          // Add 'w-full' to make the container take full width when no sidebar
+          <div className="container w-full mt-10 p-5">
             <Outlet />
           </div>
         )}
