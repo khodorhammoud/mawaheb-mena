@@ -145,7 +145,7 @@ export function Calendar({
         Caption: (_props: CaptionProps) => (
           <CustomCaption
             displayMonth={_props.displayMonth}
-            locale="en-US"
+            locale="en-CA"
             onMonthChange={props.onMonthChange}
             selected={props.selected}
           />

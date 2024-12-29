@@ -249,6 +249,7 @@ export async function getProfileInfo(
   return null;
 }
 
+// get profile
 export async function getCurrentProfileInfo(
   request: Request
 ): Promise<Employer | Freelancer | null> {
@@ -259,6 +260,15 @@ export async function getCurrentProfileInfo(
   });
 
   return currentProfile;
+}
+
+export async function getProfileInfoByAccountId(accountId: number) {
+  // Replace this with the actual implementation to fetch profile
+  const profile = await getProfileInfo({ accountId });
+  if (!profile) {
+    throw new Error(`Profile not found for account ID: ${accountId}`);
+  }
+  return profile;
 }
 
 /**

@@ -31,7 +31,7 @@ export function TimeHeader({ selectedDate, onDateChange }: TimeHeaderProps) {
       case 1:
         return "Tomorrow";
       default:
-        return selected.toLocaleDateString("en-GB");
+        return selected.toLocaleDateString("en-CA");
     }
   };
 

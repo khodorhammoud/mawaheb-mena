@@ -17,6 +17,7 @@ interface TimeGridProps {
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
 }
 
+let printed = false;
 export function TimeGrid({
   timesheet,
   selectedDate,
@@ -70,8 +71,8 @@ export function TimeGrid({
       <div className="grid grid-cols-4 gap-[8px]">
         <div className="mt-auto"></div>
         {displayedDays.map((day) => {
-          const dateKey = day.date.toISOString().split("T")[0];
-          const dayEntries = timesheet[dateKey]?.entries || [];
+          const dateKey = day.date.toLocaleDateString("en-CA");
+          const entries = timesheet[dateKey]?.entries || [];
 
           return (
             <div
@@ -81,7 +82,7 @@ export function TimeGrid({
             >
               <div className="mt-auto">
                 <DayTotal
-                  total={calculateDayTotal(dayEntries)}
+                  total={calculateDayTotal(entries)}
                   className="bg-gray-50"
                 />
               </div>
@@ -117,7 +118,9 @@ function TimeGridRow({
           day={day}
           time={time}
           timeIndex={timeIndex}
-          timesheet={timesheet}
+          timesheetEntry={
+            timesheet[day.date.toLocaleDateString("en-CA")]?.entries || []
+          }
           timeSlots={timeSlots}
           onEntryClick={onEntryClick}
         />

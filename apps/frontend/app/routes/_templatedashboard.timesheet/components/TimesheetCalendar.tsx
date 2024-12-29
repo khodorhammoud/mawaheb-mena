@@ -29,7 +29,9 @@ export function TimesheetCalendar({
       <Calendar
         mode="single"
         selected={selectedDate}
-        onSelect={(date) => date && onDateSelect(date)}
+        onSelect={(date) => {
+          onDateSelect(date);
+        }}
         onMonthChange={setCurrentMonth}
         month={currentMonth}
         className="shadow-md rounded-lg p-3 transition-all duration-75 float-right"

@@ -19,24 +19,31 @@ export function useTimeSlots(selectedDate: Date) {
   );
 
   const getDisplayedDates = () => {
+    // Create dates ensuring they're in local time
     const currentDate = new Date(selectedDate);
-    const previousDay = new Date(currentDate);
-    previousDay.setDate(currentDate.getDate() - 1);
-    const nextDay = new Date(currentDate);
-    nextDay.setDate(currentDate.getDate() + 1);
+    // Reset time to start of day in local time
+    currentDate.setHours(0, 0, 0, 0);
 
+    const previousDay = new Date(currentDate);
+    previousDay.setDate(previousDay.getDate() - 1);
+
+    const nextDay = new Date(currentDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    // nextDay.setHours(23, 59, 59, 999);
     return [previousDay, currentDate, nextDay];
   };
 
   const displayedDates = getDisplayedDates();
-  const displayedDays = displayedDates.map((date) => ({
-    date,
-    dayName: date.toLocaleDateString("en-US", { weekday: "long" }),
-    formattedDate: date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    }),
-  }));
+  const displayedDays = displayedDates.map((date) => {
+    return {
+      date,
+      dayName: date.toLocaleDateString(undefined, { weekday: "long" }),
+      formattedDate: date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      }),
+    };
+  });
 
   return { timeSlots, displayedDays };
 }

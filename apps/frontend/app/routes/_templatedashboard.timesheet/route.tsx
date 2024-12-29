@@ -10,6 +10,7 @@ import TimeSheetPage from "./components/TimeSheetPage";
 import JobsPage from "./components/JobsPage";
 import { JobApplication } from "~/types/Job";
 import { useState } from "react";
+import { getFreelancerIdFromUserId } from "~/servers/user.server";
 export async function loader({ request, params }: LoaderFunctionArgs) {
   // user must be a published freelancer
   const userId = await requireUserIsFreelancerPublished(request);
@@ -17,14 +18,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const freelancerId = await getFreelancerIdFromUserId(userId);
+
   // get current freelancer job applications
   const jobApplicationsPartialData =
-    await getJobApplicationsByFreelancerId(userId);
+    await getJobApplicationsByFreelancerId(freelancerId);
+
   const jobApplications = await Promise.all(
     jobApplicationsPartialData.map(async (jobApp) => {
       const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
         jobApp.jobId,
-        userId
+        freelancerId
       );
       return jobApplication;
     })
@@ -42,14 +46,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 const Page: React.FC<TimesheetProps> = ({
   allowOverlap = true,
 }: TimesheetProps) => {
-  console.log("allowOverlap", allowOverlap);
   const [selectedJobApplication, setSelectedJobApplication] =
     useState<JobApplication | null>(null);
 
   return (
     <div>
       {selectedJobApplication ? (
-        <TimeSheetPage jobApplication={selectedJobApplication} />
+        <TimeSheetPage
+          allowOverlap={allowOverlap}
+          jobApplication={selectedJobApplication}
+        />
       ) : (
         <JobsPage onJobSelect={setSelectedJobApplication} />
       )}

@@ -71,10 +71,13 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             ) : (
               <Button
                 variant="outline"
+                asChild={true}
                 className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 ml-5"
               >
-                {props.triggerIcon}
-                <span>{props.triggerLabel}</span>
+                <span>
+                  {props.triggerIcon}
+                  <span>{props.triggerLabel}</span>
+                </span>
               </Button>
             )}
           </DialogTrigger>

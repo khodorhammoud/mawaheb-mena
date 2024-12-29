@@ -1,14 +1,14 @@
-import { Job, JobApplication, JobFilter } from "~/types/Job";
 import { db } from "../db/drizzle/connector";
+import { and, eq, inArray } from "drizzle-orm";
+import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
   jobCategoriesTable,
   jobsTable,
+  freelancersTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
-import { and, eq, inArray } from "drizzle-orm";
-// import { getProfileInfo } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -58,6 +58,67 @@ export async function createJobPosting(
   };
 }
 
+/**
+ * update a job posting
+ *
+ * @param jobId the Id of the job i wanna update
+ * @param jobData the data i'll update in the job
+ * @returns success or failure :)
+ */
+export async function updateJob(
+  jobId: number,
+  jobData: Partial<Job>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // validating and cleaning data before passing them to drizzle update or insert script 🍔
+    const requiredSkills = Array.isArray(jobData.requiredSkills)
+      ? jobData.requiredSkills.map((skill) => ({
+          name: skill.name.trim(),
+          isStarred: !!skill.isStarred,
+        }))
+      : [];
+
+    const validatedJobData = {
+      title: jobData.title?.trim(),
+      description: jobData.description?.trim(),
+      jobCategoryId: jobData.jobCategoryId || null,
+      workingHoursPerWeek: jobData.workingHoursPerWeek || null,
+      locationPreference: jobData.locationPreference?.trim(),
+      requiredSkills:
+        requiredSkills.length > 0
+          ? {
+              set: [], // Clear existing skills
+              create: requiredSkills,
+            }
+          : undefined,
+      projectType: jobData.projectType?.trim(),
+      budget: jobData.budget || null,
+      experienceLevel: jobData.experienceLevel?.trim(),
+      status: jobData.status || null,
+    };
+
+    // Step 2: Perform the update using validated data
+    const updatedJob = await db
+      .update(jobsTable)
+      .set(validatedJobData)
+      .where(eq(jobsTable.id, jobId))
+      .returning();
+
+    // Step 3: Check if the update was successful
+    if (!updatedJob || updatedJob.length === 0) {
+      throw new Error("Job update failed: No rows returned.");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error during job update:", error);
+    return {
+      success: false,
+      error: "Failed to update job posting.",
+    };
+  }
+}
+
 export async function getEmployerJobs(
   employerId: number,
   jobStatus?: JobStatus[]
@@ -99,33 +160,28 @@ export async function getEmployerJobs(
   }));
 }
 
-export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
+/* export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
   // freelancer: Freelancer
   // fetch recommended jobs
   const recommendedJobs = await db
     .select()
     .from(jobsTable)
-    .where(eq(jobsTable.status, JobStatus.Active));
+    .where(
+      and(
+        eq(jobsTable.status, JobStatus.Active),
+        eq(jobsTable.employerId, freelancer.id)
+      )
+    );
   return recommendedJobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
+    ...job,
     status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
   }));
-}
+} */
 
 /**
  * get a single job by its ID
  *
- * @param jobId - the ID of the job to get
+ * @param jobId the ID of the job to get
  * @returns the job with the given ID or null if it doesn't exist
  */
 export async function getJobById(jobId: number): Promise<Job | null> {
@@ -175,18 +231,8 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     .offset((filter.page - 1) * filter.pageSize);
 
   return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
+    ...job,
     status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
   }));
 }
 
@@ -211,7 +257,8 @@ export async function getJobApplicationByJobIdAndFreelancerId(
         eq(jobApplicationsTable.freelancerId, freelancerId)
       )
     );
-  if (!jobApplication) {
+
+  if (!jobApplication || jobApplication.length === 0) {
     return null;
   }
   const returnedJobApplication: JobApplication = {
@@ -264,14 +311,119 @@ export async function getJobApplicationsByFreelancerId(
   if (!jobStatus) {
     jobStatus = [JobStatus.Active];
   }
+
   const jobApplications = await db
     .select()
     .from(jobApplicationsTable)
     .where(
       and(
-        eq(jobApplicationsTable.freelancerId, freelancerId),
-        inArray(jobApplicationsTable.status, jobStatus)
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+        // inArray(jobApplicationsTable.status, jobStatus)
       )
     );
   return jobApplications as unknown as JobApplication[];
+}
+
+/* Fetch job applications by job ID.
+ * @param jobId - The ID of the job to fetch applications for.
+ * @returns The list of job applications.
+ */
+export async function fetchJobApplications(
+  jobId: number
+): Promise<JobApplication[]> {
+  const applications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  return applications as unknown as JobApplication[];
+}
+
+/**
+ *
+ * Fetches the applicants for a given jobs list
+ * @param employerId
+ * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
+ *
+ */
+export async function fetchJobsWithApplications(
+  employerId: number
+): Promise<JobCardData[]> {
+  const jobs = await getEmployerJobs(employerId);
+  return Promise.all(
+    jobs.map(async (job) => {
+      const applications = await fetchJobApplications(job.id);
+      return {
+        job: job,
+        applications: applications,
+        /* .map((applicant) => ({
+          id: applicant.id,
+          freelancerId: applicant.freelancerId,
+          // TODO: Replace with actual logic
+          photoUrl: `https://example.com/photos/${applicant.freelancerId}`,
+          status: applicant.status,
+        })), */
+        interviewedCount: applications.filter(
+          (app) => app.status === JobApplicationStatus.Shortlisted
+        ).length,
+        // bl mabda2, hayde ma 2ila 3azze 3ashen ma fi interviewed aplicants yet
+      };
+    })
+  );
+}
+
+/**
+ *
+ * get freelancers id's that are linked to a job using the same job id
+ * @param jobId
+ * @returns
+ * @throws Error
+ */
+export async function getFreelancersIdsByJobId(jobId: number) {
+  const applications = await fetchJobApplications(jobId);
+
+  const freelancerIds = applications.map(
+    (application) => application.freelancerId
+  );
+
+  if (freelancerIds.length === 0) {
+    throw new Error(`No freelancers found for job ID: ${jobId}`);
+  }
+
+  return freelancerIds;
+}
+
+/**
+ *
+ * get freelancers content
+ * @param freelancerIds
+ * @returns
+ * @throws Error
+ */
+export async function getFreelancerDetails(freelancerIds: number[]) {
+  if (freelancerIds.length === 0) {
+    return [];
+  }
+
+  const freelancers = await db
+    .select()
+    .from(freelancersTable)
+    .where(inArray(freelancersTable.id, freelancerIds));
+
+  return freelancers; // Return the raw result directly
+}
+
+export async function updateJobStatus(
+  jobId: number,
+  newStatus: string
+): Promise<void> {
+  try {
+    await db
+      .update(jobsTable)
+      .set({ status: newStatus })
+      .where(eq(jobsTable.id, jobId));
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    throw new Error("Failed to update job status.");
+  }
 }

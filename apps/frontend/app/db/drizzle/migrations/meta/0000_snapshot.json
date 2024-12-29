@@ -1,5 +1,5 @@
 {
-  "id": "5b28fc36-2454-4c2f-ade0-d4601f8f6a01",
+  "id": "09004dd6-05f0-47af-a490-40c412950143",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -60,7 +60,9 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       }
     },
@@ -93,8 +95,12 @@
           "name": "account_languages_account_id_accounts_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "accounts",
-          "columnsFrom": ["account_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -102,8 +108,12 @@
           "name": "account_languages_language_id_languages_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "languages",
-          "columnsFrom": ["language_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "language_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -199,8 +209,12 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -210,7 +224,9 @@
         "accounts_slug_unique": {
           "name": "accounts_slug_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": [
+            "slug"
+          ]
         }
       }
     },
@@ -250,8 +266,12 @@
           "name": "employer_industries_employer_id_employers_id_fk",
           "tableFrom": "employer_industries",
           "tableTo": "employers",
-          "columnsFrom": ["employer_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -259,8 +279,12 @@
           "name": "employer_industries_industry_id_industries_id_fk",
           "tableFrom": "employer_industries",
           "tableTo": "industries",
-          "columnsFrom": ["industry_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "industry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -388,8 +412,12 @@
           "name": "employers_account_id_accounts_id_fk",
           "tableFrom": "employers",
           "tableTo": "accounts",
-          "columnsFrom": ["account_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -433,8 +461,12 @@
           "name": "freelancer_languages_freelancer_id_freelancers_id_fk",
           "tableFrom": "freelancer_languages",
           "tableTo": "freelancers",
-          "columnsFrom": ["freelancer_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -442,8 +474,12 @@
           "name": "freelancer_languages_language_id_languages_id_fk",
           "tableFrom": "freelancer_languages",
           "tableTo": "languages",
-          "columnsFrom": ["language_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "language_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -553,8 +589,12 @@
           "name": "freelancers_account_id_accounts_id_fk",
           "tableFrom": "freelancers",
           "tableTo": "accounts",
-          "columnsFrom": ["account_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -592,7 +632,9 @@
         "industries_label_unique": {
           "name": "industries_label_unique",
           "nullsNotDistinct": false,
-          "columns": ["label"]
+          "columns": [
+            "label"
+          ]
         }
       }
     },
@@ -638,8 +680,12 @@
           "name": "job_applications_job_id_jobs_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "jobs",
-          "columnsFrom": ["job_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -647,8 +693,12 @@
           "name": "job_applications_freelancer_id_freelancers_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "freelancers",
-          "columnsFrom": ["freelancer_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -721,8 +771,12 @@
           "name": "job_skills_job_id_jobs_id_fk",
           "tableFrom": "job_skills",
           "tableTo": "jobs",
-          "columnsFrom": ["job_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -730,8 +784,12 @@
           "name": "job_skills_skill_id_skills_id_fk",
           "tableFrom": "job_skills",
           "tableTo": "skills",
-          "columnsFrom": ["skill_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -837,8 +895,12 @@
           "name": "jobs_employer_id_employers_id_fk",
           "tableFrom": "jobs",
           "tableTo": "employers",
-          "columnsFrom": ["employer_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -846,8 +908,12 @@
           "name": "jobs_job_category_id_job_categories_id_fk",
           "tableFrom": "jobs",
           "tableTo": "job_categories",
-          "columnsFrom": ["job_category_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "job_category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -920,8 +986,12 @@
           "name": "preferred_working_times_account_id_accounts_id_fk",
           "tableFrom": "preferred_working_times",
           "tableTo": "accounts",
-          "columnsFrom": ["account_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -951,6 +1021,139 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'{}'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.timesheet_entries": {
+      "name": "timesheet_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_application_id": {
+          "name": "job_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_entries_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_entries_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_entries",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_entries_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_entries_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_entries",
+          "tableTo": "job_applications",
+          "columnsFrom": [
+            "job_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.timesheet_submissions": {
+      "name": "timesheet_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "timesheet_entries_ids": {
+          "name": "timesheet_entries_ids",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "day": {
+          "name": "day",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -1007,8 +1210,12 @@
           "name": "user_verifications_user_id_users_id_fk",
           "tableFrom": "user_verifications",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

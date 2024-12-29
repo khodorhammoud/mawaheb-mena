@@ -22,15 +22,20 @@ export const useTimesheet = (
   useEffect(() => {
     if (timesheetFetcher.data?.timesheetEntries) {
       const entries = timesheetFetcher.data?.timesheetEntries || [];
-
       const groupedEntriesByDate = entries.reduce(
         (acc, entry) => {
-          const dateKey = new Date(entry.startTime).toISOString().split("T")[0];
+          // Create a new date from the UTC string
+          const date = new Date(entry.date);
+          // Get date string in YYYY-MM-DD format based on local time
+          const dateKey = date.toLocaleDateString("en-CA");
+
           if (!acc[dateKey]) {
             acc[dateKey] = { entries: [] };
           }
+
           acc[dateKey].entries.push({
             ...entry,
+            date,
             startTime: new Date(entry.startTime).getTime(),
             endTime: new Date(entry.endTime).getTime(),
           });
@@ -38,8 +43,6 @@ export const useTimesheet = (
         },
         {} as { [key: string]: { entries: TimesheetEntry[] } }
       );
-
-      console.log("groupedEntriesByDate", groupedEntriesByDate);
 
       setTimesheet(groupedEntriesByDate);
     }
@@ -50,7 +53,8 @@ export const useTimesheet = (
     const jobApplicationId = jobApplication.id;
     // fromTime is selectedDate -1 day
     const fromTime = subDays(selectedDate, 1);
-    const toTime = addDays(selectedDate, 2);
+    const toTime = addDays(selectedDate, 1);
+    toTime.setHours(23, 59, 59, 999);
     timesheetFetcher.load(
       `/api/timesheet?jobApplicationId=${jobApplicationId}&fromTime=${fromTime}&toTime=${toTime}`
     );

@@ -4,11 +4,11 @@ import AppFormField from "~/common/form-fields";
 import { FaLink } from "react-icons/fa";
 import type { FormFieldProps } from "../types";
 import VideoUpload from "~/common/upload/videoUpload";
+import Or from "~/common/or/Or";
 
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
 };
-import Or from "~/common/or/Or";
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -72,6 +72,7 @@ export const FormFields = {
       </div>
     </div>
   ),
+
   increment: ({ value, handleIncrement, props }: FormFieldProps) => (
     <div className="flex flex-col items-center space-y-4 w-full">
       <div className="flex items-center border border-gray-300 rounded-xl w-full">
@@ -102,6 +103,7 @@ export const FormFields = {
       </div>
     </div>
   ),
+
   video: ({ value, onChange, name, props }: FormFieldProps) => (
     <div className="">
       {/* UPLOAD */}

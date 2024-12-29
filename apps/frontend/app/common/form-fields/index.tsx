@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import PhoneNumberField from "./phoneNbs/PhoneNumberField";
 
 const AppFormField = ({
   type = "text",
@@ -11,13 +12,21 @@ const AppFormField = ({
   className = "",
   showPasswordHint = true,
   col = 4,
-  defaultValue = "", // New prop to handle default values
-  onChange, // Add the `onChange` prop
+  defaultValue = "",
+  onChange,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleNumberChange = (event) => {
+    const { value } = event.target;
+    const numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+    if (onChange) {
+      onChange({ target: { id, name, value: numericValue } });
+    }
   };
 
   const textareaHeight = `${col * 1.5}rem`;
@@ -27,61 +36,72 @@ const AppFormField = ({
       {/* INPUTS */}
       {/* INPUTS */}
       {/* INPUTS */}
-      {type === "select" ? (
-        // select input
-        <select
+      {id === "phoneState" ? (
+        <PhoneNumberField
           id={id}
           name={name}
-          className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
-          spellCheck="false"
-          defaultValue={defaultValue} // Handle default value for select
-          onChange={onChange} // Attach `onChange` here
-        >
-          <option value="" disabled selected hidden></option>
-          {options.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      ) : type === "number" ? (
-        // number
-        <input
-          type="number"
-          id={id}
-          name={name}
+          defaultValue={defaultValue}
           placeholder={placeholder}
-          className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900  autofill-fix`}
-          autoComplete="on"
-          spellCheck="false"
-          defaultValue={defaultValue} // Handle default value for input
-          onChange={onChange} // Attach `onChange` here
+          onChange={onChange}
         />
-      ) : type === "textarea" ? (
-        // textarea input
-        <textarea
-          id={id}
-          name={name}
-          placeholder={placeholder}
-          style={{ height: textareaHeight }} // Apply dynamic height style
-          className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix resize-none`}
-          spellCheck="false"
-          defaultValue={defaultValue} // Handle default value for textarea
-          onChange={onChange} // Attach `onChange` here
-        ></textarea>
       ) : (
-        // else inputs
-        <input
-          type={type === "password" && showPassword ? "text" : type}
-          id={id}
-          name={name}
-          placeholder={placeholder}
-          className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
-          autoComplete="on"
-          spellCheck="false"
-          defaultValue={defaultValue} // Handle default value for input
-          onChange={onChange} // Attach `onChange` here
-        />
+        <>
+          {type === "select" ? (
+            // select input
+            <select
+              id={id}
+              name={name}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+              spellCheck="false"
+              defaultValue={defaultValue}
+              onChange={onChange}
+            >
+              <option value="" disabled selected hidden></option>
+              {options.map((option, index) => (
+                <option key={index} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : type === "number" || id === "number" ? ( // Numeric input for id="number"
+            <input
+              type="tel" // type="tel" is used for better UX on mobile devices
+              id={id}
+              name={name}
+              placeholder={placeholder}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix`}
+              autoComplete="on"
+              spellCheck="false"
+              defaultValue={defaultValue}
+              onChange={handleNumberChange} // Custom handler for numeric validation
+            />
+          ) : type === "textarea" ? (
+            // textarea input
+            <textarea
+              id={id}
+              name={name}
+              placeholder={placeholder}
+              style={{ height: textareaHeight }} // Apply dynamic height style
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix resize-none`}
+              spellCheck="false"
+              defaultValue={defaultValue} // Handle default value for textarea
+              onChange={onChange} // Attach `onChange` here
+            ></textarea>
+          ) : (
+            // else inputs
+            <input
+              type={type === "password" && showPassword ? "text" : type}
+              id={id}
+              name={name}
+              placeholder={placeholder}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+              autoComplete="on"
+              spellCheck="false"
+              defaultValue={defaultValue} // Handle default value for input
+              onChange={onChange} // Attach `onChange` here
+            />
+          )}
+        </>
       )}
 
       {/* LABELS */}
@@ -155,7 +175,7 @@ AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
+  label: PropTypes.node.isRequired,
   placeholder: PropTypes.string,
   showPasswordHint: PropTypes.bool,
   options: PropTypes.arrayOf(
@@ -165,10 +185,10 @@ AppFormField.propTypes = {
     })
   ),
   className: PropTypes.string,
-  col: PropTypes.number, // New prop for dynamic height of textarea
-  placeholderTextSize: PropTypes.string, // Prop type for custom placeholder text size
-  defaultValue: PropTypes.string, // New prop for default values
-  onChange: PropTypes.func, // Prop type for `onChange` event
+  col: PropTypes.number,
+  placeholderTextSize: PropTypes.string,
+  defaultValue: PropTypes.string,
+  onChange: PropTypes.func,
 };
 
 export default AppFormField;

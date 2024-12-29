@@ -18,6 +18,7 @@ const Timesheet: React.FC<TimesheetProps> = ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
+
   const {
     timesheet,
     popup,
@@ -28,6 +29,7 @@ const Timesheet: React.FC<TimesheetProps> = ({
     formData,
     setFormData,
   } = useTimesheet(allowOverlap, jobApplication, selectedDate);
+
   return (
     <TooltipProvider>
       <TimeHeader selectedDate={selectedDate} onDateChange={setSelectedDate} />

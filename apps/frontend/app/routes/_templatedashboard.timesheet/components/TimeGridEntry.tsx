@@ -9,7 +9,7 @@ import {
 } from "../utils/timeEntryCalculations";
 import {
   TimesheetEntry,
-  TimesheetData,
+  // TimesheetData,
   TimeSlot,
 } from "../../../types/Timesheet";
 
@@ -17,21 +17,19 @@ interface TimeGridEntryProps {
   day: { date: Date };
   time: TimeSlot;
   timeIndex: number;
-  timesheet: TimesheetData;
+  timesheetEntry: TimesheetEntry[];
   timeSlots: TimeSlot[];
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
 }
-
 export function TimeGridEntry({
   day,
   time,
   timeIndex,
-  timesheet,
+  timesheetEntry,
   timeSlots,
   onEntryClick,
 }: TimeGridEntryProps) {
-  const entries =
-    timesheet[day.date.toISOString().split("T")[0]]?.entries || [];
+  const entries = timesheetEntry || [];
   const processedEntries = processEntriesForDay(entries);
   const entriesToRender = processedEntries.filter((entry) => {
     const calcResult = calculateContinuousFill(
@@ -39,7 +37,7 @@ export function TimeGridEntry({
       entry.endTime,
       timeSlots
     );
-    if (!calcResult) return false;
+
     return calcResult.firstSlotIndex === timeIndex;
   });
 
@@ -51,7 +49,6 @@ export function TimeGridEntry({
       onClick={() => onEntryClick(day.date, time, null)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          console.log("day inside", day);
           onEntryClick(day.date, time, null);
         }
       }}
