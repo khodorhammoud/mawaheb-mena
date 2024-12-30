@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { TimesheetEntry, EntryPopup, TimeSlot } from "~/types/Timesheet";
+import type {
+  TimesheetEntry,
+  EntryPopup,
+  TimeSlot,
+  TimesheetData,
+} from "~/types/Timesheet";
 import { useToast } from "~/components/hooks/use-toast";
 import { useFetcher } from "@remix-run/react";
 import { JobApplication } from "~/types/Job";
@@ -17,33 +22,40 @@ export const useTimesheet = (
       startTime: Date;
       endTime: Date;
     })[];
+    isSubmitted: boolean;
   }>();
 
   useEffect(() => {
     if (timesheetFetcher.data?.timesheetEntries) {
+      console.log("timesheetFetcher.data", timesheetFetcher.data);
       const entries = timesheetFetcher.data?.timesheetEntries || [];
-      const groupedEntriesByDate = entries.reduce(
-        (acc, entry) => {
-          // Create a new date from the UTC string
-          const date = new Date(entry.date);
-          // Get date string in YYYY-MM-DD format based on local time
-          const dateKey = date.toLocaleDateString("en-CA");
+      const groupedEntriesByDate = entries.reduce((acc, entry) => {
+        const date = new Date(entry.date);
+        const dateKey = date.toLocaleDateString("en-CA");
 
-          if (!acc[dateKey]) {
-            acc[dateKey] = { entries: [] };
-          }
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            entries: [],
+            isSubmitted: false,
+          };
+        }
 
-          acc[dateKey].entries.push({
-            ...entry,
-            date,
-            startTime: new Date(entry.startTime).getTime(),
-            endTime: new Date(entry.endTime).getTime(),
-          });
-          return acc;
-        },
-        {} as { [key: string]: { entries: TimesheetEntry[] } }
-      );
-
+        acc[dateKey].entries.push({
+          ...entry,
+          date,
+          startTime: new Date(entry.startTime).getTime(),
+          endTime: new Date(entry.endTime).getTime(),
+        });
+        // check if the day has at least one submission
+        if (
+          acc[dateKey].entries.length > 0 &&
+          acc[dateKey].entries[0].isSubmitted
+        ) {
+          acc[dateKey].isSubmitted = true;
+        }
+        return acc;
+      }, {} as TimesheetData);
+      console.log(groupedEntriesByDate);
       setTimesheet(groupedEntriesByDate);
     }
   }, [timesheetFetcher.data]);
@@ -60,9 +72,7 @@ export const useTimesheet = (
     );
   }, [selectedDate]);
 
-  const [timesheet, setTimesheet] = useState<{
-    [key: string]: { entries: TimesheetEntry[] };
-  }>({});
+  const [timesheet, setTimesheet] = useState<TimesheetData>({});
 
   const [formData, setFormData] = useState<TimesheetEntry>({
     id: Date.now(),
@@ -87,7 +97,7 @@ export const useTimesheet = (
     clickedEntry: TimesheetEntry | null = null
   ) => {
     const isEdit = clickedEntry !== null;
-    const dateKey = date.toISOString().split("T")[0];
+    const dateKey = date.toLocaleDateString("en-CA");
     const entryIndex = isEdit
       ? (timesheet[dateKey]?.entries.findIndex(
           (e) => e.id === clickedEntry.id
@@ -159,7 +169,7 @@ export const useTimesheet = (
 
     setTimesheet((prev) => {
       if (!prev[selectedDay]) {
-        prev[selectedDay] = { entries: [] };
+        prev[selectedDay] = { entries: [], isSubmitted: false };
       }
 
       const entries = [...prev[selectedDay].entries];

@@ -50,7 +50,7 @@ const Page: React.FC<TimesheetProps> = ({
     useState<JobApplication | null>(null);
 
   return (
-    <div>
+    <div className="mt-10 mb-20">
       {selectedJobApplication ? (
         <TimeSheetPage
           allowOverlap={allowOverlap}

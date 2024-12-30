@@ -8,11 +8,17 @@ export type TimesheetEntry = {
   description: string;
   column?: number;
   totalColumns?: number;
+  isSubmitted?: boolean;
 };
 
-export type TimesheetData = {
-  [key: string]: { entries: TimesheetEntry[] };
-};
+export interface TimesheetDay {
+  entries: TimesheetEntry[];
+  isSubmitted?: boolean;
+}
+
+export interface TimesheetData {
+  [key: string]: TimesheetDay;
+}
 
 export type EntryPopup = {
   isOpen: boolean;

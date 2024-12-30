@@ -38,6 +38,7 @@ const Timesheet: React.FC<TimesheetProps> = ({
         <TimeGrid
           timesheet={timesheet}
           selectedDate={selectedDate}
+          jobApplicationId={jobApplication.id}
           onEntryClick={handleGridClick}
         />
 

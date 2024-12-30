@@ -9,18 +9,20 @@ import type {
 } from "../../../types/Timesheet";
 import { useTimeSlots } from "../hooks/useTimeSlots";
 import { DayTotal } from "./DayTotal";
+import { SubmitDayButton } from "./SubmitDayButton";
 import { calculateDayTotal } from "../utils";
 
 interface TimeGridProps {
   timesheet: TimesheetData;
   selectedDate: Date;
+  jobApplicationId: number;
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
 }
 
-let printed = false;
 export function TimeGrid({
   timesheet,
   selectedDate,
+  jobApplicationId,
   onEntryClick,
 }: TimeGridProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -73,6 +75,7 @@ export function TimeGrid({
         {displayedDays.map((day) => {
           const dateKey = day.date.toLocaleDateString("en-CA");
           const entries = timesheet[dateKey]?.entries || [];
+          const dayTotal = calculateDayTotal(entries);
 
           return (
             <div
@@ -84,6 +87,12 @@ export function TimeGrid({
                 <DayTotal
                   total={calculateDayTotal(entries)}
                   className="bg-gray-50"
+                />
+                <SubmitDayButton
+                  date={dateKey}
+                  totalHours={dayTotal}
+                  jobApplicationId={jobApplicationId}
+                  isSubmitted={timesheet[dateKey]?.isSubmitted}
                 />
               </div>
             </div>
@@ -123,6 +132,9 @@ function TimeGridRow({
           }
           timeSlots={timeSlots}
           onEntryClick={onEntryClick}
+          isSubmitted={
+            timesheet[day.date.toLocaleDateString("en-CA")]?.isSubmitted
+          }
         />
       ))}
     </>

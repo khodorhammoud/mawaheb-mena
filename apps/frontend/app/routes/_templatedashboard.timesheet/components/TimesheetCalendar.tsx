@@ -20,7 +20,7 @@ export function TimesheetCalendar({
   }, [selectedDate]);
 
   const hasEntriesForDate = (date: Date) => {
-    const dateKey = date.toISOString().split("T")[0];
+    const dateKey = date.toLocaleDateString("en-CA");
     return timesheet[dateKey]?.entries?.length > 0;
   };
 

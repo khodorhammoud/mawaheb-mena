@@ -5,6 +5,7 @@ import {
   getTimesheetEntriesFromDatabase,
   updateTimesheetEntryInDatabase,
   deleteTimesheetEntryFromDatabase,
+  getTimesheetSubmissions,
 } from "~/servers/timesheet.server";
 import { getFreelancerIdFromUserId } from "~/servers/user.server";
 import { TimesheetEntry } from "~/types/Timesheet";
@@ -68,7 +69,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return Response.json([]);
   }
 
-  return Response.json({ timesheetEntries });
+  const submissions = await getTimesheetSubmissions(
+    freelancerId,
+    jobApplicationId,
+    fromTimeDate,
+    toTimeDate
+  );
+
+  // Map submissions to dates for easy lookup
+  const submissionsByDate = submissions.reduce((acc, submission) => {
+    const dateKey = submission.submissionDate;
+    acc[dateKey] = submission;
+    return acc;
+  }, {});
+
+  // Include submission status in the response
+  const timesheetEntriesWithSubmission = timesheetEntries.map((entry) => ({
+    ...entry,
+    isSubmitted: !!submissionsByDate[entry.date.toLocaleDateString("en-CA")],
+  }));
+
+  return Response.json({ timesheetEntries: timesheetEntriesWithSubmission });
 }
 
 async function addTimesheetEntry(

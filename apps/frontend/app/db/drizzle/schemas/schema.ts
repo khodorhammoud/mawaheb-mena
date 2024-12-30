@@ -10,6 +10,7 @@ import {
   jsonb,
   json,
   date,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -397,20 +398,25 @@ export const timesheetEntriesTable = pgTable("timesheet_entries", {
 });
 
 /**
- * Define the daily submission of timesheet entries for a job application
+ * Define the timesheet submissions table schema
  * @property id - serial primary key
- * @property timesheetEntriesIds - an array of integers referencing the timesheetEntriesTable ids
- * @property day - date
- * @property notes - text
- * @property status - timesheetStatusEnum
- * @property createdAt - timestamp
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property job_application_id - integer referencing the jobApplicationsTable id
+ * @property submission_date - date
+ * @property total_hours - numeric
+ * @property status - varchar with length 50
+ * @property created_at - timestamp
+ * @property updated_at - timestamp
  */
 export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
   id: serial("id").primaryKey(),
-  timesheetEntriesIds: integer("timesheet_entries_ids").array(),
-  day: date("day"),
-  notes: text("notes"),
-  // status: timesheetStatusEnum("status"),
-  status: varchar("status", { length: 50 }), //timesheetStatusEnum("status"),
-  createdAt: timestamp("created_at").default(sql`now()`),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  jobApplicationId: integer("job_application_id").references(
+    () => jobApplicationsTable.id
+  ),
+  submissionDate: date("submission_date").notNull(), // The date the work was performed
+  totalHours: numeric("total_hours").notNull(),
+  status: varchar("status").notNull().default("pending"), // pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });

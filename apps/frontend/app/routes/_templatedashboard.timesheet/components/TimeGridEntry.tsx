@@ -20,6 +20,7 @@ interface TimeGridEntryProps {
   timesheetEntry: TimesheetEntry[];
   timeSlots: TimeSlot[];
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
+  isSubmitted: boolean;
 }
 export function TimeGridEntry({
   day,
@@ -28,6 +29,7 @@ export function TimeGridEntry({
   timesheetEntry,
   timeSlots,
   onEntryClick,
+  isSubmitted,
 }: TimeGridEntryProps) {
   const entries = timesheetEntry || [];
   const processedEntries = processEntriesForDay(entries);
@@ -43,7 +45,9 @@ export function TimeGridEntry({
 
   return (
     <div
-      className="h-12 border border-gray-200 relative"
+      className={`h-12 border border-gray-200 relative ${
+        isSubmitted ? "bg-gray-200" : "bg-white"
+      }`}
       role="button"
       tabIndex={0}
       onClick={() => onEntryClick(day.date, time, null)}
@@ -62,6 +66,7 @@ export function TimeGridEntry({
           day={day}
           time={time}
           onEntryClick={onEntryClick}
+          isSubmitted={isSubmitted}
         />
       ))}
     </div>
@@ -74,12 +79,14 @@ function EntryBlock({
   day,
   time,
   onEntryClick,
+  isSubmitted,
 }: {
   entry: TimesheetEntry;
   timeSlots: TimeSlot[];
   day: { date: Date };
   time: TimeSlot;
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
+  isSubmitted: boolean;
 }) {
   const calcResult = calculateContinuousFill(
     entry.startTime,
@@ -108,7 +115,9 @@ function EntryBlock({
     <Tooltip>
       <TooltipTrigger asChild className="w-full h-full">
         <div
-          className="absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center"
+          className={`absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center ${
+            isSubmitted ? "bg-gray-300" : "bg-blue-200"
+          }`}
           style={{
             top: `${topPercentage}%`,
             height: `calc(${heightPercentage}% + ${heightPixelsToBeAdded}px)`,
@@ -117,7 +126,7 @@ function EntryBlock({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            onEntryClick(day.date, time, entry);
+            !isSubmitted && onEntryClick(day.date, time, entry);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {

@@ -1,7 +1,10 @@
 import { and, lte, eq, gte } from "drizzle-orm";
 import { db } from "~/db/drizzle/connector";
 
-import { timesheetEntriesTable } from "~/db/drizzle/schemas/schema";
+import {
+  timesheetEntriesTable,
+  timesheetSubmissionsTable,
+} from "~/db/drizzle/schemas/schema";
 import { TimesheetEntry } from "~/types/Timesheet";
 
 export async function getTimesheetEntriesFromDatabase(
@@ -79,6 +82,74 @@ export async function deleteTimesheetEntryFromDatabase(
         eq(timesheetEntriesTable.id, timesheetEntryId),
         eq(timesheetEntriesTable.freelancerId, freelancerId),
         eq(timesheetEntriesTable.jobApplicationId, jobApplicationId)
+      )
+    );
+}
+
+export async function submitTimesheetDay(
+  freelancerId: number,
+  jobApplicationId: number,
+  submissionDate: Date,
+  totalHours: number
+) {
+  // Check if there are any entries for this day
+  const entries = await getTimesheetEntriesFromDatabase(
+    freelancerId,
+    jobApplicationId,
+    submissionDate,
+    submissionDate
+  );
+
+  if (entries.length === 0) {
+    throw new Error("Cannot submit a day with no entries");
+  }
+
+  const toDate = new Date(submissionDate);
+  // set the time of the "to date" to 23:59:59
+  toDate.setHours(23, 59, 59);
+  // Check if already submitted
+  const existingSubmissions = await getTimesheetSubmissions(
+    freelancerId,
+    jobApplicationId,
+    submissionDate,
+    toDate
+  );
+
+  if (existingSubmissions.length > 0) {
+    throw new Error("This day has already been submitted");
+  }
+
+  type NewTimesheetSubmission = typeof timesheetSubmissionsTable.$inferInsert;
+  const newTimesheetSubmission: NewTimesheetSubmission = {
+    freelancerId,
+    jobApplicationId,
+    submissionDate: submissionDate.toDateString(),
+    totalHours: totalHours.toString(),
+  };
+  console.log("newTimesheetSubmission", newTimesheetSubmission);
+  const [insertedTimesheetSubmission] = await db
+    .insert(timesheetSubmissionsTable)
+    .values(newTimesheetSubmission)
+    .returning();
+  console.log("insertedTimesheetSubmission", insertedTimesheetSubmission);
+  return insertedTimesheetSubmission;
+}
+
+export async function getTimesheetSubmissions(
+  freelancerId: number,
+  jobApplicationId: number,
+  fromDate: Date,
+  toDate: Date
+) {
+  return await db
+    .select()
+    .from(timesheetSubmissionsTable)
+    .where(
+      and(
+        eq(timesheetSubmissionsTable.freelancerId, freelancerId),
+        eq(timesheetSubmissionsTable.jobApplicationId, jobApplicationId),
+        gte(timesheetSubmissionsTable.submissionDate, fromDate.toDateString()),
+        lte(timesheetSubmissionsTable.submissionDate, toDate.toDateString())
       )
     );
 }

@@ -1,5 +1,5 @@
 {
-  "id": "09004dd6-05f0-47af-a490-40c412950143",
+  "id": "e3bcafa4-2c1b-462a-8b53-321d2f7a9413",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1124,29 +1124,36 @@
           "primaryKey": true,
           "notNull": true
         },
-        "timesheet_entries_ids": {
-          "name": "timesheet_entries_ids",
-          "type": "integer[]",
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "day": {
-          "name": "day",
+        "job_application_id": {
+          "name": "job_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submission_date": {
+          "name": "submission_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "notes": {
-          "name": "notes",
-          "type": "text",
+        "total_hours": {
+          "name": "total_hours",
+          "type": "numeric",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "status": {
           "name": "status",
-          "type": "varchar(50)",
+          "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",
@@ -1154,10 +1161,44 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "timesheet_submissions_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_submissions_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_submissions",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_submissions_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_submissions_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_submissions",
+          "tableTo": "job_applications",
+          "columnsFrom": [
+            "job_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
