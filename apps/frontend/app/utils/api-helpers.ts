@@ -1,3 +1,5 @@
+import DOMPurify from "isomorphic-dompurify";
+
 interface Headers {
   [key: string]: string;
 }
@@ -39,11 +41,6 @@ export function parseHtmlContent(content: string): {
     return { isHtml: false, content };
   }
 
-  // For security, you might want to sanitize the HTML
-  // This is a basic example - consider using a library like DOMPurify in production
-  const sanitizedContent = content
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Remove script tags
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ""); // Remove style tags
-
-  return { isHtml: true, content: sanitizedContent };
+  // For security, sanitize the HTML
+  return { isHtml: true, content: DOMPurify.sanitize(content) };
 }
