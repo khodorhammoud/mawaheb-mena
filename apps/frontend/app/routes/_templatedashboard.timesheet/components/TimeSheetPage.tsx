@@ -7,13 +7,16 @@ import { TimesheetCalendar } from "../components/TimesheetCalendar";
 import type { TimesheetProps } from "../../../types/Timesheet";
 import { Toaster } from "~/components/ui/toaster";
 import { TooltipProvider } from "~/components/ui/tooltip";
-import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
+import type { LinksFunction } from "@remix-run/node";
+import { TimesheetContext } from "../context/TimesheetContext";
 
 import styles from "../styles/calendarStyles.css?url";
+import { AccountType } from "~/types/enums";
 
 const Timesheet: React.FC<TimesheetProps> = ({
   allowOverlap,
   jobApplication,
+  userRole,
 }: TimesheetProps) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -28,38 +31,56 @@ const Timesheet: React.FC<TimesheetProps> = ({
     handleClosePopup,
     formData,
     setFormData,
+    handleApproveSubmission,
+    handleRejectSubmission,
   } = useTimesheet(allowOverlap, jobApplication, selectedDate);
 
+  const contextValue = {
+    userRole,
+    canEdit: userRole === AccountType.Freelancer,
+    onEntryClick:
+      userRole === AccountType.Freelancer ? handleGridClick : undefined,
+    onApproveSubmission:
+      userRole === AccountType.Employer ? handleApproveSubmission : undefined,
+    onRejectSubmission:
+      userRole === AccountType.Employer ? handleRejectSubmission : undefined,
+  };
+
   return (
-    <TooltipProvider>
-      <TimeHeader selectedDate={selectedDate} onDateChange={setSelectedDate} />
-
-      <div className="flex gap-4 h-full">
-        <TimeGrid
-          timesheet={timesheet}
+    <TimesheetContext.Provider value={contextValue}>
+      <TooltipProvider>
+        <TimeHeader
           selectedDate={selectedDate}
-          jobApplicationId={jobApplication.id}
-          onEntryClick={handleGridClick}
+          onDateChange={setSelectedDate}
         />
 
-        <TimesheetCalendar
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-          timesheet={timesheet}
+        <div className="flex gap-4 h-full">
+          <TimeGrid
+            timesheet={timesheet}
+            selectedDate={selectedDate}
+            jobApplicationId={jobApplication.id}
+            onEntryClick={handleGridClick}
+          />
+
+          <TimesheetCalendar
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            timesheet={timesheet}
+          />
+        </div>
+
+        <TimeEntryDialog
+          popup={popup}
+          formData={formData}
+          setFormData={setFormData}
+          onSave={handleSave}
+          onDelete={handleDelete}
+          onClose={handleClosePopup}
         />
-      </div>
 
-      <TimeEntryDialog
-        popup={popup}
-        formData={formData}
-        setFormData={setFormData}
-        onSave={handleSave}
-        onDelete={handleDelete}
-        onClose={handleClosePopup}
-      />
-
-      <Toaster />
-    </TooltipProvider>
+        <Toaster />
+      </TooltipProvider>
+    </TimesheetContext.Provider>
   );
 };
 

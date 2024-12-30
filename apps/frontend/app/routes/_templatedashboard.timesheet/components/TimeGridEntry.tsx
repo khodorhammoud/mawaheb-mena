@@ -12,6 +12,7 @@ import {
   // TimesheetData,
   TimeSlot,
 } from "../../../types/Timesheet";
+import { useTimesheet } from "../context/TimesheetContext";
 
 interface TimeGridEntryProps {
   day: { date: Date };
@@ -28,9 +29,11 @@ export function TimeGridEntry({
   timeIndex,
   timesheetEntry,
   timeSlots,
-  onEntryClick,
+  // onEntryClick,
   isSubmitted,
 }: TimeGridEntryProps) {
+  const { canEdit, onEntryClick } = useTimesheet();
+
   const entries = timesheetEntry || [];
   const processedEntries = processEntriesForDay(entries);
   const entriesToRender = processedEntries.filter((entry) => {
@@ -50,7 +53,7 @@ export function TimeGridEntry({
       }`}
       role="button"
       tabIndex={0}
-      onClick={() => onEntryClick(day.date, time, null)}
+      onClick={() => canEdit && onEntryClick(day.date, time, null)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           onEntryClick(day.date, time, null);

@@ -1,4 +1,5 @@
 import { JobApplication } from "~/types/Job";
+import { AccountType } from "./enums";
 
 export type TimesheetEntry = {
   id?: number;
@@ -31,6 +32,7 @@ export type EntryPopup = {
 export interface TimesheetProps {
   allowOverlap?: boolean;
   jobApplication?: JobApplication;
+  userRole: AccountType;
 }
 
 export type TimeSlot = {

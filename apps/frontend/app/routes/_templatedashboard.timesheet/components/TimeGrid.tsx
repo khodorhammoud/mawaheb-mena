@@ -11,6 +11,9 @@ import { useTimeSlots } from "../hooks/useTimeSlots";
 import { DayTotal } from "./DayTotal";
 import { SubmitDayButton } from "./SubmitDayButton";
 import { calculateDayTotal } from "../utils";
+import { useTimesheet } from "../context/TimesheetContext";
+import { AccountType } from "~/types/enums";
+import { EmployerActions } from "./EmployerActions";
 
 interface TimeGridProps {
   timesheet: TimesheetData;
@@ -27,6 +30,7 @@ export function TimeGrid({
 }: TimeGridProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { timeSlots, displayedDays } = useTimeSlots(selectedDate);
+  const { userRole } = useTimesheet();
 
   return (
     <div className="flex-[2]">
@@ -88,12 +92,19 @@ export function TimeGrid({
                   total={calculateDayTotal(entries)}
                   className="bg-gray-50"
                 />
-                <SubmitDayButton
-                  date={dateKey}
-                  totalHours={dayTotal}
-                  jobApplicationId={jobApplicationId}
-                  isSubmitted={timesheet[dateKey]?.isSubmitted}
-                />
+                {userRole === AccountType.Freelancer ? (
+                  <SubmitDayButton
+                    date={dateKey}
+                    totalHours={dayTotal}
+                    jobApplicationId={jobApplicationId}
+                    isSubmitted={timesheet[dateKey]?.isSubmitted}
+                  />
+                ) : (
+                  <EmployerActions
+                    date={dateKey}
+                    isSubmitted={timesheet[dateKey]?.isSubmitted}
+                  />
+                )}
               </div>
             </div>
           );

@@ -224,6 +224,14 @@ export const useTimesheet = (
     });
   };
 
+  const handleApproveSubmission = (date: string) => {
+    console.log("Approve submission for date:", date);
+  };
+
+  const handleRejectSubmission = (date: string) => {
+    console.log("Reject submission for date:", date);
+  };
+
   return {
     timesheet,
     formData,
@@ -234,5 +242,7 @@ export const useTimesheet = (
     handleGridClick,
     handleDelete,
     handleClosePopup,
+    handleApproveSubmission,
+    handleRejectSubmission,
   };
 };
