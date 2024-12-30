@@ -1,12 +1,18 @@
 import React from "react";
 import { RepeatableInputType } from "../types";
+import { useLoaderData } from "@remix-run/react";
 import type { FieldTemplateState, FormStateType } from "../types";
-import Or from "~/common/or/Or";
 import { IoLinkSharp } from "react-icons/io5";
 import { IoBriefcaseSharp } from "react-icons/io5";
 import { RiAwardFill } from "react-icons/ri";
 import { FaGraduationCap } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
+import {
+  PortfolioFormFieldType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
+} from "~/types/User";
 
 interface FieldTemplateProps {
   value: FormStateType | RepeatableInputType[];
@@ -63,57 +69,86 @@ export const NumberFieldTemplate: FieldTemplateState = {
 };
 
 const Project_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pt-8 pb-6 pl-7 pr-10">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-        {/* Image Section */}
-        <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
-          <img
-            className="w-full h-full object-cover"
-            src="https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-            alt={value as string}
-          />
-        </div>
+  FilledState: () => {
+    const data = useLoaderData<{
+      portfolio: string;
+    }>();
 
-        {/* Content Section */}
-        <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-          <h1 className="flex items-center text-xl mb-4 gap-4">
-            E-commerce Website redesign
-            <button
-              className="flex items-center justify-center"
-              aria-label="Link"
-            >
-              <IoLinkSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-            </button>
-          </h1>
-          <p className="mb-2 text-sm">
-            As a UI/UX freelancer, I successfully redesigned the UI/UX of an
-            established e-commerce website, resulting in a significant
-            improvement in user engagement and conversion rates, and a
-            freelancer, I successfully redesigned the UI/UX of an established
-            e-commerc
-          </p>
-          <ul className="list-disc text-sm pl-8">
-            <li className="leading-relaxed text-indent-0">
-              Conducted comprehensive user research and analyzed website
-              analytics to identify key pain points and opportunities for
-              improvement.
-            </li>
-            <li className="leading-relaxed">
-              Developed detailed wireframes, prototypes, and high-fidelity
-              mockups that enhanced the visual appeal and usability of the site.
-            </li>
-            <li className="leading-relaxed">
-              Conducted comprehensive user research and analyzed website
-              analytics to identify key pain points and opportunities for
-              improvement.
-            </li>
-          </ul>
+    // Parse portfolio data
+    let portfolio: PortfolioFormFieldType[] = [];
+    try {
+      portfolio = JSON.parse(data.portfolio);
+    } catch (error) {
+      console.error("Failed to parse portfolio data:", error);
+    }
+
+    // Handle empty portfolio
+    if (!Array.isArray(portfolio) || portfolio.length === 0) {
+      return (
+        <div className="flex flex-col py-4 pl-5 pr-8">
+          <span className="text-lg font-medium">Portfolio</span>
+          <span className="text-base text-gray-400 italic">No items added</span>
         </div>
-      </div>
-    </div>
-  ),
+      );
+    }
+
+    // Render portfolio items
+    return (
+      <>
+        {portfolio.map((item, index) => (
+          <div key={index} className="flex flex-col pt-8 pb-6 pl-7 pr-10">
+            <span className="text-lg font-medium">
+              {`Project ${index + 1}`}
+            </span>
+            <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
+              {/* Image Section */}
+              <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
+                <img
+                  className="w-full h-full object-cover"
+                  src={
+                    item.projectImageUrl ||
+                    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                  }
+                  alt={item.projectName || "Portfolio Item"}
+                />
+              </div>
+
+              {/* Content Section */}
+              <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
+                <h1 className="flex items-center text-xl mb-4 gap-4">
+                  {item.projectName}
+                  {item.projectLink && (
+                    <a
+                      href={item.projectLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center"
+                      aria-label="Link"
+                    >
+                      <IoLinkSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+                    </a>
+                  )}
+                </h1>
+                <p className="mb-2 text-sm">{item.projectDescription || ""}</p>
+                {/* <ul className="list-disc text-sm pl-8">
+                  <li className="leading-relaxed text-indent-0">
+                    Conducted comprehensive research to identify improvement
+                    areas.
+                  </li>
+                  <li className="leading-relaxed">
+                    Developed detailed wireframes and high-fidelity mockups.
+                  </li>
+                  <li className="leading-relaxed">
+                    Improved overall user experience and usability.
+                  </li>
+                </ul> */}
+              </div>
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-4 pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
@@ -123,61 +158,76 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pt-7 pb-8 pl-7 pr-10">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-        <h1 className="flex items-center text-xl mb-4 gap-2">
-          <button
-            className="flex items-center justify-center"
-            aria-label="Link"
-          >
-            <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-          </button>
-          UI UX Designer
-        </h1>
-        <div className="flex gap-3 items-center">
-          <p className="">Media Lab manU</p>
-          <span className="text-2xl text-gray-200 font-extralight">|</span>
-          <p className="text-sm">Oct 2022 - Dec 2023</p>
+  FilledState: () => {
+    const data = useLoaderData<{
+      workHistory: string;
+    }>();
+
+    // Parse work history data
+    let workHistory: WorkHistoryFormFieldType[] = [];
+    try {
+      workHistory = JSON.parse(data.workHistory);
+    } catch (error) {
+      console.error("Failed to parse work history data:", error);
+    }
+
+    // Handle empty work history
+    if (!Array.isArray(workHistory) || workHistory.length === 0) {
+      return (
+        <div className="flex flex-col py-4 pl-5 pr-8">
+          <span className="text-lg font-medium">Work History</span>
+          <span className="text-base text-gray-400 italic">No items added</span>
         </div>
-        <div className="text-sm leading-6">
-          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
-          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
-          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
-          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
-          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
-          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
-        </div>
-      </div>
-      {/* Line if there is another Work experience */}
-      {/* <div className="flex-grow border border-gray-300 mt-5 mb-1"></div>
-      <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-        <h1 className="flex items-center text-lg mb-4 gap-4">
-          <button
-            className="flex items-center justify-center"
-            aria-label="Link"
-          >
-            <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1 text-primaryColor" />
-          </button>
-          UI UX Designer
-        </h1>
-        <div className="flex gap-3 items-center">
-          <p className="test-lg">Media Lab manU</p>
-          <span className="text-2xl text-gray-200 font-extralight">|</span>
-          <p className="text-sm">Oct 2022 - Dec 2023</p>
-        </div>
-        <div className="text-sm leading-6">
-          hi borirowimvndismrifv i lodebvceuif gnodjhft tjfhsgqwowkr0tkfn
-          12344555666543 fdhenrmtlogogjr t f eierhtnygogof fofoof dinewiwoooxhd
-          fjfgp hylspe oker,t;eidcneu dndfn futrntkvdkmnswgsrreebf bnhi
-          borirowimvn dismrifv i lodebvceuif gnodjhft tjfhsgq wowkr0tkfn
-          12344555666543 fdhenrmt logogjr t f eierhtnygogoffofoof dinewiwoooxhd
-          fjfgphylspeoker,t;eidcneudndfnfutrnt kvdkmnswgsrreebfbnh
-        </div>
-      </div> */}
-    </div>
-  ),
+      );
+    }
+
+    // Render work history items
+    return (
+      <>
+        {workHistory.map((item, index) => (
+          <div key={index} className="flex flex-col pt-7 pb-8 pl-7 pr-10">
+            <span className="text-lg font-medium">{`Work Experience ${index + 1}`}</span>
+            <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
+              <h1 className="flex items-center text-xl mb-4 gap-2">
+                <button
+                  className="flex items-center justify-center"
+                  aria-label="Link"
+                >
+                  <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+                </button>
+                {item.title || "Job Title"}
+              </h1>
+              <div className="flex gap-3 items-center">
+                <p className="">{item.company || "Company Name"}</p>
+                <span className="text-2xl text-gray-200 font-extralight">
+                  |
+                </span>
+                <p className="text-sm">
+                  {new Date(item.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  -{" "}
+                  {item.currentlyWorkingThere
+                    ? "Present" // Display "Present" if I currently work here is checked ❤️
+                    : new Date(item.endDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                </p>
+              </div>
+              <div
+                className="text-sm leading-6"
+                dangerouslySetInnerHTML={{
+                  __html: item.jobDescription || "No description provided.",
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-4 pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
@@ -187,45 +237,61 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
-      <span className="text-lg font-medium mb-2">{cardTitle}</span>
-      <div className="grid grid-cols-2 gap-8">
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="flex text-xl mb-4 gap-1">
-            <button
-              className="flex items-center justify-center self-start mb-2"
-              aria-label="Link"
-            >
-              <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-            </button>
-            Google user experience design, School of science
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
+  FilledState: () => {
+    const data = useLoaderData<{
+      certificates: string;
+    }>();
+
+    // Parse certificates data
+    let certificates: CertificateFormFieldType[] = [];
+    try {
+      certificates = JSON.parse(data.certificates);
+    } catch (error) {
+      console.error("Failed to parse certificates data:", error);
+    }
+
+    // Handle empty certificates
+    if (!Array.isArray(certificates) || certificates.length === 0) {
+      return (
+        <div className="flex flex-col py-4 pl-5 pr-8">
+          <span className="text-lg font-medium">Certificates</span>
+          <span className="text-base text-gray-400 italic">No items added</span>
         </div>
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="flex text-xl mb-4 gap-1">
-            <button
-              className="flex items-center justify-center self-start mb-2"
-              aria-label="Link"
+      );
+    }
+
+    // Render certificates items
+    return (
+      <div className="flex flex-col pt-7 pb-8 pl-7 pr-28">
+        <span className="text-lg font-medium mb-2">Certificates</span>
+        <div className="grid grid-cols-2 gap-8">
+          {certificates.map((item, index) => (
+            <div
+              key={index}
+              className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
             >
-              <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-            </button>
-            Google user experience design :D
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
+              <h1 className="flex text-xl mb-4 gap-1">
+                <button
+                  className="flex items-center justify-center self-start mb-2"
+                  aria-label="Certificate"
+                >
+                  <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+                </button>
+                {item.certificateName || "Certificate Name"}
+              </h1>
+              <div className="flex gap-3 items-center">
+                <p className="">{item.issuedBy || "Issuer Name"}</p>
+                <span className="text-2xl text-gray-200 font-extralight">
+                  |
+                </span>
+                <p className="text-sm">{item.yearIssued || "Year"}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
-  ),
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-4 pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
@@ -235,39 +301,62 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Education_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pt-5 pb-4 pl-7 pr-28">
-      <span className="text-lg font-medium mb-2">{cardTitle}</span>
-      <div className="grid grid-cols-2 gap-8">
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="flex text-xl mb-4 gap-1">
-            <button
-              className="flex items-center justify-center self-start"
-              aria-label="Link"
-            >
-              <FaGraduationCap className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-            </button>
-            Google user experience design, School of science
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
+  FilledState: () => {
+    const data = useLoaderData<{
+      educations: string;
+    }>();
+
+    // Parse education data
+    let educations: EducationFormFieldType[] = [];
+    try {
+      educations = JSON.parse(data.educations);
+    } catch (error) {
+      console.error("Failed to parse education data:", error);
+    }
+
+    // Handle empty education data
+    if (!Array.isArray(educations) || educations.length === 0) {
+      return (
+        <div className="flex flex-col py-4 pl-5 pr-8">
+          <span className="text-lg font-medium">Education</span>
+          <span className="text-base text-gray-400 italic">No items added</span>
         </div>
-        <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3">
-          <h1 className="text-[22px] font-normal">
-            Google user experience design :D
-          </h1>
-          <div className="flex gap-3 items-center">
-            <p className="">Google</p>
-            <span className="text-2xl text-gray-200 font-extralight">|</span>
-            <p className="text-sm">2022</p>
-          </div>
+      );
+    }
+
+    // Render education items
+    return (
+      <div className="flex flex-col pt-5 pb-4 pl-7 pr-28">
+        <span className="text-lg font-medium mb-2">Education</span>
+        <div className="grid grid-cols-2 gap-8">
+          {educations.map((item, index) => (
+            <div
+              key={index}
+              className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
+            >
+              <h1 className="flex text-xl mb-4 gap-1">
+                <button
+                  className="flex items-center justify-center self-start"
+                  aria-label="Education"
+                >
+                  <FaGraduationCap className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
+                </button>
+                {item.degree || "Degree Name"}
+                {item.institution && `, ${item.institution}`}
+              </h1>
+              <div className="flex gap-3 items-center">
+                <p className="">{item.institution || "Institution Name"}</p>
+                <span className="text-2xl text-gray-200 font-extralight">
+                  |
+                </span>
+                <p className="text-sm">{item.graduationYear || "Year"}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
-  ),
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-4 pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>

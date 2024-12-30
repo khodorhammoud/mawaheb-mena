@@ -5,6 +5,7 @@ import { FaLink } from "react-icons/fa";
 import type { FormFieldProps } from "../types";
 import VideoUpload from "~/common/upload/videoUpload";
 import Or from "~/common/or/Or";
+import RichTextEditor from "~/components/ui/richTextEditor";
 
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
@@ -57,15 +58,36 @@ export const FormFields = {
 
   textArea: ({ value, onChange, name, props }: FormFieldProps) => (
     <div className="flex flex-col gap-2">
-      <AppFormField
-        type="textarea"
-        id="description"
-        name={name}
-        label="Add content to describe yourself"
-        placeholder="Add content to describe yourself"
-        col={6} // Represents rows as height (in rem units)
-        onChange={onChange}
-      />
+      {/* Check if Rich Text is enabled */}
+      {props?.useRichText ? (
+        <RichTextEditor
+          value={value as string}
+          onChange={(content) =>
+            onChange({
+              target: {
+                value: content,
+                name,
+              },
+            } as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+          placeholder="Add content to describe yourself"
+          className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
+          style={{
+            wordBreak: "break-word",
+            hyphens: "auto",
+          }}
+        />
+      ) : (
+        <AppFormField
+          type="textarea"
+          id="description"
+          name={name}
+          label="Add content to describe yourself"
+          placeholder="Add content to describe yourself"
+          col={6} // Represents rows as height (in rem units)
+          onChange={onChange}
+        />
+      )}
 
       <div className="ml-6 text-xs text-gray-500">
         {(value as string).length} / 2000 characters

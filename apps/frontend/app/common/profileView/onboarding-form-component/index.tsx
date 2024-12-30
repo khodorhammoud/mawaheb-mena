@@ -35,14 +35,14 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     : Template.EmptyState;
   return (
     <Card
-      className={`
-      border-2 rounded-xl h-auto grid relative
-      ${
-        isFilled
-          ? "bg-[#F1F0F3] border-0"
-          : "bg-gray-100 border-gray-300 border-dashed"
-      }
-    `}
+      className={`border-2 rounded-xl h-auto grid relative
+  ${
+    isFilled
+      ? "bg-[#F1F0F3] border-0"
+      : "bg-gray-100 border-gray-300 border-dashed"
+  }
+  text-left break-words whitespace-normal overflow-hidden`}
+      style={{ wordBreak: "break-word", hyphens: "auto" }} // this is to let the typing go down to the second line
     >
       {/* <CardHeader className="p-0">
         <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">

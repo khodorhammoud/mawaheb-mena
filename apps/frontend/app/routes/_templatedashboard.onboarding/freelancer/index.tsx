@@ -86,6 +86,7 @@ export default function FreelancerOnboardingScreen() {
             triggerLabel="Add Bio"
             formName="freelancer-about"
             fieldName="about"
+            useRichText={true} // this is only for the formTypes ( textArea/number/text/......found inside FormFields ), since i might use textArea form without using richTextEditor, but textArea only :) but for repeatables, it is always richTextEditor in the repeatable, and no prop decide :)
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">

@@ -4,8 +4,7 @@ import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";
 import RepeatableFields from "./RepeatableFields";
-import type { FormContentProps, FormStateType } from "../types";
-import { useState } from "react";
+import type { FormContentProps } from "../types";
 
 // Main FormContent component
 const FormContent = ({
@@ -99,48 +98,50 @@ const FormContent = ({
 
   return (
     //POPUPS
-    <fetcher.Form
-      method="post"
-      className="space-y-6"
-      onSubmit={handleFormSubmit}
-      encType={formType === "repeatable" ? "multipart/form-data" : undefined}
-    >
-      {renderStatusMessages()}
+    <div className="">
+      <fetcher.Form
+        method="post"
+        className="space-y-6"
+        onSubmit={handleFormSubmit}
+        encType={formType === "repeatable" ? "multipart/form-data" : undefined}
+      >
+        {renderStatusMessages()}
 
-      {formType === "repeatable" ? (
-        <RepeatableFields
-          fieldName={repeatableFieldName}
-          values={repeatableInputValues}
-          files={repeatableInputFiles}
-          expandedIndex={expandedIndex}
-          onAdd={handleAddRepeatableField}
-          onRemove={handleRemoveRepeatableField}
-          onDataChange={handleDataChange}
-          onToggleExpand={setExpandedIndex}
-          {...props}
-        />
-      ) : (
-        FormFields[formType]?.({
-          value: inputValue,
-          onChange: (e) =>
-            setInputValue(
-              formType === "number" ? Number(e.target.value) : e.target.value
-            ),
-          handleIncrement: handleIncrement,
-          name: fieldName,
-          props,
-        })
-      )}
+        {formType === "repeatable" ? (
+          <RepeatableFields
+            fieldName={repeatableFieldName}
+            values={repeatableInputValues}
+            files={repeatableInputFiles}
+            expandedIndex={expandedIndex}
+            onAdd={handleAddRepeatableField}
+            onRemove={handleRemoveRepeatableField}
+            onDataChange={handleDataChange}
+            onToggleExpand={setExpandedIndex}
+            {...props}
+          />
+        ) : (
+          FormFields[formType]?.({
+            value: inputValue,
+            onChange: (e) =>
+              setInputValue(
+                formType === "number" ? Number(e.target.value) : e.target.value
+              ),
+            handleIncrement: handleIncrement,
+            name: fieldName,
+            props,
+          })
+        )}
 
-      <DialogFooter>
-        <Button
-          type="submit"
-          className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
-        >
-          Save
-        </Button>
-      </DialogFooter>
-    </fetcher.Form>
+        <DialogFooter>
+          <Button
+            type="submit"
+            className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </fetcher.Form>
+    </div>
   );
 };
 

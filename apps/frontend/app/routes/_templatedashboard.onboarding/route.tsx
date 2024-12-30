@@ -442,7 +442,18 @@ export async function loader({
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
+    const certificates = profile.certificates as CertificateFormFieldType[];
+    const educations = profile.educations as EducationFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
+
+    console.log("1");
+    console.log(portfolio);
+    console.log("2");
+    console.log(workHistory);
+    console.log("3");
+    console.log(certificates);
+    console.log("4");
+    console.log(educations);
 
     return Response.json({
       accountType,
@@ -453,9 +464,9 @@ export async function loader({
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      educations: profile.educations,
-      certificates: profile.certificates,
       portfolio,
+      certificates,
+      educations,
       workHistory,
     });
   }
