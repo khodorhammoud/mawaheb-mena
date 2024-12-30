@@ -446,15 +446,6 @@ export async function loader({
     const educations = profile.educations as EducationFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
 
-    console.log("1");
-    console.log(portfolio);
-    console.log("2");
-    console.log(workHistory);
-    console.log("3");
-    console.log(certificates);
-    console.log("4");
-    console.log(educations);
-
     return Response.json({
       accountType,
       bioInfo,
