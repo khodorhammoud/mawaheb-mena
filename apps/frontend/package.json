@@ -49,6 +49,7 @@
     "i18next-http-backend": "^2.5.2",
     "isbot": "^4.1.0",
     "isomorphic-dompurify": "^2.19.0",
+    "jsdom": "^25.0.1",
     "lucide-react": "^0.397.0",
     "pg": "^8.11.3",
     "postgres": "^3.4.4",

@@ -457,6 +457,7 @@ export async function updateEmployerAbout(
 ): Promise<{ success: boolean }> {
   const accountId = employer.accountId;
   const sanitizedContent = DOMPurify.sanitize(aboutContent);
+
   try {
     await db
       .update(employersTable)

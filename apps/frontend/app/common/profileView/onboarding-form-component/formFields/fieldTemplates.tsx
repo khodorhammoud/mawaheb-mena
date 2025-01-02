@@ -25,7 +25,7 @@ export const TextFieldTemplate: FieldTemplateState = {
     );
 
     return (
-      <div className="flex flex-col py-8 pl-5 pr-8">
+      <div className="flex flex-col ">
         <span className="text-lg font-medium">{cardTitle}</span>
         <div className="text-sm font-medium mt-4 text-gray-400">
           {isHtml ? (
