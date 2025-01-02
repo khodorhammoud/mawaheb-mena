@@ -9,14 +9,13 @@ import { Toaster } from "~/components/ui/toaster";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import type { LinksFunction } from "@remix-run/node";
 import { TimesheetContext } from "../context/TimesheetContext";
-
 import styles from "../styles/calendarStyles.css?url";
 import { AccountType } from "~/types/enums";
 
 const Timesheet: React.FC<TimesheetProps> = ({
   allowOverlap,
   jobApplication,
-  userRole,
+  accountType,
 }: TimesheetProps) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -34,16 +33,18 @@ const Timesheet: React.FC<TimesheetProps> = ({
     handleApproveSubmission,
     handleRejectSubmission,
   } = useTimesheet(allowOverlap, jobApplication, selectedDate);
-
+  console.log("accountType", accountType);
   const contextValue = {
-    userRole,
-    canEdit: userRole === AccountType.Freelancer,
+    accountType,
+    canEdit: accountType === AccountType.Freelancer,
     onEntryClick:
-      userRole === AccountType.Freelancer ? handleGridClick : undefined,
+      accountType === AccountType.Freelancer ? handleGridClick : undefined,
     onApproveSubmission:
-      userRole === AccountType.Employer ? handleApproveSubmission : undefined,
+      accountType === AccountType.Employer
+        ? handleApproveSubmission
+        : undefined,
     onRejectSubmission:
-      userRole === AccountType.Employer ? handleRejectSubmission : undefined,
+      accountType === AccountType.Employer ? handleRejectSubmission : undefined,
   };
 
   return (
@@ -68,15 +69,16 @@ const Timesheet: React.FC<TimesheetProps> = ({
             timesheet={timesheet}
           />
         </div>
-
-        <TimeEntryDialog
-          popup={popup}
-          formData={formData}
-          setFormData={setFormData}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          onClose={handleClosePopup}
-        />
+        {accountType === AccountType.Freelancer && (
+          <TimeEntryDialog
+            popup={popup}
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onDelete={handleDelete}
+            onClose={handleClosePopup}
+          />
+        )}
 
         <Toaster />
       </TooltipProvider>

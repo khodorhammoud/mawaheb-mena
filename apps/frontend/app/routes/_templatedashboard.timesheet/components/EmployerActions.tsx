@@ -8,9 +8,10 @@ interface EmployerActionsProps {
 }
 
 export function EmployerActions({ date, isSubmitted }: EmployerActionsProps) {
-  const { userRole, onApproveSubmission, onRejectSubmission } = useTimesheet();
+  const { accountType, onApproveSubmission, onRejectSubmission } =
+    useTimesheet();
 
-  if (userRole !== AccountType.Employer || !isSubmitted) {
+  if (accountType !== AccountType.Employer || !isSubmitted) {
     return null;
   }
 

@@ -3,7 +3,7 @@ import { AccountType } from "~/types/enums";
 import type { TimesheetEntry, TimeSlot } from "~/types/Timesheet";
 
 interface TimesheetContextType {
-  userRole: AccountType;
+  accountType: AccountType;
   canEdit: boolean;
   onEntryClick?: (
     date: Date,
@@ -15,7 +15,7 @@ interface TimesheetContextType {
 }
 
 export const TimesheetContext = createContext<TimesheetContextType>({
-  userRole: AccountType.Freelancer,
+  accountType: AccountType.Freelancer,
   canEdit: false,
 });
 

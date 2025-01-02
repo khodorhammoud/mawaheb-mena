@@ -32,7 +32,7 @@ export type EntryPopup = {
 export interface TimesheetProps {
   allowOverlap?: boolean;
   jobApplication?: JobApplication;
-  userRole: AccountType;
+  accountType: AccountType;
 }
 
 export type TimeSlot = {

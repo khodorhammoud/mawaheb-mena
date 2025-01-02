@@ -30,7 +30,7 @@ export function TimeGrid({
 }: TimeGridProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { timeSlots, displayedDays } = useTimeSlots(selectedDate);
-  const { userRole } = useTimesheet();
+  const { accountType } = useTimesheet();
 
   return (
     <div className="flex-[2]">
@@ -92,7 +92,7 @@ export function TimeGrid({
                   total={calculateDayTotal(entries)}
                   className="bg-gray-50"
                 />
-                {userRole === AccountType.Freelancer ? (
+                {accountType === AccountType.Freelancer ? (
                   <SubmitDayButton
                     date={dateKey}
                     totalHours={dayTotal}

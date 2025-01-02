@@ -273,6 +273,30 @@ export async function getJobApplicationByJobIdAndFreelancerId(
 }
 
 /**
+ * get all job applications by job ID
+ * @param jobId - the ID of the job
+ * @returns the job applications
+ */
+export async function getJobApplicationsByJobId(
+  jobId: number | number[]
+): Promise<JobApplication[]> {
+  console.log("jobId", jobId);
+  console.log("typeof jobId", typeof jobId);
+  if (Array.isArray(jobId)) {
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(inArray(jobApplicationsTable.jobId, jobId));
+    return jobApplications as unknown as JobApplication[];
+  } else {
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.jobId, jobId));
+    return jobApplications as unknown as JobApplication[];
+  }
+}
+/**
  * create a job application
  *
  * @param jobId - the ID of the job

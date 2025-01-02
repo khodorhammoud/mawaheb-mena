@@ -53,7 +53,12 @@ export function TimeGridEntry({
       }`}
       role="button"
       tabIndex={0}
-      onClick={() => canEdit && onEntryClick(day.date, time, null)}
+      onClick={(e) => {
+        // Only trigger if clicking the empty space and not the entry block
+        if (e.target === e.currentTarget) {
+          canEdit && onEntryClick(day.date, time, null);
+        }
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           onEntryClick(day.date, time, null);
