@@ -502,7 +502,9 @@ export async function updateFreelancerVideoLink(
     .update(freelancersTable)
     .set({ videoLink: videoLink })
     .where(eq(freelancersTable.accountId, freelancerId))
-    .then(() => ({ success: true }))
+    .then(() => {
+      return { success: true };
+    })
     .catch((error) => {
       console.error("Error updating freelancer video link", error);
       return { success: false };

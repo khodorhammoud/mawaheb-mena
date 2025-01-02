@@ -6,9 +6,15 @@ import type { FormFieldProps } from "../types";
 import VideoUpload from "~/common/upload/videoUpload";
 import Or from "~/common/or/Or";
 import RichTextEditor from "~/components/ui/richTextEditor";
+import DOMPurify from "dompurify";
 
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
+};
+
+const getWordCount = (html: string) => {
+  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
+  return plainText.length || 0; // Return 0 for empty or invalid input
 };
 
 export const FormFields = {
@@ -61,15 +67,17 @@ export const FormFields = {
       {/* Check if Rich Text is enabled */}
       {props?.useRichText ? (
         <RichTextEditor
-          value={value as string}
-          onChange={(content) =>
-            onChange({
+          name={name} // Ensure the name attribute is included
+          value={(value as string) || ""} // Ensure value is a string
+          onChange={(content) => {
+            const event = {
               target: {
                 value: content,
                 name,
               },
-            } as unknown as React.ChangeEvent<HTMLInputElement>)
-          }
+            } as unknown as React.ChangeEvent<HTMLInputElement>;
+            onChange(event);
+          }}
           placeholder="Add content to describe yourself"
           className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
           style={{
@@ -90,7 +98,7 @@ export const FormFields = {
       )}
 
       <div className="ml-6 text-xs text-gray-500">
-        {(value as string).length} / 2000 characters
+        {getWordCount(value as string)} / 2000 characters
       </div>
     </div>
   ),
@@ -126,32 +134,49 @@ export const FormFields = {
     </div>
   ),
 
-  video: ({ value, onChange, name, props }: FormFieldProps) => (
-    <div className="">
-      {/* UPLOAD */}
-      <VideoUpload onFileChange={handleVideoUpload} />
+  video: ({ value, onChange, name, props }: FormFieldProps) => {
+    const handleVideoUpload = (file: File) => {
+      const fileUrl = URL.createObjectURL(file);
 
-      {/* OR */}
-      <Or />
+      console.log("Generated file URL:", fileUrl);
 
-      {/* FORM */}
+      const event = {
+        target: {
+          value: fileUrl,
+          name,
+        },
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+
+      onChange(event);
+    };
+
+    return (
       <div className="">
-        <div className="relative">
-          <AppFormField
-            type="text"
-            id="youtube-url"
-            name={name}
-            label="Paste YouTube URL or upload video"
-            placeholder="Paste YouTube URL or upload video"
-            defaultValue={value as string}
-            onChange={onChange}
-            className=""
-          />
-          <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+        {/* UPLOAD */}
+        <VideoUpload onFileChange={(fileUrl) => handleVideoUpload(fileUrl)} />
+
+        {/* OR */}
+        <Or />
+
+        {/* FORM */}
+        <div className="">
+          <div className="relative">
+            <AppFormField
+              type="text"
+              id="youtube-url"
+              name={name} // Ensure name matches "videoLink"
+              label="Paste YouTube URL or upload video"
+              placeholder="Paste YouTube URL or upload video"
+              defaultValue={value as string}
+              onChange={onChange}
+              className=""
+            />
+            <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+          </div>
         </div>
       </div>
-    </div>
-  ),
+    );
+  },
 
   file: ({ value, onChange, name, props }: FormFieldProps) => (
     <Input

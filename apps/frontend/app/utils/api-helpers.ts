@@ -33,14 +33,28 @@ export function parseHtmlContent(content: string): {
   isHtml: boolean;
   content: string;
 } {
-  // Simple regex to detect HTML tags
-  const htmlRegex = /<[^>]*>/;
-  const isHtml = htmlRegex.test(content);
+  // Trim whitespace for better detection
+  const trimmedContent = content.trim();
+
+  // Enhanced regex for detecting HTML tags
+  const htmlRegex = /<([a-z]+[1-6]?)([^>]*?)>/i;
+
+  // Check if the trimmed content contains HTML tags
+  const isHtml = htmlRegex.test(trimmedContent);
 
   if (!isHtml) {
-    return { isHtml: false, content };
+    // Return plain text if no HTML tags are detected
+    return { isHtml: false, content: trimmedContent };
   }
 
-  // For security, sanitize the HTML
-  return { isHtml: true, content: DOMPurify.sanitize(content) };
+  // Sanitize the content
+  const sanitizedContent = DOMPurify.sanitize(trimmedContent);
+
+  // If sanitized content is empty, treat it as plain text
+  if (!sanitizedContent.trim()) {
+    return { isHtml: false, content: "" };
+  }
+
+  // Return sanitized HTML if valid
+  return { isHtml: true, content: sanitizedContent };
 }

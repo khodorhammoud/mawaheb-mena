@@ -1,4 +1,4 @@
-// This is the file of the popup that opens when pressing on the button, or on the pencel ✏️
+// This is the file of the success messages and error ones of all the GeneralizableFormCard, and the save button + its functionality
 
 import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";

@@ -19,14 +19,28 @@ interface FieldTemplateProps {
 }
 
 export const TextFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col py-8 pl-5 pr-8">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-sm font-medium mt-4 text-gray-400">
-        {value as string}
-      </span>
-    </div>
-  ),
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const { isHtml, content: sanitizedContent } = parseHtmlContent(
+      value as string
+    );
+
+    return (
+      <div className="flex flex-col py-8 pl-5 pr-8">
+        <span className="text-lg font-medium">{cardTitle}</span>
+        <div className="text-sm font-medium mt-4 text-gray-400">
+          {isHtml ? (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: sanitizedContent,
+              }}
+            />
+          ) : (
+            <span>{sanitizedContent}</span>
+          )}
+        </div>
+      </div>
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col mb-4">
       <span className="text-lg font-medium">{cardTitle}</span>
@@ -574,7 +588,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
     );
   },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pb-4">
+    <div className="flex flex-col pb-4 mt-4 mx-4">
       <span className="text-xl font-medium">{cardTitle}</span>
       <span className="text-base text-gray-400 italic">No video added</span>
     </div>

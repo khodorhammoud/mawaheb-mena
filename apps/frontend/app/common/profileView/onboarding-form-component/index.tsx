@@ -35,7 +35,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     : Template.EmptyState;
   return (
     <Card
-      className={`border-2 rounded-xl h-auto grid relative
+      className={`border-2 rounded-xl h-auto grid relative  
   ${
     isFilled
       ? "bg-[#F1F0F3] border-0"

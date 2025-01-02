@@ -11,6 +11,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   style?: React.CSSProperties; // Added `style` prop
+  name?: string; // Add the `name` prop
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -19,6 +20,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Write something...",
   className = "",
   style = {}, // Default style object
+  name, // Accept the `name` prop
 }) => {
   const handleChange = (content: string) => {
     // Sanitize content for safe usage
@@ -36,6 +38,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         placeholder={placeholder}
         className=""
       />
+      {/* Optional hidden input for form compatibility */}
+      {name && <input type="hidden" name={name} value={value} />}
     </div>
   );
 };
