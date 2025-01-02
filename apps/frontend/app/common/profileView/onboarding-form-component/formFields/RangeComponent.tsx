@@ -1,3 +1,5 @@
+// The range component :)
+
 export default function RangeComponent({
   minVal,
   maxVal,

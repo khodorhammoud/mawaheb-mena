@@ -1,9 +1,14 @@
-// this is the page of PROJECTS
-
 import { PortfolioFormFieldType } from "~/types/User";
 import { FaLink } from "react-icons/fa";
 import AppFormField from "~/common/form-fields";
 import FileUpload from "~/common/upload/fileUpload";
+import DOMPurify from "dompurify";
+import RichTextEditor from "~/components/ui/richTextEditor";
+
+const getWordCount = (html: string) => {
+  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
+  return plainText.length || 0; // Return 0 for empty or invalid input
+};
 
 interface PortfolioComponentProps {
   data: PortfolioFormFieldType;
@@ -11,11 +16,19 @@ interface PortfolioComponentProps {
   onFileChange: (file: File | null) => void;
 }
 
-const handleFileUpload = (file: File | null) => {
-  console.log("File uploaded:", file);
-};
+const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
+  data,
+  onTextChange,
+  onFileChange,
+}) => {
+  const handleFileUpload = (file: File | null) => {
+    onFileChange(file); // Pass file to the parent
+  };
 
-function PortfolioComponent({ data, onTextChange }: PortfolioComponentProps) {
+  // const handleDescriptionChange = (content: string) => {
+  //   onTextChange({ ...data, projectDescription: content });
+  // };
+
   return (
     <div className="">
       <div className="flex space-x-4 mt-2 mb-6">
@@ -54,31 +67,29 @@ function PortfolioComponent({ data, onTextChange }: PortfolioComponentProps) {
 
       <FileUpload onFileChange={handleFileUpload} />
 
-      {/* <FileUpload
-            onFileChange={(file) => console.log("Uploaded file:", file)}
-            acceptedFileTypes="image/*,application/pdf"
-            maxFileSize={25}
-          /> */}
+      <div className="flex flex-col gap-2">
+        <RichTextEditor
+          value={data.projectDescription || ""}
+          onChange={(content) =>
+            onTextChange({
+              ...data,
+              projectDescription: content,
+            })
+          }
+          placeholder="Project Description"
+          className="border-gray-300 rounded-md resize-none mt-6 mb-1 ml-1 text-left break-words whitespace-normal overflow-hidden"
+          style={{
+            wordBreak: "break-word",
+            hyphens: "auto",
+          }}
+        />
 
-      <AppFormField
-        type="textarea"
-        id="projectDescription"
-        name="projectDescription"
-        label="Project Description"
-        placeholder="Project Description"
-        className="border-gray-300 rounded-md resize-none mt-6 mb-1"
-        col={6} // Determines the height of the textarea dynamically
-        defaultValue={data.projectDescription} // Populates the textarea with the current state
-        onChange={(e) =>
-          onTextChange({ ...data, projectDescription: e.target.value })
-        }
-      />
-
-      <div className="text-right text-sm text-gray-500">
-        {data.projectDescription.length}/2000 words
+        <div className="ml-6 text-xs text-gray-500">
+          {getWordCount(data.projectDescription)} / 2000 characters
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default PortfolioComponent;

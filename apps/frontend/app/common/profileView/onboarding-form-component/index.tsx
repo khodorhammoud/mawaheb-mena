@@ -35,14 +35,14 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     : Template.EmptyState;
   return (
     <Card
-      className={`
-      border-2 rounded-xl h-auto grid relative
-      ${
-        isFilled
-          ? "bg-[#F1F0F3] border-0"
-          : "bg-gray-100 border-gray-300 border-dashed"
-      }
-    `}
+      className={`border-2 rounded-xl h-auto grid relative  
+  ${
+    isFilled
+      ? "bg-[#F1F0F3] border-0"
+      : "bg-gray-100 border-gray-300 border-dashed"
+  }
+  text-left break-words whitespace-normal overflow-hidden`}
+      style={{ wordBreak: "break-word", hyphens: "auto" }} // this is to let the typing go down to the second line
     >
       {/* <CardHeader className="p-0">
         <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
@@ -54,7 +54,9 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           </CardDescription>
         )}
       </CardHeader> */}
-      <div className="flex flex-col">
+      <div
+        className={`flex flex-col ${props.formType === "video" ? "" : "pt-8 pb-6 pl-7 pr-10"}`}
+      >
         {/* Render the appropriate template */}
         <TemplateComponent
           value={value}
@@ -72,7 +74,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
               <Button
                 variant="outline"
                 asChild={true}
-                className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 ml-5"
+                className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 m-0"
               >
                 <span>
                   {props.triggerIcon}

@@ -19,6 +19,7 @@ export interface GeneralizableFormCardProps {
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
+  useRichText?: boolean; // Add this line to allow RichTextEditor for textArea
 }
 
 export interface FilledGeneralizableFormCardProps {

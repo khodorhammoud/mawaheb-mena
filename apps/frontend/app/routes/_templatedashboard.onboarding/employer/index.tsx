@@ -49,6 +49,7 @@ export default function EmployerOnboardingScreen() {
             triggerLabel="Add Bio"
             formName="employer-about"
             fieldName="about"
+            useRichText={true}
           />
         </div>
         {/* 
