@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 import PhoneNumberField from "./phoneNbs/PhoneNumberField";
+import RichTextEditor from "~/components/ui/richTextEditor";
 
 const AppFormField = ({
   type = "text",
@@ -14,6 +15,7 @@ const AppFormField = ({
   col = 4,
   defaultValue = "",
   onChange,
+  useRichText = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -51,7 +53,7 @@ const AppFormField = ({
             <select
               id={id}
               name={name}
-              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix`}
               spellCheck="false"
               defaultValue={defaultValue}
               onChange={onChange}
@@ -82,7 +84,7 @@ const AppFormField = ({
               name={name}
               placeholder={placeholder}
               style={{ height: textareaHeight }} // Apply dynamic height style
-              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix resize-none`}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix resize-none`}
               spellCheck="false"
               defaultValue={defaultValue} // Handle default value for textarea
               onChange={onChange} // Attach `onChange` here
@@ -94,7 +96,7 @@ const AppFormField = ({
               id={id}
               name={name}
               placeholder={placeholder}
-              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
               defaultValue={defaultValue} // Handle default value for input
@@ -189,6 +191,7 @@ AppFormField.propTypes = {
   placeholderTextSize: PropTypes.string,
   defaultValue: PropTypes.string,
   onChange: PropTypes.func,
+  useRichText: PropTypes.bool,
 };
 
 export default AppFormField;

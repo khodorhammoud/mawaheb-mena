@@ -33,6 +33,7 @@ import { getCurrentProfileInfo } from "./user.server";
 import { uploadFileToBucket } from "./cloudStorage.server";
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
+import DOMPurify from "isomorphic-dompurify";
 
 export async function updateAccountBio(
   bio: AccountBio,
@@ -125,6 +126,9 @@ export async function updateFreelancerPortfolio(
       } else {
         portfolio[i].projectImageUrl = "";
       }
+      portfolio[i].projectDescription = DOMPurify.sanitize(
+        portfolio[i].projectDescription
+      );
     }
 
     const res = await db
@@ -184,6 +188,11 @@ export async function updateFreelancerWorkHistory(
   freelancer: Freelancer,
   workHistory: WorkHistoryFormFieldType[]
 ): Promise<SuccessVerificationLoaderStatus> {
+  for (let i = 0; i < workHistory.length; i++) {
+    workHistory[i].jobDescription = DOMPurify.sanitize(
+      workHistory[i].jobDescription
+    );
+  }
   try {
     const res = await db
       .update(freelancersTable)
@@ -447,12 +456,13 @@ export async function updateEmployerAbout(
   aboutContent: string
 ): Promise<{ success: boolean }> {
   const accountId = employer.accountId;
+  const sanitizedContent = DOMPurify.sanitize(aboutContent);
 
   try {
     await db
       .update(employersTable)
       .set({
-        about: aboutContent, // Set the about column with the new content
+        about: sanitizedContent, // Set the about column with the new content
       })
       .where(eq(employersTable.accountId, accountId));
 
@@ -469,12 +479,12 @@ export async function updateFreelancerAbout(
   aboutContent: string
 ): Promise<{ success: boolean }> {
   const accountId = freelancer.accountId;
-
+  const sanitizedContent = DOMPurify.sanitize(aboutContent);
   try {
     await db
       .update(freelancersTable)
       .set({
-        about: aboutContent, // Set the about column with the new content
+        about: sanitizedContent, // Set the about column with the new content
       })
       .where(eq(freelancersTable.accountId, accountId));
 
@@ -493,7 +503,9 @@ export async function updateFreelancerVideoLink(
     .update(freelancersTable)
     .set({ videoLink: videoLink })
     .where(eq(freelancersTable.accountId, freelancerId))
-    .then(() => ({ success: true }))
+    .then(() => {
+      return { success: true };
+    })
     .catch((error) => {
       console.error("Error updating freelancer video link", error);
       return { success: false };
