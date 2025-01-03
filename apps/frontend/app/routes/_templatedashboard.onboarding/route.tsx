@@ -175,6 +175,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // FREELANCER
     if (accountType == "freelancer") {
       const freelancer = currentProfile as Freelancer;
+
       // HOURLY RATE
       if (target == "freelancer-hourly-rate") {
         const hourlyRate = parseInt(formData.get("hourlyRate") as string, 10);
@@ -387,6 +388,7 @@ export async function loader({
   await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
+  console.log(profile);
   if (!profile) {
     console.warn("Profile information not found.");
     return Response.json({
