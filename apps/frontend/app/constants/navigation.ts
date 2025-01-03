@@ -2,7 +2,7 @@
 // this is the navigation of our home Pages 😎
 
 import { TFunction } from "i18next";
-import { FaBriefcase, FaCog, FaFileAlt } from "react-icons/fa";
+import { FaBriefcase, FaCog, FaFileAlt, FaChartLine } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 
 // this is the main navigation
@@ -83,7 +83,7 @@ export const sidebarFreelancerNav = function (t: TFunction) {
     {
       label: t("dashboardFreelancerReportsLable"),
       href: "/reports",
-      icon: FaFileAlt,
+      icon: FaChartLine,
     },
     {
       label: t("dashboardFreelancerSettingsLable"),

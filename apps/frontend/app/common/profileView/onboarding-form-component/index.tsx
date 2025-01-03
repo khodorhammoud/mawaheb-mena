@@ -66,38 +66,41 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         />
 
         {/* Button of the components and its border */}
-        <Dialog>
-          <DialogTrigger>
-            {isFilled ? (
-              <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all hover:rounded-xl p-1" />
-            ) : (
-              <Button
-                variant="outline"
-                asChild={true}
-                className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 m-0"
-              >
-                <span>
-                  {props.triggerIcon}
-                  <span>{props.triggerLabel}</span>
-                </span>
-              </Button>
-            )}
-          </DialogTrigger>
+        {/* Conditionally render edit functionality based on `editable` */}
+        {props.editable && (
+          <Dialog>
+            <DialogTrigger>
+              {isFilled ? (
+                <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all hover:rounded-xl p-1" />
+              ) : (
+                <Button
+                  variant="outline"
+                  asChild={true}
+                  className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 ml-5"
+                >
+                  <span>
+                    {props.triggerIcon}
+                    <span>{props.triggerLabel}</span>
+                  </span>
+                </Button>
+              )}
+            </DialogTrigger>
 
-          <DialogContent className="bg-white">
-            <DialogTitle className="mt-3 tracking-normal">
-              {props.popupTitle}
-            </DialogTitle>
+            <DialogContent className="bg-white">
+              <DialogTitle className="mt-3 tracking-normal">
+                {props.popupTitle}
+              </DialogTitle>
 
-            <FormContent
-              {...props}
-              formState={formState}
-              onSubmit={handleSubmit}
-              fetcher={fetcher}
-              showStatusMessage={showStatusMessage}
-            />
-          </DialogContent>
-        </Dialog>
+              <FormContent
+                {...props}
+                formState={formState}
+                onSubmit={handleSubmit}
+                fetcher={fetcher}
+                showStatusMessage={showStatusMessage}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </Card>
   );
