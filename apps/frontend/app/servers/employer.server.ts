@@ -645,12 +645,19 @@ export async function saveAvailability({
   hoursAvailableFrom,
   hoursAvailableTo,
   jobsOpenTo,
-}: Partial<Freelancer>) {
+}: {
+  accountId: number;
+  availableForWork: boolean;
+  availableFrom: Date;
+  hoursAvailableFrom: string;
+  hoursAvailableTo: string;
+  jobsOpenTo: string[];
+}) {
   const result = await db
     .update(freelancersTable)
     .set({
       availableForWork,
-      dateAvailableFrom: availableFrom.date.toDateString(),
+      dateAvailableFrom: availableFrom.toDateString(),
       hoursAvailableFrom,
       hoursAvailableTo,
       jobsOpenTo,

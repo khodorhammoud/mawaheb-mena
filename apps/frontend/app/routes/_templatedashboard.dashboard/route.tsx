@@ -59,12 +59,12 @@ export async function action({ request }: ActionFunctionArgs) {
     // Extract form fields
     console.log("Form Data Entries:", Array.from(formData.entries()));
 
-    const availableForWork = formData.get("available_for_work") === "true";
-    const jobsOpenTo = formData.getAll("jobs_open_to");
-    const availableFrom = formData.get("available_from");
-    const hoursAvailableFrom = formData.get("hours_available_from");
-    const hoursAvailableTo = formData.get("hours_available_to");
+    // const availableForWork = formData.get("available_for_work") === "true";
+    // const jobsOpenTo = formData.getAll("jobs_open_to");
+    // const hoursAvailableFrom = formData.get("hours_available_from");
+    // const hoursAvailableTo = formData.get("hours_available_to");
 
+    const availableFrom = formData.get("available_from");
     if (!availableFrom) {
       console.error("Missing 'available_from' field in FormData");
     }
@@ -76,23 +76,22 @@ export async function action({ request }: ActionFunctionArgs) {
       const availableFrom = formData.get("available_from"); // string
       const hoursAvailableFrom = formData.get("hours_available_from");
       const hoursAvailableTo = formData.get("hours_available_to");
-      const jobsOpenTo = formData.getAll("jobs_open_to");
-
-      // transfer the string date, into an actual date
-      const availableFromAsADate = new Date(availableFrom as string);
-
       // jobsOpenTo is array .
       const jobsOpenToArray = Array.from(
         formData.getAll("jobs_open_to")
       ) as string[];
+      // const jobsOpenTo = formData.getAll("jobs_open_to");
+
+      // transfer the string date, into an actual date
+      const availableFromAsADate = new Date(availableFrom as string);
 
       const result = await saveAvailability({
         accountId,
         availableForWork,
-        dateAvailableFrom: availableFromAsADate,
-        jobsOpenTo: jobsOpenToArray,
+        availableFrom: availableFromAsADate,
         hoursAvailableFrom: hoursAvailableFrom as string,
         hoursAvailableTo: hoursAvailableTo as string,
+        jobsOpenTo: jobsOpenToArray,
       });
 
       console.log("Form Data:", Array.from(formData.entries()));
