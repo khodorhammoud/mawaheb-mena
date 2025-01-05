@@ -8,6 +8,7 @@ interface EmployerJobCardProps {
 
 export function EmployerJobCard({ job }: EmployerJobCardProps) {
   const formattedDate = new Date(job.createdAt).toDateString();
+  console.log("job", job);
 
   return (
     <div className="bg-white border rounded-xl shadow-xl p-6">

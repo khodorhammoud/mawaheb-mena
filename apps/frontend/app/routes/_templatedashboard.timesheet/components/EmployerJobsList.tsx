@@ -1,7 +1,6 @@
 import { Job, JobApplication } from "~/types/Job";
 import { EmployerJobCard } from "./EmployerJobCard";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface EmployerJobsListProps {
   jobs: Job[];
