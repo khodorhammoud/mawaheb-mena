@@ -17,6 +17,8 @@ const AppFormField = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const [selectedValue, setSelectedValue] = useState(defaultValue);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -53,10 +55,14 @@ const AppFormField = ({
               name={name}
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none bg-white text-gray-900 autofill-fix`}
               spellCheck="false"
-              defaultValue={defaultValue}
-              onChange={onChange}
+              defaultValue={selectedValue} // Controlled component
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedValue(value); // Update state with selected value
+                if (onChange) onChange(value); // Call the provided onChange handler
+              }}
             >
-              <option value="" disabled selected hidden></option>
+              <option value="" disabled hidden></option>
               {options.map((option, index) => (
                 <option key={index} value={option.value}>
                   {option.label}

@@ -140,10 +140,10 @@ export const freelancersTable = pgTable("freelancers", {
   hourlyRate: integer("hourly_rate"),
   compensationType: compensationTypeEnum("compensation_type"),
   availableForWork: boolean("available_for_work").default(false),
+  dateAvailableFrom: date("available_from"),
   jobsOpenTo: jobsOpenToEnum("jobs_open_to")
     .array()
-    .default(sql`ARRAY[]::jobs_open_to[]`),
-  dateAvailableFrom: date("available_from"),
+    .default(sql`ARRAY[]::jobs_open_to[]`), // array that allows only the enum
   hoursAvailableFrom: time("hours_available_from"),
   hoursAvailableTo: time("hours_available_to"),
 });

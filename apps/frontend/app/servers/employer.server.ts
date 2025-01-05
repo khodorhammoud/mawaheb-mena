@@ -644,7 +644,7 @@ export async function saveAvailability({
   availableFrom,
   hoursAvailableFrom,
   hoursAvailableTo,
-  jobsOpenTo,
+  jobsOpenTo, // [ 'full-time', 'part_time' ]
 }: {
   accountId: number;
   availableForWork: boolean;
@@ -653,17 +653,18 @@ export async function saveAvailability({
   hoursAvailableTo: string;
   jobsOpenTo: string[];
 }) {
+  // Convert the date to YYYY-MM-DD format
+  const formattedDateAvailableFrom = availableFrom
+    ? availableFrom.toISOString().split("T")[0]
+    : null;
   const result = await db
     .update(freelancersTable)
     .set({
       availableForWork,
-      dateAvailableFrom: availableFrom.toDateString(),
-      // dateAvailableFrom: availableFrom
-      //   ? availableFrom.toISOString().split("T")[0]
-      //   : null, // more safe than the one up it
+      dateAvailableFrom: formattedDateAvailableFrom,
       hoursAvailableFrom,
       hoursAvailableTo,
-      jobsOpenTo: JSON.stringify(jobsOpenTo),
+      jobsOpenTo,
     })
     .where(eq(freelancersTable.accountId, accountId))
     .returning();
