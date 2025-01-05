@@ -9,6 +9,7 @@ import {
   timestamp,
   jsonb,
   json,
+  date,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -21,6 +22,7 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+  jobsOpenToEnum,
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
@@ -137,6 +139,13 @@ export const freelancersTable = pgTable("freelancers", {
     .default(sql`ARRAY[]::project_type[]`),
   hourlyRate: integer("hourly_rate"),
   compensationType: compensationTypeEnum("compensation_type"),
+  availableForWork: boolean("available_for_work").default(false),
+  jobsOpenTo: jobsOpenToEnum("jobs_open_to")
+    .array()
+    .default(sql`ARRAY[]::jobs_open_to[]`),
+  dateAvailableFrom: date("available_from"),
+  hoursAvailableFrom: time("hours_available_from"),
+  hoursAvailableTo: time("hours_available_to"),
 });
 
 /**

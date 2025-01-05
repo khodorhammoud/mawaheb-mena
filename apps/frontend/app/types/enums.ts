@@ -98,3 +98,9 @@ export enum JobApplicationStatus {
   Approved = "approved",
   Rejected = "rejected",
 }
+
+export enum JobsOpenTo {
+  FullTimeRoles = "full-time-roles",
+  PartTimeRoles = "part-time-roles",
+  EmployeeRoles = "employee-roles",
+}

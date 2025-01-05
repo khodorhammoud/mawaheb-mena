@@ -7,6 +7,7 @@ import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUser,
+  getCurrentUserAccountInfo,
 } from "~/servers/user.server";
 import EmployerDashboard from "./employer";
 import FreelancerDashboard from "./freelancer";
@@ -27,6 +28,7 @@ import {
   checkUserExists,
   updateOnboardingStatus,
   getEmployerDashboardData,
+  saveAvailability,
 } from "~/servers/employer.server";
 import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
@@ -41,6 +43,49 @@ export async function action({ request }: ActionFunctionArgs) {
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
     const employer = (await getCurrentProfileInfo(request)) as Employer;
+
+    // Get the current account info
+    const currentAccount = await getCurrentUserAccountInfo(request);
+    if (!currentAccount) {
+      return Response.json(
+        { success: false, error: { message: "User not logged in." } },
+        { status: 401 }
+      );
+    }
+
+    const accountId = currentAccount.id;
+
+    // Extract form fields
+    const availableForWork = formData.get("available_for_work") === "true";
+    const availableFrom = formData.get("available_from");
+    const hoursAvailableFrom = formData.get("hours_available_from");
+    const hoursAvailableTo = formData.get("hours_available_to");
+    const jobsOpenTo = formData.getAll("jobs_open_to");
+
+    // Save freelancer availability
+    if (formData.get("target-updated") === "freelancer-availability") {
+      const result = await saveAvailability({
+        accountId,
+        availableForWork,
+        availableFrom: availableFrom as string,
+        hoursAvailableFrom: hoursAvailableFrom as string,
+        hoursAvailableTo: hoursAvailableTo as string,
+        jobsOpenTo: jobsOpenTo as string[],
+      });
+
+      console.log("Account ID:", accountId);
+      console.log("Current User:", currentUser);
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to save availability." },
+            },
+            { status: 500 }
+          );
+    }
 
     // ABOUT
     if (target == "employer-about") {

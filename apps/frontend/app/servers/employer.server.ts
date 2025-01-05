@@ -637,3 +637,53 @@ export async function getEmployerDashboardData(request: Request) {
     throw error; // Re-throw the error for further handling
   }
 }
+
+export async function saveAvailability({
+  accountId,
+  availableForWork,
+  availableFrom,
+  hoursAvailableFrom,
+  hoursAvailableTo,
+  jobsOpenTo,
+}: Partial<Freelancer>) {
+  try {
+    // Ensure `availableFrom` is a valid date
+    const dateAvailableFrom = availableFrom ? new Date(availableFrom) : null;
+
+    // Check if the freelancer already exists
+    const existingFreelancer = await db
+      .select()
+      .from(freelancersTable)
+      .where(eq(freelancersTable.accountId, accountId))
+      .limit(1);
+
+    if (existingFreelancer.length === 0) {
+      console.error("Freelancer not found.");
+      return false;
+    }
+
+    // Update existing freelancer record
+    const result = await db
+      .update(freelancersTable)
+      .set({
+        availableForWork,
+        dateAvailableFrom,
+        hoursAvailableFrom,
+        hoursAvailableTo,
+        jobsOpenTo,
+      })
+      .where(eq(freelancersTable.accountId, accountId))
+      .returning();
+
+    // Check if any rows were updated
+    if (result.length === 0) {
+      console.error("No rows were updated.");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error saving availability:", error);
+    return false;
+  }
+}

@@ -80,7 +80,12 @@ CREATE TABLE IF NOT EXISTS "freelancers" (
 	"years_of_experience" integer,
 	"preferred_project_types" project_type[] DEFAULT ARRAY[]::project_type[],
 	"hourly_rate" integer,
-	"compensation_type" "compensation_type"
+	"compensation_type" "compensation_type",
+	"available_for_work" boolean DEFAULT true,
+	"jobs_open_to" jobs_open_to[] DEFAULT ARRAY[]::jobs_open_to[],
+	"available_from" date,
+	"hours_available_from" time,
+	"hours_available_to" time
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "industries" (

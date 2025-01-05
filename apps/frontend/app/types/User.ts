@@ -89,6 +89,13 @@ export interface Freelancer {
   hourlyRate?: number;
   compensationType?: CompensationType[];
   account?: UserAccount;
+
+  // Availability related fields :)
+  availableForWork?: boolean;
+  availableFrom?: string;
+  hoursAvailableFrom?: string;
+  hoursAvailableTo?: string;
+  jobsOpenTo?: string[];
 }
 
 export interface LoggedInUser {
