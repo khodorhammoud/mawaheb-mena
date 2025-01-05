@@ -8,6 +8,13 @@
       "when": 1736062144133,
       "tag": "0000_abnormal_blue_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1736075481323,
+      "tag": "0001_brainy_gargoyle",
+      "breakpoints": true
     }
   ]
 }

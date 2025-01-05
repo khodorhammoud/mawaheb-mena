@@ -645,12 +645,19 @@ export async function saveAvailability({
   hoursAvailableFrom,
   hoursAvailableTo,
   jobsOpenTo,
+}: {
+  accountId: number;
+  availableForWork: boolean;
+  availableFrom: Date;
+  hoursAvailableFrom: string;
+  hoursAvailableTo: string;
+  jobsOpenTo: string[];
 }) {
   const result = await db
     .update(freelancersTable)
     .set({
       availableForWork,
-      dateAvailableFrom,
+      dateAvailableFrom: availableFrom.toDateString(),
       hoursAvailableFrom,
       hoursAvailableTo,
       jobsOpenTo,
