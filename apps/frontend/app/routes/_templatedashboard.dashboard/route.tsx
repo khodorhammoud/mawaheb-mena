@@ -61,11 +61,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const availableForWork = formData.get("available_for_work") === "true";
     const jobsOpenTo = formData.getAll("jobs_open_to");
-    const availableFrom = formData.get("available_from");
+    const dateAvailableFrom = formData.get("available_from");
     const hoursAvailableFrom = formData.get("hours_available_from");
     const hoursAvailableTo = formData.get("hours_available_to");
 
-    if (!availableFrom) {
+    if (!dateAvailableFrom) {
       console.error("Missing 'available_from' field in FormData");
     }
 
@@ -81,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
       // transfer the string date, into an actual date
       const availableFromAsADate = new Date(availableFrom as string);
 
-      // jobsOpenTo is array .
+      // Ensure jobsOpenTo is an array
       const jobsOpenToArray = Array.from(
         formData.getAll("jobs_open_to")
       ) as string[];
@@ -89,8 +89,8 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = await saveAvailability({
         accountId,
         availableForWork,
-        dateAvailableFrom: availableFromAsADate,
         jobsOpenTo: jobsOpenToArray,
+        dateAvailableFrom: availableFromAsADate,
         hoursAvailableFrom: hoursAvailableFrom as string,
         hoursAvailableTo: hoursAvailableTo as string,
       });

@@ -140,7 +140,7 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="full-time"
-              name="jobs_open_to"
+              name="jobs_open_to[]"
               value="Full Time"
               checked={workAvailability.jobTypes.includes("Full Time")}
               onCheckedChange={(checked) => {
@@ -161,7 +161,7 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="part-time"
-              name="jobs_open_to"
+              name="jobs_open_to[]"
               value="Part Time"
               checked={workAvailability.jobTypes.includes("Part Time")}
               onCheckedChange={(checked) => {
@@ -182,7 +182,7 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="employee"
-              name="jobs_open_to"
+              name="jobs_open_to[]"
               value="Employee"
               checked={workAvailability.jobTypes.includes("Employee")}
               onCheckedChange={(checked) => {

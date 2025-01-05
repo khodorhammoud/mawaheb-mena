@@ -641,16 +641,16 @@ export async function getEmployerDashboardData(request: Request) {
 export async function saveAvailability({
   accountId,
   availableForWork,
-  availableFrom,
+  dateAvailableFrom,
   hoursAvailableFrom,
   hoursAvailableTo,
   jobsOpenTo,
-}: Partial<Freelancer>) {
+}) {
   const result = await db
     .update(freelancersTable)
     .set({
       availableForWork,
-      dateAvailableFrom: availableFrom.date.toDateString(),
+      dateAvailableFrom,
       hoursAvailableFrom,
       hoursAvailableTo,
       jobsOpenTo,
