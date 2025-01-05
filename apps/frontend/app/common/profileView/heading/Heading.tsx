@@ -5,7 +5,7 @@ import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import Skills from "./skills";
 
-export default function Heading() {
+export default function Heading({ request }: { request: Request }) {
   const { accountType } = useLoaderData<{
     accountType: AccountType; // account type Enum
   }>();
