@@ -13,6 +13,7 @@ import {
   BsPersonCircle,
   BsClockHistory,
 } from "react-icons/bs";
+import { AccountType } from "~/types/enums";
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -50,7 +51,7 @@ export default function Layout() {
 
         <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
           {/* Conditionally render the "Post Job" button */}
-          {accountType !== "freelancer" && (
+          {accountType !== AccountType.Freelancer && (
             <Link
               to="/new-job"
               className="bg-primaryColor rounded-[10px] md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
@@ -66,7 +67,7 @@ export default function Layout() {
               <BsBell className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
 
               {/* Freelancer Icon :) */}
-              {accountType === "freelancer" && (
+              {accountType === AccountType.Freelancer && (
                 // 🕛
                 <BsClockHistory className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
               )}

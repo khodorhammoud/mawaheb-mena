@@ -23,8 +23,11 @@ import {
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
 import { AccountBio } from "~/types/User";
 import AppFormField from "~/common/form-fields";
+import { AccountType } from "~/types/enums";
 
 export default function Heading() {
+  const { accountType } = useLoaderData<{ accountType: AccountType }>();
+
   const [open, setOpen] = useState(false); // Bio dialog state
   const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
 
@@ -125,7 +128,11 @@ export default function Heading() {
                   <input
                     type="hidden"
                     name="target-updated"
-                    value="employer-bio" // this value should match the target in the route.tsx
+                    value={
+                      accountType === AccountType.Employer
+                        ? "employer-bio"
+                        : "freelancer-bio"
+                    } // this value should match the target in the route.tsx
                   />
                   <div className="grid grid-cols-2 gap-4">
                     {/* FIRST NAME */}
@@ -254,7 +261,7 @@ export default function Heading() {
 
           {/* ADD LOCATION + ADD WEBSITE */}
           <div className="flex items-center sm:h-10 md:ml-0 sm:ml-10 ml-10 xl:-mt-1 lg:-mt-2 sm:-mt-3">
-            <div className="">
+            <div className="flex sm:mt-6">
               {/* ADD LOCATION */}
               {bioInfo.location ? (
                 // comment that for the wierd error (cannot find ...)
@@ -266,7 +273,7 @@ export default function Heading() {
                 // comment that for the wierd error (cannot find ...)
                 <button
                   onClick={() => handleTriggerClick(locationInputRef)}
-                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
                 >
                   <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
                   Add Location
@@ -279,7 +286,7 @@ export default function Heading() {
               ) : (
                 <button
                   onClick={() => handleTriggerClick(websiteInputRef)}
-                  className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit"
+                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
                 >
                   <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
                   Add Websites
@@ -287,7 +294,7 @@ export default function Heading() {
               )}
             </div>
 
-            <div className="flex items-center justify-center gap-2 ml-2">
+            <div className="flex items-center justify-center gap-2 ml-2 sm:mt-6">
               {/* Linkedin icons interface */}
               {bioInfo.socialMediaLinks.linkedin ? (
                 <span className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all">
