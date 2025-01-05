@@ -15,14 +15,19 @@ import {
   FaMapMarkerAlt,
   FaGlobe,
   FaLinkedinIn,
+  FaLinkedin,
   FaStackOverflow,
+  FaGitlab,
+  FaDribbble,
 } from "react-icons/fa";
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
 import { AccountBio } from "~/types/User";
-import { parseHTTP } from "~/lib/utils";
 import AppFormField from "~/common/form-fields";
+import { AccountType } from "~/types/enums";
 
 export default function Heading() {
+  const { accountType } = useLoaderData<{ accountType: AccountType }>();
+
   const [open, setOpen] = useState(false); // Bio dialog state
   const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
 
@@ -64,10 +69,10 @@ export default function Heading() {
   };
 
   return (
-    <div className="z-20">
-      <div className="md:flex -mt-14">
+    <div className="">
+      <div className="md:flex">
         {/* CIRCLE */}
-        <div className="bg-blue-100 rounded-full lg:w-36 lg:h-36 sm:h-32 sm:w-32 h-28 w-28 flex items-center justify-center mr-5 lg:ml-20 ml-10 md:mb-14 border-4 border-white">
+        <div className="bg-blue-100 rounded-full lg:w-36 lg:h-36 sm:h-32 sm:w-32 h-28 w-28 flex items-center justify-center lg:mr-5 mr-2 lg:ml-20 ml-8 md:mb-14 border-4 border-white">
           <span className="lg:text-5xl sm:text-4xl text-3xl font-semibold text-primaryColor">
             {bioInfo.firstName.charAt(0).toUpperCase()}
             {bioInfo.lastName.charAt(0).toUpperCase()}
@@ -89,7 +94,7 @@ export default function Heading() {
               {/* ✏️ */}
               <DialogTrigger asChild>
                 <Button variant="link">
-                  <IoPencilSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />{" "}
+                  <IoPencilSharp className="lg:h-9 lg:w-8 h-7 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
                 </Button>
               </DialogTrigger>
               {/* POPUP CONTENT */}
@@ -122,7 +127,11 @@ export default function Heading() {
                   <input
                     type="hidden"
                     name="target-updated"
-                    value="employer-bio" // this value should match the target in the route.tsx
+                    value={
+                      accountType === AccountType.Employer
+                        ? "employer-bio"
+                        : "freelancer-bio"
+                    } // this value should match the target in the route.tsx
                   />
                   <div className="grid grid-cols-2 gap-4">
                     {/* FIRST NAME */}
@@ -250,54 +259,72 @@ export default function Heading() {
           </div>
 
           {/* ADD LOCATION + ADD WEBSITE */}
-          <div className="sm:flex mt-2 sm:h-10 md:ml-0 sm:ml-8 ml-8">
-            {/* ADD LOCATION */}
-            {bioInfo.location ? (
-              // comment that for the wierd error (cannot find ...)
-              <span className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit">
-                <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2 mt-1" />
-                {bioInfo.location}
-                {/* // comment that for the wierd error (cannot find ...) */}
-              </span>
-            ) : (
-              // comment that for the wierd error (cannot find ...)
-              <button
-                onClick={() => handleTriggerClick(locationInputRef)}
-                className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
-              >
-                <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
-                Add Location
-              </button>
-            )}
-            {/* // comment that for the wierd error (cannot find ...) */}
-
-            {/* ADD WEBSITE */}
-            {bioInfo.websiteURL ? (
-              // comment that for the wierd error (cannot find ...)
-              <span className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
-                <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2 mt-1" />
-                <a
-                  href={parseHTTP(bioInfo.websiteURL)} // comment that for the wierd error (cannot find ...)
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {bioInfo.websiteURL}
+          <div className="flex items-center sm:h-10 md:ml-0 sm:ml-10 ml-10 xl:-mt-1 lg:-mt-2 sm:-mt-3">
+            <div className="flex sm:mt-6">
+              {/* ADD LOCATION */}
+              {bioInfo.location ? (
+                // comment that for the wierd error (cannot find ...)
+                <span className="text-sm text-black font-semibold tracking-wide">
+                  {bioInfo.location}
                   {/* // comment that for the wierd error (cannot find ...) */}
-                </a>
-              </span>
-            ) : (
-              <button
-                onClick={() => handleTriggerClick(websiteInputRef)}
-                className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit"
-              >
-                <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
-                Add Website
-              </button>
-            )}
-            {/* // comment that for the wierd error (cannot find ...) */}
+                </span>
+              ) : (
+                // comment that for the wierd error (cannot find ...)
+                <button
+                  onClick={() => handleTriggerClick(locationInputRef)}
+                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                >
+                  <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                  Add Location
+                </button>
+              )}
+
+              {/* ADD WEBSITE */}
+              {bioInfo.websiteURL ? (
+                <div className="hidden"></div>
+              ) : (
+                <button
+                  onClick={() => handleTriggerClick(websiteInputRef)}
+                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                >
+                  <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                  Add Websites
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center gap-2 ml-2 sm:mt-6">
+              {/* Linkedin icons interface */}
+              {bioInfo.socialMediaLinks.linkedin ? (
+                <span className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all">
+                  <FaLinkedin className="w-4 h-4" />
+                </span>
+              ) : (
+                <div className="hidden"></div>
+              )}
+
+              {/* Gitlab icons interface */}
+              {bioInfo.socialMediaLinks.gitlab ? (
+                <span className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all">
+                  <FaGitlab className="w-4 h-4" />
+                </span>
+              ) : (
+                <div className="hidden"></div>
+              )}
+
+              {/* Dribbble icons interface */}
+              {bioInfo.socialMediaLinks.dribbble ? (
+                <span className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all">
+                  <FaDribbble className="w-4 h-4" />
+                </span>
+              ) : (
+                <div className="hidden"></div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
+    // {parseHTTP(bioInfo.websiteURL)}
   );
 }

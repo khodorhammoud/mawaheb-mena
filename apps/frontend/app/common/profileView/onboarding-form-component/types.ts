@@ -19,6 +19,7 @@ export interface GeneralizableFormCardProps {
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
+  editable?: boolean;
 }
 
 export interface FilledGeneralizableFormCardProps {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
+import { AccountType } from "~/types/enums";
 
 interface ActionData {
   success?: boolean;
@@ -80,7 +81,7 @@ export default function SignupLeftComponent() {
 
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
-        <input type="hidden" name="accountType" value="employer" />
+        <input type="hidden" name="accountType" value={AccountType.Employer} />
         <input
           type="hidden"
           name="employerAccountType"

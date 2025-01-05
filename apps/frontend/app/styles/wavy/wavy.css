@@ -354,3 +354,67 @@
   box-shadow: 0 0 0 2px #27638a !important; /* Focus ring using box-shadow */
   border: 1px solid #d1d5db !important; /* Keep border consistent */
 }
+
+/* QUILL STYLING (richTextEditor) */
+/* QUILL STYLING (richTextEditor) */
+/* QUILL STYLING (richTextEditor) */
+
+/* Toolbar Styling */
+.custom-quill .ql-toolbar {
+  /* the toolbar */
+  margin-top: 6px;
+  border-radius: 20px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.custom-quill .ql-container {
+  /* this is the place were we type */
+  color: #000 !important;
+  border-radius: 20px;
+  margin-bottom: 2px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  font-size: 1rem; /* Standard text size */
+  line-height: 1.5; /* Add proper line spacing */
+  min-height: 150px; /* Set a minimum height */
+  font-style: normal !important;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.custom-quill .ql-editor {
+  /* The actual editable content area */
+  min-height: 150px; /* Match the height of the container */
+}
+
+/* Ensure clicking anywhere allows typing */
+.custom-quill .ql-container:focus-within {
+  background-color: #f4f4f4; /* Highlight background on focus */
+  outline: 2px solid #27638a; /* Add focus ring */
+}
+
+/* On Hover or Focus (Active State) */
+.custom-quill .ql-container:hover,
+.custom-quill .ql-container:focus {
+  background-color: #f4f4f4; /* Lighter shade of the primary color */
+}
+
+/* Focused Text Styling */
+/* ma 2ila 3aze */
+.custom-quill .ql-container .ql-focused {
+  outline: 2px solid #27638a; /* Primary color for focus */
+}
+/* Change toolbar buttons to gray and hover color to primary */
+.custom-quill .ql-toolbar button {
+  color: #000;
+  transition: color 0.3s ease;
+}
+
+.custom-quill .ql-toolbar button:hover,
+.custom-quill .ql-toolbar button.ql-active {
+  border-radius: 10px;
+  background-color: #f4f4f4;
+}

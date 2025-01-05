@@ -50,6 +50,7 @@ export default function FreelancerOnboardingScreen() {
             triggerIcon={<FaDollarSign />}
             minVal={10}
             maxVal={100}
+            editable={true}
           />
 
           {/* Years of Experience */}
@@ -61,6 +62,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-years-of-experience"
             fieldName="yearsOfExperience"
             triggerIcon={<SlBadge />}
+            editable={true}
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
@@ -73,6 +75,7 @@ export default function FreelancerOnboardingScreen() {
             triggerLabel="Add Video"
             formName="freelancer-video"
             fieldName="videoLink"
+            editable={true}
           />
 
           {/* About */}
@@ -86,6 +89,7 @@ export default function FreelancerOnboardingScreen() {
             triggerLabel="Add Bio"
             formName="freelancer-about"
             fieldName="about"
+            editable={true}
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
@@ -99,6 +103,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-portfolio"
             fieldName="portfolio"
             repeatableFieldName="portfolio"
+            editable={true}
           />
 
           {/* Work History */}
@@ -110,6 +115,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-work-history"
             fieldName="workHistory"
             repeatableFieldName="workHistory"
+            editable={true}
           />
           {/* Certificates */}
           <GeneralizableFormCard
@@ -121,6 +127,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-certificates"
             fieldName="certificates"
             repeatableFieldName="certificates"
+            editable={true}
           />
 
           {/* Education */}
@@ -133,6 +140,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-educations"
             fieldName="educations"
             repeatableFieldName="educations"
+            editable={true}
           />
         </div>
 

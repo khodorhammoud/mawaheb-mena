@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentProfile.account.accountType;
 
     // EMPLOYER
-    if (accountType == "employer") {
+    if (accountType == AccountType.Employer) {
       const employer = currentProfile as Employer;
 
       // ABOUT
@@ -172,9 +172,11 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }
 
+    // NOTE: if any submission code in the action of the freelancer accountType made problems, go to FormFields.tsx inside onboarding-form-component
     // FREELANCER
-    if (accountType == "freelancer") {
+    if (accountType == AccountType.Freelancer) {
       const freelancer = currentProfile as Freelancer;
+
       // HOURLY RATE
       if (target == "freelancer-hourly-rate") {
         const hourlyRate = parseInt(formData.get("hourlyRate") as string, 10);
@@ -186,7 +188,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // YEARS OF EXPERIENCE
-      if (target == "freel-ancer-years-of-experience") {
+      if (target == "freelancer-years-of-experience") {
         const yearsExperience =
           parseInt(formData.get("yearsOfExperience") as string) || 0;
         const yearsStatus = await updateFreelancerYearsOfExperience(
@@ -203,14 +205,26 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           aboutContent
         );
+
+        console.log("About Content:", aboutContent);
         return Response.json({ success: aboutStatus.success });
       }
 
       // VIDEO LINK
       if (target == "freelancer-video") {
         const videoLink = formData.get("videoLink") as string;
+
+        console.log("Received videoLink:", videoLink);
+
+        if (!videoLink) {
+          return Response.json({
+            success: false,
+            error: "videoLink is empty or undefined",
+          });
+        }
+
         const videoStatus = await updateFreelancerVideoLink(
-          freelancer.id,
+          freelancer.accountId,
           videoLink
         );
         return Response.json({ success: videoStatus.success });
@@ -387,6 +401,7 @@ export async function loader({
   await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
+  console.log(profile);
   if (!profile) {
     console.warn("Profile information not found.");
     return Response.json({
@@ -402,7 +417,7 @@ export async function loader({
   }
 
   // fetch employwer data
-  if (accountType == "employer") {
+  if (accountType == AccountType.Employer) {
     profile = profile as Employer;
 
     // Fetch all the necessary data safely
@@ -434,7 +449,7 @@ export async function loader({
       closedJobCount,
       totalJobCount,
     });
-  } else if (accountType == "freelancer") {
+  } else if (accountType == AccountType.Freelancer) {
     profile = (await getCurrentProfileInfo(request)) as Freelancer;
 
     // Fetch all the necessary data safely
@@ -442,6 +457,8 @@ export async function loader({
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
+    const certificates = profile.certificates as CertificateFormFieldType[];
+    const educations = profile.educations as EducationFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
 
     return Response.json({
@@ -453,9 +470,9 @@ export async function loader({
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      educations: profile.educations,
-      certificates: profile.certificates,
       portfolio,
+      certificates,
+      educations,
       workHistory,
     });
   }
@@ -476,7 +493,7 @@ export default function Layout() {
   return (
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
-      {accountType === "employer" ? (
+      {accountType === AccountType.Employer ? (
         <EmployerOnboardingScreen />
       ) : (
         <FreelancerOnboardingScreen />

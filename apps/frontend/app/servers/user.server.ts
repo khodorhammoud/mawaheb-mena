@@ -225,14 +225,14 @@ export async function getProfileInfo(
     account = await getUserAccountInfo(identifier);
     if (!account) return null;
     // get account type
-    if (account.accountType === "employer") {
+    if (account.accountType === AccountType.Employer) {
       employer = await db
         .select()
         .from(employersTable)
         .where(eq(employersTable.accountId, account.id));
       if (employer.length === 0) return null;
       employer = employer[0];
-    } else if (account.accountType === "freelancer") {
+    } else if (account.accountType === AccountType.Freelancer) {
       freelancer = await db
         .select()
         .from(freelancersTable)
@@ -434,7 +434,7 @@ export async function registerEmployer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "employer",
+      accountType: AccountType.Employer,
     },
     true,
     {
@@ -516,7 +516,7 @@ export async function registerFreelancer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "freelancer",
+      accountType: AccountType.Freelancer,
     },
     true,
     {

@@ -7,6 +7,7 @@ import { SuccessVerificationLoaderStatus } from "../../types/misc";
 import { authenticator } from "../../auth/auth.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useEffect, useRef } from "react";
+import { AccountType } from "~/types/enums";
 
 // export async function action({ request }: ActionFunctionArgs) {
 
@@ -52,7 +53,7 @@ export default function Layout() {
     if (!redirectionFlag.current && success) {
       redirectionFlag.current = true;
       const redirectionURl =
-        data.accountType === "employer"
+        data.accountType === AccountType.Employer
           ? "/login-employer"
           : "/login-freelancer";
       // Trigger redirect after 2 seconds

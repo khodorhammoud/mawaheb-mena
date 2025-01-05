@@ -587,7 +587,11 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
+<<<<<<< HEAD
           "default": true
+=======
+          "default": false
+>>>>>>> dev
         },
         "jobs_open_to": {
           "name": "jobs_open_to",
@@ -595,6 +599,27 @@
           "primaryKey": false,
           "notNull": false,
           "default": "ARRAY[]::jobs_open_to[]"
+<<<<<<< HEAD
+=======
+        },
+        "available_from": {
+          "name": "available_from",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_available_from": {
+          "name": "hours_available_from",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_available_to": {
+          "name": "hours_available_to",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+>>>>>>> dev
         }
       },
       "indexes": {},
