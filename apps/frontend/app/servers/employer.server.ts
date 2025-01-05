@@ -646,44 +646,34 @@ export async function saveAvailability({
   hoursAvailableTo,
   jobsOpenTo,
 }: Partial<Freelancer>) {
-  try {
-    // Ensure `availableFrom` is a valid date
-    const dateAvailableFrom = availableFrom ? new Date(availableFrom) : null;
+  const result = await db
+    .update(freelancersTable)
+    .set({
+      availableForWork,
+      dateAvailableFrom: availableFrom.date.toDateString(),
+      hoursAvailableFrom,
+      hoursAvailableTo,
+      jobsOpenTo,
+    })
+    .where(eq(freelancersTable.accountId, accountId))
+    .returning();
 
-    // Check if the freelancer already exists
-    const existingFreelancer = await db
-      .select()
-      .from(freelancersTable)
-      .where(eq(freelancersTable.accountId, accountId))
-      .limit(1);
+  return result.length > 0;
+}
 
-    if (existingFreelancer.length === 0) {
-      console.error("Freelancer not found.");
-      return false;
-    }
+// Function to get availability details from the database
+export async function getFreelancerAvailability(accountId: number) {
+  const result = await db
+    .select({
+      availableForWork: freelancersTable.availableForWork,
+      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+      hoursAvailableTo: freelancersTable.hoursAvailableTo,
+      jobsOpenTo: freelancersTable.jobsOpenTo,
+    })
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
 
-    // Update existing freelancer record
-    const result = await db
-      .update(freelancersTable)
-      .set({
-        availableForWork,
-        dateAvailableFrom,
-        hoursAvailableFrom,
-        hoursAvailableTo,
-        jobsOpenTo,
-      })
-      .where(eq(freelancersTable.accountId, accountId))
-      .returning();
-
-    // Check if any rows were updated
-    if (result.length === 0) {
-      console.error("No rows were updated.");
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error saving availability:", error);
-    return false;
-  }
+  return result[0] || null;
 }

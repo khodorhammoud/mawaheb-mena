@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button";
 import AppFormField from "~/common/form-fields";
 import Calendar from "~/common/calender/Calender";
 import { format } from "date-fns";
+import { Freelancer } from "~/types/User";
+import { useLoaderData } from "@remix-run/react";
 
 // Generate time options for the entire day in 30-minute intervals
 const generateTimeOptions = () => {
@@ -35,15 +37,15 @@ export default function Availability() {
   // Fetcher for form submission
   const availabilityFetcher = useFetcher<AvailabilityResponse>();
 
-  // State for form fields
-  const [workAvailability, setWorkAvailability] = useState({
-    isLookingForWork: false,
-    jobTypes: [],
-    availableFrom: "",
-    availableHoursStart: "09:00",
-    availableHoursEnd: "17:00",
-  });
+  const freelancerAvailability = useLoaderData<Freelancer>();
 
+  const [workAvailability, setWorkAvailability] = useState({
+    isLookingForWork: freelancerAvailability?.availableForWork || false,
+    jobTypes: freelancerAvailability?.jobsOpenTo || [],
+    availableFrom: freelancerAvailability?.availableFrom || "",
+    availableHoursStart: freelancerAvailability?.hoursAvailableFrom || "09:00",
+    availableHoursEnd: freelancerAvailability?.hoursAvailableTo || "17:00",
+  });
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -130,37 +132,72 @@ export default function Availability() {
         </div>
 
         {/* Checkboxes */}
+        {/* Checkboxes for Job Types */}
         <div className="mb-7">
           <p className="text-base mb-6">Job Types I am open to:</p>
-          {["Full Time", "Part Time", "Employee"].map((jobType) => (
-            <div key={jobType} className="flex text-sm items-center ml-2 mb-4">
-              <Checkbox
-                id={jobType.toLowerCase()}
-                checked={workAvailability.jobTypes.includes(jobType)}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setWorkAvailability((prevState) => ({
-                      ...prevState,
-                      jobTypes: [...prevState.jobTypes, jobType],
-                    }));
-                  } else {
-                    setWorkAvailability((prevState) => ({
-                      ...prevState,
-                      jobTypes: prevState.jobTypes.filter(
-                        (type) => type !== jobType
-                      ),
-                    }));
-                  }
-                }}
-              />
-              <label
-                htmlFor={jobType.toLowerCase()}
-                className="ml-2 text-gray-700"
-              >
-                {jobType} Roles
-              </label>
-            </div>
-          ))}
+
+          {/* Full Time Checkbox */}
+          <div className="flex text-sm items-center ml-2 mb-4">
+            <Checkbox
+              id="full-time"
+              name="jobs_open_to"
+              value="Full Time"
+              checked={workAvailability.jobTypes.includes("Full Time")}
+              onCheckedChange={(checked) => {
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
+                  jobTypes: checked
+                    ? [...prevState.jobTypes, "Full Time"]
+                    : prevState.jobTypes.filter((type) => type !== "Full Time"),
+                }));
+              }}
+            />
+            <label htmlFor="full-time" className="ml-2 text-gray-700">
+              Full Time Roles
+            </label>
+          </div>
+
+          {/* Part Time Checkbox */}
+          <div className="flex text-sm items-center ml-2 mb-4">
+            <Checkbox
+              id="part-time"
+              name="jobs_open_to"
+              value="Part Time"
+              checked={workAvailability.jobTypes.includes("Part Time")}
+              onCheckedChange={(checked) => {
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
+                  jobTypes: checked
+                    ? [...prevState.jobTypes, "Part Time"]
+                    : prevState.jobTypes.filter((type) => type !== "Part Time"),
+                }));
+              }}
+            />
+            <label htmlFor="part-time" className="ml-2 text-gray-700">
+              Part Time Roles
+            </label>
+          </div>
+
+          {/* Employee Checkbox */}
+          <div className="flex text-sm items-center ml-2 mb-4">
+            <Checkbox
+              id="employee"
+              name="jobs_open_to"
+              value="Employee"
+              checked={workAvailability.jobTypes.includes("Employee")}
+              onCheckedChange={(checked) => {
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
+                  jobTypes: checked
+                    ? [...prevState.jobTypes, "Employee"]
+                    : prevState.jobTypes.filter((type) => type !== "Employee"),
+                }));
+              }}
+            />
+            <label htmlFor="employee" className="ml-2 text-gray-700">
+              Employee Roles
+            </label>
+          </div>
         </div>
 
         {/* Calendar */}
@@ -180,10 +217,13 @@ export default function Availability() {
               type="text"
               id="availableFrom"
               name="available_from"
-              label="mm/dd"
-              placeholder="mm/dd"
-              defaultValue={formatDate(selectedDate)}
-              className="block w-full"
+              defaultValue={workAvailability.availableFrom}
+              onChange={(value) =>
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
+                  availableFrom: value,
+                }))
+              }
             />
           </div>
 

@@ -29,6 +29,7 @@ import {
   updateOnboardingStatus,
   getEmployerDashboardData,
   saveAvailability,
+  getFreelancerAvailability,
 } from "~/servers/employer.server";
 import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
@@ -56,25 +57,45 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountId = currentAccount.id;
 
     // Extract form fields
+    console.log("Form Data Entries:", Array.from(formData.entries()));
+
     const availableForWork = formData.get("available_for_work") === "true";
+    const jobsOpenTo = formData.getAll("jobs_open_to");
     const availableFrom = formData.get("available_from");
     const hoursAvailableFrom = formData.get("hours_available_from");
     const hoursAvailableTo = formData.get("hours_available_to");
-    const jobsOpenTo = formData.getAll("jobs_open_to");
 
-    // Save freelancer availability
+    if (!availableFrom) {
+      console.error("Missing 'available_from' field in FormData");
+    }
+
+    // AVAILABILITY
     if (formData.get("target-updated") === "freelancer-availability") {
+      // Extract form fields
+      const availableForWork = formData.get("available_for_work") === "true";
+      const availableFrom = formData.get("available_from"); // string
+      const hoursAvailableFrom = formData.get("hours_available_from");
+      const hoursAvailableTo = formData.get("hours_available_to");
+      const jobsOpenTo = formData.getAll("jobs_open_to");
+
+      // transfer the string date, into an actual date
+      const availableFromAsADate = new Date(availableFrom as string);
+
+      // jobsOpenTo is array .
+      const jobsOpenToArray = Array.from(
+        formData.getAll("jobs_open_to")
+      ) as string[];
+
       const result = await saveAvailability({
         accountId,
         availableForWork,
-        availableFrom: availableFrom as string,
+        dateAvailableFrom: availableFromAsADate,
+        jobsOpenTo: jobsOpenToArray,
         hoursAvailableFrom: hoursAvailableFrom as string,
         hoursAvailableTo: hoursAvailableTo as string,
-        jobsOpenTo: jobsOpenTo as string[],
       });
 
-      console.log("Account ID:", accountId);
-      console.log("Current User:", currentUser);
+      console.log("Form Data:", Array.from(formData.entries()));
 
       return result
         ? Response.json({ success: true })
@@ -209,31 +230,40 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // require that the current user is verified
+  // Require that the current user is verified
   await requireUserOnboarded(request);
-  const accountType: AccountType = await getCurrentUserAccountType(request);
-  let correntProfile = await getCurrentProfileInfo(request);
-  const accountOnboarded = correntProfile?.account?.user?.isOnboarded;
-  const bioInfo = await getAccountBio(correntProfile.account);
 
+  // Get the account type
+  const accountType: AccountType = await getCurrentUserAccountType(request);
+
+  // Get the current profile
+  let currentProfile = await getCurrentProfileInfo(request);
+
+  // Get the account onboarding status
+  const accountOnboarded = currentProfile?.account?.user?.isOnboarded;
+
+  // Get the bio information
+  const bioInfo = await getAccountBio(currentProfile.account);
+
+  // Check if the user is an Employer
   if (accountType === AccountType.Employer) {
-    correntProfile = correntProfile as Employer;
-    const employerIndustries = await getEmployerIndustries(correntProfile);
+    currentProfile = currentProfile as Employer;
+    const employerIndustries = await getEmployerIndustries(currentProfile);
     const allIndustries = (await getAllIndustries()) || [];
-    const yearsInBusiness = await getEmployerYearsInBusiness(correntProfile);
-    const employerBudget = await getEmployerBudget(correntProfile);
-    const aboutContent = await getEmployerAbout(correntProfile);
+    const yearsInBusiness = await getEmployerYearsInBusiness(currentProfile);
+    const employerBudget = await getEmployerBudget(currentProfile);
+    const aboutContent = await getEmployerAbout(currentProfile);
     const { activeJobCount, draftedJobCount, closedJobCount } =
       await getEmployerDashboardData(request);
-
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
+    // Return response for Employer
     return Response.json({
       accountType,
       bioInfo,
       employerIndustries,
       allIndustries,
-      currentUser: correntProfile,
+      currentUser: currentProfile,
       yearsInBusiness,
       employerBudget,
       aboutContent,
@@ -244,12 +274,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       totalJobCount,
     });
   } else {
-    correntProfile = correntProfile as Freelancer;
+    // Freelancer-specific data
+    currentProfile = currentProfile as Freelancer;
+
+    // Get the freelancer availability data
+    const freelancerAvailability = await getFreelancerAvailability(
+      currentProfile.accountId
+    );
+
+    // Return response for Freelancer
     return Response.json({
       accountType,
-      currentUser: correntProfile,
-      accountOnboarded: correntProfile.account?.user?.isOnboarded,
+      currentUser: currentProfile,
+      accountOnboarded: currentProfile.account?.user?.isOnboarded,
       bioInfo,
+      freelancerAvailability,
     });
   }
 }
