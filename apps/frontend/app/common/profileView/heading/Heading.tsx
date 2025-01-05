@@ -17,7 +17,7 @@ export default function Heading() {
         <BioInfo />
       </div>
 
-      {accountType === "freelancer" ? (
+      {accountType === AccountType.Freelancer ? (
         <div className="sm:absolute sm:flex sm:flex-col sm:gap-24 hidden sm:top-0 xl:-right-14 md:-right-10 right-0 top-20">
           {/* Languages Served ✏️ */}
           <Languages />

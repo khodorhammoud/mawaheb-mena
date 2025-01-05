@@ -27,7 +27,7 @@ export default function Layout() {
   }>();
   return (
     <div>
-      {accountType === "freelancer" ? (
+      {accountType === AccountType.Freelancer ? (
         <FreelancerTimesheet />
       ) : (
         <EmployerTimesheet />

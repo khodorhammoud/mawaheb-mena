@@ -1,0 +1,1 @@
+ALTER TABLE "freelancers" ALTER COLUMN "available_for_work" SET DEFAULT false;

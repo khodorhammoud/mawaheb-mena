@@ -4,6 +4,7 @@ import GeneralizableFormCard from "~/common/profileView/onboarding-form-componen
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
 import { AiFillStar } from "react-icons/ai";
+import { AccountType } from "~/types/enums";
 
 export default function Dashboard() {
   const { accountOnboarded, accountType, isOwner } = useLoaderData<{
@@ -19,7 +20,7 @@ export default function Dashboard() {
   const actionData = useActionData<ActionData>();
 
   // Determine if the page should allow editing
-  const canEdit = accountType === "freelancer" && isOwner;
+  const canEdit = accountType === AccountType.Freelancer && isOwner;
 
   return (
     <div className="mt-10 relative">

@@ -17,6 +17,8 @@ import {
   OnboardingFreelancerFields,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
+  Employer,
+  Freelancer,
 } from "~/types/User";
 import EmployerDashboard from "./employer";
 import FreelancerDashboard from "./freelancer";
@@ -47,7 +49,6 @@ import {
   updateFreelancerCertificates,
   updateFreelancerEducation,
 } from "~/servers/employer.server";
-import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded } from "~/auth/auth.server";
 import { Job } from "~/types/Job";
@@ -65,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentProfile.account.accountType;
 
     // EMPLOYER
-    if (accountType == "employer") {
+    if (accountType == AccountType.Employer) {
       // ABOUT
       if (target == "employer-about") {
         const aboutContent = formData.get("about") as string;
@@ -180,7 +181,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // FREELANCER
-    if (accountType == "freelancer") {
+    if (accountType == AccountType.Freelancer) {
       const freelancer = currentProfile as Freelancer;
 
       // HOURLY RATE
@@ -490,7 +491,7 @@ export default function Layout() {
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
       <Header />
-      {accountType === "employer" ? (
+      {accountType === AccountType.Employer ? (
         <EmployerDashboard />
       ) : (
         <FreelancerDashboard />
