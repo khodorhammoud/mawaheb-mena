@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentProfile.account.accountType;
 
     // EMPLOYER
-    if (accountType == "employer") {
+    if (accountType == AccountType.Employer) {
       const employer = currentProfile as Employer;
 
       // ABOUT
@@ -174,7 +174,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // NOTE: if any submission code in the action of the freelancer accountType made problems, go to FormFields.tsx inside onboarding-form-component
     // FREELANCER
-    if (accountType == "freelancer") {
+    if (accountType == AccountType.Freelancer) {
       const freelancer = currentProfile as Freelancer;
 
       // HOURLY RATE
@@ -401,6 +401,7 @@ export async function loader({
   await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
+  console.log(profile);
   if (!profile) {
     console.warn("Profile information not found.");
     return Response.json({
@@ -416,7 +417,7 @@ export async function loader({
   }
 
   // fetch employwer data
-  if (accountType == "employer") {
+  if (accountType == AccountType.Employer) {
     profile = profile as Employer;
 
     // Fetch all the necessary data safely
@@ -448,7 +449,7 @@ export async function loader({
       closedJobCount,
       totalJobCount,
     });
-  } else if (accountType == "freelancer") {
+  } else if (accountType == AccountType.Freelancer) {
     profile = (await getCurrentProfileInfo(request)) as Freelancer;
 
     // Fetch all the necessary data safely
@@ -492,7 +493,7 @@ export default function Layout() {
   return (
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
-      {accountType === "employer" ? (
+      {accountType === AccountType.Employer ? (
         <EmployerOnboardingScreen />
       ) : (
         <FreelancerOnboardingScreen />

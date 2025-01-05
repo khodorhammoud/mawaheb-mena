@@ -2,6 +2,7 @@ import { Form } from "@remix-run/react";
 import AppFormField from "../../../common/form-fields";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { AccountType } from "~/types/enums";
 
 export default function Header({ setViewMode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function Header({ setViewMode }) {
     <div className="flex items-center xl:gap-6 lg:gap-2 lg:justify-between relative">
       {/* Search */}
       <Form method="post" className="space-y-6 xl:-mt-10 lg:-mt-8 -mt-8">
-        <input type="hidden" name="accountType" value="employer" />
+        <input type="hidden" name="accountType" value={AccountType.Employer} />
         <AppFormField
           id="search"
           name="search"

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
+import { AccountType } from "~/types/enums";
 
 interface ActionData {
   success?: boolean;
@@ -37,7 +38,11 @@ export default function LoginFormComponent() {
 
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
-        <input type="hidden" name="accountType" value="freelancer" />
+        <input
+          type="hidden"
+          name="accountType"
+          value={AccountType.Freelancer}
+        />
 
         {/* The Email */}
         <AppFormField
@@ -98,7 +103,7 @@ export default function LoginFormComponent() {
       {/* Don't have an account? SignUp */}
       <div className="text-center mt-8">
         <p className="text-sm text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a
             href="/signup-freelancer"
             className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"

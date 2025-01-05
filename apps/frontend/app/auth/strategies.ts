@@ -7,7 +7,7 @@ import {
 } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
 import { Employer, Freelancer } from "../types/User";
-import { EmployerAccountType } from "../types/enums";
+import { AccountType, EmployerAccountType } from "../types/enums";
 
 export const loginStrategy = new FormStrategy(
   async ({ form }): Promise<number> => {
@@ -48,7 +48,7 @@ export const registerationStrategy = new FormStrategy(
 
     try {
       switch (accountType) {
-        case "employer":
+        case AccountType.Employer:
           profile = await registerEmployer({
             account: {
               user: {
@@ -62,7 +62,7 @@ export const registerationStrategy = new FormStrategy(
           } as Employer);
 
           break;
-        case "freelancer":
+        case AccountType.Freelancer:
           profile = await registerFreelancer({
             account: {
               user: {

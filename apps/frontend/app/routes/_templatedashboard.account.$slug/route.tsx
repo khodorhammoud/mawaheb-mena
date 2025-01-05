@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentUser.account.accountType;
 
     // EMPLOYER
-    if (accountType == "employer") {
+    if (accountType == AccountType.Employer) {
       const employer = (await getCurrentProfileInfo(request)) as Employer;
 
       // ABOUT
@@ -144,7 +144,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // FREELANCER
-    if (accountType == "freelancer") {
+    if (accountType == AccountType.Freelancer) {
       const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
 
       // BIO
@@ -387,7 +387,7 @@ export async function loader({
   }
 
   // Handle employer account type
-  if (accountType === "employer") {
+  if (accountType === AccountType.Employer) {
     profile = profile as Employer;
 
     // Fetch necessary employer data
@@ -423,7 +423,7 @@ export async function loader({
   }
 
   // Handle freelancer account type
-  if (accountType === "freelancer") {
+  if (accountType === AccountType.Freelancer) {
     profile = (await getCurrentProfileInfo(request)) as Freelancer;
 
     const bioInfo = await getAccountBio(profile.account);
@@ -464,7 +464,7 @@ const Layout: FC = () => {
 
   return (
     <div>
-      {userAccount.accountType === "employer" ? (
+      {userAccount.accountType === AccountType.Employer ? (
         <EmployerPage />
       ) : (
         <FreelancerPage />

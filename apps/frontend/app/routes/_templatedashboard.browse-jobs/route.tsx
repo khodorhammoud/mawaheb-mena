@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
   // return if user is not freelancer
-  if (accountType !== "freelancer") {
+  if (accountType !== AccountType.Freelancer) {
     return redirect("/dashboard");
   }
 
