@@ -30,6 +30,7 @@ import {
   getEmployerDashboardData,
   saveAvailability,
   getFreelancerAvailability,
+  updateAvailabilityStatus,
 } from "~/servers/employer.server";
 import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
@@ -56,14 +57,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const accountId = currentAccount.id;
 
-    // Extract form fields
-    console.log("Form Data Entries:", Array.from(formData.entries()));
-
-    // const availableForWork = formData.get("available_for_work") === "true";
-    // const jobsOpenTo = formData.getAll("jobs_open_to");
-    // const hoursAvailableFrom = formData.get("hours_available_from");
-    // const hoursAvailableTo = formData.get("hours_available_to");
-
     const availableFrom = formData.get("available_from");
     if (!availableFrom) {
       console.error("Missing 'available_from' field in FormData");
@@ -72,29 +65,38 @@ export async function action({ request }: ActionFunctionArgs) {
     // AVAILABILITY
     if (formData.get("target-updated") === "freelancer-availability") {
       // Extract form fields
+      // Existing form data extraction logic
       const availableForWork = formData.get("available_for_work") === "true";
-      const availableFrom = formData.get("available_from"); // string
+      const availableFrom = formData.get("available_from");
       const hoursAvailableFrom = formData.get("hours_available_from");
       const hoursAvailableTo = formData.get("hours_available_to");
-      // jobsOpenTo is array .
-      const jobsOpenToArray = Array.from(
-        formData.getAll("jobs_open_to")
-      ) as string[];
-      // const jobsOpenTo = formData.getAll("jobs_open_to");
+      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[];
+
+      // Log the extracted data
+      console.log("Form Data:", {
+        availableForWork,
+        availableFrom,
+        hoursAvailableFrom,
+        hoursAvailableTo,
+        jobsOpenToArray,
+      });
+
+      console.log("Form Data:", Array.from(formData.entries()));
+      console.log("Jobs Open To Array:", jobsOpenToArray);
 
       // transfer the string date, into an actual date
-      const availableFromAsADate = new Date(availableFrom as string);
+      const availableFromAsADate = new Date(availableFrom as string) || null;
 
       const result = await saveAvailability({
         accountId,
         availableForWork,
+        jobsOpenTo: jobsOpenToArray,
         availableFrom: availableFromAsADate,
         hoursAvailableFrom: hoursAvailableFrom as string,
         hoursAvailableTo: hoursAvailableTo as string,
-        jobsOpenTo: jobsOpenToArray,
       });
 
-      console.log("Form Data:", Array.from(formData.entries()));
+      // console.log("Save Result:", result);
 
       return result
         ? Response.json({ success: true })
@@ -102,6 +104,26 @@ export async function action({ request }: ActionFunctionArgs) {
             {
               success: false,
               error: { message: "Failed to save availability." },
+            },
+            { status: 500 }
+          );
+    }
+
+    if (formData.get("target-updated") === "freelancer-is-available-for-work") {
+      const availableForWork = formData.get("available_for_work") === "true";
+
+      // Call the query function to update availability status
+      const result = await updateAvailabilityStatus(
+        accountId,
+        availableForWork
+      );
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to update availability." },
             },
             { status: 500 }
           );
@@ -281,13 +303,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProfile.accountId
     );
 
+    // Ensure all necessary data is returned
+    const availabilityData = {
+      availableForWork: freelancerAvailability?.availableForWork ?? false,
+      jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
+      availableFrom: freelancerAvailability?.dateAvailableFrom ?? "",
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+    };
+
     // Return response for Freelancer
     return Response.json({
       accountType,
       currentUser: currentProfile,
       accountOnboarded: currentProfile.account?.user?.isOnboarded,
       bioInfo,
-      freelancerAvailability,
+      freelancerAvailability: availabilityData,
     });
   }
 }

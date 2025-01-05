@@ -52,8 +52,9 @@ export default function Availability() {
   // For showing messages
   const [showAvailabilityMessage, setShowAvailabilityMessage] = useState(false);
 
-  // Format the date to mm/dd
-  const formatDate = (date: Date | null) => (date ? format(date, "MM/dd") : "");
+  // Format the date to mm/dd/yyyy
+  const formatDate = (date: Date | null) =>
+    date ? format(date, "yyyy-MM-dd") : "";
 
   // Handle date selection
   const handleDateSelect = (date: Date) => {
@@ -69,11 +70,6 @@ export default function Availability() {
   useEffect(() => {
     if (availabilityFetcher.data) {
       setShowAvailabilityMessage(true);
-
-      // Auto-hide the message after 3 seconds
-      setTimeout(() => {
-        setShowAvailabilityMessage(false);
-      }, 3000);
     }
   }, [availabilityFetcher.data]);
 
@@ -115,12 +111,21 @@ export default function Availability() {
         <div className="flex text-sm items-center mt-5 mb-7 ml-1">
           <ToggleSwitch
             isChecked={workAvailability.isLookingForWork}
-            onChange={(state) =>
+            onChange={(state) => {
+              availabilityFetcher.submit(
+                {
+                  "target-updated": "freelancer-is-available-for-work",
+                  available_for_work: state.toString(),
+                },
+                { method: "post" }
+              );
+
+              // Update the local state
               setWorkAvailability((prevState) => ({
                 ...prevState,
                 isLookingForWork: state,
-              }))
-            }
+              }));
+            }}
             className="mr-4"
           />
           <input
@@ -132,7 +137,6 @@ export default function Availability() {
         </div>
 
         {/* Checkboxes */}
-        {/* Checkboxes for Job Types */}
         <div className="mb-7">
           <p className="text-base mb-6">Job Types I am open to:</p>
 
@@ -141,7 +145,7 @@ export default function Availability() {
             <Checkbox
               id="full-time"
               name="jobs_open_to[]"
-              value="Full Time"
+              value="full-time"
               checked={workAvailability.jobTypes.includes("Full Time")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
@@ -162,7 +166,7 @@ export default function Availability() {
             <Checkbox
               id="part-time"
               name="jobs_open_to[]"
-              value="Part Time"
+              value="part_time"
               checked={workAvailability.jobTypes.includes("Part Time")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
@@ -183,7 +187,7 @@ export default function Availability() {
             <Checkbox
               id="employee"
               name="jobs_open_to[]"
-              value="Employee"
+              value="employee"
               checked={workAvailability.jobTypes.includes("Employee")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({

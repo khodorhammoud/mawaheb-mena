@@ -641,14 +641,14 @@ export async function getEmployerDashboardData(request: Request) {
 export async function saveAvailability({
   accountId,
   availableForWork,
-  dateAvailableFrom,
+  availableFrom,
   hoursAvailableFrom,
   hoursAvailableTo,
   jobsOpenTo,
 }: {
   accountId: number;
   availableForWork: boolean;
-  availableFrom: Date;
+  availableFrom: Date | null;
   hoursAvailableFrom: string;
   hoursAvailableTo: string;
   jobsOpenTo: string[];
@@ -658,14 +658,35 @@ export async function saveAvailability({
     .set({
       availableForWork,
       dateAvailableFrom: availableFrom.toDateString(),
+      // dateAvailableFrom: availableFrom
+      //   ? availableFrom.toISOString().split("T")[0]
+      //   : null, // more safe than the one up it
       hoursAvailableFrom,
       hoursAvailableTo,
-      jobsOpenTo,
+      jobsOpenTo: JSON.stringify(jobsOpenTo),
     })
     .where(eq(freelancersTable.accountId, accountId))
     .returning();
 
   return result.length > 0;
+}
+
+export async function updateAvailabilityStatus(
+  accountId: number,
+  availableForWork: boolean
+) {
+  try {
+    const result = await db
+      .update(freelancersTable)
+      .set({ availableForWork })
+      .where(eq(freelancersTable.accountId, accountId))
+      .returning();
+
+    return result.length > 0; // Returns true if the update was successful
+  } catch (error) {
+    console.error("Error updating availability status:", error);
+    return false;
+  }
 }
 
 // Function to get availability details from the database
