@@ -1,10 +1,11 @@
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import { ActionFunctionArgs, redirect, json } from "@remix-run/node";
 import { createJobPosting, getAllJobCategories } from "~/servers/job.server";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import { JobStatus } from "~/types/enums";
 import NewJob from "./jobs/NewJob";
+import { preventDuplicateSubmission } from "~/utils/api-helpers";
 
 export async function loader() {
   const jobCategories = await getAllJobCategories();
@@ -16,13 +17,25 @@ export async function loader() {
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData();
-    const target = formData.get("target") as string; // Updated to use the target
+    // extract the timestamp
+    const timestamp = formData.get("timestamp") as string;
+    // check for duplicate submissions using at that timestamp
+    try {
+      preventDuplicateSubmission(timestamp);
+    } catch (error: any) {
+      return Response.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
+    }
+
+    const target = formData.get("target") as string;
     const employer = (await getCurrentProfileInfo(request)) as Employer;
 
-    // Determine job status based on the target action
     const jobStatus =
       target === "save-draft" ? JobStatus.Draft : JobStatus.Active;
 
+    // Prepare the job data
     const jobData: Job = {
       id: null, // id is auto generated in database
       employerId: employer.id,
@@ -42,25 +55,22 @@ export async function action({ request }: ActionFunctionArgs) {
       projectType: formData.get("projectType") as string,
       budget: parseInt(formData.get("budget") as string, 10) || 0,
       experienceLevel: formData.get("experienceLevel") as string,
-      status: jobStatus, // based on action i did
+      status: jobStatus,
       fulfilledAt: null,
     };
 
+    // Save the job to the database
     const jobStatusResponse = await createJobPosting(jobData);
 
     if (jobStatusResponse.success) {
       return redirect("/dashboard");
     } else {
       return Response.json(
-        {
-          success: false,
-          error: { message: "Failed to create job posting" },
-        },
+        { success: false, error: { message: "Failed to save job." } },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Error while creating or saving a job as draft", error);
     return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }

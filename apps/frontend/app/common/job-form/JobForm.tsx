@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Form } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
 import AppFormField from "~/common/form-fields";
 import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "~/routes/_templatedashboard.new-job/required-skills";
 import { JobCategory } from "~/types/User";
 import { Skill } from "~/types/Skill";
+import SubmitButton from "../save-button/saveButton";
 
 interface JobFormProps {
   job?: {
@@ -53,6 +53,9 @@ export default function JobForm({
     setSelectedCategory(categoryId);
   const handleExperienceClick = (level: string) => setSelectedExperience(level);
 
+  // timestamp to be used in a hidden input below 👍
+  const [timestamp] = useState(Date.now());
+
   return (
     <div className="font-['Switzer-Regular'] mt-10 w-full">
       <div className="p-6 bg-white">
@@ -78,6 +81,9 @@ export default function JobForm({
               name="requiredSkills"
               value={requiredSkills.map((skill) => skill.name).join(",")}
             />
+
+            {/* this is the hidden timestamp input */}
+            <input type="hidden" name="timestamp" value={timestamp} />
 
             {/* Job Title */}
             <AppFormField
@@ -205,22 +211,25 @@ export default function JobForm({
               </div>
             </div>
 
-            {/* Buttons */}
+            {/* Buttons   */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
-              <Button
+              <SubmitButton
                 type="submit"
                 name="target"
                 value="save-draft"
-                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor"
+                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor sm:px-4 sm:py-2 px-3 py-1 not-active-gradient"
               >
                 {isEdit ? "Cancel" : "Save as Draft"}
-              </Button>
-              <Button
+              </SubmitButton>
+
+              <SubmitButton
                 type="submit"
-                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor"
+                name="target"
+                value="post-job"
+                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor sm:px-4 sm:py-2 px-3 py-1 not-active-gradient"
               >
                 {isEdit ? "Update Job" : "Post Job"}
-              </Button>
+              </SubmitButton>
             </div>
           </Form>
         </div>
