@@ -114,6 +114,7 @@ export default function Page() {
             accountType={accountType}
             allowOverlap={true}
             jobApplication={jobApplication}
+            freelancerId={jobApplication.freelancerId}
           />
           <OtherFreelancers
             jobApplications={allJobApplications}

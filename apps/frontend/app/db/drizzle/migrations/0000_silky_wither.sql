@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS "timesheet_submissions" (
 	"job_application_id" integer,
 	"submission_date" date NOT NULL,
 	"total_hours" numeric NOT NULL,
-	"status" varchar DEFAULT 'pending' NOT NULL,
+	"status" "timesheet_status" DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );

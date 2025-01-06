@@ -3,8 +3,10 @@ import { db } from "~/db/drizzle/connector";
 
 import {
   timesheetEntriesTable,
+  TimesheetSubmissionEntriesTable,
   timesheetSubmissionsTable,
 } from "~/db/drizzle/schemas/schema";
+import { TimesheetStatus } from "~/types/enums";
 import { TimesheetEntry } from "~/types/Timesheet";
 
 export async function getTimesheetEntriesFromDatabase(
@@ -89,8 +91,7 @@ export async function deleteTimesheetEntryFromDatabase(
 export async function submitTimesheetDay(
   freelancerId: number,
   jobApplicationId: number,
-  submissionDate: Date,
-  totalHours: number
+  submissionDate: Date
 ) {
   // Check if there are any entries for this day
   const entries = await getTimesheetEntriesFromDatabase(
@@ -124,14 +125,25 @@ export async function submitTimesheetDay(
     freelancerId,
     jobApplicationId,
     submissionDate: submissionDate.toDateString(),
-    totalHours: totalHours.toString(),
+    status: TimesheetStatus.Submitted,
   };
-  console.log("newTimesheetSubmission", newTimesheetSubmission);
+
   const [insertedTimesheetSubmission] = await db
     .insert(timesheetSubmissionsTable)
     .values(newTimesheetSubmission)
     .returning();
-  console.log("insertedTimesheetSubmission", insertedTimesheetSubmission);
+
+  // prepare entries to be inserted in the TimesheetSubmissionEntriesTable
+  const timesheetSubmissionEntries = entries.map((entry) => ({
+    timesheetSubmissionId: insertedTimesheetSubmission.id,
+    timesheetEntryId: entry.id,
+  }));
+
+  // insert the entries into the TimesheetSubmissionEntriesTable
+  await db
+    .insert(TimesheetSubmissionEntriesTable)
+    .values(timesheetSubmissionEntries);
+
   return insertedTimesheetSubmission;
 }
 

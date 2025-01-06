@@ -1,5 +1,5 @@
 {
-  "id": "e3bcafa4-2c1b-462a-8b53-321d2f7a9413",
+  "id": "e7b4c764-c760-4c80-932d-9796597f53ab",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1150,7 +1150,8 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar",
+          "type": "timesheet_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"

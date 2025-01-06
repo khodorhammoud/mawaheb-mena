@@ -33,6 +33,7 @@ export interface TimesheetProps {
   allowOverlap?: boolean;
   jobApplication?: JobApplication;
   accountType: AccountType;
+  freelancerId?: number;
 }
 
 export type TimeSlot = {

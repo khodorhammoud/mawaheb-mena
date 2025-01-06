@@ -41,11 +41,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const submission = await submitTimesheetDay(
       freelancerId,
       jobApplicationId,
-      date,
-      totalHours
+      date
     );
     return Response.json({ success: true, submission });
   } catch (error) {
+    console.error(error);
     return Response.json(
       { error: "Failed to submit timesheet" },
       { status: 400 }

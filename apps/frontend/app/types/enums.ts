@@ -100,7 +100,6 @@ export enum JobApplicationStatus {
 }
 
 export enum TimesheetStatus {
-  Pending = "pending",
   Submitted = "submitted",
   Approved = "approved",
   Declined = "declined",

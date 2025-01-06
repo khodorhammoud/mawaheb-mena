@@ -1,14 +1,31 @@
 import { Job, JobApplication } from "~/types/Job";
-import { FreelancerListItem } from "./FreelancerListItem";
 import { useEffect, useState } from "react";
+import { FreelancerListItem } from "./FreelancerListItem";
 
 interface EmployerJobCardProps {
   job: Job;
 }
 
 export function EmployerJobCard({ job }: EmployerJobCardProps) {
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const formattedDate = new Date(job.createdAt).toDateString();
-  console.log("job", job);
+
+  useEffect(() => {
+    const fetchJobApplications = async () => {
+      const formData = new FormData();
+      formData.append("jobId", job.id.toString());
+
+      const response = await fetch("/api/job-applications", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      setJobApplications(data.jobApplications);
+    };
+
+    fetchJobApplications();
+  }, [job.id]);
 
   return (
     <div className="bg-white border rounded-xl shadow-xl p-6">
@@ -30,14 +47,16 @@ export function EmployerJobCard({ job }: EmployerJobCardProps) {
       </div>
 
       <div className="border-t pt-4">
-        <h4 className="text-lg font-semibold mb-4">Freelancers</h4>
+        <h4 className="text-lg font-semibold mb-4">
+          Freelancers ({jobApplications.length})
+        </h4>
         <div className="space-y-4">
-          {/* {jobApplications?.map((application) => (
+          {jobApplications.map((application) => (
             <FreelancerListItem
               key={application.id}
               jobApplication={application}
             />
-          ))} */}
+          ))}
         </div>
       </div>
     </div>

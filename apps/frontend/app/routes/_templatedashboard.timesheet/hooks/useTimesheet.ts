@@ -9,11 +9,14 @@ import { useToast } from "~/components/hooks/use-toast";
 import { useFetcher } from "@remix-run/react";
 import { JobApplication } from "~/types/Job";
 import { subDays, addDays } from "date-fns";
+import { AccountType } from "~/types/enums";
 
 export const useTimesheet = (
   allowOverlap = true,
   jobApplication: JobApplication,
-  selectedDate: Date
+  selectedDate: Date,
+  accountType: AccountType,
+  freelancerId?: number
 ) => {
   const timesheetFetcher = useFetcher<{
     success?: boolean;
@@ -27,7 +30,6 @@ export const useTimesheet = (
 
   useEffect(() => {
     if (timesheetFetcher.data?.timesheetEntries) {
-      console.log("timesheetFetcher.data", timesheetFetcher.data);
       const entries = timesheetFetcher.data?.timesheetEntries || [];
       const groupedEntriesByDate = entries.reduce((acc, entry) => {
         const date = new Date(entry.date);
@@ -55,7 +57,7 @@ export const useTimesheet = (
         }
         return acc;
       }, {} as TimesheetData);
-      console.log(groupedEntriesByDate);
+
       setTimesheet(groupedEntriesByDate);
     }
   }, [timesheetFetcher.data]);
@@ -67,10 +69,20 @@ export const useTimesheet = (
     const fromTime = subDays(selectedDate, 1);
     const toTime = addDays(selectedDate, 1);
     toTime.setHours(23, 59, 59, 999);
-    timesheetFetcher.load(
-      `/api/timesheet?jobApplicationId=${jobApplicationId}&fromTime=${fromTime}&toTime=${toTime}`
-    );
-  }, [selectedDate]);
+
+    const params = new URLSearchParams({
+      jobApplicationId: jobApplicationId.toString(),
+      fromTime: fromTime.toISOString(),
+      toTime: toTime.toISOString(),
+    });
+
+    // Add freelancerId param only for employer view
+    if (accountType === AccountType.Employer && freelancerId) {
+      params.append("freelancerId", freelancerId.toString());
+    }
+
+    timesheetFetcher.load(`/api/timesheet?${params}`);
+  }, [selectedDate, jobApplication.id, accountType, freelancerId]);
 
   const [timesheet, setTimesheet] = useState<TimesheetData>({});
 

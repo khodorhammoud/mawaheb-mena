@@ -1,5 +1,10 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
+import {
+  requireUserAccountStatusPublished,
+  requireUserIsFreelancerPublished,
+} from "~/auth/auth.server";
+import { verifyJobBelongsToEmployer } from "~/servers/employer.server";
+import { getJobApplicationById } from "~/servers/job.server";
 import {
   insetTimesheetEntryIntoDatabase,
   getTimesheetEntriesFromDatabase,
@@ -7,23 +12,40 @@ import {
   deleteTimesheetEntryFromDatabase,
   getTimesheetSubmissions,
 } from "~/servers/timesheet.server";
-import { getFreelancerIdFromUserId } from "~/servers/user.server";
+import {
+  getEmployerIdFromUserId,
+  getFreelancerIdFromUserId,
+  getUserAccountType,
+} from "~/servers/user.server";
+import { AccountType } from "~/types/enums";
 import { TimesheetEntry } from "~/types/Timesheet";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // user must be a published freelancer
-  const userId = await requireUserIsFreelancerPublished(request);
+  // const userId = await requireUserIsFreelancerPublished(request);
+  const userId = await requireUserAccountStatusPublished(request);
   if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const accountType = await getUserAccountType(userId);
+  let freelancerId: number | null = null;
 
-  const freelancerId = await getFreelancerIdFromUserId(userId);
   const url = new URL(request.url);
   const jobApplicationId: number = parseInt(
     url.searchParams.get("jobApplicationId") || "-1"
   );
   const fromTime = url.searchParams.get("fromTime");
   const toTime = url.searchParams.get("toTime");
+
+  if (accountType === AccountType.Freelancer) {
+    freelancerId = await getFreelancerIdFromUserId(userId);
+  } else if (accountType === AccountType.Employer) {
+    console.log(
+      'url.searchParams.get("freelancerId")',
+      url.searchParams.get("freelancerId")
+    );
+    freelancerId = parseInt(url.searchParams.get("freelancerId"));
+  }
 
   // check if the from time and to time are in the correct format
   if (!fromTime || !toTime) {
@@ -55,6 +77,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
       { error: "Duration must be no more than 1 week" },
       { status: 400 }
     );
+  }
+
+  const jobApplication = await getJobApplicationById(jobApplicationId);
+  if (!jobApplication) {
+    return Response.json(
+      { error: "Job application not found" },
+      { status: 404 }
+    );
+  }
+
+  if (accountType === AccountType.Employer) {
+    // Verify employer owns the job
+    const employerId = await getEmployerIdFromUserId(userId);
+    const jobBelongsToEmployer = await verifyJobBelongsToEmployer(
+      jobApplication.jobId,
+      employerId
+    );
+
+    if (!jobBelongsToEmployer) {
+      return Response.json({ error: "Unauthorized access" }, { status: 403 });
+    }
+
+    // For employers, verify freelancerId matches the job application
+    if (freelancerId !== jobApplication.freelancerId) {
+      return Response.json(
+        { error: "Invalid freelancer for this job application" },
+        { status: 400 }
+      );
+    }
+  } else {
+    // For freelancers, verify they own the timesheet
+    if (
+      jobApplication.freelancerId !== (await getFreelancerIdFromUserId(userId))
+    ) {
+      return Response.json({ error: "Unauthorized access" }, { status: 403 });
+    }
   }
 
   // get the timesheet entries for the freelancer that are between fromTime and toTime

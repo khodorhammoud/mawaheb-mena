@@ -1,9 +1,64 @@
 {
-  "id": "9270610e-e899-422c-8298-d73622e15f88",
-  "prevId": "5b28fc36-2454-4c2f-ade0-d4601f8f6a01",
+  "id": "87d47dd2-ae7f-475b-9997-77fdbefef670",
+  "prevId": "e7b4c764-c760-4c80-932d-9796597f53ab",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.timesheet_submission_entries": {
+      "name": "timesheet_submission_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "timesheet_submission_id": {
+          "name": "timesheet_submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timesheet_entry_id": {
+          "name": "timesheet_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk": {
+          "name": "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk",
+          "tableFrom": "timesheet_submission_entries",
+          "tableTo": "timesheet_submissions",
+          "columnsFrom": [
+            "timesheet_submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk": {
+          "name": "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk",
+          "tableFrom": "timesheet_submission_entries",
+          "tableTo": "timesheet_entries",
+          "columnsFrom": [
+            "timesheet_entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -581,45 +636,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
-        },
-        "available_for_work": {
-          "name": "available_for_work",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-<<<<<<< HEAD
-          "default": true
-=======
-          "default": false
->>>>>>> dev
-        },
-        "jobs_open_to": {
-          "name": "jobs_open_to",
-          "type": "jobs_open_to[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "ARRAY[]::jobs_open_to[]"
-<<<<<<< HEAD
-=======
-        },
-        "available_from": {
-          "name": "available_from",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hours_available_from": {
-          "name": "hours_available_from",
-          "type": "time",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hours_available_to": {
-          "name": "hours_available_to",
-          "type": "time",
-          "primaryKey": false,
-          "notNull": false
->>>>>>> dev
         }
       },
       "indexes": {},
@@ -1064,6 +1080,181 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.timesheet_entries": {
+      "name": "timesheet_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_application_id": {
+          "name": "job_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_entries_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_entries_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_entries",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_entries_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_entries_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_entries",
+          "tableTo": "job_applications",
+          "columnsFrom": [
+            "job_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.timesheet_submissions": {
+      "name": "timesheet_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_application_id": {
+          "name": "job_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submission_date": {
+          "name": "submission_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_hours": {
+          "name": "total_hours",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "timesheet_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'submitted'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_submissions_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_submissions_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_submissions",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_submissions_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_submissions_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_submissions",
+          "tableTo": "job_applications",
+          "columnsFrom": [
+            "job_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

@@ -28,5 +28,9 @@ export interface JobApplication {
   status: JobApplicationStatus;
   createdAt: string;
   job?: Job;
+  freelancer?: {
+    firstName: string;
+    lastName: string;
+  };
 }
 // export type JobApplication = InferSelectModel<typeof jobApplicationsTable>;
