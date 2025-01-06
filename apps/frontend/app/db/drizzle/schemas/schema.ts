@@ -10,10 +10,7 @@ import {
   jsonb,
   json,
   date,
-<<<<<<< HEAD
-=======
   numeric,
->>>>>>> b0ed13c8512da04367bb4973e1c91dab3e677db6
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -26,11 +23,8 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-<<<<<<< HEAD
   jobsOpenToEnum,
-=======
   // timesheetStatusEnum,
->>>>>>> b0ed13c8512da04367bb4973e1c91dab3e677db6
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
