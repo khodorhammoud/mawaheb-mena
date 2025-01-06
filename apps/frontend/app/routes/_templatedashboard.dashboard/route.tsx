@@ -549,7 +549,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       isOwner, // Added isOwner
       canEdit: isOwner, // Freelancers can edit if they are the owner
       currentUser: currentProfile,
-      // availabilityData,
+      freelancerAvailability: availabilityData,
     });
   }
 }

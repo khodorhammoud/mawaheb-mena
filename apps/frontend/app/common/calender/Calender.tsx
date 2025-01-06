@@ -21,7 +21,8 @@ export default function Calendar({
   onDateSelect,
   onClose,
 }: CalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
+
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // Generate years for dropdown
@@ -63,7 +64,7 @@ export default function Calendar({
     for (let i = 0; i < 42; i++) {
       const day = addDays(startDate, i);
       const isSelected =
-        selectedDate && day.toDateString() === selectedDate.toDateString();
+        selectedDate && day.getTime() === selectedDate.getTime();
 
       days.push(
         <div
@@ -144,7 +145,7 @@ export default function Calendar({
         </button>
         <button
           className="text-primaryColor px-2 py-1 hover:bg-gray-200 rounded-xl transition-all"
-          onClick={() => onDateSelect(selectedDate || new Date())}
+          onClick={() => onDateSelect(currentMonth)}
         >
           OK
         </button>
