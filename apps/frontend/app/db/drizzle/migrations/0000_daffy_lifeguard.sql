@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS "job_applications" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"job_id" integer,
 	"freelancer_id" integer,
-	"status" varchar(50),
+	"status" "job_application_status",
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
