@@ -6,6 +6,8 @@ import {
   startOfMonth,
   startOfWeek,
   addDays,
+  setYear,
+  getYear,
 } from "date-fns";
 
 type CalendarProps = {
@@ -21,6 +23,12 @@ export default function Calendar({
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Generate years for dropdown
+  const years = Array.from(
+    { length: 11 },
+    (_, i) => getYear(new Date()) - 5 + i
+  );
 
   // Close calendar when clicking outside
   useEffect(() => {
@@ -41,6 +49,11 @@ export default function Calendar({
   // Navigate to next and previous months
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  // Handle year change
+  const handleYearChange = (year: number) => {
+    setCurrentMonth(setYear(currentMonth, year));
+  };
 
   // Render calendar days
   const renderDays = () => {
@@ -83,7 +96,24 @@ export default function Calendar({
         >
           &lt;
         </button>
-        <span className="font-medium">{format(currentMonth, "MMMM yyyy")}</span>
+
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{format(currentMonth, "MMMM")}</span>
+
+          {/* Year Dropdown */}
+          <select
+            value={getYear(currentMonth)}
+            onChange={(e) => handleYearChange(Number(e.target.value))}
+            className="border border-gray-300 rounded px-2 py-1"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           onClick={nextMonth}
           className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"

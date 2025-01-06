@@ -30,6 +30,7 @@ import {
   getEmployerDashboardData,
   saveAvailability,
   getFreelancerAvailability,
+  updateAvailabilityStatus,
 } from "~/servers/employer.server";
 import { Employer, Freelancer } from "~/types/User";
 import Header from "../_templatedashboard/header";
@@ -56,31 +57,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const accountId = currentAccount.id;
 
-    // Extract form fields
-    console.log("Form Data Entries:", Array.from(formData.entries()));
-
-    // const availableForWork = formData.get("available_for_work") === "true";
-    // const jobsOpenTo = formData.getAll("jobs_open_to");
-    // const hoursAvailableFrom = formData.get("hours_available_from");
-    // const hoursAvailableTo = formData.get("hours_available_to");
-
-    const availableFrom = formData.get("available_from");
-    if (!availableFrom) {
-      console.error("Missing 'available_from' field in FormData");
-    }
-
     // AVAILABILITY
     if (formData.get("target-updated") === "freelancer-availability") {
       // Extract form fields
-      const availableForWork = formData.get("available_for_work") === "true";
-      const availableFrom = formData.get("available_from"); // string
-      const hoursAvailableFrom = formData.get("hours_available_from");
-      const hoursAvailableTo = formData.get("hours_available_to");
-      // jobsOpenTo is array .
-      const jobsOpenToArray = Array.from(
-        formData.getAll("jobs_open_to")
-      ) as string[];
-      // const jobsOpenTo = formData.getAll("jobs_open_to");
+      const availableForWork = formData.get("available_for_work") === "true"; //true
+      const availableFrom = formData.get("available_from"); // calender string -> date (khodor)
+      const hoursAvailableFrom = formData.get("hours_available_from"); // from
+      const hoursAvailableTo = formData.get("hours_available_to"); // to
+      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[]; // carry array
 
       // transfer the string date, into an actual date
       const availableFromAsADate = new Date(availableFrom as string);
@@ -88,13 +72,13 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = await saveAvailability({
         accountId,
         availableForWork,
+        jobsOpenTo: jobsOpenToArray,
         availableFrom: availableFromAsADate,
         hoursAvailableFrom: hoursAvailableFrom as string,
         hoursAvailableTo: hoursAvailableTo as string,
-        jobsOpenTo: jobsOpenToArray,
       });
 
-      console.log("Form Data:", Array.from(formData.entries()));
+      // console.log("Save Result:", result);
 
       return result
         ? Response.json({ success: true })
@@ -102,6 +86,26 @@ export async function action({ request }: ActionFunctionArgs) {
             {
               success: false,
               error: { message: "Failed to save availability." },
+            },
+            { status: 500 }
+          );
+    }
+
+    if (formData.get("target-updated") === "freelancer-is-available-for-work") {
+      const availableForWork = formData.get("available_for_work") === "true";
+
+      // Call the query function to update availability status
+      const result = await updateAvailabilityStatus(
+        accountId,
+        availableForWork
+      );
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to update availability." },
             },
             { status: 500 }
           );
@@ -229,19 +233,16 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // Require that the current user is verified
+  // see that the user is verified
   await requireUserOnboarded(request);
 
-  // Get the account type
   const accountType: AccountType = await getCurrentUserAccountType(request);
 
-  // Get the current profile
   let currentProfile = await getCurrentProfileInfo(request);
 
-  // Get the account onboarding status
+  // get account onboarding status
   const accountOnboarded = currentProfile?.account?.user?.isOnboarded;
 
-  // Get the bio information
   const bioInfo = await getAccountBio(currentProfile.account);
 
   // Check if the user is an Employer
@@ -281,13 +282,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProfile.accountId
     );
 
+    // Ensure all necessary data is returned
+    const availabilityData = {
+      availableForWork: freelancerAvailability?.availableForWork ?? false,
+      jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
+      availableFrom: freelancerAvailability?.dateAvailableFrom ?? "",
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+    };
+
+    // i'll keep these consoles, to see the data in the loader were gonna pass to files using useLoaderdata
+    // console.log("Loader function called!");
+    // console.log("Account Type:", accountType);
+    // console.log("Freelancer Availability:", freelancerAvailability);
+
     // Return response for Freelancer
     return Response.json({
       accountType,
       currentUser: currentProfile,
       accountOnboarded: currentProfile.account?.user?.isOnboarded,
       bioInfo,
-      freelancerAvailability,
+      freelancerAvailability: availabilityData,
     });
   }
 }

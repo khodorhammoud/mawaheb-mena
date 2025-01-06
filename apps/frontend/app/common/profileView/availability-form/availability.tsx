@@ -1,12 +1,23 @@
 import { useState, useEffect } from "react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Checkbox } from "~/components/ui/checkbox";
 import ToggleSwitch from "~/common/toggle-switch/ToggleSwitch";
 import { Button } from "~/components/ui/button";
 import AppFormField from "~/common/form-fields";
 import Calendar from "~/common/calender/Calender";
 import { format } from "date-fns";
-import { Freelancer } from "~/types/User";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+// import { Freelancer } from "~/types/User";
+
+// Define the type of the loader data
+type LoaderData = {
+  freelancerAvailability: {
+    availableForWork: boolean;
+    jobsOpenTo: string[];
+    availableFrom: string;
+    hoursAvailableFrom: string;
+    hoursAvailableTo: string;
+  };
+};
 
 // Generate time options for the entire day in 30-minute intervals
 const generateTimeOptions = () => {
@@ -33,26 +44,30 @@ export default function Availability() {
     };
   };
 
+  const { freelancerAvailability } = useLoaderData<LoaderData>();
+
   // Fetcher for form submission
   const availabilityFetcher = useFetcher<AvailabilityResponse>();
-
-  const freelancerAvailability = useLoaderData<Freelancer>();
+  const toggleFetcher = useFetcher();
 
   const [workAvailability, setWorkAvailability] = useState({
-    isLookingForWork: freelancerAvailability?.availableForWork || false,
-    jobTypes: freelancerAvailability?.jobsOpenTo || [],
-    availableFrom: freelancerAvailability?.availableFrom || "",
-    availableHoursStart: freelancerAvailability?.hoursAvailableFrom || "09:00",
-    availableHoursEnd: freelancerAvailability?.hoursAvailableTo || "17:00",
+    isLookingForWork: freelancerAvailability.availableForWork,
+    jobTypes: freelancerAvailability.jobsOpenTo,
+    availableFrom: freelancerAvailability.availableFrom,
+    availableHoursStart: freelancerAvailability.hoursAvailableFrom,
+    availableHoursEnd: freelancerAvailability.hoursAvailableTo,
   });
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    freelancerAvailability?.availableFrom
+      ? new Date(freelancerAvailability.availableFrom)
+      : null
+  );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  // For showing messages
-  const [showAvailabilityMessage, setShowAvailabilityMessage] = useState(false);
-
-  // Format the date to mm/dd
-  const formatDate = (date: Date | null) => (date ? format(date, "MM/dd") : "");
+  // Format the date to mm/dd/yyyy
+  const formatDate = (date: Date | null) =>
+    date ? format(date, "yyyy-MM-dd") : "";
 
   // Handle date selection
   const handleDateSelect = (date: Date) => {
@@ -68,13 +83,15 @@ export default function Availability() {
   useEffect(() => {
     if (availabilityFetcher.data) {
       setShowAvailabilityMessage(true);
-
-      // Auto-hide the message after 3 seconds
-      setTimeout(() => {
-        setShowAvailabilityMessage(false);
-      }, 3000);
     }
   }, [availabilityFetcher.data]);
+
+  // For showing messages
+  const [showAvailabilityMessage, setShowAvailabilityMessage] = useState(false);
+
+  // these consoles are to see what are the data taken from the Loader, and i can use them in the file :)
+  // console.log("freelancerAvailability:", freelancerAvailability);
+  // console.log("workAvailability:", workAvailability);
 
   return (
     <div
@@ -94,7 +111,7 @@ export default function Availability() {
 
         {/* Success Message */}
         {showAvailabilityMessage && availabilityFetcher.data?.success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-2">
             <span className="block sm:inline">
               Availability saved successfully!
             </span>
@@ -103,7 +120,7 @@ export default function Availability() {
 
         {/* Error Message */}
         {showAvailabilityMessage && availabilityFetcher.data?.error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-2">
             <span className="block sm:inline">
               {availabilityFetcher.data.error.message}
             </span>
@@ -114,12 +131,22 @@ export default function Availability() {
         <div className="flex text-sm items-center mt-5 mb-7 ml-1">
           <ToggleSwitch
             isChecked={workAvailability.isLookingForWork}
-            onChange={(state) =>
+            onChange={(state) => {
+              // Submit the toggle switch change using toggleFetcher
+              toggleFetcher.submit(
+                {
+                  "target-updated": "freelancer-is-available-for-work",
+                  available_for_work: state.toString(),
+                },
+                { method: "post" }
+              );
+
+              // Update the local state
               setWorkAvailability((prevState) => ({
                 ...prevState,
                 isLookingForWork: state,
-              }))
-            }
+              }));
+            }}
             className="mr-4"
           />
           <input
@@ -131,7 +158,6 @@ export default function Availability() {
         </div>
 
         {/* Checkboxes */}
-        {/* Checkboxes for Job Types */}
         <div className="mb-7">
           <p className="text-base mb-6">Job Types I am open to:</p>
 
@@ -139,15 +165,17 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="full-time"
-              name="jobs_open_to"
-              value="Full Time"
-              checked={workAvailability.jobTypes.includes("Full Time")}
+              name="jobs_open_to[]"
+              value="full-time-roles" // Match this value with the database entry
+              checked={workAvailability.jobTypes.includes("full-time-roles")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
-                    ? [...prevState.jobTypes, "Full Time"]
-                    : prevState.jobTypes.filter((type) => type !== "Full Time"),
+                    ? [...prevState.jobTypes, "full-time-roles"]
+                    : prevState.jobTypes.filter(
+                        (type) => type !== "full-time-roles"
+                      ),
                 }));
               }}
             />
@@ -160,15 +188,17 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="part-time"
-              name="jobs_open_to"
-              value="Part Time"
-              checked={workAvailability.jobTypes.includes("Part Time")}
+              name="jobs_open_to[]"
+              value="part-time-roles" // Match this value with the database entry
+              checked={workAvailability.jobTypes.includes("part-time-roles")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
-                    ? [...prevState.jobTypes, "Part Time"]
-                    : prevState.jobTypes.filter((type) => type !== "Part Time"),
+                    ? [...prevState.jobTypes, "part-time-roles"]
+                    : prevState.jobTypes.filter(
+                        (type) => type !== "part-time-roles"
+                      ),
                 }));
               }}
             />
@@ -181,15 +211,17 @@ export default function Availability() {
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="employee"
-              name="jobs_open_to"
-              value="Employee"
-              checked={workAvailability.jobTypes.includes("Employee")}
+              name="jobs_open_to[]"
+              value="employee-roles" // Match this value with the database entry
+              checked={workAvailability.jobTypes.includes("employee-roles")}
               onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
-                    ? [...prevState.jobTypes, "Employee"]
-                    : prevState.jobTypes.filter((type) => type !== "Employee"),
+                    ? [...prevState.jobTypes, "employee-roles"]
+                    : prevState.jobTypes.filter(
+                        (type) => type !== "employee-roles"
+                      ),
                 }));
               }}
             />
@@ -255,7 +287,7 @@ export default function Availability() {
               id="availableHoursStart"
               name="hours_available_from"
               label="Start Time"
-              defaultValue={workAvailability.availableHoursStart}
+              defaultValue={freelancerAvailability.hoursAvailableFrom}
               options={timeOptions}
             />
             <span>to</span>
@@ -264,7 +296,7 @@ export default function Availability() {
               id="availableHoursEnd"
               name="hours_available_to"
               label="End Time"
-              defaultValue={workAvailability.availableHoursEnd}
+              defaultValue={freelancerAvailability.hoursAvailableTo}
               options={timeOptions}
             />
           </div>
