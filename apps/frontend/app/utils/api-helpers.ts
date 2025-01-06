@@ -29,6 +29,7 @@ export function getStrapiMedia(url: string | null) {
   return `${getStrapiURL()}${url}`;
 }
 
+// parsing HTML elements ( <p> hi </p> -> hi ❤️)
 export function parseHtmlContent(content: string): {
   isHtml: boolean;
   content: string;
@@ -57,4 +58,26 @@ export function parseHtmlContent(content: string): {
 
   // Return sanitized HTML if valid
   return { isHtml: true, content: sanitizedContent };
+}
+
+// this is a backend used function, used for submitting forms, to not have duplicate sybmission of the same thing at the same time ❤️
+// -----  ensure that your system does not do the same form submission twice  ----- //
+const processedTimestamps = new Set<string>();
+
+/**
+ * Function to prevent duplicate form submissions
+ * @param timestamp
+ * @throws error if timestamp is missing or duplicated
+ */
+export function preventDuplicateSubmission(timestamp: string | null) {
+  if (!timestamp) {
+    throw new Error("Timestamp is missing");
+  }
+
+  if (processedTimestamps.has(timestamp)) {
+    throw new Error("Duplicate submission detected.");
+  }
+
+  //  Add the new timestamp to the set up 👆
+  processedTimestamps.add(timestamp);
 }
