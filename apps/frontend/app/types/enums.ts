@@ -99,6 +99,13 @@ export enum JobApplicationStatus {
   Rejected = "rejected",
 }
 
+export enum TimesheetStatus {
+  Pending = "pending",
+  Submitted = "submitted",
+  Approved = "approved",
+  Declined = "declined",
+}
+
 export enum JobsOpenTo {
   FullTimeRoles = "full-time-roles",
   PartTimeRoles = "part-time-roles",

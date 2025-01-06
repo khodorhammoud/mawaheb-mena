@@ -1,23 +1,109 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaptionProps, DayPicker, DayPickerProps } from "react-day-picker";
+import { cn } from "~/lib/utils";
+import { buttonVariants } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
 
-import { cn } from "~/lib/utils"
-import { buttonVariants } from "~/components/ui/button"
+interface CustomCaptionProps {
+  locale?: string;
+  displayMonth: Date;
+  onMonthChange: (date: Date) => void;
+  selected: Date;
+}
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+function CustomCaption({
+  locale = "default",
+  displayMonth,
+  onMonthChange,
+}: CustomCaptionProps) {
+  const months = [...Array(12)].map((_, i) =>
+    new Date(0, i).toLocaleString(locale, { month: "long" })
+  );
 
-function Calendar({
+  const years = [];
+  for (let y = 2024; y <= 2100; y++) {
+    years.push(y);
+  }
+
+  const handleMonthChange = (_month) => {
+    const month = parseInt(_month, 10);
+    const year = displayMonth.getFullYear();
+    onMonthChange(new Date(year, month));
+  };
+
+  const handleYearChange = (_year) => {
+    const year = parseInt(_year, 10);
+    const month = displayMonth.getMonth();
+    onMonthChange(new Date(year, month));
+  };
+
+  return (
+    <div className="flex justify-center items-center space-x-4">
+      <div className="relative">
+        <Select
+          onValueChange={handleMonthChange}
+          defaultValue={displayMonth.getMonth().toString()}
+        >
+          <SelectTrigger className="text-sm font-medium focus:outline-none px-4 py-2 pr-8">
+            <SelectValue placeholder={displayMonth.getMonth().toString()} />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((monthName, index) => (
+              <SelectItem key={index} value={index.toString()}>
+                {monthName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="relative">
+        <Select
+          onValueChange={handleYearChange}
+          defaultValue={displayMonth.getFullYear().toString()}
+        >
+          <SelectTrigger className="text-sm font-medium px-4 py-2 pr-8">
+            <SelectValue placeholder={displayMonth.getFullYear().toString()} />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+export function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  defaultMonth = new Date(),
   ...props
-}: CalendarProps) {
+}: DayPickerProps & {
+  className?: string;
+  classNames?: object;
+  selected?: Date;
+}) {
+  // const [currentMonth, setCurrentMonth] = useState(defaultMonth);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      month={props.month}
+      onMonthChange={props.onMonthChange}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -27,10 +113,10 @@ function Calendar({
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "h-7 w-7 bg-transparent rounded-full p-0 opacity-50 hover:opacity-100"
         ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
+        nav_button_previous: "hidden",
+        nav_button_next: "hidden",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell:
@@ -39,7 +125,7 @@ function Calendar({
         cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+          "h-9 w-9 p-0 rounded-full font-normal aria-selected:opacity-100 hover:bg-[#004a51] hover:text-white"
         ),
         day_range_end: "day-range-end",
         day_selected:
@@ -54,13 +140,18 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
+        Caption: (_props: CaptionProps) => (
+          <CustomCaption
+            displayMonth={_props.displayMonth}
+            locale="en-CA"
+            onMonthChange={props.onMonthChange}
+            selected={props.selected}
+          />
+        ),
       }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
-
-export { Calendar }

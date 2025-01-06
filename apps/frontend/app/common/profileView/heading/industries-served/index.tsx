@@ -87,7 +87,7 @@ export default function Languages() {
         >
           <DialogTrigger asChild>
             <Button variant="link">
-              <IoPencilSharp className="text-large" />
+              <IoPencilSharp className="lg:h-9 lg:w-8 h-7 w-6 text-large xl:-ml-1 lg:-ml-2 -ml-3" />
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white">

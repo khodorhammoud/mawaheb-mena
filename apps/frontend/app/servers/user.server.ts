@@ -225,14 +225,14 @@ export async function getProfileInfo(
     account = await getUserAccountInfo(identifier);
     if (!account) return null;
     // get account type
-    if (account.accountType === "employer") {
+    if (account.accountType === AccountType.Employer) {
       employer = await db
         .select()
         .from(employersTable)
         .where(eq(employersTable.accountId, account.id));
       if (employer.length === 0) return null;
       employer = employer[0];
-    } else if (account.accountType === "freelancer") {
+    } else if (account.accountType === AccountType.Freelancer) {
       freelancer = await db
         .select()
         .from(freelancersTable)
@@ -344,6 +344,41 @@ export async function getUserIdFromFreelancerId_Depricated(
   // return result[0].userId;
 }
 
+/**
+ * get the freelancerId from the userId
+ * @param userId : the id of the user to get the freelancerId for
+ * @returns number: the freelancerId of the user
+ */
+export async function getFreelancerIdFromUserId(
+  userId: number
+): Promise<number | null> {
+  // left join freelancers table with accounts table left join with users table on userId
+  const result = await db
+    .select({ freelancerId: freelancersTable.id })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(eq(UsersTable.id, userId));
+  if (result.length === 0) return null;
+  return result[0].freelancerId;
+}
+/**
+ * get the employerId from the userId
+ * @param userId : the id of the user to get the employerId for
+ * @returns number: the employerId of the user
+ */
+export async function getEmployerIdFromUserId(
+  userId: number
+): Promise<number | null> {
+  const result = await db
+    .select({ employerId: employersTable.id })
+    .from(employersTable)
+    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
+    .where(eq(accountsTable.userId, userId));
+  if (result.length === 0) return null;
+  return result[0].employerId;
+}
+
 export async function getCurrentEmployerAccountInfo_Depricated(
   request: Request
 ): Promise<Employer | null> {
@@ -399,7 +434,7 @@ export async function registerEmployer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "employer",
+      accountType: AccountType.Employer,
     },
     true,
     {
@@ -481,7 +516,7 @@ export async function registerFreelancer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "freelancer",
+      accountType: AccountType.Freelancer,
     },
     true,
     {

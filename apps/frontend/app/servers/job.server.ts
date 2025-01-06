@@ -1,14 +1,14 @@
 import { db } from "../db/drizzle/connector";
 import { and, eq, inArray } from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
-import { Freelancer, JobCategory } from "../types/User";
-import { JobApplicationStatus, JobStatus } from "~/types/enums";
 import {
   jobApplicationsTable,
   jobCategoriesTable,
   jobsTable,
   freelancersTable,
 } from "../db/drizzle/schemas/schema";
+import { /*  Freelancer, */ JobCategory } from "../types/User";
+import { JobApplicationStatus, JobStatus } from "~/types/enums";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -160,9 +160,8 @@ export async function getEmployerJobs(
   }));
 }
 
-export async function getFreelancerRecommendedJobs(
-  freelancer: Freelancer
-): Promise<Job[]> {
+/* export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
+  // freelancer: Freelancer
   // fetch recommended jobs
   const recommendedJobs = await db
     .select()
@@ -177,7 +176,7 @@ export async function getFreelancerRecommendedJobs(
     ...job,
     status: job.status as JobStatus,
   }));
-}
+} */
 
 /**
  * get a single job by its ID
@@ -251,18 +250,52 @@ export async function getJobApplicationByJobIdAndFreelancerId(
   const jobApplication = await db
     .select()
     .from(jobApplicationsTable)
+    .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
     .where(
       and(
         eq(jobApplicationsTable.jobId, jobId),
         eq(jobApplicationsTable.freelancerId, freelancerId)
       )
     );
-  if (!jobApplication) {
+
+  if (!jobApplication || jobApplication.length === 0) {
     return null;
   }
-  return jobApplication[0] as unknown as JobApplication;
+  const returnedJobApplication: JobApplication = {
+    id: jobApplication[0].job_applications.id,
+    jobId: jobApplication[0].job_applications.jobId,
+    freelancerId: jobApplication[0].job_applications.freelancerId,
+    status: jobApplication[0].job_applications.status as JobApplicationStatus,
+    createdAt: jobApplication[0].job_applications.createdAt.toISOString(),
+    job: jobApplication[0].jobs as unknown as Job,
+  };
+  return returnedJobApplication;
 }
 
+/**
+ * get all job applications by job ID
+ * @param jobId - the ID of the job
+ * @returns the job applications
+ */
+export async function getJobApplicationsByJobId(
+  jobId: number | number[]
+): Promise<JobApplication[]> {
+  console.log("jobId", jobId);
+  console.log("typeof jobId", typeof jobId);
+  if (Array.isArray(jobId)) {
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(inArray(jobApplicationsTable.jobId, jobId));
+    return jobApplications as unknown as JobApplication[];
+  } else {
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.jobId, jobId));
+    return jobApplications as unknown as JobApplication[];
+  }
+}
 /**
  * create a job application
  *
@@ -289,7 +322,33 @@ export async function createJobApplication(
 }
 
 /**
- * Fetch job applications by job ID.
+ * get a job application by freelancer ID
+ *
+ * @param freelancerId - the ID of the freelancer
+ * @param jobStatus - the status of the job
+ * @returns the job application or null if it doesn't exist
+ */
+export async function getJobApplicationsByFreelancerId(
+  freelancerId: number,
+  jobStatus?: JobStatus[]
+): Promise<JobApplication[]> {
+  if (!jobStatus) {
+    jobStatus = [JobStatus.Active];
+  }
+
+  const jobApplications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(
+      and(
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+        // inArray(jobApplicationsTable.status, jobStatus)
+      )
+    );
+  return jobApplications as unknown as JobApplication[];
+}
+
+/* Fetch job applications by job ID.
  * @param jobId - The ID of the job to fetch applications for.
  * @returns The list of job applications.
  */
@@ -301,7 +360,7 @@ export async function fetchJobApplications(
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.jobId, jobId));
 
-  return applications as JobApplication[];
+  return applications as unknown as JobApplication[];
 }
 
 /**
@@ -329,7 +388,7 @@ export async function fetchJobsWithApplications(
           status: applicant.status,
         })), */
         interviewedCount: applications.filter(
-          (app) => app.status === "interviewed"
+          (app) => app.status === JobApplicationStatus.Shortlisted
         ).length,
         // bl mabda2, hayde ma 2ila 3azze 3ashen ma fi interviewed aplicants yet
       };

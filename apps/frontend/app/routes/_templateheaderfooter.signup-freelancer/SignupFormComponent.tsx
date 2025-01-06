@@ -2,6 +2,7 @@ import SocialLinks from "../../common/registration/socialLinks";
 import { useEffect, useRef } from "react";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
+import { AccountType } from "~/types/enums";
 
 interface ActionData {
   success?: boolean;
@@ -37,7 +38,11 @@ export default function SignupLeftComponent() {
 
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
-        <input type="hidden" name="accountType" value="freelancer" />
+        <input
+          type="hidden"
+          name="accountType"
+          value={AccountType.Freelancer}
+        />
 
         {/* AppFormField for email */}
         <AppFormField id="email" name="email" label="Email Address" />

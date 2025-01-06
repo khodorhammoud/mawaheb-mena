@@ -1,5 +1,8 @@
-import { jobApplicationsTable, jobsTable } from "~/db/drizzle/schemas/schema";
+import {
+  /* jobApplicationsTable, */ jobsTable,
+} from "~/db/drizzle/schemas/schema";
 import { InferSelectModel } from "drizzle-orm";
+import { JobApplicationStatus } from "./enums";
 
 export type Job = InferSelectModel<typeof jobsTable>;
 
@@ -18,4 +21,12 @@ export interface JobFilter {
   pageSize?: number;
 }
 
-export type JobApplication = InferSelectModel<typeof jobApplicationsTable>;
+export interface JobApplication {
+  id: number;
+  jobId: number;
+  freelancerId: number;
+  status: JobApplicationStatus;
+  createdAt: string;
+  job?: Job;
+}
+// export type JobApplication = InferSelectModel<typeof jobApplicationsTable>;

@@ -11,6 +11,8 @@ import {
   LocationPreferenceType,
   ExperienceLevel,
   JobStatus,
+  // JobApplicationStatus,
+  TimesheetStatus,
   JobApplicationStatus,
   JobsOpenTo,
 } from "~/types/enums";
@@ -31,6 +33,12 @@ export const languageEnum = pgEnum(
   "language",
   Object.values(Language) as [string, ...string[]]
 );
+
+export const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+
 export const countryEnum = pgEnum(
   // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
   "country", // this name is not depending on any other name for now !
@@ -57,6 +65,11 @@ export const locationPreferenceTypeEnum = pgEnum(
 export const experienceLevelEnum = pgEnum(
   "experience_level",
   Object.values(ExperienceLevel) as [string, ...string[]]
+);
+
+export const timesheetStatusEnum = pgEnum(
+  "timesheet_status",
+  Object.values(TimesheetStatus) as [string, ...string[]]
 );
 
 export const jobStatusEnum = pgEnum(

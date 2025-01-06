@@ -10,6 +10,10 @@ import {
   jsonb,
   json,
   date,
+<<<<<<< HEAD
+=======
+  numeric,
+>>>>>>> b0ed13c8512da04367bb4973e1c91dab3e677db6
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
@@ -22,11 +26,15 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+<<<<<<< HEAD
   jobsOpenToEnum,
+=======
+  // timesheetStatusEnum,
+>>>>>>> b0ed13c8512da04367bb4973e1c91dab3e677db6
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
-  // jobApplicationStatusEnum,
+  jobApplicationStatusEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -334,12 +342,26 @@ export const jobsTable = pgTable("jobs", {
   fulfilledAt: timestamp("fulfilled_at"),
 });
 
+/**
+ * Define the Skills table schema
+ *
+ * @property id - serial primary key
+ * @property name - text
+ * @property metaData - jsonb
+ */
 export const skillsTable = pgTable("skills", {
   id: serial("id").primaryKey(),
   name: text("name"),
   metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
 });
 
+/**
+ * Define the relation between jobs and skills where each job can have zero to many skills
+ * @property id - serial primary key
+ * @property job_id - integer referencing the jobsTable id
+ * @property skill_id - integer referencing the skillsTable id
+ * @property isStarred - boolean
+ */
 export const jobSkillsTable = pgTable("job_skills", {
   id: serial("id").primaryKey(),
   jobId: integer("job_id").references(() => jobsTable.id),
@@ -360,7 +382,54 @@ export const jobApplicationsTable = pgTable("job_applications", {
   id: serial("id").primaryKey(),
   jobId: integer("job_id").references(() => jobsTable.id),
   freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  // status: jobApplicationStatusEnum("status"),
-  status: varchar("status", { length: 50 }),
+  status: jobApplicationStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+/**
+ * Define the Timesheets table schema
+ *
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property jobApplicationId - integer referencing the jobApplicationsTable id
+ * @property start_time - timestamp
+ * @property end_time - timestamp
+ * @property description - text
+ * @property created_at - timestamp
+ */
+export const timesheetEntriesTable = pgTable("timesheet_entries", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  jobApplicationId: integer("job_application_id").references(
+    () => jobApplicationsTable.id
+  ),
+  date: date("date"),
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
+  description: text("description"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+/**
+ * Define the timesheet submissions table schema
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property job_application_id - integer referencing the jobApplicationsTable id
+ * @property submission_date - date
+ * @property total_hours - numeric
+ * @property status - varchar with length 50
+ * @property created_at - timestamp
+ * @property updated_at - timestamp
+ */
+export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  jobApplicationId: integer("job_application_id").references(
+    () => jobApplicationsTable.id
+  ),
+  submissionDate: date("submission_date").notNull(), // The date the work was performed
+  totalHours: numeric("total_hours").notNull(),
+  status: varchar("status").notNull().default("pending"), // pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });

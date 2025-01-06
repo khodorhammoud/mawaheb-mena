@@ -61,7 +61,7 @@ export default function Languages() {
   return (
     <>
       {/* LANGUAGES SERVED ✏️ */}
-      <div className="ml-auto flex items-center md:mb-[66px] mb-10 xl:mr-20 md:mr-10 mr-0 -mt-9">
+      <div className="ml-auto flex items-center xl:mr-20 md:mr-10 mr-0">
         {/* LANGUAGES */}
         <span className="lg:text-lg sm:text-base text-sm">Languages</span>
         {/* ✏️ + POPUP */}
@@ -72,7 +72,7 @@ export default function Languages() {
           {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <IoPencilSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1" />{" "}
+              <IoPencilSharp className="lg:h-9 lg:w-8 h-7 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
             </Button>
           </DialogTrigger>
           {/* POPUP */}

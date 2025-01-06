@@ -1,36 +1,146 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { getCurrentUserAccountType } from "~/servers/user.server";
-import { AccountType } from "~/types/enums";
-import { requireUserAccountStatusPublished } from "~/auth/auth.server";
+// import type { TimesheetProps } from "../../types/Timesheet";
+import type { LoaderFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
+
+import {
+  requireUserIsEmployerPublished,
+  requireUserIsFreelancerPublished,
+  requireUserOnboarded,
+} from "~/auth/auth.server";
+import {
+  getJobApplicationsByFreelancerId,
+  getJobApplicationByJobIdAndFreelancerId,
+  getEmployerJobs,
+  getJobApplicationsByJobId,
+} from "~/servers/job.server";
+import TimeSheetPage from "./components/TimeSheetPage";
+import JobsPage from "./components/JobsPage";
+import { JobApplication } from "~/types/Job";
+import { useState } from "react";
+import {
+  getEmployerIdFromUserId,
+  getFreelancerIdFromUserId,
+  getUserAccountType,
+} from "~/servers/user.server";
 import { useLoaderData } from "@remix-run/react";
-import FreelancerTimesheet from "./freelancer";
-import EmployerTimesheet from "./employer";
-
-// export async function action({ request }: ActionFunctionArgs) {}
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  // current user must be published
-  const userId = await requireUserAccountStatusPublished(request);
+import { AccountType } from "~/types/enums";
+import { FreelancerTimesheetHeader } from "./components/FreelancerTimesheetHeader";
+import { OtherFreelancers } from "./components/OtherFreelancers";
+import { EmployerJobsList } from "./components/EmployerJobsList";
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const userId = await requireUserOnboarded(request);
   if (!userId) {
-    return redirect("/login-employer");
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const accountType: AccountType = await getCurrentUserAccountType(request);
 
-  // Return the response data
-  return Response.json({ accountType });
+  const accountType = await getUserAccountType(userId);
+
+  let profileId: number | null = null;
+  if (accountType === AccountType.Freelancer) {
+    // user must be a published freelancer
+    await requireUserIsFreelancerPublished(request);
+
+    const freelancerId = await getFreelancerIdFromUserId(userId);
+    profileId = freelancerId;
+  } else if (accountType === AccountType.Employer) {
+    // user must be an employer
+    await requireUserIsEmployerPublished(request);
+    const employerId = await getEmployerIdFromUserId(userId);
+    profileId = employerId;
+  }
+
+  if (!profileId) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (accountType === AccountType.Freelancer) {
+    // get current freelancer job applications
+    const jobApplicationsPartialData =
+      await getJobApplicationsByFreelancerId(profileId);
+
+    const jobApplications = await Promise.all(
+      jobApplicationsPartialData.map(async (jobApp) => {
+        const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
+          jobApp.jobId,
+          profileId
+        );
+        return jobApplication;
+      })
+    );
+
+    return Response.json({ jobApplications, accountType });
+  } else if (accountType === AccountType.Employer) {
+    const employerId = await getEmployerIdFromUserId(userId);
+
+    if (params.freelancerId && params.jobId) {
+      // Viewing specific freelancer's timesheet
+      const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
+        parseInt(params.jobId),
+        parseInt(params.freelancerId)
+      );
+      const allJobApplications = await getJobApplicationsByJobId(
+        parseInt(params.jobId)
+      );
+
+      return Response.json({ jobApplication, allJobApplications, accountType });
+    } else {
+      // Viewing list of jobs
+      const jobs = await getEmployerJobs(employerId);
+      return Response.json({ jobs, accountType });
+    }
+  }
+
+  /*  const { jobId } = params; // Extract the jobId
+
+  if (!jobId) {
+    console.log("Job ID is required");
+    return Response.json({ error: "Job ID is required" }, { status: 400 });
+  } */
 }
 
-// Layout component
-export default function Layout() {
-  const { accountType } = useLoaderData<{
-    accountType: AccountType;
-  }>();
+export default function Page() {
+  const { accountType, jobs, jobApplication, allJobApplications } =
+    useLoaderData<typeof loader>();
+
+  const allowOverlap = true;
+  const [selectedJobApplication, setSelectedJobApplication] =
+    useState<JobApplication | null>(null);
+
+  if (accountType === AccountType.Employer) {
+    if (jobApplication) {
+      return (
+        <div className="mt-10 mb-20">
+          <FreelancerTimesheetHeader jobApplication={jobApplication} />
+          <TimeSheetPage
+            accountType={accountType}
+            allowOverlap={true}
+            jobApplication={jobApplication}
+          />
+          <OtherFreelancers
+            jobApplications={allJobApplications}
+            currentFreelancerId={jobApplication.freelancerId}
+            jobId={jobApplication.jobId}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="mt-10 mb-20">
+        <h2 className="text-2xl font-semibold mb-6">Your Projects</h2>
+        <EmployerJobsList jobs={jobs} />
+      </div>
+    );
+  }
   return (
-    <div>
-      {accountType === "freelancer" ? (
-        <FreelancerTimesheet />
+    <div className="mt-10 mb-20">
+      {selectedJobApplication ? (
+        <TimeSheetPage
+          accountType={accountType}
+          allowOverlap={allowOverlap}
+          jobApplication={selectedJobApplication}
+        />
       ) : (
-        <EmployerTimesheet />
+        <JobsPage onJobSelect={setSelectedJobApplication} />
       )}
     </div>
   );
