@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useFetcher } from "@remix-run/react";
 import { Checkbox } from "~/components/ui/checkbox";
 import ToggleSwitch from "~/common/toggle-switch/ToggleSwitch";
 import { Button } from "~/components/ui/button";
@@ -7,7 +6,7 @@ import AppFormField from "~/common/form-fields";
 import Calendar from "~/common/calender/Calender";
 import { format } from "date-fns";
 import { Freelancer } from "~/types/User";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 
 // Generate time options for the entire day in 30-minute intervals
 const generateTimeOptions = () => {
@@ -212,6 +211,13 @@ export default function Availability() {
           <div
             className="relative cursor-pointer"
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+            tabIndex={0}
+            role="button"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setIsCalendarOpen(!isCalendarOpen);
+              }
+            }}
           >
             <AppFormField
               type="text"
@@ -240,7 +246,9 @@ export default function Availability() {
 
         {/* Hours Available */}
         <div className="mb-4">
-          <label className="block mb-4">Hours I am available to work:</label>
+          <label className="block mb-4" htmlFor="availableHoursStart">
+            Hours I am available to work:
+          </label>
           <div className="flex gap-4 items-center">
             <AppFormField
               type="select"
