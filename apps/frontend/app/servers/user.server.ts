@@ -329,19 +329,17 @@ export async function getUserIdFromEmployerId_Depricated(
  * @returns number: the userId of the freelancer
  */
 
-export async function getUserIdFromFreelancerId_Depricated(
+export async function getUserIdFromFreelancerId(
   freelancerId: number
 ): Promise<number | null> {
-  console.warn("using getUserIdFromFreelancerId_Depricated", freelancerId);
-  return null;
   // join the freelancers table with the accounts table to get the userId
-  // const result = await db
-  //   .select({ userId: accountsTable.userId })
-  //   .from(freelancersTable)
-  //   .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-  //   .where(eq(freelancersTable.id, freelancerId));
-  // if (result.length === 0) return null;
-  // return result[0].userId;
+  const result = await db
+    .select({ userId: accountsTable.userId })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .where(eq(freelancersTable.id, freelancerId));
+  if (result.length === 0) return null;
+  return result[0].userId;
 }
 
 /**

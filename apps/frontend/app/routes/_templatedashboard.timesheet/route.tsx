@@ -88,13 +88,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       return Response.json({ jobs, accountType });
     }
   }
-
-  /*  const { jobId } = params; // Extract the jobId
-
-  if (!jobId) {
-    console.log("Job ID is required");
-    return Response.json({ error: "Job ID is required" }, { status: 400 });
-  } */
 }
 
 export default function Page() {
@@ -114,6 +107,7 @@ export default function Page() {
             accountType={accountType}
             allowOverlap={true}
             jobApplication={jobApplication}
+            freelancerId={jobApplication.freelancerId}
           />
           <OtherFreelancers
             jobApplications={allJobApplications}

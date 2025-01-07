@@ -9,6 +9,7 @@ import {
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
+import { getUser, getUserIdFromFreelancerId } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
   try {
@@ -273,15 +274,75 @@ export async function getJobApplicationByJobIdAndFreelancerId(
 }
 
 /**
+ * get a job application by its ID
+ *
+ * @param jobApplicationId - the ID of the job application
+ * @returns the job application or null if it doesn't exist
+ */
+export async function getJobApplicationById(
+  jobApplicationId: number
+): Promise<JobApplication | null> {
+  const jobApplication = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.id, jobApplicationId));
+  if (!jobApplication) {
+    return null;
+  }
+  return jobApplication[0] as unknown as JobApplication;
+}
+
+/**
  * get all job applications by job ID
  * @param jobId - the ID of the job
  * @returns the job applications
  */
 export async function getJobApplicationsByJobId(
+  jobId: number
+): Promise<JobApplication[]> {
+  // 1. Get job applications
+  const jobApplications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  // 2. Get unique freelancer IDs and fetch their user information
+  const freelancerIds = [
+    ...new Set(jobApplications.map((app) => app.freelancerId)),
+  ];
+
+  // Create a map of freelancerId to user info
+  const freelancerUserMap = new Map();
+
+  // Fetch user info for each freelancer
+  await Promise.all(
+    freelancerIds.map(async (freelancerId) => {
+      const userId = await getUserIdFromFreelancerId(freelancerId);
+      if (userId) {
+        const user = await getUser({ userId });
+        if (user) {
+          freelancerUserMap.set(freelancerId, {
+            firstName: user.firstName,
+            lastName: user.lastName,
+          });
+        }
+      }
+    })
+  );
+
+  // 3. Combine the data
+  return jobApplications.map((application) => ({
+    id: application.id,
+    jobId: application.jobId,
+    freelancerId: application.freelancerId,
+    status: application.status as JobApplicationStatus,
+    createdAt: application.createdAt.toISOString(),
+    freelancer: freelancerUserMap.get(application.freelancerId),
+  }));
+}
+/* export async function getJobApplicationsByJobId(
   jobId: number | number[]
 ): Promise<JobApplication[]> {
-  console.log("jobId", jobId);
-  console.log("typeof jobId", typeof jobId);
   if (Array.isArray(jobId)) {
     const jobApplications = await db
       .select()
@@ -295,7 +356,7 @@ export async function getJobApplicationsByJobId(
       .where(eq(jobApplicationsTable.jobId, jobId));
     return jobApplications as unknown as JobApplication[];
   }
-}
+} */
 /**
  * create a job application
  *

@@ -12,15 +12,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const freelancerId = await getFreelancerIdFromUserId(userId);
   const date = new Date(formData.get("date") as string);
   const jobApplicationId = Number(formData.get("jobApplicationId"));
-  const totalHours = Number(formData.get("totalHours"));
-
-  // Check if there are any hours to submit
-  if (totalHours <= 0) {
-    return Response.json(
-      { error: "Cannot submit a day with no entries" },
-      { status: 400 }
-    );
-  }
 
   // Check if already submitted
   const existingSubmissions = await getTimesheetSubmissions(
@@ -41,13 +32,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const submission = await submitTimesheetDay(
       freelancerId,
       jobApplicationId,
-      date,
-      totalHours
+      date
     );
     return Response.json({ success: true, submission });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(error);
+      return Response.json(
+        { error: "Failed to submit timesheet", details: error.message },
+        { status: 400 }
+      );
+    }
+    console.error("Unknown error", error);
     return Response.json(
-      { error: "Failed to submit timesheet" },
+      { error: "Failed to submit timesheet", details: "Unknown error" },
       { status: 400 }
     );
   }

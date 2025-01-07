@@ -16,6 +16,7 @@ const Timesheet: React.FC<TimesheetProps> = ({
   allowOverlap,
   jobApplication,
   accountType,
+  freelancerId,
 }: TimesheetProps) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -32,8 +33,16 @@ const Timesheet: React.FC<TimesheetProps> = ({
     setFormData,
     handleApproveSubmission,
     handleRejectSubmission,
-  } = useTimesheet(allowOverlap, jobApplication, selectedDate);
-  console.log("accountType", accountType);
+    handleTimesheetActions,
+    timesheetActionsState,
+  } = useTimesheet(
+    allowOverlap,
+    jobApplication,
+    selectedDate,
+    accountType,
+    freelancerId
+  );
+
   const contextValue = {
     accountType,
     canEdit: accountType === AccountType.Freelancer,
@@ -45,6 +54,9 @@ const Timesheet: React.FC<TimesheetProps> = ({
         : undefined,
     onRejectSubmission:
       accountType === AccountType.Employer ? handleRejectSubmission : undefined,
+    handleTimesheetActions:
+      accountType === AccountType.Employer ? handleTimesheetActions : undefined,
+    timesheetActionsState: timesheetActionsState,
   };
 
   return (

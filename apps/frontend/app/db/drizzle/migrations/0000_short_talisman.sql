@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS "timesheet_submission_entries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"timesheet_submission_id" integer,
+	"timesheet_entry_id" integer
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"first_name" varchar(80),
@@ -164,7 +170,7 @@ CREATE TABLE IF NOT EXISTS "timesheet_submissions" (
 	"job_application_id" integer,
 	"submission_date" date NOT NULL,
 	"total_hours" numeric NOT NULL,
-	"status" varchar DEFAULT 'pending' NOT NULL,
+	"status" "timesheet_status" DEFAULT 'submitted' NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
@@ -177,6 +183,18 @@ CREATE TABLE IF NOT EXISTS "user_verifications" (
 	"is_used" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now()
 );
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "timesheet_submission_entries" ADD CONSTRAINT "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk" FOREIGN KEY ("timesheet_submission_id") REFERENCES "public"."timesheet_submissions"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "timesheet_submission_entries" ADD CONSTRAINT "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk" FOREIGN KEY ("timesheet_entry_id") REFERENCES "public"."timesheet_entries"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "account_languages" ADD CONSTRAINT "account_languages_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;

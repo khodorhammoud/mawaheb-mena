@@ -637,3 +637,22 @@ export async function getEmployerDashboardData(request: Request) {
     throw error; // Re-throw the error for further handling
   }
 }
+
+/**
+ * verify that a job belongs to an employer
+ *
+ * @param jobId - the ID of the job
+ * @param employerId - the ID of the employer
+ * @returns true if the job belongs to the employer, false otherwise
+ */
+export async function verifyJobBelongsToEmployer(
+  jobId: number,
+  employerId: number
+): Promise<boolean> {
+  const job = await db
+    .select()
+    .from(jobsTable)
+    .where(and(eq(jobsTable.id, jobId), eq(jobsTable.employerId, employerId)));
+
+  return job.length > 0;
+}

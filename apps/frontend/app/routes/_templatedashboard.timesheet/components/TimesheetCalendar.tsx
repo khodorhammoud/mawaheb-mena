@@ -24,6 +24,20 @@ export function TimesheetCalendar({
     return timesheet[dateKey]?.entries?.length > 0;
   };
 
+  const hasEntriesApprovedForDate = (date: Date) => {
+    const dateKey = date.toLocaleDateString("en-CA");
+    return timesheet[dateKey]?.entries?.some(
+      (entry) => entry.status === "approved"
+    );
+  };
+
+  const hasEntriesRejectedForDate = (date: Date) => {
+    const dateKey = date.toLocaleDateString("en-CA");
+    return timesheet[dateKey]?.entries?.some(
+      (entry) => entry.status === "rejected"
+    );
+  };
+
   return (
     <div className="flex-1">
       <Calendar
@@ -42,16 +56,22 @@ export function TimesheetCalendar({
         }}
         modifiers={{
           today: (date) => date.toDateString() === new Date().toDateString(),
-          hasEntries: hasEntriesForDate,
+          hasEntriesSubmitted: hasEntriesForDate,
+          hasEntriesApproved: hasEntriesApprovedForDate,
+          hasEntriesRejected: hasEntriesRejectedForDate,
           selected: (date) =>
             date.toDateString() === selectedDate.toDateString(),
         }}
         modifiersClassNames={{
           today: "bg-blue-100 hover:bg-blue-150 transition-colors duration-75",
-          hasEntries:
+          hasEntriesSubmitted:
             "bg-gray-100 hover:bg-gray-200 transition-colors duration-75",
+          hasEntriesApproved:
+            "bg-green-100 hover:bg-green-200 transition-colors duration-75",
+          hasEntriesRejected:
+            "bg-red-100 hover:bg-red-200 transition-colors duration-75",
           selected:
-            "bg-green-100 hover:bg-green-150 transition-colors duration-75",
+            "bg-yellow-100 hover:bg-yellow-150 transition-colors duration-75",
         }}
       />
     </div>

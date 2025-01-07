@@ -7,7 +7,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserAccountStatusPublished(request);
   const url = new URL(request.url);
   const jobIds = url.searchParams.getAll("jobIds"); // Fetch all `jobIds` query parameters
-  console.log("jobIds_String", jobIds_String);
+
   //const jobIds = JSON.parse(jobIds_String) as unknown as number[];
 
   if (jobIds.length === 0) {
@@ -16,16 +16,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
       { status: 400 }
     );
   }
-  console.log("jobIds", jobIds);
-  const jobApplications = await getJobApplicationsByJobId(jobIds);
+  const jobIdsParsed = jobIds.map((jobId) => parseInt(jobId));
+
+  const jobApplications = await getJobApplicationsByJobId(jobIdsParsed);
   return Response.json({ jobApplications });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  await requireUserAccountStatusPublished(request);
   const formData = await request.formData();
-  const jobIds = formData.get("jobIds");
-  console.log("jobIds", jobIds);
-  const jobIdsArray = JSON.parse(jobIds as string) as unknown as number[];
-  const jobApplications = await getJobApplicationsByJobId(jobIdsArray);
+
+  const jobId = formData.get("jobId");
+  if (!jobId) {
+    return Response.json({ error: "jobId is required" }, { status: 400 });
+  }
+
+  const jobApplications = await getJobApplicationsByJobId(
+    parseInt(jobId as string)
+  );
+
   return Response.json({ jobApplications });
 }
