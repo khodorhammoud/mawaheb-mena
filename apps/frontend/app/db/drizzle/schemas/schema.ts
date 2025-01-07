@@ -23,12 +23,9 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
-<<<<<<< HEAD
   jobsOpenToEnum,
   // timesheetStatusEnum,
-=======
   timesheetStatusEnum,
->>>>>>> f29cd8e94fc8036c5e0c7bae4d575af6a13f2084
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
