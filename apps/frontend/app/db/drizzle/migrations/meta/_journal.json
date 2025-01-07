@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736104747199,
-      "tag": "0000_silky_wither",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1736105582893,
-      "tag": "0001_dizzy_lenny_balinger",
+      "when": 1736265008597,
+      "tag": "0000_short_talisman",
       "breakpoints": true
     }
   ]

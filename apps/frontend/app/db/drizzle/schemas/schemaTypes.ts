@@ -13,6 +13,7 @@ import {
   JobStatus,
   // JobApplicationStatus,
   TimesheetStatus,
+  JobApplicationStatus,
   // JobStatus,
 } from "~/types/enums";
 
@@ -38,6 +39,12 @@ export const languageEnum = pgEnum(
   "language",
   Object.values(Language) as [string, ...string[]]
 );
+
+export const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+
 export const countryEnum = pgEnum(
   // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
   "country", // this name is not depending on any other name for now !
@@ -70,9 +77,3 @@ export const jobStatusEnum = pgEnum(
   "job_status",
   Object.values(JobStatus) as [string, ...string[]]
 );
-
-/* export const jobApplicationStatusEnum = pgEnum(
-  "job_application_status",
-  Object.values(JobApplicationStatus) as [string, ...string[]]
-  );
- */

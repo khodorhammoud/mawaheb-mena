@@ -27,7 +27,7 @@ import {
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
-  // jobApplicationStatusEnum,
+  jobApplicationStatusEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -369,8 +369,7 @@ export const jobApplicationsTable = pgTable("job_applications", {
   id: serial("id").primaryKey(),
   jobId: integer("job_id").references(() => jobsTable.id),
   freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  // status: jobApplicationStatusEnum("status"),
-  status: varchar("status", { length: 50 }),
+  status: jobApplicationStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 

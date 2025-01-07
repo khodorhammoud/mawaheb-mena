@@ -1,9 +1,64 @@
 {
-  "id": "e7b4c764-c760-4c80-932d-9796597f53ab",
+  "id": "40cf31b2-cf8e-445f-8f18-b183f96eb6a9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.timesheet_submission_entries": {
+      "name": "timesheet_submission_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "timesheet_submission_id": {
+          "name": "timesheet_submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timesheet_entry_id": {
+          "name": "timesheet_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk": {
+          "name": "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk",
+          "tableFrom": "timesheet_submission_entries",
+          "tableTo": "timesheet_submissions",
+          "columnsFrom": [
+            "timesheet_submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk": {
+          "name": "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk",
+          "tableFrom": "timesheet_submission_entries",
+          "tableTo": "timesheet_entries",
+          "columnsFrom": [
+            "timesheet_entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -662,7 +717,8 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar(50)",
+          "type": "job_application_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -1154,7 +1210,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'pending'"
+          "default": "'submitted'"
         },
         "created_at": {
           "name": "created_at",
