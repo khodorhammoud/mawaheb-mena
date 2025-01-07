@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1736265242968,
+      "tag": "0000_hard_songbird",
+      "breakpoints": true
+    }
+  ]
 }
