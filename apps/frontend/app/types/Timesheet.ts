@@ -1,5 +1,5 @@
 import { JobApplication } from "~/types/Job";
-import { AccountType } from "./enums";
+import { AccountType, TimesheetStatus } from "./enums";
 
 export type TimesheetEntry = {
   id?: number;
@@ -10,11 +10,13 @@ export type TimesheetEntry = {
   column?: number;
   totalColumns?: number;
   isSubmitted?: boolean;
+  status?: TimesheetStatus;
 };
 
 export interface TimesheetDay {
   entries: TimesheetEntry[];
   isSubmitted?: boolean;
+  status?: TimesheetStatus;
 }
 
 export interface TimesheetData {

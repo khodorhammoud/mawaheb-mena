@@ -28,11 +28,13 @@ export const useTimesheet = (
     isSubmitted: boolean;
   }>();
 
+  const timeSheetActionsFetcher = useFetcher();
+
   useEffect(() => {
     if (timesheetFetcher.data?.timesheetEntries) {
       const entries = timesheetFetcher.data?.timesheetEntries || [];
       const groupedEntriesByDate = entries.reduce((acc, entry) => {
-        const date = new Date(entry.date);
+        const date = new Date(entry?.date);
         const dateKey = date.toLocaleDateString("en-CA");
 
         if (!acc[dateKey]) {
@@ -197,11 +199,11 @@ export const useTimesheet = (
     });
     // save to db
     const formDataToSubmit = new FormData();
-    formDataToSubmit.append("date", formData.date.toDateString());
-    formDataToSubmit.append("startTime", String(formData.startTime));
-    formDataToSubmit.append("endTime", String(formData.endTime));
-    formDataToSubmit.append("description", formData.description);
-    formDataToSubmit.append("jobApplicationId", String(jobApplication.id));
+    formDataToSubmit.append("date", formData?.date?.toDateString());
+    formDataToSubmit.append("startTime", String(formData?.startTime));
+    formDataToSubmit.append("endTime", String(formData?.endTime));
+    formDataToSubmit.append("description", formData?.description);
+    formDataToSubmit.append("jobApplicationId", String(jobApplication?.id));
 
     timesheetFetcher.submit(formDataToSubmit, {
       method: "POST",
@@ -236,6 +238,20 @@ export const useTimesheet = (
     });
   };
 
+  const handleTimesheetActions = (
+    action: "approve" | "reject",
+    date: string
+  ) => {
+    const formData = new FormData();
+    formData.append("date", date);
+    formData.append("jobApplicationId", jobApplication.id.toString());
+
+    timeSheetActionsFetcher.submit(formData, {
+      method: "post",
+      action: `/api/timesheet/${action}`,
+    });
+  };
+
   const handleApproveSubmission = (date: string) => {
     console.log("Approve submission for date:", date);
   };
@@ -256,5 +272,7 @@ export const useTimesheet = (
     handleClosePopup,
     handleApproveSubmission,
     handleRejectSubmission,
+    handleTimesheetActions,
+    timesheetActionsState: timeSheetActionsFetcher.state,
   };
 };

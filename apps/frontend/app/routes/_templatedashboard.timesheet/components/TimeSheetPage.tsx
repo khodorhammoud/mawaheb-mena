@@ -33,6 +33,8 @@ const Timesheet: React.FC<TimesheetProps> = ({
     setFormData,
     handleApproveSubmission,
     handleRejectSubmission,
+    handleTimesheetActions,
+    timesheetActionsState,
   } = useTimesheet(
     allowOverlap,
     jobApplication,
@@ -52,6 +54,9 @@ const Timesheet: React.FC<TimesheetProps> = ({
         : undefined,
     onRejectSubmission:
       accountType === AccountType.Employer ? handleRejectSubmission : undefined,
+    handleTimesheetActions:
+      accountType === AccountType.Employer ? handleTimesheetActions : undefined,
+    timesheetActionsState: timesheetActionsState,
   };
 
   return (

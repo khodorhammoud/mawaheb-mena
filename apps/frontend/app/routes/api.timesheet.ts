@@ -17,12 +17,10 @@ import {
   getFreelancerIdFromUserId,
   getUserAccountType,
 } from "~/servers/user.server";
-import { AccountType } from "~/types/enums";
+import { AccountType, TimesheetStatus } from "~/types/enums";
 import { TimesheetEntry } from "~/types/Timesheet";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // user must be a published freelancer
-  // const userId = await requireUserIsFreelancerPublished(request);
   const userId = await requireUserAccountStatusPublished(request);
   if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -123,6 +121,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     toTimeDate
   );
 
+  let statuses: TimesheetStatus[] = [
+    TimesheetStatus.Submitted,
+    TimesheetStatus.Approved,
+    TimesheetStatus.Rejected,
+    TimesheetStatus.Draft,
+  ];
+
+  if (accountType === AccountType.Employer) {
+    /* timesheetEntries = timesheetEntries.filter(
+      (entry) => entry.status !== TimesheetStatus.Draft
+    ); */
+    statuses = [
+      TimesheetStatus.Submitted,
+      TimesheetStatus.Approved,
+      TimesheetStatus.Rejected,
+    ];
+  }
+
   if (timesheetEntries.length === 0) {
     return Response.json([]);
   }
@@ -131,7 +147,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     freelancerId,
     jobApplicationId,
     fromTimeDate,
-    toTimeDate
+    toTimeDate,
+    statuses
   );
 
   // Map submissions to dates for easy lookup
@@ -144,10 +161,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Include submission status in the response
   const timesheetEntriesWithSubmission = timesheetEntries.map((entry) => ({
     ...entry,
-    isSubmitted: !!submissionsByDate[entry.date.toLocaleDateString("en-CA")],
+    status: submissionsByDate[entry?.date?.toLocaleDateString("en-CA")]?.status,
+    isSubmitted: !!submissionsByDate[entry?.date?.toLocaleDateString("en-CA")],
   }));
 
-  return Response.json({ timesheetEntries: timesheetEntriesWithSubmission });
+  return Response.json({
+    timesheetEntries: timesheetEntriesWithSubmission,
+    isSubmitted: timesheetEntriesWithSubmission.some(
+      (entry) => entry.isSubmitted
+    ),
+  });
 }
 
 async function addTimesheetEntry(

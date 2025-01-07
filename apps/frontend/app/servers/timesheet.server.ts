@@ -1,4 +1,4 @@
-import { and, lte, eq, gte } from "drizzle-orm";
+import { and, lte, eq, gte, inArray } from "drizzle-orm";
 import { db } from "~/db/drizzle/connector";
 
 import {
@@ -88,6 +88,11 @@ export async function deleteTimesheetEntryFromDatabase(
     );
 }
 
+// helper function to calculate the difference in hours between two dates
+export function differenceInHours(startDate: Date, endDate: Date) {
+  return Math.abs(endDate.getTime() - startDate.getTime()) / 3600000;
+}
+
 export async function submitTimesheetDay(
   freelancerId: number,
   jobApplicationId: number,
@@ -120,11 +125,22 @@ export async function submitTimesheetDay(
     throw new Error("This day has already been submitted");
   }
 
+  // calculate total hours from entries
+  const totalHours = entries.reduce((acc, entry) => {
+    const hours = differenceInHours(entry.endTime, entry.startTime);
+    return acc + hours;
+  }, 0);
+
+  if (totalHours <= 0) {
+    throw new Error("Cannot submit a day with no entries");
+  }
+
   type NewTimesheetSubmission = typeof timesheetSubmissionsTable.$inferInsert;
   const newTimesheetSubmission: NewTimesheetSubmission = {
     freelancerId,
     jobApplicationId,
     submissionDate: submissionDate.toDateString(),
+    totalHours: totalHours.toString(),
     status: TimesheetStatus.Submitted,
   };
 
@@ -151,7 +167,13 @@ export async function getTimesheetSubmissions(
   freelancerId: number,
   jobApplicationId: number,
   fromDate: Date,
-  toDate: Date
+  toDate: Date,
+  status: TimesheetStatus[] = [
+    TimesheetStatus.Submitted,
+    TimesheetStatus.Approved,
+    TimesheetStatus.Rejected,
+    TimesheetStatus.Draft,
+  ]
 ) {
   return await db
     .select()
@@ -161,7 +183,34 @@ export async function getTimesheetSubmissions(
         eq(timesheetSubmissionsTable.freelancerId, freelancerId),
         eq(timesheetSubmissionsTable.jobApplicationId, jobApplicationId),
         gte(timesheetSubmissionsTable.submissionDate, fromDate.toDateString()),
-        lte(timesheetSubmissionsTable.submissionDate, toDate.toDateString())
+        lte(timesheetSubmissionsTable.submissionDate, toDate.toDateString()),
+        inArray(timesheetSubmissionsTable.status, status)
+      )
+    );
+}
+
+export async function updateTimesheetEntriesStatus(
+  jobApplicationId: number,
+  date: Date,
+  status: TimesheetStatus
+) {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  await db
+    .update(timesheetSubmissionsTable)
+    .set({ status })
+    .where(
+      and(
+        eq(timesheetSubmissionsTable.jobApplicationId, jobApplicationId),
+        gte(
+          timesheetSubmissionsTable.submissionDate,
+          startOfDay.toDateString()
+        ),
+        lte(timesheetSubmissionsTable.submissionDate, endOfDay.toDateString())
       )
     );
 }

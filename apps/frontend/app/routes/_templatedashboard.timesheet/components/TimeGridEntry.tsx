@@ -13,6 +13,7 @@ import {
   TimeSlot,
 } from "../../../types/Timesheet";
 import { useTimesheet } from "../context/TimesheetContext";
+import { TimesheetStatus } from "~/types/enums";
 
 interface TimeGridEntryProps {
   day: { date: Date };
@@ -22,6 +23,7 @@ interface TimeGridEntryProps {
   timeSlots: TimeSlot[];
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
   isSubmitted: boolean;
+  status: TimesheetStatus;
 }
 export function TimeGridEntry({
   day,
@@ -31,6 +33,7 @@ export function TimeGridEntry({
   timeSlots,
   // onEntryClick,
   isSubmitted,
+  status,
 }: TimeGridEntryProps) {
   const { canEdit, onEntryClick } = useTimesheet();
 
@@ -45,23 +48,30 @@ export function TimeGridEntry({
 
     return calcResult.firstSlotIndex === timeIndex;
   });
+  console.log("======status", status);
 
   return (
     <div
       className={`h-12 border border-gray-200 relative ${
-        isSubmitted ? "bg-gray-200" : "bg-white"
+        isSubmitted
+          ? status === TimesheetStatus.Approved
+            ? "bg-green-200"
+            : status === TimesheetStatus.Rejected
+              ? "bg-red-200"
+              : "bg-gray-200"
+          : "bg-white"
       }`}
       role="button"
       tabIndex={0}
       onClick={(e) => {
         // Only trigger if clicking the empty space and not the entry block
         if (e.target === e.currentTarget) {
-          canEdit && onEntryClick(day.date, time, null);
+          canEdit && onEntryClick(day?.date, time, null);
         }
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          onEntryClick(day.date, time, null);
+          onEntryClick(day?.date, time, null);
         }
       }}
       key={timeIndex}
@@ -75,6 +85,7 @@ export function TimeGridEntry({
           time={time}
           onEntryClick={onEntryClick}
           isSubmitted={isSubmitted}
+          status={status}
         />
       ))}
     </div>
@@ -88,6 +99,7 @@ function EntryBlock({
   time,
   onEntryClick,
   isSubmitted,
+  status,
 }: {
   entry: TimesheetEntry;
   timeSlots: TimeSlot[];
@@ -95,6 +107,7 @@ function EntryBlock({
   time: TimeSlot;
   onEntryClick: (date: Date, time: TimeSlot, entry: TimesheetEntry) => void;
   isSubmitted: boolean;
+  status: TimesheetStatus;
 }) {
   const calcResult = calculateContinuousFill(
     entry.startTime,
@@ -124,7 +137,13 @@ function EntryBlock({
       <TooltipTrigger asChild className="w-full h-full">
         <div
           className={`absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center ${
-            isSubmitted ? "bg-gray-300" : "bg-blue-200"
+            isSubmitted
+              ? status === TimesheetStatus.Approved
+                ? "bg-green-300"
+                : status === TimesheetStatus.Rejected
+                  ? "bg-red-300"
+                  : "bg-gray-300"
+              : "bg-blue-200"
           }`}
           style={{
             top: `${topPercentage}%`,
@@ -134,12 +153,12 @@ function EntryBlock({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            !isSubmitted && onEntryClick(day.date, time, entry);
+            !isSubmitted && onEntryClick(day?.date, time, entry);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.stopPropagation();
-              onEntryClick(day.date, time, entry);
+              onEntryClick(day?.date, time, entry);
             }
           }}
           role="button"
