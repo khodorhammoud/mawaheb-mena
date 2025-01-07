@@ -1,25 +1,5 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-<<<<<<< HEAD
-      "when": 1736062144133,
-      "tag": "0000_abnormal_blue_blade",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1736075481323,
-      "tag": "0001_brainy_gargoyle",
-=======
-      "when": 1736165747847,
-      "tag": "0000_daffy_lifeguard",
->>>>>>> b0ed13c8512da04367bb4973e1c91dab3e677db6
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }
