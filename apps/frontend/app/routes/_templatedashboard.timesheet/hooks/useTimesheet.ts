@@ -9,11 +9,14 @@ import { useToast } from "~/components/hooks/use-toast";
 import { useFetcher } from "@remix-run/react";
 import { JobApplication } from "~/types/Job";
 import { subDays, addDays } from "date-fns";
+import { AccountType } from "~/types/enums";
 
 export const useTimesheet = (
   allowOverlap = true,
   jobApplication: JobApplication,
-  selectedDate: Date
+  selectedDate: Date,
+  accountType: AccountType,
+  freelancerId?: number
 ) => {
   const timesheetFetcher = useFetcher<{
     success?: boolean;
@@ -25,12 +28,13 @@ export const useTimesheet = (
     isSubmitted: boolean;
   }>();
 
+  const timeSheetActionsFetcher = useFetcher();
+
   useEffect(() => {
     if (timesheetFetcher.data?.timesheetEntries) {
-      console.log("timesheetFetcher.data", timesheetFetcher.data);
       const entries = timesheetFetcher.data?.timesheetEntries || [];
       const groupedEntriesByDate = entries.reduce((acc, entry) => {
-        const date = new Date(entry.date);
+        const date = new Date(entry?.date);
         const dateKey = date.toLocaleDateString("en-CA");
 
         if (!acc[dateKey]) {
@@ -55,7 +59,7 @@ export const useTimesheet = (
         }
         return acc;
       }, {} as TimesheetData);
-      console.log(groupedEntriesByDate);
+
       setTimesheet(groupedEntriesByDate);
     }
   }, [timesheetFetcher.data]);
@@ -67,10 +71,20 @@ export const useTimesheet = (
     const fromTime = subDays(selectedDate, 1);
     const toTime = addDays(selectedDate, 1);
     toTime.setHours(23, 59, 59, 999);
-    timesheetFetcher.load(
-      `/api/timesheet?jobApplicationId=${jobApplicationId}&fromTime=${fromTime}&toTime=${toTime}`
-    );
-  }, [selectedDate]);
+
+    const params = new URLSearchParams({
+      jobApplicationId: jobApplicationId.toString(),
+      fromTime: fromTime.toISOString(),
+      toTime: toTime.toISOString(),
+    });
+
+    // Add freelancerId param only for employer view
+    if (accountType === AccountType.Employer && freelancerId) {
+      params.append("freelancerId", freelancerId.toString());
+    }
+
+    timesheetFetcher.load(`/api/timesheet?${params}`);
+  }, [selectedDate, jobApplication.id, accountType, freelancerId]);
 
   const [timesheet, setTimesheet] = useState<TimesheetData>({});
 
@@ -185,11 +199,11 @@ export const useTimesheet = (
     });
     // save to db
     const formDataToSubmit = new FormData();
-    formDataToSubmit.append("date", formData.date.toDateString());
-    formDataToSubmit.append("startTime", String(formData.startTime));
-    formDataToSubmit.append("endTime", String(formData.endTime));
-    formDataToSubmit.append("description", formData.description);
-    formDataToSubmit.append("jobApplicationId", String(jobApplication.id));
+    formDataToSubmit.append("date", formData?.date?.toDateString());
+    formDataToSubmit.append("startTime", String(formData?.startTime));
+    formDataToSubmit.append("endTime", String(formData?.endTime));
+    formDataToSubmit.append("description", formData?.description);
+    formDataToSubmit.append("jobApplicationId", String(jobApplication?.id));
 
     timesheetFetcher.submit(formDataToSubmit, {
       method: "POST",
@@ -224,6 +238,20 @@ export const useTimesheet = (
     });
   };
 
+  const handleTimesheetActions = (
+    action: "approve" | "reject",
+    date: string
+  ) => {
+    const formData = new FormData();
+    formData.append("date", date);
+    formData.append("jobApplicationId", jobApplication.id.toString());
+
+    timeSheetActionsFetcher.submit(formData, {
+      method: "post",
+      action: `/api/timesheet/${action}`,
+    });
+  };
+
   const handleApproveSubmission = (date: string) => {
     console.log("Approve submission for date:", date);
   };
@@ -244,5 +272,7 @@ export const useTimesheet = (
     handleClosePopup,
     handleApproveSubmission,
     handleRejectSubmission,
+    handleTimesheetActions,
+    timesheetActionsState: timeSheetActionsFetcher.state,
   };
 };

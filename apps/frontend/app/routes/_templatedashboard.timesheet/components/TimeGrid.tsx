@@ -77,8 +77,9 @@ export function TimeGrid({
       <div className="grid grid-cols-4 gap-[8px]">
         <div className="mt-auto"></div>
         {displayedDays.map((day) => {
-          const dateKey = day.date.toLocaleDateString("en-CA");
+          const dateKey = day?.date?.toLocaleDateString("en-CA");
           const entries = timesheet[dateKey]?.entries || [];
+          const status = timesheet[dateKey]?.entries[0].status;
           const dayTotal = calculateDayTotal(entries);
 
           return (
@@ -103,6 +104,7 @@ export function TimeGrid({
                   <EmployerActions
                     date={dateKey}
                     isSubmitted={timesheet[dateKey]?.isSubmitted}
+                    status={status}
                   />
                 )}
               </div>
@@ -139,12 +141,15 @@ function TimeGridRow({
           time={time}
           timeIndex={timeIndex}
           timesheetEntry={
-            timesheet[day.date.toLocaleDateString("en-CA")]?.entries || []
+            timesheet[day?.date?.toLocaleDateString("en-CA")]?.entries || []
           }
           timeSlots={timeSlots}
           onEntryClick={onEntryClick}
           isSubmitted={
-            timesheet[day.date.toLocaleDateString("en-CA")]?.isSubmitted
+            timesheet[day?.date?.toLocaleDateString("en-CA")]?.isSubmitted
+          }
+          status={
+            timesheet[day?.date?.toLocaleDateString("en-CA")]?.entries[0].status
           }
         />
       ))}

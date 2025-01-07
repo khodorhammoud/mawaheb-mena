@@ -23,8 +23,12 @@ import {
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
+<<<<<<< HEAD
   jobsOpenToEnum,
   // timesheetStatusEnum,
+=======
+  timesheetStatusEnum,
+>>>>>>> f29cd8e94fc8036c5e0c7bae4d575af6a13f2084
   /*  jobStatusEnum,
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
@@ -32,6 +36,7 @@ import {
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
+import { TimesheetStatus } from "~/types/enums";
 
 /**
  * Definition of the Users table.
@@ -405,6 +410,25 @@ export const timesheetEntriesTable = pgTable("timesheet_entries", {
 });
 
 /**
+ * Define the relation between timesheet submissions and timesheet entries where each timesheet submission can have zero to many timesheet entries
+ * @property id - serial primary key
+ * @property timesheet_submission_id - integer referencing the timesheetSubmissionsTable id
+ * @property timesheet_entry_id - integer referencing the timesheetEntriesTable id
+ */
+export const TimesheetSubmissionEntriesTable = pgTable(
+  "timesheet_submission_entries",
+  {
+    id: serial("id").primaryKey(),
+    timesheetSubmissionId: integer("timesheet_submission_id").references(
+      () => timesheetSubmissionsTable.id
+    ),
+    timesheetEntryId: integer("timesheet_entry_id").references(
+      () => timesheetEntriesTable.id
+    ),
+  }
+);
+
+/**
  * Define the timesheet submissions table schema
  * @property id - serial primary key
  * @property freelancer_id - integer referencing the freelancersTable id
@@ -423,7 +447,9 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
   ),
   submissionDate: date("submission_date").notNull(), // The date the work was performed
   totalHours: numeric("total_hours").notNull(),
-  status: varchar("status").notNull().default("pending"), // pending, approved, rejected
+  status: timesheetStatusEnum("status")
+    .notNull()
+    .default(TimesheetStatus.Submitted), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
