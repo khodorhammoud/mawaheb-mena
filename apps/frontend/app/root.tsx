@@ -6,6 +6,8 @@ import {
   ScrollRestoration,
   useRouteLoaderData,
   useLoaderData,
+  isRouteErrorResponse,
+  useRouteError,
 } from "@remix-run/react";
 import {
   LinksFunction,
@@ -51,8 +53,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
-  { rel: "stylesheet", href: appStylesheet }, // shall these href's stay like that ???
+  { rel: "stylesheet", as: "style", href: stylesheet },
+  { rel: "stylesheet", as: "style", href: appStylesheet }, // shall these href's stay like that ???
 ];
 
 export const meta: MetaFunction = () => {
@@ -65,3 +67,43 @@ export default function App() {
   useChangeLanguage(locale);
   return <Outlet />;
 }
+
+/* export function ErrorBoundary() {
+  const error = useRouteError();
+
+  console.log("error", error);
+
+  // Handle 404s specifically
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    return (
+      <html>
+        <head>
+          <title>Page Not Found</title>
+        </head>
+        <body>
+          <div className="flex flex-col items-center justify-center min-h-screen">
+            <h1 className="text-2xl font-bold">404 - Page Not Found</h1>
+            <p>Sorry, we couldn't find what you were looking for.</p>
+            <a href="/" className="mt-4 text-blue-600 hover:underline">
+              Return to Home
+            </a>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
+  // Handle other errors
+  return (
+    <html>
+      <head>
+        <title>Error</title>
+      </head>
+      <body>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <h1>Something went wrong</h1>
+        </div>
+      </body>
+    </html>
+  );
+} */

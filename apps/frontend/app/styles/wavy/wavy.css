@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* import "~/styles/wavy/wavy.css"; */
 /* Place it wherever you use any style from here */
 
@@ -207,18 +203,69 @@
   }
 }
 
-.gradient-box {
-  border-radius: 10px;
-}
-
 .not-active-gradient:hover {
   border-radius: 10px !important;
   animation: gradientAnimation 3s ease infinite !important;
 }
-/* this is the one of the hover effect 👆 */
 
-/* NWE */
-/* NWE */
+/* HOVERING LINEAR GRADIENT RED*/
+/* HOVERING LINEAR GRADIENT RED*/
+/* HOVERING LINEAR GRADIENT RED*/
+
+@keyframes gradientAnimationRed {
+  0% {
+    background: rgb(239, 68, 68);
+  }
+  50% {
+    background: rgb(253, 103, 103);
+  }
+  100% {
+    background: rgb(239, 68, 68);
+  }
+}
+
+.not-active-gradient-red:hover {
+  border-radius: 10px !important;
+  animation: gradientAnimationRed 3s ease infinite !important;
+}
+
+/* HOVERING LINEAR GRADIENT BLACK */
+/* HOVERING LINEAR GRADIENT BALCK */
+/* HOVERING LINEAR GRADIENT BLACK */
+
+@keyframes gradientAnimationBlack {
+  0% {
+    background: rgb(0, 0, 0);
+  }
+  50% {
+    background: rgb(33, 31, 31);
+  }
+  100% {
+    background: rgb(0, 0, 0);
+  }
+}
+
+.not-active-gradient-black:hover {
+  border-radius: 10px !important;
+  animation: gradientAnimationBlack 3s ease infinite !important;
+}
+
+/* NO SPINNER FOR NUMBER FORM */
+/* NO SPINNER FOR NUMBER FORM */
+/* NO SPINNER FOR NUMBER FORM */
+
+/* Remove spinner for Chrome, Safari, Edge (WebKit browsers) */
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Optional: Adjust spacing */
+}
+
+/* Remove spinner for Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield; /* Ensures compatibility with modern browsers */
+}
 
 /* FINGER ANIMATION */
 /* FINGER ANIMATION */
@@ -282,4 +329,92 @@
 
 .bounce-center {
   animation: bounce-center 1s ease-out; /* Duration should match the transition duration */
+}
+
+/* AUTOFILL INPUT BACKGROUNDS */
+/* Autofill Background and Text Color Fix */
+/* Base autofill fix for all states */
+.autofill-fix:-webkit-autofill {
+  box-shadow: 0 0 0 1000px white inset !important; /* Autofill background stays white */
+  -webkit-text-fill-color: #000 !important; /* Ensure autofill text color is black */
+  border: 1px solid #d1d5db !important; /* Keep border consistent */
+}
+
+/* Autofill focus state */
+.autofill-fix:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0 1000px white inset,
+    0 0 0 2px #27638a !important; /* Focus shadow effect without shifting */
+  -webkit-text-fill-color: #000 !important; /* Autofill text stays black */
+  border: 1px solid #d1d5db !important; /* Keep border consistent */
+}
+
+/* General focus (non-autofill) */
+.autofill-fix:focus {
+  box-shadow: 0 0 0 2px #27638a !important; /* Focus ring using box-shadow */
+  border: 1px solid #d1d5db !important; /* Keep border consistent */
+}
+
+/* QUILL STYLING (richTextEditor) */
+/* QUILL STYLING (richTextEditor) */
+/* QUILL STYLING (richTextEditor) */
+
+/* Toolbar Styling */
+.custom-quill .ql-toolbar {
+  /* the toolbar */
+  margin-top: 6px;
+  border-radius: 20px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.custom-quill .ql-container {
+  /* this is the place were we type */
+  color: #000 !important;
+  border-radius: 20px;
+  margin-bottom: 2px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  font-size: 1rem; /* Standard text size */
+  line-height: 1.5; /* Add proper line spacing */
+  min-height: 150px; /* Set a minimum height */
+  font-style: normal !important;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.custom-quill .ql-editor {
+  /* The actual editable content area */
+  min-height: 150px; /* Match the height of the container */
+}
+
+/* Ensure clicking anywhere allows typing */
+.custom-quill .ql-container:focus-within {
+  background-color: #f4f4f4; /* Highlight background on focus */
+  outline: 2px solid #27638a; /* Add focus ring */
+}
+
+/* On Hover or Focus (Active State) */
+.custom-quill .ql-container:hover,
+.custom-quill .ql-container:focus {
+  background-color: #f4f4f4; /* Lighter shade of the primary color */
+}
+
+/* Focused Text Styling */
+/* ma 2ila 3aze */
+.custom-quill .ql-container .ql-focused {
+  outline: 2px solid #27638a; /* Primary color for focus */
+}
+/* Change toolbar buttons to gray and hover color to primary */
+.custom-quill .ql-toolbar button {
+  color: #000;
+  transition: color 0.3s ease;
+}
+
+.custom-quill .ql-toolbar button:hover,
+.custom-quill .ql-toolbar button.ql-active {
+  border-radius: 10px;
+  background-color: #f4f4f4;
 }

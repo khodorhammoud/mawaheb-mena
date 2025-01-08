@@ -41,8 +41,6 @@ export async function sendEmail(params: SendEmailParams) {
     subject: params.subject,
     html: htmlContent,
   };
-
-  console.log("Sending email with Brevo", mailOptions);
   await sendEmailWithBrevo(mailOptions);
 }
 
@@ -73,9 +71,7 @@ export async function sendEmailWithBrevo(mailOptions: MailOptions) {
 
   apiInstance.sendTransacEmail(sendSmtpEmail).then(
     function (data) {
-      console.log(
-        "API called successfully. Returned data: " + JSON.stringify(data)
-      );
+      console.log("API called successfully");
     },
     function (error) {
       console.error(error);

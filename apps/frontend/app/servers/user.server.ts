@@ -17,7 +17,7 @@ import {
 } from "../types/User";
 import { eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
-import { AccountType } from "../types/enums";
+import { AccountStatus, AccountType } from "../types/enums";
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from "../auth/auth.server";
 
@@ -75,9 +75,9 @@ export async function getCurrentUser(
   request: Request,
   withPassword = false
 ): Promise<User | null> {
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) return null;
-  const currentUser = user.account.user;
+  const userId = await authenticator.isAuthenticated(request);
+  if (!userId) return null;
+  const currentUser = await getUser({ userId }, withPassword);
 
   if (!withPassword) return { ...currentUser, passHash: undefined };
   return currentUser;
@@ -119,6 +119,22 @@ export async function getUserAccountInfo(
     if (account.length === 0) return null;
   }
   return { ...account[0], user } as UserAccount;
+}
+
+/**
+ * get the account from the slug
+ * @param slug : the slug of the account to get the type for
+ * @returns UserAccount | null: the account with the given slug or null if the account does not exist
+ */
+export async function getAccountBySlug(
+  slug: string
+): Promise<UserAccount | null> {
+  const account = await db
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.slug, slug));
+  if (account.length === 0) return null;
+  return account[0] as unknown as UserAccount;
 }
 
 /**
@@ -209,14 +225,14 @@ export async function getProfileInfo(
     account = await getUserAccountInfo(identifier);
     if (!account) return null;
     // get account type
-    if (account.accountType === "employer") {
+    if (account.accountType === AccountType.Employer) {
       employer = await db
         .select()
         .from(employersTable)
         .where(eq(employersTable.accountId, account.id));
       if (employer.length === 0) return null;
       employer = employer[0];
-    } else if (account.accountType === "freelancer") {
+    } else if (account.accountType === AccountType.Freelancer) {
       freelancer = await db
         .select()
         .from(freelancersTable)
@@ -233,6 +249,7 @@ export async function getProfileInfo(
   return null;
 }
 
+// get profile
 export async function getCurrentProfileInfo(
   request: Request
 ): Promise<Employer | Freelancer | null> {
@@ -243,6 +260,15 @@ export async function getCurrentProfileInfo(
   });
 
   return currentProfile;
+}
+
+export async function getProfileInfoByAccountId(accountId: number) {
+  // Replace this with the actual implementation to fetch profile
+  const profile = await getProfileInfo({ accountId });
+  if (!profile) {
+    throw new Error(`Profile not found for account ID: ${accountId}`);
+  }
+  return profile;
 }
 
 /**
@@ -303,19 +329,52 @@ export async function getUserIdFromEmployerId_Depricated(
  * @returns number: the userId of the freelancer
  */
 
-export async function getUserIdFromFreelancerId_Depricated(
+export async function getUserIdFromFreelancerId(
   freelancerId: number
 ): Promise<number | null> {
-  console.warn("using getUserIdFromFreelancerId_Depricated", freelancerId);
-  return null;
   // join the freelancers table with the accounts table to get the userId
-  // const result = await db
-  //   .select({ userId: accountsTable.userId })
-  //   .from(freelancersTable)
-  //   .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-  //   .where(eq(freelancersTable.id, freelancerId));
-  // if (result.length === 0) return null;
-  // return result[0].userId;
+  const result = await db
+    .select({ userId: accountsTable.userId })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .where(eq(freelancersTable.id, freelancerId));
+  if (result.length === 0) return null;
+  return result[0].userId;
+}
+
+/**
+ * get the freelancerId from the userId
+ * @param userId : the id of the user to get the freelancerId for
+ * @returns number: the freelancerId of the user
+ */
+export async function getFreelancerIdFromUserId(
+  userId: number
+): Promise<number | null> {
+  // left join freelancers table with accounts table left join with users table on userId
+  const result = await db
+    .select({ freelancerId: freelancersTable.id })
+    .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(eq(UsersTable.id, userId));
+  if (result.length === 0) return null;
+  return result[0].freelancerId;
+}
+/**
+ * get the employerId from the userId
+ * @param userId : the id of the user to get the employerId for
+ * @returns number: the employerId of the user
+ */
+export async function getEmployerIdFromUserId(
+  userId: number
+): Promise<number | null> {
+  const result = await db
+    .select({ employerId: employersTable.id })
+    .from(employersTable)
+    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
+    .where(eq(accountsTable.userId, userId));
+  if (result.length === 0) return null;
+  return result[0].employerId;
 }
 
 export async function getCurrentEmployerAccountInfo_Depricated(
@@ -373,7 +432,7 @@ export async function registerEmployer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "employer",
+      accountType: AccountType.Employer,
     },
     true,
     {
@@ -403,6 +462,40 @@ export async function registerEmployer({
 }
 
 /**
+ * create a new account slug
+ * @param firstName : the first name of the account
+ * @param lastName : the last name of the account
+ * @returns string: the newly created slug
+ */
+export async function createAccountSlug(
+  firstName: string,
+  lastName: string
+): Promise<string> {
+  let slug = `${firstName}-${lastName}`;
+  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  // remove any trailing hyphens
+  slug = slug.replace(/-+$/, "");
+  // if the slug is longer than 60 characters, truncate it
+  if (slug.length > 60) {
+    slug = slug.substring(0, 60);
+  }
+  // if the slug already exists, add a random number to the end of the slug
+  // failsafe: this should never happen, but if it does, we don't want to get stuck in an infinite loop
+  let counter = 0;
+  while (
+    (await db.select().from(accountsTable).where(eq(accountsTable.slug, slug)))
+      .length > 0
+  ) {
+    slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
+    counter++;
+    if (counter > 1000) {
+      throw new Error("Failed to create a unique slug for the account");
+    }
+  }
+  return slug;
+}
+
+/**
  * creates a new freelancer account. This creates a new account record first, which in turn creates a new user record, before finally adding a new freelancer record.
  * @param param0 : object containing user info: firstName, lastName, email, password
  * @returns Freelancer: the newly created freelancer
@@ -421,7 +514,7 @@ export async function registerFreelancer({
   const newAccount = (await createUserAccount(
     {
       userId: null,
-      accountType: "freelancer",
+      accountType: AccountType.Freelancer,
     },
     true,
     {
@@ -443,6 +536,7 @@ export async function registerFreelancer({
     .insert(freelancersTable) // insert into employers table
     .values(newFreelancer)
     .returning();
+
   return (await getProfileInfo({
     // freelancerId: result[0].id,
     accountId,
@@ -478,6 +572,20 @@ export async function createUserAccount(
     .insert(accountsTable)
     .values(newAccount)
     .returning()) as unknown as NewAccount;
+
+  // get firstName and Lastname from userId
+  const user = await getUser({ userId: result[0].userId });
+  if (!user)
+    throw new RegistrationError(
+      ErrorCode.INTERNAL_ERROR,
+      "Failed to get user after creating account"
+    );
+  const slug = await createAccountSlug(user.firstName, user.lastName);
+  // insert the slug into the freelancers table
+  await db
+    .update(accountsTable)
+    .set({ slug })
+    .where(eq(accountsTable.id, result[0].id));
   return result[0];
 }
 
@@ -638,4 +746,32 @@ export async function verifyUserVerificationToken(token: string) {
     message: "User verified successfully",
     userId,
   };
+}
+
+/**
+ * check user statuses: isVerified, isOnboarded,
+ * also check account status if is of a certain type
+ *
+ * @param userId: the id of the user to check the statuses for
+ * @param checkingWhat: the type of status to check for
+ * @param checkingFor: the status to check for
+ * @returns boolean: true if the status is met, false otherwise
+ */
+export async function checkUserStatuses(
+  userId: number,
+  checkingWhat: "isVerified" | "isOnboarded" | "accountStatus" | "accountType",
+  checkingFor?: AccountType | AccountStatus | boolean
+) {
+  const user = await getUser({ userId });
+  if (!user) return false;
+  if (checkingWhat === "isVerified") return user.isVerified === checkingFor;
+  if (checkingWhat === "isOnboarded") return user.isOnboarded === checkingFor;
+  if (checkingWhat === "accountType" || checkingWhat === "accountStatus") {
+    const account = await getUserAccountInfo({ userId: user.id });
+    if (checkingWhat === "accountType")
+      return account.accountType === checkingFor;
+    if (checkingWhat === "accountStatus")
+      return account.accountStatus === checkingFor;
+  }
+  return false;
 }

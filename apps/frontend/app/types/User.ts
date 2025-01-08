@@ -30,6 +30,7 @@ export interface PreferredWorkingTimes {
 export interface UserAccount {
   id: number;
   accountType: AccountType;
+  slug: string;
   isCreationComplete: boolean;
   location?: string;
   country?: string;
@@ -88,6 +89,13 @@ export interface Freelancer {
   hourlyRate?: number;
   compensationType?: CompensationType[];
   account?: UserAccount;
+
+  // Availability related fields :)
+  availableForWork?: boolean;
+  availableFrom?: string;
+  hoursAvailableFrom?: string;
+  hoursAvailableTo?: string;
+  jobsOpenTo?: string[];
 }
 
 export interface LoggedInUser {

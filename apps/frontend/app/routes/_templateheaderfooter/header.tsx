@@ -1,4 +1,3 @@
-// Layout Component
 import { useTranslation } from "react-i18next";
 import { navigation } from "~/constants/navigation";
 import { NavLink } from "@remix-run/react";

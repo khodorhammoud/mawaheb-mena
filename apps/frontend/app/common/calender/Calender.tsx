@@ -1,158 +1,155 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   format,
+  addMonths,
+  subMonths,
   startOfMonth,
-  endOfMonth,
   startOfWeek,
-  endOfWeek,
   addDays,
-  isSameMonth,
-  isSameDay,
-  setMonth,
   setYear,
+  getYear,
 } from "date-fns";
-import { motion } from "framer-motion";
 
-const Calendar = ({ highlightedDates = [] }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+type CalendarProps = {
+  selectedDate: Date | null;
+  onDateSelect: (date: Date) => void;
+  onClose: () => void;
+};
 
-  const months = Array.from({ length: 12 }, (_, i) =>
-    format(setMonth(new Date(), i), "MMMM")
-  );
-  const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
+export default function Calendar({
+  selectedDate,
+  onDateSelect,
+  onClose,
+}: CalendarProps) {
+  const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
 
-  const handleMonthChange = (event) => {
-    setCurrentMonth(setMonth(currentMonth, parseInt(event.target.value)));
-  };
+  const calendarRef = useRef<HTMLDivElement>(null);
 
-  const handleYearChange = (event) => {
-    setCurrentMonth(setYear(currentMonth, parseInt(event.target.value)));
-  };
-
-  const renderHeader = () => (
-    <div className="flex justify-between items-center mb-4 xl:text-base text-sm">
-      <select
-        onChange={handleMonthChange}
-        value={currentMonth.getMonth()}
-        className="p-2 border rounded"
-      >
-        {months.map((month, index) => (
-          <option key={index} value={index}>
-            {month}
-          </option>
-        ))}
-      </select>
-      <select
-        onChange={handleYearChange}
-        value={currentMonth.getFullYear()}
-        className="p-2 border rounded"
-      >
-        {years.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-    </div>
+  // Generate years for dropdown
+  const years = Array.from(
+    { length: 11 },
+    (_, i) => getYear(new Date()) - 5 + i
   );
 
-  const renderDays = () => {
-    const days = [];
-    const dateFormat = "E";
-    let startDate = startOfWeek(currentMonth);
-
-    for (let i = 0; i < 7; i++) {
-      days.push(
-        <div className="text-center font-medium text-xs" key={i}>
-          {format(addDays(startDate, i), dateFormat)[0]}
-        </div>
-      );
-    }
-    return <div className="grid grid-cols-7">{days}</div>;
-  };
-
-  const renderCells = () => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart);
-    const endDate = endOfWeek(monthEnd);
-    const dateFormat = "d";
-    const rows = [];
-
-    let days = [];
-    let day = startDate;
-
-    while (day <= endDate) {
-      for (let i = 0; i < 7; i++) {
-        const formattedDate = format(day, dateFormat);
-
-        // Determine the index of the highlighted date
-        const highlightIndex = highlightedDates.findIndex((highlightedDate) =>
-          isSameDay(day, new Date(highlightedDate))
-        );
-
-        // Assign different Tailwind classes based on the index
-        let highlightClass = "";
-        if (highlightIndex === 0)
-          highlightClass = "bg-yellow-200 text-white font-semibold";
-        else if (highlightIndex === 1)
-          highlightClass = "bg-yellow-300 text-white font-semibold";
-        else if (highlightIndex === 2)
-          highlightClass = "bg-yellow-400 text-white font-semibold";
-        else if (highlightIndex >= 3)
-          highlightClass = "bg-yellow-500 text-white font-semibold";
-
-        days.push(
-          <div
-            className={`text-center py-1 rounded-full transition-transform transform ${
-              !isSameMonth(day, monthStart)
-                ? "text-gray-400"
-                : highlightIndex >= 0
-                  ? highlightClass
-                  : "text-gray-900"
-            }`}
-            key={day.getTime()}
-          >
-            <span className="inline-block rounded-full px-1 lg:text-sm text-xs">
-              {formattedDate}
-            </span>
-          </div>
-        );
-        day = addDays(day, 1);
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-      rows.push(
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Navigate to next and previous months
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  // Handle year change
+  const handleYearChange = (year: number) => {
+    setCurrentMonth(setYear(currentMonth, year));
+  };
+
+  // Render calendar days
+  const renderDays = () => {
+    const startDate = startOfWeek(startOfMonth(currentMonth));
+    const days = [];
+
+    for (let i = 0; i < 42; i++) {
+      const day = addDays(startDate, i);
+      const isSelected =
+        selectedDate && day.getTime() === selectedDate.getTime();
+
+      days.push(
         <div
-          className="grid grid-cols-7 xl:gap-1 gap-0 text-xs"
-          key={day.getTime()}
+          key={i}
+          className={`p-2 text-center cursor-pointer rounded-full ${
+            isSelected
+              ? "bg-primaryColor text-white"
+              : "hover:border hover:border-primaryColor"
+          }`}
+          style={{
+            width: "2.5rem",
+            height: "2.5rem",
+          }}
+          onClick={() => onDateSelect(day)}
         >
-          {days}
+          {format(day, "d")}
         </div>
       );
-      days = [];
     }
-    return <div>{rows}</div>;
+    return days;
   };
 
   return (
-    <motion.div
-      className="border rounded-xl p-4 w-full max-w-md mx-auto"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.div
-        key={format(currentMonth, "MMMM yyyy")}
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -100 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
-        {renderHeader()}
-        {renderDays()}
-        {renderCells()}
-      </motion.div>
-    </motion.div>
-  );
-};
+    <div ref={calendarRef} className="bg-white border rounded-xl p-4 shadow-lg">
+      {/* Header with navigation */}
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={prevMonth}
+          className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          &lt;
+        </button>
 
-export default Calendar;
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{format(currentMonth, "MMMM")}</span>
+
+          {/* Year Dropdown */}
+          <select
+            value={getYear(currentMonth)}
+            onChange={(e) => handleYearChange(Number(e.target.value))}
+            className="border border-gray-300 rounded px-2 py-1"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={nextMonth}
+          className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          &gt;
+        </button>
+      </div>
+
+      {/* Days of the week */}
+      <div className="grid grid-cols-7 gap-2 text-sm font-medium text-center text-gray-500 border-t pt-4">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          <div key={day}>{day}</div>
+        ))}
+      </div>
+
+      {/* Calendar days */}
+      <div className="grid grid-cols-7 text-base gap-2 mt-2 border-b pb-2">
+        {renderDays()}
+      </div>
+
+      {/* Buttons */}
+      <div className="flex justify-end text-sm gap-2 mt-2">
+        <button
+          className="text-primaryColor px-2 py-1 hover:bg-gray-200 rounded-xl transition-all"
+          onClick={onClose}
+        >
+          Cancel
+        </button>
+        <button
+          className="text-primaryColor px-2 py-1 hover:bg-gray-200 rounded-xl transition-all"
+          onClick={() => onDateSelect(currentMonth)}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  );
+}

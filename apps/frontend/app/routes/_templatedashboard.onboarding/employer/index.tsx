@@ -1,11 +1,7 @@
-import Heading from "../common/heading/Heading";
-// import YearsInBusiness from "./years-in-business-module/Form";
-// import About from "./about-module/Form";
-// import BudgetModuleForm from "./budget-module/Form";
+import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { Employer } from "~/types/User";
-// import HourlyRate from "./hourlyRate";
-import GeneralizableFormCard from "../common/onboarding-form-component";
+import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { SlBadge } from "react-icons/sl";
 
@@ -32,6 +28,7 @@ export default function EmployerOnboardingScreen() {
             formName="employer-years-in-business"
             fieldName="yearsInBusiness"
             triggerIcon={<SlBadge />}
+            editable={true}
           />
           {/* Budget */}
           <GeneralizableFormCard
@@ -42,6 +39,7 @@ export default function EmployerOnboardingScreen() {
             formName="employer-budget"
             fieldName="employerBudget"
             triggerIcon={<BsCurrencyDollar />}
+            editable={true}
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1">
@@ -53,6 +51,7 @@ export default function EmployerOnboardingScreen() {
             triggerLabel="Add Bio"
             formName="employer-about"
             fieldName="about"
+            editable={true}
           />
         </div>
         {/* 
@@ -130,7 +129,9 @@ export default function EmployerOnboardingScreen() {
         /> */}
       </div>
       {/* <About /> */}
-      <div className="mt-6 flex justify-center">
+
+      {/* BUTTON */}
+      <div className="sm:mt-6 mt-2 flex justify-end mr-24">
         {/* Form to update the user's onboard status */}
         <Form method="post">
           {/* this input sends the userId to be used in the action (queries, ....) */}
@@ -143,7 +144,7 @@ export default function EmployerOnboardingScreen() {
           {/* in the switch case, use value employer-onboard */}
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+            className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient"
           >
             Proceed
           </button>

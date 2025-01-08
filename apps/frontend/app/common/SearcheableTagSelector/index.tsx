@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Input } from "~/components/ui/input";
 import { FaSearch } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { useFetcher } from "@remix-run/react";
+import AppFormField from "../form-fields";
 
 interface SearcheableTagSelectorProps<T> {
   data: T[];
@@ -57,11 +57,11 @@ export default function SearcheableTagSelector<T>({
   };
 
   /* const handleDialogChange = (isOpen: boolean) => {
-    setDialogOpen(isOpen);
-    if (!isOpen) {
-      setSearchTerm(""); // Reset search term when dialog is closed
+  setDialogOpen(isOpen);
+  if (!isOpen) {
+    setSearchTerm(""); // Reset search term when dialog is closed
     }
-  }; */
+    }; */
 
   return (
     <>
@@ -70,14 +70,14 @@ export default function SearcheableTagSelector<T>({
         <input type="hidden" name={fieldName} value={selectedItems.join(",")} />
       </formFetcher.Form>
       {/* Search Bar */}
-      <div className="relative mb-4">
-        <Input
-          placeholder={searchPlaceholder}
-          value={searchTerm}
-          className="pl-10"
+      <div className="relative mb-2">
+        <AppFormField
+          id={searchTerm}
+          name={searchTerm}
+          label={searchPlaceholder}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
+        <FaSearch className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
       </div>
 
       {/* Options */}
@@ -87,17 +87,17 @@ export default function SearcheableTagSelector<T>({
             <Badge
               key={itemKey(item)}
               onClick={() => toggleItem(itemKey(item))}
-              className={`cursor-pointer px-4 py-2 ${
+              className={`cursor-pointer rounded-xl px-4 py-2 ${
                 selectedItems.includes(itemKey(item))
-                  ? "bg-blue-100 text-blue-600"
-                  : "bg-gray-100 text-gray-600"
+                  ? "bg-blue-100 text-black"
+                  : "text-black"
               }`}
             >
               {itemLabel(item)}
             </Badge>
           ))
         ) : (
-          <p className="text-gray-500">No items found</p>
+          <p className="text-gray-500 mb-3">No items found</p>
         )}
       </div>
     </>
