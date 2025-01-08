@@ -40,6 +40,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     await requireUserIsFreelancerPublished(request);
 
     const freelancerId = await getFreelancerIdFromUserId(userId);
+    console.log("freelancerId", freelancerId);
     profileId = freelancerId;
   } else if (accountType === AccountType.Employer) {
     // user must be an employer
@@ -54,11 +55,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   if (accountType === AccountType.Freelancer) {
     // get current freelancer job applications
+    console.log("profileId", profileId);
     const jobApplicationsPartialData =
       await getJobApplicationsByFreelancerId(profileId);
 
+    console.log("jobApplicationsPartialData", jobApplicationsPartialData);
+
     const jobApplications = await Promise.all(
       jobApplicationsPartialData.map(async (jobApp) => {
+        console.log(jobApp);
+        console.log(profileId);
         const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
           jobApp.jobId,
           profileId
