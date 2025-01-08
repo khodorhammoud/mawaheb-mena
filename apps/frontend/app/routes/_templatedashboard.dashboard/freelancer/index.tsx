@@ -14,10 +14,10 @@ export default function Dashboard() {
   }>();
   // Include accountType and isOwner from loader
 
-  type ActionData = {
-    error?: { message: string };
-  };
-  const actionData = useActionData<ActionData>();
+  // type ActionData = {
+  //   error?: { message: string };
+  // };
+  // const actionData = useActionData<ActionData>();
 
   // Determine if the page should allow editing
   const canEdit = accountType === AccountType.Freelancer && isOwner;

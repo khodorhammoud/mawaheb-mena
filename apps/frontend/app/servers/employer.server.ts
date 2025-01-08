@@ -637,3 +637,91 @@ export async function getEmployerDashboardData(request: Request) {
     throw error; // Re-throw the error for further handling
   }
 }
+
+export async function saveAvailability({
+  accountId,
+  availableForWork,
+  availableFrom,
+  hoursAvailableFrom,
+  hoursAvailableTo,
+  jobsOpenTo, // [ 'full-time', 'part_time' ]
+}: {
+  accountId: number;
+  availableForWork: boolean;
+  availableFrom: Date | null;
+  hoursAvailableFrom: string;
+  hoursAvailableTo: string;
+  jobsOpenTo: string[];
+}) {
+  // Convert the date to YYYY-MM-DD format
+  const formattedDateAvailableFrom = availableFrom
+    ? availableFrom.toISOString().split("T")[0]
+    : null;
+  const result = await db
+    .update(freelancersTable)
+    .set({
+      availableForWork,
+      dateAvailableFrom: formattedDateAvailableFrom,
+      hoursAvailableFrom,
+      hoursAvailableTo,
+      jobsOpenTo,
+    })
+    .where(eq(freelancersTable.accountId, accountId))
+    .returning();
+
+  return result.length > 0;
+}
+
+export async function updateAvailabilityStatus(
+  accountId: number,
+  availableForWork: boolean
+) {
+  try {
+    const result = await db
+      .update(freelancersTable)
+      .set({ availableForWork })
+      .where(eq(freelancersTable.accountId, accountId))
+      .returning();
+
+    return result.length > 0; // Returns true if the update was successful
+  } catch (error) {
+    console.error("Error updating availability status:", error);
+    return false;
+  }
+}
+
+// Function to get availability details from the database
+export async function getFreelancerAvailability(accountId: number) {
+  const result = await db
+    .select({
+      availableForWork: freelancersTable.availableForWork,
+      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+      hoursAvailableTo: freelancersTable.hoursAvailableTo,
+      jobsOpenTo: freelancersTable.jobsOpenTo,
+    })
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+/**
+ * verify that a job belongs to an employer
+ *
+ * @param jobId - the ID of the job
+ * @param employerId - the ID of the employer
+ * @returns true if the job belongs to the employer, false otherwise
+ */
+export async function verifyJobBelongsToEmployer(
+  jobId: number,
+  employerId: number
+): Promise<boolean> {
+  const job = await db
+    .select()
+    .from(jobsTable)
+    .where(and(eq(jobsTable.id, jobId), eq(jobsTable.employerId, employerId)));
+
+  return job.length > 0;
+}

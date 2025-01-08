@@ -2,19 +2,16 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   redirect,
-  TypedResponse,
 } from "@remix-run/node";
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUser,
+  getCurrentUserAccountInfo,
 } from "~/servers/user.server";
 import {
   CertificateFormFieldType,
   EducationFormFieldType,
-  LoaderFunctionError,
-  OnboardingEmployerFields,
-  OnboardingFreelancerFields,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   Employer,
@@ -48,6 +45,9 @@ import {
   updateFreelancerWorkHistory,
   updateFreelancerCertificates,
   updateFreelancerEducation,
+  saveAvailability,
+  getFreelancerAvailability,
+  updateAvailabilityStatus,
 } from "~/servers/employer.server";
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded } from "~/auth/auth.server";
@@ -61,6 +61,71 @@ export async function action({ request }: ActionFunctionArgs) {
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
     const employer = (await getCurrentProfileInfo(request)) as Employer;
+
+    // Get the current account info
+    const currentAccount = await getCurrentUserAccountInfo(request);
+    if (!currentAccount) {
+      return Response.json(
+        { success: false, error: { message: "User not logged in." } },
+        { status: 401 }
+      );
+    }
+
+    const accountId = currentAccount.id;
+
+    // AVAILABILITY
+    if (target === "freelancer-availability") {
+      // Extract form fields
+      const availableForWork = formData.get("available_for_work") === "true"; //true
+      const availableFrom = formData.get("available_from"); // calender string -> date (khodor)
+      const hoursAvailableFrom = formData.get("hours_available_from"); // from
+      const hoursAvailableTo = formData.get("hours_available_to"); // to
+      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[]; // carry array
+
+      // transfer the string date, into an actual date
+      const availableFromAsADate = new Date(availableFrom as string);
+
+      const result = await saveAvailability({
+        accountId,
+        availableForWork,
+        jobsOpenTo: jobsOpenToArray,
+        availableFrom: availableFromAsADate,
+        hoursAvailableFrom: hoursAvailableFrom as string,
+        hoursAvailableTo: hoursAvailableTo as string,
+      });
+
+      // console.log("Save Result:", result);
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to save availability." },
+            },
+            { status: 500 }
+          );
+    }
+
+    if (target === "freelancer-is-available-for-work") {
+      const availableForWork = formData.get("available_for_work") === "true";
+
+      // Call the query function to update availability status
+      const result = await updateAvailabilityStatus(
+        accountId,
+        availableForWork
+      );
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to update availability." },
+            },
+            { status: 500 }
+          );
+    }
 
     const currentProfile = await getCurrentProfileInfo(request);
     const accountType = currentProfile.account.accountType;
@@ -386,22 +451,15 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export async function loader({
-  request,
-}: LoaderFunctionArgs): Promise<
-  | TypedResponse<OnboardingEmployerFields>
-  | TypedResponse<OnboardingFreelancerFields>
-  | TypedResponse<LoaderFunctionError>
-  | TypedResponse<never>
-> {
-  // Require that the current user is verified
+export async function loader({ request }: LoaderFunctionArgs) {
+  // see that the user is verified
   await requireUserOnboarded(request);
 
   // Determine the account type (freelancer/employer)
   const accountType: AccountType = await getCurrentUserAccountType(request);
 
   // Get the current profile
-  const currentProfile = await getCurrentProfileInfo(request);
+  let currentProfile = await getCurrentProfileInfo(request);
 
   const currentUser = await getCurrentUser(request);
   if (!currentUser) {
@@ -413,20 +471,19 @@ export async function loader({
   const accountOnboarded = currentProfile?.account?.user?.isOnboarded;
   const bioInfo = await getAccountBio(currentProfile.account);
 
-  let correntProfile = await getCurrentProfileInfo(request);
-
+  // Check if the user is an Employer
   if (accountType === AccountType.Employer) {
-    correntProfile = correntProfile as Employer;
-    const employerIndustries = await getEmployerIndustries(correntProfile);
+    currentProfile = currentProfile as Employer;
+    const employerIndustries = await getEmployerIndustries(currentProfile);
     const allIndustries = (await getAllIndustries()) || [];
-    const yearsInBusiness = await getEmployerYearsInBusiness(correntProfile);
-    const employerBudget = await getEmployerBudget(correntProfile);
-    const aboutContent = await getEmployerAbout(correntProfile);
+    const yearsInBusiness = await getEmployerYearsInBusiness(currentProfile);
+    const employerBudget = await getEmployerBudget(currentProfile);
+    const aboutContent = await getEmployerAbout(currentProfile);
     const { activeJobCount, draftedJobCount, closedJobCount } =
       await getEmployerDashboardData(request);
-
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
+    // Return response for Employer
     return Response.json({
       accountType,
       bioInfo,
@@ -452,6 +509,29 @@ export async function loader({
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
+    // Freelancer-specific data
+    currentProfile = currentProfile as Freelancer;
+
+    // Get the freelancer availability data
+    const freelancerAvailability = await getFreelancerAvailability(
+      currentProfile.accountId
+    );
+
+    // Ensure all necessary data is returned
+    const availabilityData = {
+      availableForWork: freelancerAvailability?.availableForWork ?? false,
+      jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
+      availableFrom: freelancerAvailability?.dateAvailableFrom ?? "",
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+    };
+
+    // i'll keep these consoles, to see the data in the loader were gonna pass to files using useLoaderdata
+    // console.log("Loader function called!");
+    // console.log("Account Type:", accountType);
+    // console.log("Freelancer Availability:", freelancerAvailability);
+
+    // Return response for Freelancer
 
     return Response.json({
       accountType,
@@ -468,15 +548,8 @@ export async function loader({
       workHistory,
       isOwner, // Added isOwner
       canEdit: isOwner, // Freelancers can edit if they are the owner
-    });
-  } else {
-    return Response.json({
-      accountType,
       currentUser: currentProfile,
-      accountOnboarded: currentProfile.account?.user?.isOnboarded,
-      bioInfo,
-      isOwner, // Added isOwner
-      canEdit: false, // Default to non-editable
+      freelancerAvailability: availabilityData,
     });
   }
 }

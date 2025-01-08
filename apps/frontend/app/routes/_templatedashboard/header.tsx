@@ -13,6 +13,8 @@ import {
   BsPersonCircle,
   BsClockHistory,
 } from "react-icons/bs";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
+import Availability from "~/common/profileView/availability-form/availability";
 import { AccountType } from "~/types/enums";
 
 export default function Layout() {
@@ -24,6 +26,19 @@ export default function Layout() {
     accountType: string;
     isOnboarded: boolean;
   }>();
+
+  // State to manage the dialog visibility
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Function to open the dialog
+  const openDialog = () => {
+    setIsDialogOpen(true);
+  };
+
+  // Function to close the dialog
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+  };
 
   return (
     <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30">
@@ -67,9 +82,12 @@ export default function Layout() {
               <BsBell className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
 
               {/* Freelancer Icon :) */}
-              {accountType === AccountType.Freelancer && (
+              {accountType === "freelancer" && (
                 // 🕛
-                <BsClockHistory className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
+                <BsClockHistory
+                  className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer"
+                  onClick={openDialog}
+                />
               )}
 
               {/* 🧑‍🏫 */}
@@ -78,6 +96,13 @@ export default function Layout() {
           )}
         </div>
       </div>
+
+      {/* Dialog for Availability Form */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-white rounded-xl max-w-xl w-full p-8 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Availability />
+        </DialogContent>
+      </Dialog>
 
       {/* Mobile Menu - Framer Motion */}
       <motion.nav

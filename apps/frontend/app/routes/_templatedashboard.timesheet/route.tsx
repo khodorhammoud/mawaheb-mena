@@ -40,6 +40,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     await requireUserIsFreelancerPublished(request);
 
     const freelancerId = await getFreelancerIdFromUserId(userId);
+    console.log("freelancerId", freelancerId);
     profileId = freelancerId;
   } else if (accountType === AccountType.Employer) {
     // user must be an employer
@@ -54,11 +55,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   if (accountType === AccountType.Freelancer) {
     // get current freelancer job applications
+    console.log("profileId", profileId);
     const jobApplicationsPartialData =
       await getJobApplicationsByFreelancerId(profileId);
 
+    console.log("jobApplicationsPartialData", jobApplicationsPartialData);
+
     const jobApplications = await Promise.all(
       jobApplicationsPartialData.map(async (jobApp) => {
+        console.log(jobApp);
+        console.log(profileId);
         const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
           jobApp.jobId,
           profileId
@@ -88,13 +94,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       return Response.json({ jobs, accountType });
     }
   }
-
-  /*  const { jobId } = params; // Extract the jobId
-
-  if (!jobId) {
-    console.log("Job ID is required");
-    return Response.json({ error: "Job ID is required" }, { status: 400 });
-  } */
 }
 
 export default function Page() {
@@ -114,6 +113,7 @@ export default function Page() {
             accountType={accountType}
             allowOverlap={true}
             jobApplication={jobApplication}
+            freelancerId={jobApplication.freelancerId}
           />
           <OtherFreelancers
             jobApplications={allJobApplications}

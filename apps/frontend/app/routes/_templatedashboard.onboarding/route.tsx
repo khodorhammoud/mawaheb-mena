@@ -206,7 +206,6 @@ export async function action({ request }: ActionFunctionArgs) {
           aboutContent
         );
 
-        console.log("About Content:", aboutContent);
         return Response.json({ success: aboutStatus.success });
       }
 
@@ -401,7 +400,7 @@ export async function loader({
   await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
-  console.log(profile);
+
   if (!profile) {
     console.warn("Profile information not found.");
     return Response.json({

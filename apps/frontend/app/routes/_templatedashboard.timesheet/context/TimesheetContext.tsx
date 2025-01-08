@@ -12,6 +12,8 @@ interface TimesheetContextType {
   ) => void;
   onApproveSubmission?: (date: string) => void;
   onRejectSubmission?: (date: string) => void;
+  handleTimesheetActions?: (action: "approve" | "reject", date: string) => void;
+  timesheetActionsState?: string;
 }
 
 export const TimesheetContext = createContext<TimesheetContextType>({

@@ -14,7 +14,7 @@ import {
   // JobApplicationStatus,
   TimesheetStatus,
   JobApplicationStatus,
-  // JobStatus,
+  JobsOpenTo,
 } from "~/types/enums";
 
 export const accountStatusEnum = pgEnum(
@@ -29,6 +29,12 @@ export const accountTypeEnum = pgEnum(
   "account_type",
   Object.values(AccountType) as [string, ...string[]]
 );
+
+export const timesheetStatusEnum = pgEnum(
+  "timesheet_status",
+  Object.values(TimesheetStatus) as [string, ...string[]]
+);
+
 export const languageEnum = pgEnum(
   "language",
   Object.values(Language) as [string, ...string[]]
@@ -67,12 +73,18 @@ export const experienceLevelEnum = pgEnum(
   Object.values(ExperienceLevel) as [string, ...string[]]
 );
 
-export const timesheetStatusEnum = pgEnum(
-  "timesheet_status",
-  Object.values(TimesheetStatus) as [string, ...string[]]
-);
-
 export const jobStatusEnum = pgEnum(
   "job_status",
   Object.values(JobStatus) as [string, ...string[]]
 );
+
+export const jobsOpenToEnum = pgEnum(
+  "jobs_open_to",
+  Object.values(JobsOpenTo) as [string, ...string[]]
+);
+
+/* export const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+ */
