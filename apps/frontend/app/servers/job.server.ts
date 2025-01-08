@@ -1,5 +1,5 @@
 import { db } from "../db/drizzle/connector";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
@@ -193,6 +193,47 @@ export async function getJobById(jobId: number): Promise<Job | null> {
   return job[0] as unknown as Job;
 }
 
+export async function getAllJobs(): Promise<Job[]> {
+  // Query to select all jobs that are active
+  const jobs = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.status, JobStatus.Active));
+
+  return jobs.map((job) => ({
+    ...job,
+    status: job.status as JobStatus, // Ensuring correct enum typing
+  }));
+}
+
+/**
+ * A function to get recommended jobs for freelancers it does not return the jobs that the freelancer has already applied to
+ *
+ * @param freelancerId
+ * @returns
+ */
+export async function getRecommendedJobs(freelancerId: number) {
+  // Get jobs that the freelancer hasn't applied to yet
+  const jobs = await db
+    .select()
+    .from(jobsTable)
+    .leftJoin(
+      jobApplicationsTable,
+      and(
+        eq(jobApplicationsTable.jobId, jobsTable.id),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    )
+    .where(
+      and(
+        eq(jobsTable.status, JobStatus.Active),
+        isNull(jobApplicationsTable.id)
+      )
+    )
+    .orderBy(desc(jobsTable.createdAt));
+  return jobs ? jobs.map((job) => job.jobs) : [];
+}
+
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
 
@@ -220,6 +261,15 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
 
   if (filter.employerId) {
     conditions.push(eq(jobsTable.employerId, filter.employerId));
+  }
+
+  if (filter.query) {
+    conditions.push(
+      or(
+        ilike(jobsTable.title, `%${filter.query}%`),
+        ilike(jobsTable.description, `%${filter.query}%`)
+      )
+    );
   }
 
   // Add status condition
@@ -271,6 +321,24 @@ export async function getJobApplicationByJobIdAndFreelancerId(
     job: jobApplication[0].jobs as unknown as Job,
   };
   return returnedJobApplication;
+}
+
+/**
+ * Get job application Owner by application id
+ * @param applicationId - the ID of the job application
+ * @returns the job application
+ */
+export async function getJobApplicationOwnerByApplicationId(
+  applicationId: number
+): Promise<number | null> {
+  const employerId = await db
+    .select({
+      employerId: jobsTable.employerId,
+    })
+    .from(jobApplicationsTable)
+    .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+    .where(eq(jobApplicationsTable.id, applicationId));
+  return employerId[0]?.employerId || null;
 }
 
 /**
@@ -382,6 +450,23 @@ export async function createJobApplication(
   return jobApplication as unknown as JobApplication;
 }
 
+export async function doesJobApplicationExist(
+  jobId: number,
+  freelancerId: number
+) {
+  const jobApplication = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(
+      and(
+        eq(jobApplicationsTable.jobId, jobId),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    );
+
+  return jobApplication.length > 0 ? jobApplication[0] : null;
+}
+
 /**
  * get a job application by freelancer ID
  *
@@ -389,27 +474,23 @@ export async function createJobApplication(
  * @param jobStatus - the status of the job
  * @returns the job application or null if it doesn't exist
  */
-export async function getJobApplicationsByFreelancerId(
-  freelancerId: number,
-  jobStatus?: JobStatus[]
-): Promise<JobApplication[]> {
-  if (!jobStatus) {
-    jobStatus = [JobStatus.Active];
-  }
 
+export async function getJobApplicationsByFreelancerId(freelancerId: number) {
   const jobApplications = await db
-    .select()
+    .select({
+      jobId: jobApplicationsTable.jobId, // Ensure column names match the table
+    })
     .from(jobApplicationsTable)
-    .where(
-      and(
-        eq(jobApplicationsTable.freelancerId, freelancerId)
-        // inArray(jobApplicationsTable.status, jobStatus)
-      )
-    );
-  return jobApplications as unknown as JobApplication[];
+    .where(eq(jobApplicationsTable.freelancerId, freelancerId));
+
+  // console.log("Fetched Job Applications:", jobApplications);
+
+  return jobApplications;
 }
 
-/* Fetch job applications by job ID.
+/**
+ * Fetch job applications by job ID.
+ *
  * @param jobId - The ID of the job to fetch applications for.
  * @returns The list of job applications.
  */
@@ -422,6 +503,30 @@ export async function fetchJobApplications(
     .where(eq(jobApplicationsTable.jobId, jobId));
 
   return applications as unknown as JobApplication[];
+}
+
+/**
+ * update status of a job application
+ *
+ * @param applicationId - Id of the job application we wanna update
+ * @param newStatus - new status for the job application
+ * @returns object indicating success or failure
+ */
+export async function updateJobApplicationStatus(
+  applicationId: number,
+  newStatus: JobApplicationStatus
+) {
+  try {
+    await db
+      .update(jobApplicationsTable)
+      .set({ status: newStatus })
+      .where(eq(jobApplicationsTable.id, applicationId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating job application status:", error);
+    return { success: false, error };
+  }
 }
 
 /**
@@ -465,17 +570,16 @@ export async function fetchJobsWithApplications(
  * @throws Error
  */
 export async function getFreelancersIdsByJobId(jobId: number) {
+  // Fetch job applications
   const applications = await fetchJobApplications(jobId);
 
+  // Map applications to freelancer IDs
   const freelancerIds = applications.map(
     (application) => application.freelancerId
   );
 
-  if (freelancerIds.length === 0) {
-    throw new Error(`No freelancers found for job ID: ${jobId}`);
-  }
-
-  return freelancerIds;
+  // ✅ Instead of throwing an error, return an empty array if no IDs are found
+  return freelancerIds || [];
 }
 
 /**

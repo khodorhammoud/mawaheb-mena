@@ -75,29 +75,41 @@ export default function JobDesignOne({
       </div>
 
       {/* Middle Section */}
+      {/* Middle Section */}
       <div className="flex flex-col gap-8 w-[18%] text-left">
         {/* Applicants Section */}
-        <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
-
-        {/* Interviewed Section */}
-        <ProfilePhotosSection
-          label="Interviewed"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
-
-        {/* Hired Section */}
-        {status === JobStatus.Paused && (
+        {data.applications && data.applications.length > 0 ? (
           <ProfilePhotosSection
-            label="Hired"
+            label="Applicants"
             images={applicantsPhotos}
             profiles={data.applications}
           />
+        ) : (
+          <p>No applicants available for this job.</p>
         )}
+
+        {/* Interviewed Section */}
+        {data.applications && data.applications.length > 0 ? (
+          <ProfilePhotosSection
+            label="Interviewed"
+            images={applicantsPhotos}
+            profiles={data.applications}
+          />
+        ) : (
+          <p>No interviewed freelancers available.</p>
+        )}
+
+        {/* Hired Section */}
+        {status === JobStatus.Paused &&
+          (data.applications && data.applications.length > 0 ? (
+            <ProfilePhotosSection
+              label="Hired"
+              images={applicantsPhotos}
+              profiles={data.applications}
+            />
+          ) : (
+            <p>No hired freelancers available.</p>
+          ))}
       </div>
 
       {/* Right Section */}

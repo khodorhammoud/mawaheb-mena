@@ -1,34 +1,33 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getJobsFiltered } from "../servers/job.server";
-import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
+// import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
 // import { AccountStatus } from "~/types/enums";
-import { JobFilter } from "~/types/Job";
+// import { JobFilter } from "~/types/Job";
+import { getCurrentProfileInfo } from "~/servers/user.server";
+import {
+  // getJobsFiltered,
+  // getJobApplicationsByFreelancerId,
+  // getAllJobs,
+  getRecommendedJobs,
+} from "../servers/job.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // user must be a published freelancer
-  const userId = await requireUserIsFreelancerPublished(request);
-  if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getCurrentProfileInfo(request);
+
   // check if user is active
   /* if (user.account.accountStatus !== AccountStatus.Published) {
         return Response.json({ error: "User is not active" }, { status: 401 });
     } */
 
-  const url = new URL(request.url);
-  const searchParams = url.searchParams;
+  // const url = new URL(request.url);
+  // const searchParams = url.searchParams;
   //   const query = searchParams.get("query");
-  const projectType = searchParams.get("projectType");
-  const experienceLevel = searchParams.get("experienceLevel");
-  const locationPreference = searchParams.get("locationPreference");
+  // const projectType = searchParams.get("projectType");
+  // const experienceLevel = searchParams.get("experienceLevel");
+  // const locationPreference = searchParams.get("locationPreference");
 
-  const filter: JobFilter = {
-    projectType: projectType ? [projectType] : [],
-    experienceLevel: experienceLevel ? [experienceLevel] : [],
-    locationPreference: locationPreference ? [locationPreference] : [],
-  };
+  // Fetch job applications
 
-  const jobs = await getJobsFiltered(filter);
+  const filteredJobs = await getRecommendedJobs(user.id);
 
-  return Response.json({ jobs });
+  return Response.json({ jobs: filteredJobs });
 }

@@ -21,6 +21,7 @@ import SingleJobView from "./singleJobView";
 
 // export async function action({ request }: ActionFunctionArgs) {}
 
+// the loader is sending the employer data to file
 export async function loader({ request }: LoaderFunctionArgs) {
   // current user must be a published
 

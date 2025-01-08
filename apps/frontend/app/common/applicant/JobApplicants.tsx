@@ -1,8 +1,11 @@
+import { useState } from "react";
+import { useLoaderData } from "@remix-run/react";
 import { JobApplicationStatus } from "~/types/enums";
 import Applicants from "./Applicants";
 import { AccountBio, Freelancer } from "~/types/User";
+import { JobCardData } from "~/types/Job";
 
-type JobApplicansProps = {
+type JobApplicantsProps = {
   freelancers: Freelancer[];
   accountBio: AccountBio;
   about: string;
@@ -14,7 +17,19 @@ export default function JobApplicants({
   accountBio,
   about,
   status,
-}: JobApplicansProps) {
+}: JobApplicantsProps) {
+  // Use the loader data to get job applications
+  const { jobData } = useLoaderData<{ jobData: JobCardData }>();
+  const [selectedStatus, setSelectedStatus] = useState<JobApplicationStatus>(
+    JobApplicationStatus.Pending
+  );
+
+  // Filter job applications based on the selected status
+
+  const filteredApplicants = jobData.applications.filter((applicant) => {
+    return applicant.status === selectedStatus;
+  });
+
   return (
     <div>
       {/* TITLE and BUTTONS */}
@@ -22,25 +37,37 @@ export default function JobApplicants({
         <h2 className="font-semibold xl:text-3xl md:text-2xl text-xl ml-1">
           Applicants
         </h2>
-        <div className="sm:flex grid grid-cols-1 w-[60%] xs:w-[60%] ml-0 gap-1 xl:space-x-2 lg:space-x-1 md:mt-0 mt-4">
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Interviewed
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            shortlisted
-          </button>
-          <button className="text-primaryColor hover:text-white border border-gray-300 rounded-xl xl:px-4 px-2 py-2 hover:bg-primaryColor-dark not-active-gradient text-sm xl:text-base">
-            Hired
-          </button>
+        <div className="sm:flex grid grid-cols-1 w-[40%] lg:ml-10 ml-0 gap-2 xl:space-x-2 lg:space-x-1 md:mt-0 mt-4">
+          {Object.values(JobApplicationStatus).map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status)}
+              className={`rounded-xl xl:px-4 px-2 py-2 text-sm xl:text-base transition-all text-center h-full lg:min-w-28 min-w-[86px]
+              ${
+                selectedStatus === status
+                  ? "bg-primaryColor text-white border"
+                  : "text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white"
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
 
-      <Applicants
-        freelancers={freelancers} // wassim
-        accountBio={accountBio} // wassim T Jaaava
-        about={about} // FFFFF
-        status={status}
-      />
+      {/* Display Applicants */}
+      {filteredApplicants.length > 0 ? (
+        <Applicants
+          freelancers={filteredApplicants}
+          accountBio={accountBio}
+          about={about}
+          status={selectedStatus}
+        />
+      ) : (
+        <p className="text-center text-gray-500">
+          No applicants found for this status.
+        </p>
+      )}
     </div>
   );
 }

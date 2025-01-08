@@ -15,10 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  // check if user is active
-  /* if (user.account.accountStatus !== AccountStatus.Published) {
-        return Response.json({ error: "User is not active" }, { status: 401 });
-    } */
+
   const filter: JobFilter = {};
 
   //  get query params for related job type
@@ -59,8 +56,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   // check if the job is already closed
-  if (job.status === JobStatus.Closed) {
-    return Response.json({ error: "Job is closed" }, { status: 400 });
+  if (job.status !== JobStatus.Active) {
+    return Response.json({ error: "Job is not active" }, { status: 400 });
   }
 
   // check if the job is already filled
