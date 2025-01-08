@@ -9,6 +9,10 @@ import { JobFilter } from "~/types/Job";
 import { JobStatus } from "~/types/enums";
 import { getProfileInfo } from "~/servers/user.server";
 
+// this is the place that we are targeting to make the submission of job-application done once only :D
+// this is the place that we are targeting to make the submission of job-application done once only :D
+// this is the place that we are targeting to make the submission of job-application done once only :D
+
 export async function loader({ request }: LoaderFunctionArgs) {
   // user must be a published freelancer
   const userId = await requireUserIsFreelancerPublished(request);

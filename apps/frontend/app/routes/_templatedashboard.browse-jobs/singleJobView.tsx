@@ -9,7 +9,7 @@ interface JobCardProps {
 }
 
 export default function SingleJobView({ job }: JobCardProps) {
-  const fetcher = useFetcher<{ jobs: Job[] }>();
+  const fetcher = useFetcher<{ jobs: Job[]; success?: boolean }>();
   const relatedJobs = fetcher.data?.jobs || [];
 
   useEffect(() => {
@@ -18,6 +18,7 @@ export default function SingleJobView({ job }: JobCardProps) {
       employerId: job.employerId.toString(),
     });
 
+    // :(
     // send get request with query params: jobType: by-employer, employerId: job.employerId
     fetcher.submit(null, {
       method: "get",
@@ -81,17 +82,22 @@ export default function SingleJobView({ job }: JobCardProps) {
 
       {/* Interested Button clicking on it should send a post request to /api/jobs/:jobId/interested */}
       <Button
+        disabled={fetcher.data?.success || fetcher.state === "submitting"}
         onClick={() => {
-          fetcher.submit(null, {
-            method: "post",
-            action: `/api/jobs/${job.id}/interested`,
-          });
+          if (!fetcher.data?.success) {
+            fetcher.submit(null, {
+              method: "post",
+              action: `/api/jobs/${job.id}/interested`,
+            });
+          }
         }}
-        className={`w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 ${
-          fetcher.state === "submitting" ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`w-full ${
+          fetcher.data?.success
+            ? "bg-slate-600 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
+        } text-white py-2 rounded-md font-semibold`}
       >
-        Interested
+        {fetcher.data?.success ? "Applied" : "Interested"}
       </Button>
 
       {/* Related Jobs */}

@@ -192,6 +192,19 @@ export async function getJobById(jobId: number): Promise<Job | null> {
   return job[0] as unknown as Job;
 }
 
+export async function getAllJobs(): Promise<Job[]> {
+  // Query to select all jobs that are active
+  const jobs = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.status, JobStatus.Active));
+
+  return jobs.map((job) => ({
+    ...job,
+    status: job.status as JobStatus, // Ensuring correct enum typing
+  }));
+}
+
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
 
@@ -280,8 +293,6 @@ export async function getJobApplicationByJobIdAndFreelancerId(
 export async function getJobApplicationsByJobId(
   jobId: number | number[]
 ): Promise<JobApplication[]> {
-  console.log("jobId", jobId);
-  console.log("typeof jobId", typeof jobId);
   if (Array.isArray(jobId)) {
     const jobApplications = await db
       .select()
@@ -321,6 +332,23 @@ export async function createJobApplication(
   return jobApplication as unknown as JobApplication;
 }
 
+export async function doesJobApplicationExist(
+  jobId: number,
+  freelancerId: number
+) {
+  const jobApplication = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(
+      and(
+        eq(jobApplicationsTable.jobId, jobId),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    );
+
+  return jobApplication.length > 0 ? jobApplication[0] : null;
+}
+
 /**
  * get a job application by freelancer ID
  *
@@ -328,27 +356,23 @@ export async function createJobApplication(
  * @param jobStatus - the status of the job
  * @returns the job application or null if it doesn't exist
  */
-export async function getJobApplicationsByFreelancerId(
-  freelancerId: number,
-  jobStatus?: JobStatus[]
-): Promise<JobApplication[]> {
-  if (!jobStatus) {
-    jobStatus = [JobStatus.Active];
-  }
 
+export async function getJobApplicationsByFreelancerId(freelancerId: number) {
   const jobApplications = await db
-    .select()
+    .select({
+      jobId: jobApplicationsTable.jobId, // Ensure column names match the table
+    })
     .from(jobApplicationsTable)
-    .where(
-      and(
-        eq(jobApplicationsTable.freelancerId, freelancerId)
-        // inArray(jobApplicationsTable.status, jobStatus)
-      )
-    );
-  return jobApplications as unknown as JobApplication[];
+    .where(eq(jobApplicationsTable.freelancerId, freelancerId));
+
+  // console.log("Fetched Job Applications:", jobApplications);
+
+  return jobApplications;
 }
 
-/* Fetch job applications by job ID.
+/**
+ * Fetch job applications by job ID.
+ *
  * @param jobId - The ID of the job to fetch applications for.
  * @returns The list of job applications.
  */
@@ -361,6 +385,30 @@ export async function fetchJobApplications(
     .where(eq(jobApplicationsTable.jobId, jobId));
 
   return applications as unknown as JobApplication[];
+}
+
+/**
+ * update status of a job application
+ *
+ * @param applicationId - Id of the job application we wanna update
+ * @param newStatus - new status for the job application
+ * @returns object indicating success or failure
+ */
+export async function updateJobApplicationStatus(
+  applicationId: number,
+  newStatus: JobApplicationStatus
+) {
+  try {
+    await db
+      .update(jobApplicationsTable)
+      .set({ status: newStatus })
+      .where(eq(jobApplicationsTable.id, applicationId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating job application status:", error);
+    return { success: false, error };
+  }
 }
 
 /**
@@ -404,17 +452,16 @@ export async function fetchJobsWithApplications(
  * @throws Error
  */
 export async function getFreelancersIdsByJobId(jobId: number) {
+  // Fetch job applications
   const applications = await fetchJobApplications(jobId);
 
+  // Map applications to freelancer IDs
   const freelancerIds = applications.map(
     (application) => application.freelancerId
   );
 
-  if (freelancerIds.length === 0) {
-    throw new Error(`No freelancers found for job ID: ${jobId}`);
-  }
-
-  return freelancerIds;
+  // ✅ Instead of throwing an error, return an empty array if no IDs are found
+  return freelancerIds || [];
 }
 
 /**

@@ -19,6 +19,7 @@ export interface JobFilter {
   employerId?: number;
   page?: number;
   pageSize?: number;
+  jobIdsToExclude?: number[]; // add this to exclude job applied to
 }
 
 export interface JobApplication {

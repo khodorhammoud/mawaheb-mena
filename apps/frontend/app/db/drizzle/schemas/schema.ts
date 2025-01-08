@@ -318,7 +318,6 @@ export const jobsTable = pgTable("jobs", {
   requiredSkills: json("required_skills")
     .notNull()
     .default(sql`'[]'::jsonb`),
-
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
@@ -371,6 +370,8 @@ export const jobApplicationsTable = pgTable("job_applications", {
   status: jobApplicationStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
+
+// projectType: projectTypeEnum("project_type"),
 
 /**
  * Define the Timesheets table schema
