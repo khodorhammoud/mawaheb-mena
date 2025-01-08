@@ -10,3 +10,7 @@ export function parseHTTP(link: string) {
     return `http://${link}`;
   }
 }
+
+export function parseDate(date: string | Date) {
+  return typeof date === "string" ? new Date(date) : date;
+}

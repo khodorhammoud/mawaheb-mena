@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
+import { AccountType } from "~/types/enums";
 
 interface ActionData {
   success?: boolean;
@@ -13,7 +14,6 @@ interface ActionData {
 export default function SignupLeftComponent() {
   const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
-
   const redirectionFlag = useRef(false);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function SignupLeftComponent() {
               ? "bg-blue-100 border-blue-300"
               : "border-gray-200"
           }`}
-          // this is for the selected button 👍
+          // this is the styles for the selected button 👍
         >
           <div className="flex flex-col items-center rounded-xl">
             <span className="text-4xl">👤</span>
@@ -81,7 +81,7 @@ export default function SignupLeftComponent() {
 
       {/* the Form */}
       <Form method="post" className="w-full space-y-6">
-        <input type="hidden" name="accountType" value="employer" />
+        <input type="hidden" name="accountType" value={AccountType.Employer} />
         <input
           type="hidden"
           name="employerAccountType"
@@ -114,6 +114,7 @@ export default function SignupLeftComponent() {
           name="password"
           label="Password"
         />
+
         <button
           type="submit"
           className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"

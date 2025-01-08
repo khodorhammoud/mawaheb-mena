@@ -2,6 +2,8 @@
 // this is the navigation of our home Pages 😎
 
 import { TFunction } from "i18next";
+import { FaBriefcase, FaCog, FaFileAlt, FaChartLine } from "react-icons/fa";
+import { MdSpaceDashboard } from "react-icons/md";
 
 // this is the main navigation
 export const navigation = function (t: TFunction) {
@@ -41,43 +43,52 @@ export const sidebarEmployerNav = function (t: TFunction) {
     {
       label: t("dashboardEmployerDashboardLable"),
       href: "/dashboard",
+      icon: MdSpaceDashboard, // Dashboard icon
     },
     {
       label: t("dashboardEmployerManageJobsLable"),
-      href: "/for-freelancers",
+      href: "/manage-jobs",
+      icon: FaBriefcase, // Manage Jobs icon
     },
     {
       label: t("dashboardEmployerTimeSheetLable"),
-      href: "/for-freelancers",
+      href: "/timesheet",
+      icon: FaFileAlt, // Time Sheet icon
     },
     {
       label: t("dashboardEmployerSettingsLable"),
-      href: "/for-freelancers",
+      href: "/settings",
+      icon: FaCog, // Settings icon
     },
   ];
 };
 
-export const sidebarEmployeeNav = function (t: TFunction) {
+export const sidebarFreelancerNav = function (t: TFunction) {
   return [
     {
-      label: t("dashboardEmployeeDashboardLable"),
-      href: "/for-employers",
+      label: t("dashboardFreelancerDashboardLable"),
+      href: "/dashboard",
+      icon: MdSpaceDashboard,
     },
     {
-      label: t("dashboardEmployeeBrowseJobsLable"),
-      href: "/for-employers",
+      label: t("dashboardFreelancerBrowseJobsLable"),
+      href: "/browse-jobs",
+      icon: FaBriefcase,
     },
     {
-      label: t("dashboardEmployeeTimeSheetLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerTimeSheetLable"),
+      href: "/timesheet",
+      icon: FaFileAlt,
     },
     {
-      label: t("dashboardEmployeeReportsLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerReportsLable"),
+      href: "/reports",
+      icon: FaChartLine,
     },
     {
-      label: t("dashboardEmployeeSettingsLable"),
-      href: "/for-freelancers",
+      label: t("dashboardFreelancerSettingsLable"),
+      href: "/settings",
+      icon: FaCog,
     },
   ];
 };

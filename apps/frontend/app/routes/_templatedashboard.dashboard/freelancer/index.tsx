@@ -1,88 +1,161 @@
-import { sidebarEmployerNav } from "~/constants/navigation";
-import { useTranslation } from "react-i18next";
-import Sidebar from "~/routes/_templatedashboard/Sidebar";
+import Heading from "~/common/profileView/heading/Heading";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
+import { SlBadge } from "react-icons/sl";
+import { FaDollarSign } from "react-icons/fa";
+import { AiFillStar } from "react-icons/ai";
+import { AccountType } from "~/types/enums";
 
 export default function Dashboard() {
-  const { t } = useTranslation();
-  const menuNavigation = sidebarEmployerNav(t); //
+  const { accountOnboarded, accountType, isOwner } = useLoaderData<{
+    accountOnboarded: boolean;
+    accountType: string;
+    isOwner: boolean;
+  }>();
+  // Include accountType and isOwner from loader
+
+  // type ActionData = {
+  //   error?: { message: string };
+  // };
+  // const actionData = useActionData<ActionData>();
+
+  // Determine if the page should allow editing
+  const canEdit = accountType === AccountType.Freelancer && isOwner;
+
   return (
-    <div>
-      <div className="flex">
-        <Sidebar accountType="freelancer" />
-
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="bg-gray-200 h-32 rounded-md mb-4 relative">
-            <button className="absolute top-2 right-2 bg-gray-100 px-2 py-1 text-sm rounded-md">
-              Add Title freelancer
+    <div className="mt-10 relative">
+      <div
+        className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 xl:mr-10 lg:mr-5 relative"
+        style={{
+          background: "linear-gradient(to right, #27638a 0%, white 75%)",
+        }}
+      >
+        {/* Show Edit Title button only if the user can edit */}
+        {canEdit && (
+          <div className="absolute top-4 right-4">
+            <button className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
+              Add Title
             </button>
           </div>
-
-          <div className="flex items-center mb-6">
-            <div className="bg-gray-300 rounded-full w-24 h-24 flex items-center justify-center mr-4">
-              <span className="text-3xl font-bold">AM</span>
+        )}
+        <div className="xl:right-40 lg:right-32 md:right-24 sm:right-16 right-10">
+          {/* Conditionally Render Star Rating */}
+          {!accountOnboarded && (
+            <div className="flex items-center justify-end mt-6 mr-1">
+              <AiFillStar className="text-yellow-500 h-5 w-5 mr-1" />
+              <span>0/5</span>
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold">Ahmad Mostafa</h1>
-              <div className="flex space-x-2 mt-2">
-                <button className="text-sm bg-gray-200 px-3 py-1 rounded-md">
-                  Add Location
-                </button>
-                <button className="text-sm bg-gray-200 px-3 py-1 rounded-md">
-                  Add Websites
-                </button>
-              </div>
-            </div>
-            <div className="ml-auto text-sm flex items-center">
-              <span>Industries Served</span>
-              <button className="ml-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m4 4h-1V9h-1m6 2h-2a9 9 0 11-18 0h2a7 7 0 1014 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Stats Section */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <button className="p-4 border rounded-md">
-              <h3 className="text-sm text-gray-500">
-                Average Project Budget Freelancer
-              </h3>
-              <button className="text-blue-500 text-sm">
-                Add Average Budget
-              </button>
-            </button>
-            <button className="p-4 border rounded-md">
-              <h3 className="text-sm text-gray-500">Years in Business</h3>
-              <button className="text-blue-500 text-sm">
-                Add Years in Business
-              </button>
-            </button>
-          </div>
+      <Heading />
 
-          {/* About Section */}
-          <div className="mb-6 p-4 border rounded-md">
-            <h3 className="text-lg font-medium mb-2">About</h3>
-            <button className="text-blue-500 text-sm">Add bio</button>
-          </div>
+      <div className="grid grid-cols-1 mb-4">
+        <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
+          {/* Hourly Rate */}
+          <GeneralizableFormCard
+            formType="range"
+            cardTitle="Hourly Rate"
+            popupTitle="Hourly Rate"
+            triggerLabel="Add Hourly Rate"
+            formName="freelancer-hourly-rate"
+            fieldName="hourlyRate"
+            triggerIcon={<FaDollarSign />}
+            minVal={10}
+            maxVal={100}
+            editable={canEdit} // Allow editing only if the user can edit
+          />
 
-          {/* Posted Jobs Section */}
-          <div className="p-4 border rounded-md">
-            <h3 className="text-lg font-medium mb-2">Posted Jobs</h3>
-            <button className="text-blue-500 text-sm">Post Job</button>
-          </div>
+          {/* Years of Experience */}
+          <GeneralizableFormCard
+            formType="increment"
+            cardTitle="Experience"
+            popupTitle="Years of experience"
+            triggerLabel="Add Years of Experience"
+            formName="freelancer-years-of-experience"
+            fieldName="yearsOfExperience"
+            triggerIcon={<SlBadge />}
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+        </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
+          {/* Introductory Video */}
+          <GeneralizableFormCard
+            formType="video"
+            cardTitle="Don't miss out on this opportunity to make a great first impression."
+            cardSubtitle="Upload a video to introduce yourself and your business."
+            popupTitle="Introductory video"
+            triggerLabel="Add Video"
+            formName="freelancer-video"
+            fieldName="videoLink"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+
+          {/* About */}
+          <GeneralizableFormCard
+            formType="textArea"
+            cardTitle="About"
+            cardSubtitle="Add your headline and bio
+            Share more about yourself and what you
+            hope to accomplish."
+            popupTitle="Introduce Yourself"
+            triggerLabel="Add Bio"
+            formName="freelancer-about"
+            fieldName="about"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+        </div>
+        <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
+          {/* Portfolio */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Projects"
+            popupTitle="Add a Project"
+            cardSubtitle="Upload your portfolio pieces and projects and let your work speak for itself."
+            triggerLabel="Add Projects"
+            formName="freelancer-portfolio"
+            fieldName="portfolio"
+            repeatableFieldName="portfolio"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+
+          {/* Work History */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Work History"
+            popupTitle="Work History"
+            triggerLabel="Add Work History"
+            formName="freelancer-work-history"
+            fieldName="workHistory"
+            repeatableFieldName="workHistory"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+          {/* Certificates */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Certificates"
+            cardSubtitle="Add your certifications."
+            popupTitle="Add Certificates"
+            triggerLabel="Add Certificates"
+            formName="freelancer-certificates"
+            fieldName="certificates"
+            repeatableFieldName="certificates"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
+
+          {/* Education */}
+          <GeneralizableFormCard
+            formType="repeatable"
+            cardTitle="Education"
+            cardSubtitle="Add your education and degrees."
+            popupTitle="Add Education"
+            triggerLabel="Add Education"
+            formName="freelancer-educations"
+            fieldName="educations"
+            repeatableFieldName="educations"
+            editable={canEdit} // Allow editing only if the user can edit
+          />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import SignUpFreelancerPage from "./Signup";
 
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   generateVerificationToken,
   getProfileInfo,
@@ -18,15 +18,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    const profile = await authenticator.authenticate("register", request);
+    const userId = await authenticator.authenticate("register", request);
     newFreelancer = (await getProfileInfo({
-      userId: profile.account.user.id,
+      userId,
     })) as Freelancer;
   } catch (error) {
     // handle registration errors
     if (error instanceof RegistrationError) {
       console.error("Registration error:", error);
-      return json({
+      return Response.json({
         success: false,
         error: {
           code: (error as RegistrationError).code,
@@ -36,11 +36,11 @@ export async function action({ request }: ActionFunctionArgs) {
     }
     console.error("Error registering user:", error);
 
-    return json({ success: false, error });
+    return Response.json({ success: false, error });
   }
   // if registration was not successful, return an error response
   if (!newFreelancer)
-    return json({
+    return Response.json({
       success: false,
       error: false,
       message: "Failed to register user",
@@ -56,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
     ) as string;
     const userId = newFreelancer.account?.user?.id;
     const verificationToken = await generateVerificationToken(userId);
-
     sendEmail({
       type: "accountVerification",
       email: email,
@@ -68,10 +67,10 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   } catch (error) {
     console.error("Error sending verification email:", error);
-    return json({ success: false, error });
+    return Response.json({ success: false, error });
   }
 
-  return json({ success: true, newFreelancer });
+  return Response.json({ success: true, newFreelancer });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

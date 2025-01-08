@@ -91,3 +91,23 @@ export enum JobStatus {
   Paused = "paused",
   Deleted = "deleted",
 }
+
+export enum JobApplicationStatus {
+  Pending = "pending",
+  Shortlisted = "shortlisted",
+  Approved = "approved",
+  Rejected = "rejected",
+}
+
+export enum TimesheetStatus {
+  Draft = "draft",
+  Submitted = "submitted",
+  Approved = "approved",
+  Rejected = "rejected",
+}
+
+export enum JobsOpenTo {
+  FullTimeRoles = "full-time-roles",
+  PartTimeRoles = "part-time-roles",
+  EmployeeRoles = "employee-roles",
+}

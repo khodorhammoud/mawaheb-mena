@@ -2,7 +2,6 @@ import EmployerOnboardingScreen from "./employer";
 import FreelancerOnboardingScreen from "./freelancer";
 import { redirect, useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
-import Header from "../_templatedashboard/header";
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
@@ -23,7 +22,7 @@ import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
 } from "~/types/User";
-import { authenticator } from "~/auth/auth.server";
+import { requireUserVerified } from "~/auth/auth.server";
 import {
   getAccountBio,
   getEmployerIndustries,
@@ -49,19 +48,21 @@ import {
   updateFreelancerCertificates,
   updateFreelancerEducation,
 } from "~/servers/employer.server";
-import { getCurrentProfile } from "~/auth/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
+  // user must be verified
+  await requireUserVerified(request);
   try {
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
-    const currentUser = await getCurrentProfile(request);
+    const currentProfile = await getCurrentProfileInfo(request);
 
-    const userId = currentUser.id;
-    const accountType = currentUser.account.accountType;
+    const userId = currentProfile.account.user.id;
+    const accountType = currentProfile.account.accountType;
 
-    if (accountType == "employer") {
-      const employer = (await getCurrentProfileInfo(request)) as Employer;
+    // EMPLOYER
+    if (accountType == AccountType.Employer) {
+      const employer = currentProfile as Employer;
 
       // ABOUT
       if (target == "employer-about") {
@@ -69,6 +70,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const aboutStatus = await updateEmployerAbout(employer, aboutContent);
         return Response.json({ success: aboutStatus.success });
       }
+
       // BIO
       if (target == "employer-bio") {
         const bio = {
@@ -85,9 +87,18 @@ export async function action({ request }: ActionFunctionArgs) {
           },
           userId: userId,
         };
+        // Validate required fields
+        if (!bio.firstName || !bio.lastName || !bio.location) {
+          return Response.json(
+            { success: false, error: { message: "All fields are required." } },
+            { status: 400 }
+          );
+        }
+
         const bioStatus = await updateAccountBio(bio, employer.account);
         return Response.json({ success: bioStatus.success });
       }
+
       // INDUSTRIES
       if (target == "employer-industries") {
         const industries = formData.get("employer-industries") as string;
@@ -100,17 +111,34 @@ export async function action({ request }: ActionFunctionArgs) {
         );
         return Response.json({ success: industriesStatus.success });
       }
+
       // YEARS IN BUSINESS
-      if (target == "employer-years-in-business") {
-        const yearsInBusiness =
-          parseInt(formData.get("yearsInBusiness") as string) || 0;
+      if (target === "employer-years-in-business") {
+        const yearsInBusiness = parseInt(
+          formData.get("yearsInBusiness") as string
+        );
+
+        if (isNaN(yearsInBusiness)) {
+          return Response.json({
+            success: true,
+          });
+        }
 
         const yearsStatus = await updateEmployerYearsInBusiness(
           employer,
           yearsInBusiness
         );
-        return Response.json({ success: yearsStatus.success });
+
+        if (yearsStatus.success) {
+          return Response.json({ success: true });
+        } else {
+          return Response.json({
+            success: false,
+            error: { message: "Failed to update years in business" },
+          });
+        }
       }
+
       // BUDGET
       if (target == "employer-budget") {
         const budgetValue = formData.get("employerBudget");
@@ -119,16 +147,18 @@ export async function action({ request }: ActionFunctionArgs) {
         const budgetStatus = await updateEmployerBudget(employer, budget);
         return Response.json({ success: budgetStatus.success });
       }
+
       // ONBOARDING -> TRUE ✅
       if (target == "employer-onboard") {
-        const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
-        if (!userExists.length)
+        if (!userExists.length) {
+          console.warn("User not found.");
           return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
           });
+        }
 
         const result = await updateOnboardingStatus(userId);
         return result.length
@@ -141,8 +171,12 @@ export async function action({ request }: ActionFunctionArgs) {
             });
       }
     }
-    if (accountType == "freelancer") {
-      const freelancer = (await getCurrentProfileInfo(request)) as Freelancer;
+
+    // NOTE: if any submission code in the action of the freelancer accountType made problems, go to FormFields.tsx inside onboarding-form-component
+    // FREELANCER
+    if (accountType == AccountType.Freelancer) {
+      const freelancer = currentProfile as Freelancer;
+
       // HOURLY RATE
       if (target == "freelancer-hourly-rate") {
         const hourlyRate = parseInt(formData.get("hourlyRate") as string, 10);
@@ -171,13 +205,25 @@ export async function action({ request }: ActionFunctionArgs) {
           freelancer,
           aboutContent
         );
+
         return Response.json({ success: aboutStatus.success });
       }
+
       // VIDEO LINK
       if (target == "freelancer-video") {
         const videoLink = formData.get("videoLink") as string;
+
+        console.log("Received videoLink:", videoLink);
+
+        if (!videoLink) {
+          return Response.json({
+            success: false,
+            error: "videoLink is empty or undefined",
+          });
+        }
+
         const videoStatus = await updateFreelancerVideoLink(
-          freelancer.id,
+          freelancer.accountId,
           videoLink
         );
         return Response.json({ success: videoStatus.success });
@@ -202,6 +248,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const bioStatus = await updateAccountBio(bio, freelancer.account);
         return Response.json({ success: bioStatus.success });
       }
+
       // PORTFOLIO
       if (target == "freelancer-portfolio") {
         const portfolio = formData.get("portfolio") as string;
@@ -309,14 +356,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // ONBOARDING -> TRUE ✅
       if (target == "freelancer-onboard") {
-        const userId = currentUser.account.user.id;
         const userExists = await checkUserExists(userId);
-        if (!userExists.length)
+        if (!userExists.length) {
+          console.warn("User not found 2.");
           return Response.json({
             success: false,
             error: { message: "User not found." },
             status: 404,
           });
+        }
 
         const result = await updateOnboardingStatus(userId);
         return result.length
@@ -348,14 +396,13 @@ export async function loader({
   | TypedResponse<LoaderFunctionError>
   | TypedResponse<never>
 > {
-  const currentUser = await authenticator.isAuthenticated(request);
-  if (!currentUser) {
-    return redirect("/login-employer");
-  }
+  // user must be verified
+  await requireUserVerified(request);
   const accountType: AccountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
 
   if (!profile) {
+    console.warn("Profile information not found.");
     return Response.json({
       success: false,
       error: { message: "Profile information not found." },
@@ -369,7 +416,7 @@ export async function loader({
   }
 
   // fetch employwer data
-  if (accountType == "employer") {
+  if (accountType == AccountType.Employer) {
     profile = profile as Employer;
 
     // Fetch all the necessary data safely
@@ -385,7 +432,6 @@ export async function loader({
     // Check if employer.account exists before accessing nested properties
     const accountOnboarded = profile.account.user.isOnboarded;
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
-
     // Return the response data
     return Response.json({
       accountType,
@@ -402,7 +448,7 @@ export async function loader({
       closedJobCount,
       totalJobCount,
     });
-  } else if (accountType == "freelancer") {
+  } else if (accountType == AccountType.Freelancer) {
     profile = (await getCurrentProfileInfo(request)) as Freelancer;
 
     // Fetch all the necessary data safely
@@ -410,6 +456,8 @@ export async function loader({
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
+    const certificates = profile.certificates as CertificateFormFieldType[];
+    const educations = profile.educations as EducationFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
 
     return Response.json({
@@ -421,12 +469,13 @@ export async function loader({
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      educations: profile.educations,
-      certificates: profile.certificates,
       portfolio,
+      certificates,
+      educations,
       workHistory,
     });
   }
+  console.warn("Account type not found.");
   return Response.json({
     success: false,
     error: { message: "Account type not found." },
@@ -443,8 +492,7 @@ export default function Layout() {
   return (
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
-      <Header />
-      {accountType === "employer" ? (
+      {accountType === AccountType.Employer ? (
         <EmployerOnboardingScreen />
       ) : (
         <FreelancerOnboardingScreen />

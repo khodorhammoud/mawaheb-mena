@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import SignUpEmployerPage from "./Signup";
 import {
   generateVerificationToken,
@@ -17,16 +17,16 @@ export async function action({ request }: ActionFunctionArgs) {
   const clonedRequest = request.clone();
 
   // use the authentication strategy to authenticate the submitted form data and register the user
+  const userId = await authenticator.authenticate("register", request);
   try {
-    const user = await authenticator.authenticate("register", request);
     newEmployer = (await getProfileInfo({
-      userId: user.account.user.id,
+      userId,
     })) as Employer;
   } catch (error) {
     console.error("Error registering user:", error);
     // handle registration errors
     if (error instanceof RegistrationError) {
-      return json({
+      return Response.json({
         success: false,
         error: {
           code: (error as RegistrationError).code,
@@ -35,12 +35,12 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
 
-    return json({ success: false, error });
+    return Response.json({ success: false, error });
   }
   // if registration was not successful, return an error response
   if (!newEmployer) {
     console.error("Failed to register user", newEmployer);
-    return json({
+    return Response.json({
       success: false,
       error: false,
       message: "Failed to register user",
@@ -55,7 +55,6 @@ export async function action({ request }: ActionFunctionArgs) {
     const name = (
       body.get("firstName") ? body.get("firstName") : body.get("lastName")
     ) as string;
-    const userId = newEmployer.account?.user?.id;
     const verificationToken = await generateVerificationToken(userId);
     sendEmail({
       type: "accountVerification",
@@ -68,10 +67,10 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   } catch (error) {
     console.error("Error sending verification email:", error);
-    return json({ success: false, error });
+    return Response.json({ success: false, error });
   }
 
-  return json({ success: true, newEmployer });
+  return Response.json({ success: true, newEmployer });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -80,11 +79,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // SO !--IMPORTANT--!
   // If the user is authenticated, redirect to the dashboard.
   if (user) {
-    return json({ redirect: "/dashboard" });
+    return Response.json({ redirect: "/dashboard" });
   }
 
   // Otherwise, let them stay on the signup page.
-  return json({ success: false });
+  return Response.json({ success: false });
 }
 
 export default function Layout() {

@@ -1,6 +1,8 @@
+import { useEffect, useRef } from "react";
 import SocialLinks from "../../common/registration/socialLinks";
-import { useActionData, Form } from "@remix-run/react";
+import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
+import { AccountType } from "~/types/enums";
 
 interface ActionData {
   success?: boolean;
@@ -11,73 +13,95 @@ interface ActionData {
 
 export default function LoginFormComponent() {
   const actionData = useActionData<ActionData>();
+  const navigate = useNavigate();
+  const redirectionFlag = useRef(false);
+
+  useEffect(() => {
+    if (!redirectionFlag.current && actionData?.success) {
+      redirectionFlag.current = true;
+    }
+  }, [actionData, navigate]);
 
   return (
-    <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">
-      <div className="w-full max-w-sm">
-        <h1 className="text-4xl font-bold mb-6">Log In</h1>
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white p-10">
+      <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
+        Log In
+      </h1>
 
-        {/* error message in case of error */}
-        {actionData?.error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-            <strong className="font-bold">Error! </strong>
-            <span className="block sm:inline">
-              {actionData?.error?.message}
-            </span>
+      {/* error message in case of error */}
+      {actionData?.error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{actionData?.error?.message}</span>
+        </div>
+      )}
+
+      {/* the Form */}
+      <Form method="post" className="w-full space-y-6">
+        <input type="hidden" name="accountType" value={AccountType.Employer} />
+
+        {/* The Email */}
+        <AppFormField id="email" name="email" label="Email Address" />
+
+        {/* The Password */}
+        <AppFormField
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          showPasswordHint={false}
+        />
+
+        {/* Forget Password */}
+        <div className="text-right">
+          <a
+            href="/"
+            className="text-sm font-medium text-primaryColor mt-4 mb-6 mr-4 text-end underline hover:no-underline cursor-pointer"
+          >
+            Forgot Password?
+          </a>
+        </div>
+
+        {/* Continue Button */}
+        <div>
+          <button
+            type="submit"
+            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
+          >
+            Continue
+          </button>
+        </div>
+
+        {/* success message when all is done */}
+        {actionData?.success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+            <strong className="font-bold">
+              ✅ A verification email has been sent to you.
+            </strong>
           </div>
         )}
-        <Form method="post" className="space-y-6">
-          <input type="hidden" name="accountType" value="employer" />
+      </Form>
 
-          {/* AppFormField for email */}
-          <AppFormField id="email" name="email" label="Email Address" />
+      {/* or */}
+      <div className="relative flex items-center justify-center mt-6 mb-2">
+        <div className="flex-grow border border-gray-200 w-[270px] mt-1"></div>
+        <span className="px-2">or</span>
+        <div className="flex-grow border border-gray-200 w-[270px] mt-1"></div>
+      </div>
 
-          {/* AppFormField for password */}
-          <AppFormField
-            id="password"
-            name="password"
-            label="Password"
-            type="password"
-            showPasswordHint={false}
-          />
+      <SocialLinks />
 
-          <div className="text-right">
-            <a href="/" className="text-sm text-blue-600 hover:text-blue-500">
-              Forgot Password?
-            </a>
-          </div>
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Continue
-            </button>
-          </div>
-        </Form>
-
-        <div className="relative mt-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">or</span>
-          </div>
-        </div>
-
-        <SocialLinks />
-
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
-            <a
-              href="/signup-employer"
-              className="text-blue-600 hover:text-blue-500"
-            >
-              Sign Up
-            </a>
-          </p>
-        </div>
+      {/* Don't have an account? SignUp */}
+      <div className="text-center mt-8">
+        <p className="text-sm text-gray-600">
+          Don&apos;t have an account?{" "}
+          <a
+            href="/signup-employer"
+            className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"
+          >
+            SignUp
+          </a>
+        </p>
       </div>
     </div>
   );

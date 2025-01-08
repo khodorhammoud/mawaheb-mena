@@ -1,27 +1,46 @@
 import Header from "./header";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import Sidebar from "./Sidebar";
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 import {
   getCurrentUserAccountType,
   getCurrentUser,
+  getCurrentProfileInfo,
 } from "~/servers/user.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const accountType = getCurrentUserAccountType(request);
+  const accountType = await getCurrentUserAccountType(request);
   const currentUser = await getCurrentUser(request);
-  return json({ accountType, currentUser });
+  const profile = await getCurrentProfileInfo(request);
+
+  return Response.json({
+    accountType,
+    currentUser,
+    isOnboarded: profile?.account?.user?.isOnboarded,
+    profile,
+  });
 }
 export default function Layout() {
-  const { accountType } = useLoaderData<{ accountType: string }>();
+  const { isOnboarded } = useLoaderData<{
+    isOnboarded: boolean;
+  }>();
   return (
     <div>
       <Header />
-      {/* <div className="mt-[100px]"> */}
       <div className="flex mt-[12px]">
-        <Sidebar accountType={accountType} />
-        <Outlet />
-        {/* </div> */}
+        {isOnboarded ? (
+          <>
+            <Sidebar />
+            <div className="container mt-10 p-5 lg:mr-8">
+              <Outlet />
+            </div>
+          </>
+        ) : (
+          // Add 'w-full' to make the container take full width when no sidebar
+          <div className="container w-full mt-10 p-5">
+            <Outlet />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -172,11 +172,11 @@ export default function RequiredSkills({
         <p className="mt-2 text-sm text-gray-600">
           You need to select at least {Math.max(0, 5 - selectedSkills.length)}{" "}
           more skills and star{" "}
-          {Math.max(
+          {/* {Math.max(
             0,
             3 - selectedSkills.filter((skill) => skill.isStarred).length
-          )}{" "}
-          more skills.
+          )}{" "} */}
+          3 more skills.
         </p>
       </PopoverContent>
     </Popover>

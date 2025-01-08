@@ -14,6 +14,7 @@ import {
 import { faker } from "@faker-js/faker";
 
 import * as dotenv from "dotenv";
+import { AccountType } from "~/types/enums";
 dotenv.config({
   path: ".env",
 });
@@ -51,8 +52,6 @@ async function seed() {
         .limit(1);
       const lastEmployerID = lastEmployerIDinDB[0].id + 1;
 
-      console.log(lastUserID, lastAccountID, lastFreelancerID, lastEmployerID);
-
       // Seed Users
       for (let i = lastUserID; i < lastUserID + 10; i++) {
         await tx.insert(UsersTable).values({
@@ -75,7 +74,10 @@ async function seed() {
       ) {
         await tx.insert(accountsTable).values({
           userId: i,
-          accountType: faker.helpers.arrayElement(["freelancer", "employer"]),
+          accountType: faker.helpers.arrayElement([
+            AccountType.Freelancer,
+            AccountType.Employer,
+          ]),
           freelancerId: j % 2 === 0 ? j + 1 : null,
           employerId: k % 2 !== 0 ? k + 1 : null,
           location: faker.location.streetAddress(),

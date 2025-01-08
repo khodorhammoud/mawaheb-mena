@@ -12,6 +12,8 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
+  // languagesTable,
+  // skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -29,9 +31,9 @@ import {
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { uploadFileToBucket } from "./cloudStorage.server";
-import { Job } from "~/types/Job"; // Import Job type to ensure compatibility
-import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
+// import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
 import { JobStatus } from "~/types/enums";
+import DOMPurify from "isomorphic-dompurify";
 
 export async function updateAccountBio(
   bio: AccountBio,
@@ -76,7 +78,6 @@ export async function updateAccountBio(
 
 export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
   const userId = account.user.id;
-
   try {
     const user = await db
       .select({
@@ -125,6 +126,9 @@ export async function updateFreelancerPortfolio(
       } else {
         portfolio[i].projectImageUrl = "";
       }
+      portfolio[i].projectDescription = DOMPurify.sanitize(
+        portfolio[i].projectDescription
+      );
     }
 
     const res = await db
@@ -184,6 +188,11 @@ export async function updateFreelancerWorkHistory(
   freelancer: Freelancer,
   workHistory: WorkHistoryFormFieldType[]
 ): Promise<SuccessVerificationLoaderStatus> {
+  for (let i = 0; i < workHistory.length; i++) {
+    workHistory[i].jobDescription = DOMPurify.sanitize(
+      workHistory[i].jobDescription
+    );
+  }
   try {
     const res = await db
       .update(freelancersTable)
@@ -206,7 +215,6 @@ export async function updateFreelancerEducation(
   education: EducationFormFieldType[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    console.log("saving education", education);
     const res = await db
       .update(freelancersTable)
       .set({ educations: JSON.stringify(education) })
@@ -448,12 +456,13 @@ export async function updateEmployerAbout(
   aboutContent: string
 ): Promise<{ success: boolean }> {
   const accountId = employer.accountId;
+  const sanitizedContent = DOMPurify.sanitize(aboutContent);
 
   try {
     await db
       .update(employersTable)
       .set({
-        about: aboutContent, // Set the about column with the new content
+        about: sanitizedContent, // Set the about column with the new content
       })
       .where(eq(employersTable.accountId, accountId));
 
@@ -470,12 +479,12 @@ export async function updateFreelancerAbout(
   aboutContent: string
 ): Promise<{ success: boolean }> {
   const accountId = freelancer.accountId;
-
+  const sanitizedContent = DOMPurify.sanitize(aboutContent);
   try {
     await db
       .update(freelancersTable)
       .set({
-        about: aboutContent, // Set the about column with the new content
+        about: sanitizedContent, // Set the about column with the new content
       })
       .where(eq(freelancersTable.accountId, accountId));
 
@@ -492,9 +501,11 @@ export async function updateFreelancerVideoLink(
 ): Promise<{ success: boolean }> {
   return db
     .update(freelancersTable)
-    .set({ introductoryVideo: videoLink })
+    .set({ videoLink: videoLink })
     .where(eq(freelancersTable.accountId, freelancerId))
-    .then(() => ({ success: true }))
+    .then(() => {
+      return { success: true };
+    })
     .catch((error) => {
       console.error("Error updating freelancer video link", error);
       return { success: false };
@@ -517,7 +528,6 @@ export async function updateFreelancerYearsOfExperience(
     if (yearsOfExperience > 30) {
       throw new Error("Years experience must be less than 30");
     }
-    console.log("updating years of experience", yearsOfExperience);
     await db
       .update(freelancersTable)
       .set({ yearsOfExperience })
@@ -568,10 +578,14 @@ export async function updateOnboardingStatus(userId: number) {
     .where(eq(UsersTable.id, userId))
     .returning();
 
-  return result; // Return the result from the update operation
+  return result;
 }
 
 // fetch the job count
+// fetch the job count
+// fetch the job count
+// DASHBOARD PAGE
+// EASSY
 export async function getEmployerDashboardData(request: Request) {
   try {
     // Fetch the current employer information based on the request
@@ -624,21 +638,90 @@ export async function getEmployerDashboardData(request: Request) {
   }
 }
 
-export async function getJobs(): Promise<Job[]> {
-  const jobs = await db.select().from(jobsTable).execute();
+export async function saveAvailability({
+  accountId,
+  availableForWork,
+  availableFrom,
+  hoursAvailableFrom,
+  hoursAvailableTo,
+  jobsOpenTo, // [ 'full-time', 'part_time' ]
+}: {
+  accountId: number;
+  availableForWork: boolean;
+  availableFrom: Date | null;
+  hoursAvailableFrom: string;
+  hoursAvailableTo: string;
+  jobsOpenTo: string[];
+}) {
+  // Convert the date to YYYY-MM-DD format
+  const formattedDateAvailableFrom = availableFrom
+    ? availableFrom.toISOString().split("T")[0]
+    : null;
+  const result = await db
+    .update(freelancersTable)
+    .set({
+      availableForWork,
+      dateAvailableFrom: formattedDateAvailableFrom,
+      hoursAvailableFrom,
+      hoursAvailableTo,
+      jobsOpenTo,
+    })
+    .where(eq(freelancersTable.accountId, accountId))
+    .returning();
 
-  return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    requiredSkills: job.requiredSkills as Skill[],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
-    status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
-  }));
+  return result.length > 0;
+}
+
+export async function updateAvailabilityStatus(
+  accountId: number,
+  availableForWork: boolean
+) {
+  try {
+    const result = await db
+      .update(freelancersTable)
+      .set({ availableForWork })
+      .where(eq(freelancersTable.accountId, accountId))
+      .returning();
+
+    return result.length > 0; // Returns true if the update was successful
+  } catch (error) {
+    console.error("Error updating availability status:", error);
+    return false;
+  }
+}
+
+// Function to get availability details from the database
+export async function getFreelancerAvailability(accountId: number) {
+  const result = await db
+    .select({
+      availableForWork: freelancersTable.availableForWork,
+      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+      hoursAvailableTo: freelancersTable.hoursAvailableTo,
+      jobsOpenTo: freelancersTable.jobsOpenTo,
+    })
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+/**
+ * verify that a job belongs to an employer
+ *
+ * @param jobId - the ID of the job
+ * @param employerId - the ID of the employer
+ * @returns true if the job belongs to the employer, false otherwise
+ */
+export async function verifyJobBelongsToEmployer(
+  jobId: number,
+  employerId: number
+): Promise<boolean> {
+  const job = await db
+    .select()
+    .from(jobsTable)
+    .where(and(eq(jobsTable.id, jobId), eq(jobsTable.employerId, employerId)));
+
+  return job.length > 0;
 }
