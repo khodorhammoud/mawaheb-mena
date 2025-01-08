@@ -1,5 +1,5 @@
 import { db } from "../db/drizzle/connector";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
@@ -205,6 +205,34 @@ export async function getAllJobs(): Promise<Job[]> {
   }));
 }
 
+/**
+ * A function to get recommended jobs for freelancers it does not return the jobs that the freelancer has already applied to
+ *
+ * @param freelancerId
+ * @returns
+ */
+export async function getRecommendedJobs(freelancerId: number) {
+  // Get jobs that the freelancer hasn't applied to yet
+  const jobs = await db
+    .select()
+    .from(jobsTable)
+    .leftJoin(
+      jobApplicationsTable,
+      and(
+        eq(jobApplicationsTable.jobId, jobsTable.id),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    )
+    .where(
+      and(
+        eq(jobsTable.status, JobStatus.Active),
+        isNull(jobApplicationsTable.id)
+      )
+    )
+    .orderBy(desc(jobsTable.createdAt));
+  return jobs ? jobs.map((job) => job.jobs) : [];
+}
+
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
 
@@ -232,6 +260,15 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
 
   if (filter.employerId) {
     conditions.push(eq(jobsTable.employerId, filter.employerId));
+  }
+
+  if (filter.query) {
+    conditions.push(
+      or(
+        ilike(jobsTable.title, `%${filter.query}%`),
+        ilike(jobsTable.description, `%${filter.query}%`)
+      )
+    );
   }
 
   // Add status condition
@@ -283,6 +320,24 @@ export async function getJobApplicationByJobIdAndFreelancerId(
     job: jobApplication[0].jobs as unknown as Job,
   };
   return returnedJobApplication;
+}
+
+/**
+ * Get job application Owner by application id
+ * @param applicationId - the ID of the job application
+ * @returns the job application
+ */
+export async function getJobApplicationOwnerByApplicationId(
+  applicationId: number
+): Promise<number | null> {
+  const employerId = await db
+    .select({
+      employerId: jobsTable.employerId,
+    })
+    .from(jobApplicationsTable)
+    .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+    .where(eq(jobApplicationsTable.id, applicationId));
+  return employerId[0]?.employerId || null;
 }
 
 /**

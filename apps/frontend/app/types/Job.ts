@@ -20,6 +20,7 @@ export interface JobFilter {
   page?: number;
   pageSize?: number;
   jobIdsToExclude?: number[]; // add this to exclude job applied to
+  query?: string;
 }
 
 export interface JobApplication {

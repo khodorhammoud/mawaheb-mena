@@ -65,7 +65,14 @@ export default function StatusDropdown({
               <li
                 key={statusOption}
                 className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                role="button"
+                tabIndex={0}
                 onClick={() => handleStatusChange(statusOption)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleStatusChange(statusOption);
+                  }
+                }}
               >
                 {statusOption.charAt(0).toUpperCase() + statusOption.slice(1)}
               </li>

@@ -8,6 +8,9 @@ import {
   getFreelancerDetails,
   getFreelancersIdsByJobId,
   updateJobApplicationStatus,
+  // getJobApplicationsByJobId,
+  // getJobApplicationById,
+  getJobApplicationOwnerByApplicationId,
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import {
@@ -103,6 +106,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
+  await requireUserIsEmployerPublished(request);
+
+  const currentProfile = await getCurrentProfileInfo(request);
   try {
     const formData = await request.formData();
 
@@ -117,6 +123,16 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       return Response.json(
         { success: false, error: "Invalid input" },
         { status: 400 }
+      );
+    }
+
+    // check if the current user is the owner of the aplpication
+    const ownerEmployerId =
+      await getJobApplicationOwnerByApplicationId(applicationId);
+    if (!ownerEmployerId || ownerEmployerId !== currentProfile.id) {
+      return Response.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
