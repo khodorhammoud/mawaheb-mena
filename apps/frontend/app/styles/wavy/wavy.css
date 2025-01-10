@@ -418,3 +418,13 @@
   border-radius: 10px;
   background-color: #f4f4f4;
 }
+
+/* want-to-join-us */
+/* want-to-join-us */
+/* want-to-join-us */
+
+.fullBG {
+  /* Ensure full width */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
