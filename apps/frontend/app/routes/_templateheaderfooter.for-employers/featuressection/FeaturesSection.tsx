@@ -26,12 +26,13 @@ export default function FeaturesSection() {
     <section className="py-24 mt-[-100px] custom-gradient relative">
       {/* Circle grid overlay */}
       <div className="circle-grid">
-        {Array.from({ length: 5000 }).map((_, idx) => (
+        {Array.from({ length: 10000 }).map((_, idx) => (
           <div key={idx} className="circle" />
         ))}
       </div>
 
-      <div className="container px-10 relative z-1">
+      {/* Adjusted to remove container */}
+      <div className="flex items-center justify-center mx-10 relative z-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-16 font-['Switzer-Regular']">
           {/* Render features from loader data */}
           {features.map((feature, index) => (

@@ -23,7 +23,15 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
 }) => {
   const [showFingerIcon, setShowFingerIcon] = useState<boolean>(false);
 
-  const zoomScaleP = useTransform(scrollY, [30, 200], [0.5, 1]);
+  // Scale and downward Y-position for "WHAT THEY SAY"
+  const zoomScaleP1 = useTransform(scrollY, [30, 200], [0.5, 1]);
+  const positionYP1 = useTransform(scrollY, [30, 200], ["40px", "0px"]); // bro play with these if you wana control the y of "WHAT THEY SAY"
+
+  // Scale and downward Y-position for "ABOUT US"
+  const zoomScaleP2 = useTransform(scrollY, [30, 200], [0.5, 1]);
+  const positionYP2 = useTransform(scrollY, [30, 200], ["10px", "200px"]); // bro play with these if you wana control the y of "ABOUT US"
+
+  // Scale and opacity for the testimonials
   const zoomScaleTestimonials = useTransform(scrollY, [30, 200], [0.1, 0.3]);
   const opacityTestimonials = useTransform(scrollY, [190, 200], [0, 1]);
 
@@ -86,7 +94,8 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
       >
         <motion.p
           style={{
-            scale: zoomScaleP,
+            scale: zoomScaleP1,
+            y: positionYP1, // Control Y-axis position
             transformOrigin: "center",
           }}
           className="text-center select-none mt-[320px]"
@@ -94,6 +103,7 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
           WHAT THEY SAY
         </motion.p>
 
+        {/* Testimonials */}
         <motion.div
           style={{
             scale: zoomScaleTestimonials,
@@ -109,10 +119,11 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
 
         <motion.p
           style={{
-            scale: zoomScaleP,
+            scale: zoomScaleP2,
+            y: positionYP2, // Control Y-axis position
             transformOrigin: "center",
           }}
-          className="text-center -mt-48 select-none"
+          className="text-center -mt-96 select-none"
         >
           ABOUT US
         </motion.p>

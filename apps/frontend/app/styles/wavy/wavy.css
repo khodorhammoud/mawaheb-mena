@@ -101,6 +101,10 @@
   overflow: hidden;
   position: relative;
   cursor: pointer;
+
+  /* Ensure full width */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 
 .circle-grid {
