@@ -38,7 +38,7 @@ export default function FeaturesSection() {
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-white shadow-lg rounded-[10px] border-2 border-slate-300 z-10"
+              className="bg-white shadow-lg rounded-[10px] border-2 border-slate-300 z-10 xl:w-[270px]"
             >
               <CardHeader className="flex items-center justify-center p-4 relative">
                 {/* You can add an icon here */}

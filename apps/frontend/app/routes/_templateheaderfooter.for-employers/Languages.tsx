@@ -27,7 +27,7 @@ const Languages: React.FC = () => {
   const fadeOpacity = useTransform(scrollY, [0, 30], [1, 0]);
 
   // Zoom effect for the ZoomingText component
-  const zoomScale = useTransform(scrollY, [30, 200], [1.5, 2]);
+  const zoomScale = useTransform(scrollY, [30, 200], [0, 1]);
   const zoomOpacity = useTransform(scrollY, [30, 200], [0, 1]);
 
   useEffect(() => {
@@ -133,7 +133,7 @@ const Languages: React.FC = () => {
             scale: zoomScale,
             opacity: zoomOpacity,
           }}
-          className="text-4xl font-['BespokeSerif-Variable'] mt-44" // edit this value if you need to
+          className="text-4xl font-['BespokeSerif-Variable']" // edit this value if you need to
         >
           <ZoomingText scrollY={scrollY} />
         </motion.div>
