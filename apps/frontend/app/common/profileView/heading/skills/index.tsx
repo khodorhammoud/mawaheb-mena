@@ -72,7 +72,7 @@ export default function Skills() {
           {/* ✏️ */}
           <DialogTrigger asChild>
             <Button variant="link">
-              <IoPencilSharp className="lg:h-9 lg:w-8 h-7 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 mb-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
+              <IoPencilSharp className="h-7 w-7 text-small text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />
             </Button>
           </DialogTrigger>
           {/* POPUP */}

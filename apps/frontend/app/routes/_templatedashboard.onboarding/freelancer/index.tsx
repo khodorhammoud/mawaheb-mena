@@ -4,18 +4,19 @@ import GeneralizableFormCard from "~/common/profileView/onboarding-form-componen
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
 import { AiFillStar } from "react-icons/ai";
+import { FreelancerOnboardingData } from "../types";
 
 export default function FreelancerOnboardingScreen() {
   type ActionData = {
     error?: { message: string };
   };
   const actionData = useActionData<ActionData>();
-  const accountOnboarded = useLoaderData();
+  const { accountOnboarded } = useLoaderData<FreelancerOnboardingData>();
 
   return (
     <div className="mt-10 relative">
       <div
-        className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 xl:mr-20 lg:mr-12 md:mr-10 mr-0 relative"
+        className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 relative"
         style={{
           background: "linear-gradient(to right, #27638a 0%, white 75%)",
         }}

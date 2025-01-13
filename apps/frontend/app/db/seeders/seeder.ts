@@ -53,7 +53,7 @@ async function seed() {
       const lastEmployerID = lastEmployerIDinDB[0].id + 1;
 
       // Seed Users
-      for (let i = lastUserID; i < lastUserID + 10; i++) {
+      /*  for (let i = lastUserID; i < lastUserID + 10; i++) {
         await tx.insert(UsersTable).values({
           // @ts-expect-error: Faker types may not match the expected types
           firstName: faker.person.firstName(),
@@ -62,10 +62,10 @@ async function seed() {
           passHash: faker.internet.password(),
           isVerified: faker.datatype.boolean(),
         });
-      }
+      } */
 
       // Seed Accounts
-      for (
+      /* for (
         let i = lastUserID, j = lastFreelancerID, k = lastEmployerID;
         i < lastAccountID + 10 &&
         j < lastFreelancerID + 10 &&
@@ -102,10 +102,10 @@ async function seed() {
           ]),
           phone: faker.phone.number().substring(0, 20),
         });
-      }
+      } */
 
       // Seed Preferred Working Times
-      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(preferredWorkingTimesTable).values({
           accountId: i + 1,
           dayOfWeek: faker.helpers.arrayElement([
@@ -120,10 +120,10 @@ async function seed() {
           startTime: faker.date.recent().toISOString().substring(11, 19),
           endTime: faker.date.future().toISOString().substring(11, 19),
         });
-      }
+      } */
 
       // Seed Freelancers
-      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(freelancersTable).values({
           accountId: i + 1,
           fieldsOfExpertise: faker.helpers.arrayElements([
@@ -158,10 +158,10 @@ async function seed() {
             "hourly-rate",
           ]),
         });
-      }
+      } */
 
       // Seed Employers
-      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(employersTable).values({
           accountId: i + 1,
           companyName: faker.company.name(),
@@ -182,7 +182,7 @@ async function seed() {
             faker.internet.url(),
           ]),
         });
-      }
+      } */
 
       // Seed Languages
       for (const language of [
@@ -202,12 +202,12 @@ async function seed() {
       }
 
       // Seed Account Languages
-      for (let i = lastAccountID; i < lastAccountID + 10; i++) {
+      /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(accountLanguagesTable).values({
           accountId: i + 1,
           languageId: faker.datatype.number({ min: 1, max: 9 }),
         });
-      }
+      } */
 
       // seed industries
       const industries = [

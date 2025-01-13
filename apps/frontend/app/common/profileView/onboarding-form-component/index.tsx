@@ -55,7 +55,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         )}
       </CardHeader> */}
       <div
-        className={`flex flex-col ${props.formType === "video" ? "" : "pt-8 pb-6 pl-7 pr-10"}`}
+        className={`flex flex-col ${props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"}`}
       >
         {/* Render the appropriate template */}
         <TemplateComponent
@@ -71,12 +71,12 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           <Dialog>
             <DialogTrigger>
               {isFilled ? (
-                <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all hover:rounded-xl p-1" />
+                <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
               ) : (
                 <Button
                   variant="outline"
                   asChild={true}
-                  className="text-sm rounded-xl flex px-5 py-3 font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4 ml-5"
+                  className="items-left float-left mb-0 lg:mb-0 sm:mb-0 text-sm rounded-xl  font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4"
                 >
                   <span>
                     {props.triggerIcon}

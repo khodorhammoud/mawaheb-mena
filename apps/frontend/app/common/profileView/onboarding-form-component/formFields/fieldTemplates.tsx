@@ -588,7 +588,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
     );
   },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pb-4 mt-4 mx-4">
+    <div className="flex flex-col pb-4">
       <span className="text-xl font-medium">{cardTitle}</span>
       <span className="text-base text-gray-400 italic">No video added</span>
     </div>
