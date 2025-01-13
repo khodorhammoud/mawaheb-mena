@@ -23,6 +23,7 @@ import {
   Testimonial,
   BlogCard,
 } from "../../types/PageContent";
+import Wrapper from "~/common/wrapper/Wrapper";
 
 interface LoaderData {
   subHeadline: SubHeadline;
@@ -89,10 +90,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function Layout() {
   return (
-    <div
-      className="container"
-      style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}
-    >
+    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <Home />
     </div>
   );
