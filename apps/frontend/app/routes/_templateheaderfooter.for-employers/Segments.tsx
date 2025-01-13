@@ -24,7 +24,7 @@ const Segments = () => {
         setInView(entry.isIntersecting);
       },
       {
-        threshold: 0.2,
+        threshold: 0.1, // what it trake for segments section to appear :)
       }
     );
 
@@ -58,7 +58,7 @@ const Segments = () => {
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 50 }}
-      animate={inView ? { opacity: 1, y: 50 } : { opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 50 } : { opacity: 0, y: 0 }} // the speed of popping from segments to languaged is detected here, to make it faster, make second y=50 :)
       transition={{ duration: 0.5 }}
       className="flex flex-col items-center justify-center gap-8 mt-[200px] lg:text-7xl text-5xl font-semibold font-['BespokeSerif-Variable'] lg:w-[850px] mx-auto"
       style={{ minHeight: "calc(120vh - 400px)" }}

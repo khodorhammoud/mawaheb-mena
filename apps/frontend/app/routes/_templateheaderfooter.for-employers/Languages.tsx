@@ -27,7 +27,7 @@ const Languages: React.FC = () => {
   const fadeOpacity = useTransform(scrollY, [0, 30], [1, 0]);
 
   // Zoom effect for the ZoomingText component
-  const zoomScale = useTransform(scrollY, [30, 200], [1.5, 2]);
+  const zoomScale = useTransform(scrollY, [30, 200], [0, 1]);
   const zoomOpacity = useTransform(scrollY, [30, 200], [0, 1]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const Languages: React.FC = () => {
           setIsCentered(false); // Reset centering state
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0 } // the speen of dispearance of what-they-say-about-us section
     );
 
     const currentRef = ref.current;
@@ -108,8 +108,8 @@ const Languages: React.FC = () => {
         initial={{ opacity: 1, y: 0 }}
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center gap-8 lg:text-3xl text-2xl my-[200px] font-semibold font-['BespokeSerif-Variable'] lg:w-[650px] mx-auto"
-        style={{ minHeight: "calc(120vh - 300px)" }}
+        className="flex flex-col items-center justify-center gap-8 lg:text-3xl text-2xl my-48 font-semibold font-['BespokeSerif-Variable'] lg:w-[650px] mx-auto"
+        style={{ minHeight: "calc(120vh - 100px)" }} // the lower the number in the right is, the more hight the wtsau section is :)
       >
         {/* Use content from PreWhatTheySayAboutUs */}
         <motion.div initial={{ opacity: 1 }} style={{ opacity: fadeOpacity }}>
@@ -120,6 +120,7 @@ const Languages: React.FC = () => {
           </p>
 
           {/* Second Line Centered */}
+          {/* i can delete that */}
           <p className="text-center">
             {preWhatTheySayAboutUs.content.split("\n")[1]}
           </p>
@@ -132,7 +133,7 @@ const Languages: React.FC = () => {
             scale: zoomScale,
             opacity: zoomOpacity,
           }}
-          className="text-4xl font-['BespokeSerif-Variable']"
+          className="text-4xl font-['BespokeSerif-Variable']" // edit this value if you need to
         >
           <ZoomingText scrollY={scrollY} />
         </motion.div>
