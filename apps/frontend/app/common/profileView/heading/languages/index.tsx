@@ -11,7 +11,6 @@ import { Button } from "~/components/ui/button";
 import { IoPencilSharp } from "react-icons/io5";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
-import { Language } from "~/types/enums";
 
 export default function Languages() {
   const [languagesServedOpen, setLanguagesServedOpen] = useState(false); // Language dialog state
@@ -22,25 +21,18 @@ export default function Languages() {
     error?: { message: string };
   }>(); // Fetcher for Language form
 
-  const bioFetcher = useFetcher<{
-    success?: boolean;
-    error?: { message: string };
-  }>(); // Fetcher for bio form
-
-  // const LanguageFormRef = useRef<HTMLFormElement>(null); // Ref for Language form
-
   // Load data
-  const { employerLanguages, allLanguages } = useLoaderData() as {
-    employerLanguages: Language[];
-    allLanguages: Language[];
+  const { freelancerLanguages, allLanguages } = useLoaderData() as {
+    freelancerLanguages: { id: number; name: string }[];
+    allLanguages: { id: number; name: string }[];
   };
 
-  const [selectedLanguages, setSelectedLanguages] = useState<Language[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
 
   // Set initial Languages selected
   useEffect(() => {
-    setSelectedLanguages(employerLanguages);
-  }, [employerLanguages]);
+    setSelectedLanguages(freelancerLanguages.map((lang) => lang.id));
+  }, [freelancerLanguages]);
 
   // Handle showing the Language submission message
   useEffect(() => {
@@ -54,7 +46,6 @@ export default function Languages() {
     setLanguagesServedOpen(isOpen);
     if (!isOpen) {
       setShowLanguageMessage(false); // Clear Language message when dialog is closed
-      // setSearchTerm(""); // Clear search term when dialog is closed
     }
   };
 
@@ -92,88 +83,21 @@ export default function Languages() {
             )}
 
             {/* THE FORM */}
-            <SearcheableTagSelector<Language>
-              data={allLanguages || []}
-              selectedKeys={selectedLanguages || []}
-              itemLabel={(item) => item}
-              itemKey={(item) => item}
-              formName="employer-languages"
-              fieldName="employer-languages"
+            <SearcheableTagSelector<{ id: number; name: string }>
+              data={allLanguages}
+              selectedKeys={selectedLanguages}
+              itemLabel={(item) => item.name}
+              itemKey={(item) => item.id}
+              formName="freelancer-languages"
+              fieldName="freelancer-languages"
               searchPlaceholder="Search or type language"
             />
 
-            {/* Display Success Message for Industries */}
-            {/* {showIndustryMessage && industryFetcher.data?.success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                  <span className="block sm:inline">
-                    Industries updated successfully
-                  </span>
-                </div>
-              )} */}
-
-            {/* <industryFetcher.Form
-              ref={industryFormRef}
-              method="post"
-              id="employer-industires-form"
-            >
-              <input
-                type="hidden"
-                name="target-updated"
-                value="employer-industries"
-              />
-              <input
-                type="hidden"
-                name="employer-industries"
-                value={selectedIndustries.join(",")}
-              />
-            </industryFetcher.Form> */}
-
-            {/* Search Bar */}
-            {/* <div className="relative mb-4">
-              <Input
-                placeholder="Search or type industry"
-                value={searchTerm}
-                className="pl-10"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
-            </div> */}
-
-            {/* Industry Options */}
-            {/* <div className="flex flex-wrap gap-2">
-              {filteredIndustries.length > 0 ? (
-                filteredIndustries.map((industry) => (
-                  <Badge
-                    key={industry.id}
-                    onClick={() => toggleIndustry(industry.id)}
-                    className={`cursor-pointer px-4 py-2 ${
-                      selectedIndustries.includes(industry.id)
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {industry.label}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-gray-500">No industries found</p>
-              )}
-            </div> */}
-
-            {/* <DialogFooter className="mt-6">
-                <Button
-                  className="px-6"
-                  type="submit"
-                  form="employer-industires-form"
-                >
-                  Save
-                </Button>
-              </DialogFooter> */}
-            <DialogFooter>
+            <DialogFooter className="mt-6">
               <Button
-                disabled={bioFetcher.state === "submitting"}
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient hover:bg-primaryColor"
                 type="submit"
+                form="freelancer-languages-form"
               >
                 Save
               </Button>

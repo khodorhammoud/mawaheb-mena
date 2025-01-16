@@ -20,6 +20,7 @@ export interface GeneralizableFormCardProps {
   maxVal?: number;
   repeatableFieldName?: string;
   editable?: boolean;
+  useRichText?: boolean;
 }
 
 export interface FilledGeneralizableFormCardProps {

@@ -1,8 +1,3 @@
-// this carries the query functions such as (Select/From/Where.....)
-
-// import { Employer } from "~/types/User";
-// import { getCurrentUser } from "./user.server";
-
 import { db } from "../db/drizzle/connector";
 import {
   accountsTable,
@@ -12,8 +7,9 @@ import {
   UsersTable,
   jobsTable,
   freelancersTable,
-  // languagesTable,
-  // skillsTable,
+  languagesTable,
+  skillsTable,
+  freelancerLanguagesTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -32,7 +28,7 @@ import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { getCurrentProfileInfo } from "./user.server";
 import { uploadFileToBucket } from "./cloudStorage.server";
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from "~/types/enums";
+import { JobStatus, Language } from "~/types/enums";
 import DOMPurify from "isomorphic-dompurify";
 
 export async function updateAccountBio(
@@ -231,6 +227,79 @@ export async function updateFreelancerEducation(
   }
 }
 
+// LANGUAGES
+// LANGUAGES
+// LANGUAGES
+// Function to get all available languages
+export async function getAllLanguages(): Promise<
+  { id: number; name: string }[]
+> {
+  try {
+    const languages = await db.select().from(languagesTable);
+    if (!languages) {
+      throw new Error("Failed to get languages");
+    }
+    return languages.map((lang) => ({ id: lang.id, name: lang.name }));
+  } catch (error) {
+    console.error("Error getting languages", error);
+    throw error;
+  }
+}
+
+// Function to get freelancer's selected languages
+export async function getFreelancerLanguages(
+  freelancerId: number
+): Promise<{ id: number; name: string }[]> {
+  try {
+    const languages = await db
+      .select({ id: languagesTable.id, name: languagesTable.name })
+      .from(freelancerLanguagesTable)
+      .leftJoin(
+        languagesTable,
+        eq(freelancerLanguagesTable.languageId, languagesTable.id)
+      )
+      .where(eq(freelancerLanguagesTable.freelancerId, freelancerId));
+    if (!languages) {
+      throw new Error("Failed to get freelancer languages");
+    }
+    return languages;
+  } catch (error) {
+    console.error("Error getting freelancer languages", error);
+    throw error;
+  }
+}
+
+// Function to update freelancer's selected languages
+export async function updateFreelancerLanguages(
+  freelancerId: number,
+  languages: number[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // Delete existing languages
+    await db
+      .delete(freelancerLanguagesTable)
+      .where(eq(freelancerLanguagesTable.freelancerId, freelancerId));
+
+    // Ensure languages are unique
+    languages = [...new Set(languages)];
+
+    // Insert new languages
+    for (const languageId of languages) {
+      await db.insert(freelancerLanguagesTable).values({
+        freelancerId,
+        languageId,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating freelancer languages", error);
+    throw error;
+  }
+  return { success: true };
+}
+
+// INDUSTRIES
+// INDUSTRIES
+// INDUSTRIES
 export async function getAllIndustries(): Promise<Industry[]> {
   try {
     const industries = await db.select().from(industriesTable);
@@ -364,7 +433,9 @@ export async function updateEmployerBudget(
   }
 }
 
-export async function getEmployerBudget(employer: Employer): Promise<string> {
+export async function getEmployerBudget(
+  employer: Employer
+): Promise<string | null> {
   const accountId = employer.accountId;
 
   try {
@@ -376,11 +447,11 @@ export async function getEmployerBudget(employer: Employer): Promise<string> {
       .where(eq(employersTable.accountId, accountId))
       .limit(1); // Limit to 1 row since we're expecting one result
 
-    // Return the fetched budget or default to "0" if no result
-    return result[0]?.budget ? String(result[0].budget) : "0";
+    // ✅ Return null if the budget is 0 or undefined
+    return result[0]?.budget ? String(result[0].budget) : null;
   } catch (error) {
     console.error("Error fetching employer budget", error);
-    throw error; // Re-throw error for further handling
+    throw error;
   }
 }
 
@@ -644,7 +715,7 @@ export async function saveAvailability({
   availableFrom,
   hoursAvailableFrom,
   hoursAvailableTo,
-  jobsOpenTo, // [ 'full-time', 'part_time' ]
+  jobsOpenTo,
 }: {
   accountId: number;
   availableForWork: boolean;
@@ -653,10 +724,18 @@ export async function saveAvailability({
   hoursAvailableTo: string;
   jobsOpenTo: string[];
 }) {
-  // Convert the date to YYYY-MM-DD format
+  // Validate hours
+  const startTime = new Date(`1970-01-01T${hoursAvailableFrom}:00Z`);
+  const endTime = new Date(`1970-01-01T${hoursAvailableTo}:00Z`);
+
+  if (endTime <= startTime) {
+    throw new Error("End time must be later than start time.");
+  }
+
   const formattedDateAvailableFrom = availableFrom
     ? availableFrom.toISOString().split("T")[0]
     : null;
+
   const result = await db
     .update(freelancersTable)
     .set({
@@ -695,7 +774,7 @@ export async function getFreelancerAvailability(accountId: number) {
   const result = await db
     .select({
       availableForWork: freelancersTable.availableForWork,
-      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      availableFrom: freelancersTable.dateAvailableFrom,
       hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
       hoursAvailableTo: freelancersTable.hoursAvailableTo,
       jobsOpenTo: freelancersTable.jobsOpenTo,

@@ -5,6 +5,7 @@ import { AccountType } from "~/types/enums";
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
+  getCurrentUserAccountInfo,
 } from "~/servers/user.server";
 import {
   ActionFunctionArgs,
@@ -47,6 +48,11 @@ import {
   updateFreelancerWorkHistory,
   updateFreelancerCertificates,
   updateFreelancerEducation,
+  getFreelancerLanguages,
+  getAllLanguages,
+  getFreelancerAvailability,
+  saveAvailability,
+  updateAvailabilityStatus,
 } from "~/servers/employer.server";
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -59,6 +65,75 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const userId = currentProfile.account.user.id;
     const accountType = currentProfile.account.accountType;
+    const currentAccount = await getCurrentUserAccountInfo(request);
+    const accountId = currentAccount.id;
+
+    // AVAILABILITY
+    if (target === "freelancer-availability") {
+      const availableForWork = formData.get("available_for_work") === "true"; //true
+      const availableFrom = formData.get("available_from"); // calender string -> date (khodor)
+      const hoursAvailableFrom = formData.get("hours_available_from"); // from
+      const hoursAvailableTo = formData.get("hours_available_to"); // to
+      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[]; // carry array
+
+      // Validate hours
+      const startTime = new Date(`1970-01-01T${hoursAvailableFrom}:00Z`);
+      const endTime = new Date(`1970-01-01T${hoursAvailableTo}:00Z`);
+
+      if (endTime <= startTime) {
+        return Response.json(
+          {
+            success: false,
+            error: { message: "End time must be later than start time." },
+          },
+          { status: 400 }
+        );
+      }
+
+      // transfer the string date, into an actual date
+      const availableFromAsADate = new Date(availableFrom as string);
+
+      const result = await saveAvailability({
+        accountId,
+        availableForWork,
+        jobsOpenTo: jobsOpenToArray,
+        availableFrom: availableFromAsADate,
+        hoursAvailableFrom: hoursAvailableFrom as string,
+        hoursAvailableTo: hoursAvailableTo as string,
+      });
+
+      // console.log("Save Result:", result);
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to save availability." },
+            },
+            { status: 500 }
+          );
+    }
+
+    if (target === "freelancer-is-available-for-work") {
+      const availableForWork = formData.get("available_for_work") === "true";
+
+      // Call the query function to update availability status
+      const result = await updateAvailabilityStatus(
+        accountId,
+        availableForWork
+      );
+
+      return result
+        ? Response.json({ success: true })
+        : Response.json(
+            {
+              success: false,
+              error: { message: "Failed to update availability." },
+            },
+            { status: 500 }
+          );
+    }
 
     // EMPLOYER
     if (accountType == AccountType.Employer) {
@@ -140,12 +215,27 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // BUDGET
-      if (target == "employer-budget") {
+      if (target === "employer-budget") {
         const budgetValue = formData.get("employerBudget");
         const budget = parseInt(budgetValue as string, 10);
 
+        // ✅ Treat 0 as an empty value and save null to the DB
+        if (isNaN(budget) || budget === 0) {
+          await updateEmployerBudget(employer, null);
+          return Response.json({ success: true });
+        }
+
+        // Proceed to update if the budget is valid
         const budgetStatus = await updateEmployerBudget(employer, budget);
-        return Response.json({ success: budgetStatus.success });
+
+        if (budgetStatus.success) {
+          return Response.json({ success: true });
+        } else {
+          return Response.json({
+            success: false,
+            error: { message: "Failed to update employer budget" },
+          });
+        }
       }
 
       // ONBOARDING -> TRUE ✅
@@ -388,21 +478,15 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export async function loader({
-  request,
-}: LoaderFunctionArgs): Promise<
-  | TypedResponse<OnboardingEmployerFields>
-  | TypedResponse<OnboardingFreelancerFields>
-  | TypedResponse<LoaderFunctionError>
-  | TypedResponse<never>
-> {
-  // user must be verified
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Ensure the user is verified
   await requireUserVerified(request);
-  const accountType: AccountType = await getCurrentUserAccountType(request);
+
+  // Get the account type and profile info
+  const accountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
 
   if (!profile) {
-    console.warn("Profile information not found.");
     return Response.json({
       success: false,
       error: { message: "Profile information not found." },
@@ -410,29 +494,26 @@ export async function loader({
     });
   }
 
-  // if the current user is not onboarded, redirect them to the onboarding screen
+  // Redirect to dashboard if already onboarded
   if (profile.account?.user?.isOnboarded) {
     return redirect("/dashboard");
   }
 
-  // fetch employwer data
-  if (accountType == AccountType.Employer) {
+  if (accountType === AccountType.Employer) {
+    console.log("Employer account detected");
     profile = profile as Employer;
 
-    // Fetch all the necessary data safely
+    // Fetch data for the employer
     const bioInfo = await getAccountBio(profile.account);
     const employerIndustries = await getEmployerIndustries(profile);
-    const allIndustries = (await getAllIndustries()) || [];
+    const allIndustries = await getAllIndustries();
     const yearsInBusiness = await getEmployerYearsInBusiness(profile);
     const employerBudget = await getEmployerBudget(profile);
     const about = await getEmployerAbout(profile);
     const { activeJobCount, draftedJobCount, closedJobCount } =
       await getEmployerDashboardData(request);
-
-    // Check if employer.account exists before accessing nested properties
-    const accountOnboarded = profile.account.user.isOnboarded;
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
-    // Return the response data
+
     return Response.json({
       accountType,
       bioInfo,
@@ -442,23 +523,41 @@ export async function loader({
       yearsInBusiness,
       employerBudget,
       about,
-      accountOnboarded,
+      accountOnboarded: profile.account.user.isOnboarded,
       activeJobCount,
       draftedJobCount,
       closedJobCount,
       totalJobCount,
     });
-  } else if (accountType == AccountType.Freelancer) {
-    profile = (await getCurrentProfileInfo(request)) as Freelancer;
+  } else if (accountType === AccountType.Freelancer) {
+    profile = profile as Freelancer;
 
-    // Fetch all the necessary data safely
+    // Fetch data for the freelancer
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
-    const portfolio = profile.portfolio as PortfolioFormFieldType[];
-    const certificates = profile.certificates as CertificateFormFieldType[];
-    const educations = profile.educations as EducationFormFieldType[];
-    const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
+    const portfolio = profile.portfolio;
+    const certificates = profile.certificates;
+    const educations = profile.educations;
+    const workHistory = profile.workHistory;
+
+    // Fetch freelancer-specific data
+    const freelancerLanguages = await getFreelancerLanguages(profile.id);
+    const allLanguages = await getAllLanguages();
+
+    // Get the freelancer availability data
+    const freelancerAvailability = await getFreelancerAvailability(
+      profile.accountId
+    );
+
+    // Ensure all necessary data is returned
+    const availabilityData = {
+      availableForWork: freelancerAvailability?.availableForWork ?? false,
+      jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
+      availableFrom: freelancerAvailability?.availableFrom ?? "",
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+    };
 
     return Response.json({
       accountType,
@@ -473,9 +572,12 @@ export async function loader({
       certificates,
       educations,
       workHistory,
+      freelancerAvailability: availabilityData,
+      freelancerLanguages,
+      allLanguages,
     });
   }
-  console.warn("Account type not found.");
+
   return Response.json({
     success: false,
     error: { message: "Account type not found." },

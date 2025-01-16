@@ -35,12 +35,11 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     : Template.EmptyState;
   return (
     <Card
-      className={`border-2 rounded-xl h-auto grid relative  
-  ${
-    isFilled
-      ? "bg-[#F1F0F3] border-0"
-      : "bg-gray-100 border-gray-300 border-dashed"
-  }
+      className={`border-2 rounded-xl h-auto grid relative ${
+        isFilled
+          ? "bg-[#F1F0F3] border-0"
+          : "bg-gray-100 border-gray-300 border-dashed"
+      }
   text-left break-words whitespace-normal overflow-hidden`}
       style={{ wordBreak: "break-word", hyphens: "auto" }} // this is to let the typing go down to the second line
     >
@@ -57,7 +56,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
       <div
         className={`flex flex-col ${props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"}`}
       >
-        {/* Render the appropriate template */}
+        {/* Render the appropriate template that is one of the templates inside form fields */}
         <TemplateComponent
           value={value}
           fieldName={props.fieldName}
@@ -76,7 +75,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                 <Button
                   variant="outline"
                   asChild={true}
-                  className="items-left float-left mb-0 lg:mb-0 sm:mb-0 text-sm rounded-xl  font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4"
+                  className="items-left float-left lg:mb-0 sm:mb-0 text-sm rounded-xl  font-semibold tracking-wide space-x-2 text-primaryColor border-gray-300 not-active-gradient hover:text-white mb-4"
                 >
                   <span>
                     {props.triggerIcon}
@@ -87,7 +86,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             </DialogTrigger>
 
             <DialogContent className="bg-white">
-              <DialogTitle className="mt-3 tracking-normal">
+              <DialogTitle className="mt-3 tracking-normal mb-2">
                 {props.popupTitle}
               </DialogTitle>
 

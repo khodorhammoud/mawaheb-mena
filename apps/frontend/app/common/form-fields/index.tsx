@@ -71,7 +71,7 @@ const AppFormField = ({
             </select>
           ) : type === "number" || id === "number" ? ( // Numeric input for id="number"
             <input
-              type="tel" // type="tel" is used for better UX on mobile devices
+              type="number" // type="tel" is used for better UX on mobile devices
               id={id}
               name={name}
               placeholder={placeholder}

@@ -68,9 +68,11 @@ export const TextAreaFieldTemplate: FieldTemplateState = {
 
 export const NumberFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col pb-4">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-base font-medium">{value as number}</span>
+    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+      <div className="flex flex-col gap-1">
+        <span className="text-lg font-medium">{cardTitle}</span>
+        <span className="text-2xl mt-4">{value as number} $</span>
+      </div>
     </div>
   ),
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
