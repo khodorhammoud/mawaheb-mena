@@ -103,6 +103,7 @@ export default function Dashboard() {
             triggerLabel="Add Bio"
             formName="freelancer-about"
             fieldName="about"
+            useRichText={true}
             editable={canEdit} // Allow editing only if the user can edit
           />
         </div>

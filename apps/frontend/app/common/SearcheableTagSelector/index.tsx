@@ -1,3 +1,5 @@
+// this is the search for the languages and industries, with their badges ❤️
+
 import { useState, useRef, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
@@ -87,10 +89,10 @@ export default function SearcheableTagSelector<T>({
             <Badge
               key={itemKey(item)}
               onClick={() => toggleItem(itemKey(item))}
-              className={`cursor-pointer rounded-xl px-4 py-2 ${
+              className={`cursor-pointer rounded-2xl px-4 py-2 hover:shadow-sm ${
                 selectedItems.includes(itemKey(item))
-                  ? "bg-blue-100 text-black"
-                  : "text-black"
+                  ? "bg-blue-100 text-gray-900 hover:bg-blue-100"
+                  : "text-gray-900 bg-white border border-gray-200 hover:bg-gray-200"
               }`}
             >
               {itemLabel(item)}

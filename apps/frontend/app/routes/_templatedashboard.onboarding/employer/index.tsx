@@ -62,8 +62,8 @@ export default function EmployerOnboardingScreen() {
             cardTitle="Average Project Budget"
             popupTitle="Add Average Budget"
             triggerLabel="Add Average Budget"
-            formName="employer-budget"
-            fieldName="employerBudget"
+            formName="employer-budget" // used in the action function
+            fieldName="employerBudget" // used in GeneralizableForCard
             triggerIcon={<BsCurrencyDollar />}
             editable={true}
           />
@@ -78,6 +78,7 @@ export default function EmployerOnboardingScreen() {
             formName="employer-about"
             fieldName="about"
             editable={true}
+            useRichText={true}
           />
         </div>
         {/* 

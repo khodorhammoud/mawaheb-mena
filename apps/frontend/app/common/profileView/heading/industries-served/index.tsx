@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { IoPencilSharp } from "react-icons/io5";
@@ -12,7 +13,7 @@ import { useLoaderData, useFetcher } from "@remix-run/react";
 import { Industry } from "~/types/User";
 import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 
-export default function Languages() {
+export default function Industires() {
   const [industriesServedOpen, setIndustriesServedOpen] = useState(false); // Industry dialog state
   const [showIndustryMessage, setShowIndustryMessage] = useState(false); // Track industry message visibility
 
@@ -172,15 +173,15 @@ export default function Languages() {
               )}
             </div> */}
 
-            {/* <DialogFooter className="mt-6">
-                <Button
-                  className="px-6"
-                  type="submit"
-                  form="employer-industires-form"
-                >
-                  Save
-                </Button>
-              </DialogFooter> */}
+            <DialogFooter className="mt-6">
+              <Button
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient hover:bg-primaryColor"
+                type="submit"
+                form="employer-industires-form"
+              >
+                Save
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
