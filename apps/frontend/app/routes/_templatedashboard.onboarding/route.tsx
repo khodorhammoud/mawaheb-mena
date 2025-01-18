@@ -470,6 +470,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // DEFAULT
     throw new Error("Unknown target update");
   } catch (error) {
+    console.error("Error while updating onboarding status", error);
     return Response.json({
       success: false,
       error: { message: "An unexpected error occurred." },

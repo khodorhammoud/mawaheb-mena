@@ -95,7 +95,7 @@ export default function Availability() {
     setIsCalendarOpen(false);
   };
 
-  const handleSave = (event: React.FormEvent) => {
+  /* const handleSave = (event: React.FormEvent) => {
     event.preventDefault();
 
     const startTime = new Date(
@@ -123,7 +123,7 @@ export default function Availability() {
       },
       { method: "post", action: onBoarding ? "/onboarding" : "/dashboard" }
     );
-  };
+  }; */
 
   useEffect(() => {
     if (availabilityFetcher.data) {
