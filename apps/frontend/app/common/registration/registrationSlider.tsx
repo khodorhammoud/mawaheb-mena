@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft, FaArrowRight, FaStar } from "react-icons/fa";
 
 export type registrationSlideData = {
@@ -16,49 +16,78 @@ export default function RegistrationSlider(props: {
   const slides: registrationSlideData[] | null = props.slides;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
   const variants = {
-    enter: (direction) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
+    enter: (direction: number) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      opacity: 1,
     }),
     center: {
       x: 0,
       opacity: 1,
     },
-    exit: (direction) => ({
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
+    exit: (direction: number) => ({
+      x: direction < 0 ? "100%" : "-100%",
+      opacity: 1,
+      // position: 'absolute',
     }),
   };
 
+  // Auto-scroll effect
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [slides.length, isAutoPlaying]);
+
+  const handleManualNavigation = (callback: () => void) => {
+    setIsAutoPlaying(false);
+    callback();
+    // Resume auto-play after 5 seconds of inactivity
+    setTimeout(() => setIsAutoPlaying(true), 5000);
+  };
+
   const nextSlide = () => {
-    setDirection(1);
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    handleManualNavigation(() => {
+      setDirection(1);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    });
   };
 
   const prevSlide = () => {
-    setDirection(-1);
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    handleManualNavigation(() => {
+      setDirection(-1);
+      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    });
   };
+
   return (
     <div className="absolute inset-0 flex flex-col justify-end h-[900px]">
       {/* Background Image */}
-      <motion.div
-        className="absolute inset-0 bg-cover bg-center z-0 h-full"
-        style={{
-          backgroundImage: `url(${slides[currentSlide].image})`,
-        }}
-        key={currentSlide}
-        custom={direction}
-        variants={variants}
-        initial="enter"
-        animate="center"
-        exit="exit"
-        transition={{
-          x: { type: "spring", stiffness: 300, damping: 50 },
-          opacity: { duration: 0.2 },
-        }}
-      />
+      <AnimatePresence initial={false} custom={direction} mode="popLayout">
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center z-0 h-full"
+          style={{
+            backgroundImage: `url(${slides[currentSlide].image})`,
+          }}
+          key={currentSlide}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 100, damping: 20 },
+            opacity: { duration: 0.2 },
+          }}
+        />
+      </AnimatePresence>
       <div className="sticky bottom-0 w-full p-6 text-white flex justify-between items-end mb-4">
         {/* Quote and Name */}
         <div>
