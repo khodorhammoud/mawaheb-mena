@@ -16,28 +16,22 @@ type AvailabilityResponse = {
 
 type LoaderData = {
   profile?: {
+    // form onboarding state ❤️
     availableForWork: boolean;
     jobsOpenTo: string[];
-    availableFrom: string;
+    dateAvailableFrom: string | null; // use Date type also
     hoursAvailableFrom: string;
     hoursAvailableTo: string;
   };
   freelancerAvailability?: {
+    // form dashboard state ❤️
     availableForWork: boolean;
     jobsOpenTo: string[];
-    availableFrom: string;
+    availableFrom: string | null; // use Date type also
     hoursAvailableFrom: string;
     hoursAvailableTo: string;
   };
 };
-
-// const [workAvailability, setWorkAvailability] = useState({
-//   isLookingForWork: profile.availableForWork || false,
-//   jobTypes: profile.jobsOpenTo || [],
-//   availableFrom: profile.dateAvailableFrom || "",
-//   availableHoursStart: profile.hoursAvailableFrom || "09:00",
-//   availableHoursEnd: profile.hoursAvailableTo || "17:00",
-// });
 
 const generateTimeOptions = () => {
   const times = [];
@@ -57,42 +51,72 @@ const timeOptions = generateTimeOptions();
 
 export default function Availability() {
   const loaderData = useLoaderData<LoaderData>();
-  const onBoarding = loaderData.profile ? true : false; // Determine if the state is onboarding or dashboard
+  const onBoarding = loaderData.profile ? true : false; // determine if user is onboarding or dashboard
 
   const availabilityFetcher = useFetcher<AvailabilityResponse>();
   const toggleFetcher = useFetcher();
 
   const data = onBoarding
     ? loaderData.profile
-    : loaderData.freelancerAvailability;
+    : loaderData.freelancerAvailability
+      ? {
+          ...loaderData.freelancerAvailability,
+          // Map `availableFrom` to `dateAvailableFrom` for consistency
+          jobsOpenTo: loaderData.freelancerAvailability.jobsOpenTo || [],
+          dateAvailableFrom: loaderData.freelancerAvailability.availableFrom,
+        }
+      : undefined;
 
-  const [workAvailability, setWorkAvailability] = useState({
-    isLookingForWork: data?.availableForWork || false,
-    jobTypes: data?.jobsOpenTo || [],
-    availableFrom: data?.availableFrom || "", // Use only availableFrom
-    availableHoursStart: data?.hoursAvailableFrom || "09:00",
-    availableHoursEnd: data?.hoursAvailableTo || "17:00",
-  });
-
-  const [timeError, setTimeError] = useState<string | null>(null);
-
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    data?.availableFrom ? new Date(data.availableFrom) : null
-  );
-
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [showAvailabilityMessage, setShowAvailabilityMessage] = useState(false);
+  // console.log(data, "wiixxxxx");
 
   const formatDate = (date: Date | null) =>
     date ? format(date, "yyyy-MM-dd") : "";
 
+  const formatTime = (time: string) => time.slice(0, 5); // Extract HH:mm from HH:mm:ss
+
+  const [workAvailability, setWorkAvailability] = useState(() => ({
+    isLookingForWork: data?.availableForWork || false,
+    jobTypes: data?.jobsOpenTo || [],
+    availableFrom: data?.dateAvailableFrom || "", // Safely access `dateAvailableFrom`
+    availableHoursStart: data?.hoursAvailableFrom
+      ? formatTime(data.hoursAvailableFrom) // Format as HH:mm
+      : "",
+    availableHoursEnd: data?.hoursAvailableTo
+      ? formatTime(data.hoursAvailableTo) // Format as HH:mm
+      : "",
+  }));
+
+  const [isInitialized, setIsInitialized] = useState(false); // this is the one that solved my JobsOpenTo array ❤️❤️❤️
+
+  useEffect(() => {
+    if (!isInitialized) {
+      setWorkAvailability({
+        isLookingForWork: data?.availableForWork ?? false,
+        jobTypes: data?.jobsOpenTo ?? [],
+        availableFrom: data?.dateAvailableFrom ?? "",
+        availableHoursStart: data?.hoursAvailableFrom ?? "",
+        availableHoursEnd: data?.hoursAvailableTo ?? "",
+      });
+      setIsInitialized(true);
+    }
+  }, [data, isInitialized]);
+
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [timeError, setTimeError] = useState<string | null>(null);
+  const [showAvailabilityMessage, setShowAvailabilityMessage] = useState(false);
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>( // <-- Add this
+    data?.dateAvailableFrom ? new Date(data.dateAvailableFrom) : null
+  );
+
   const handleDateSelect = (date: Date) => {
+    const formattedDate = format(date, "yyyy-MM-dd"); // Format as yyyy-MM-dd
     setSelectedDate(date);
     setWorkAvailability((prevState) => ({
       ...prevState,
-      availableFrom: formatDate(date),
+      availableFrom: formattedDate, // Always a string // Update state
     }));
-    setIsCalendarOpen(false);
+    setIsCalendarOpen(false); // close Calendar
   };
 
   const handleSave = (event: React.FormEvent) => {
@@ -116,7 +140,8 @@ export default function Availability() {
       {
         "target-updated": "freelancer-availability",
         available_for_work: workAvailability.isLookingForWork.toString(),
-        available_from: workAvailability.availableFrom,
+        available_from:
+          workAvailability.availableFrom || formatDate(new Date()), // Default to today's date if empty
         hours_available_from: workAvailability.availableHoursStart,
         hours_available_to: workAvailability.availableHoursEnd,
         jobs_open_to: workAvailability.jobTypes,
@@ -160,6 +185,7 @@ export default function Availability() {
           </div>
         )}
 
+        {/* Toggle */}
         <div className="flex text-sm items-center mt-5 mb-7 ml-1">
           <ToggleSwitch
             isChecked={workAvailability.isLookingForWork}
@@ -190,17 +216,18 @@ export default function Availability() {
           <div>I am looking for work</div>
         </div>
 
+        {/* CheckBoxes */}
         <div className="mb-7">
           <p className="text-base mb-6">Job Types I am open to:</p>
 
-          {/* Full Time Roles */}
+          {/* Full Time Checkbox */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="full-time"
               name="jobs_open_to[]"
-              value="full-time-roles"
+              value="full-time-roles" // Match this value with the database entry
               checked={workAvailability.jobTypes.includes("full-time-roles")}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -208,22 +235,22 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "full-time-roles"
                       ),
-                }))
-              }
+                }));
+              }}
             />
             <label htmlFor="full-time" className="ml-2 text-gray-700">
               Full Time Roles
             </label>
           </div>
 
-          {/* Part Time Roles */}
+          {/* Part Time Checkbox */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="part-time"
               name="jobs_open_to[]"
-              value="part-time-roles"
+              value="part-time-roles" // Match this value with the database entry
               checked={workAvailability.jobTypes.includes("part-time-roles")}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -231,22 +258,22 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "part-time-roles"
                       ),
-                }))
-              }
+                }));
+              }}
             />
             <label htmlFor="part-time" className="ml-2 text-gray-700">
               Part Time Roles
             </label>
           </div>
 
-          {/* Employee Roles */}
+          {/* Employee Checkbox */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="employee"
               name="jobs_open_to[]"
-              value="employee-roles"
+              value="employee-roles" // Match this value with the database entry
               checked={workAvailability.jobTypes.includes("employee-roles")}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked) => {
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -254,8 +281,8 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "employee-roles"
                       ),
-                }))
-              }
+                }));
+              }}
             />
             <label htmlFor="employee" className="ml-2 text-gray-700">
               Employee Roles
@@ -263,7 +290,7 @@ export default function Availability() {
           </div>
         </div>
 
-        {/* y */}
+        {/* AvailableFrom Date */}
         <div className="relative my-6">
           <label
             htmlFor="availableFrom"
@@ -272,29 +299,49 @@ export default function Availability() {
             I am available to work from:
           </label>
 
+          {/* Input Field */}
           <div
             className="relative cursor-pointer"
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
           >
-            <AppFormField
+            <input
               type="text"
               id="availableFrom"
               name="available_from"
-              defaultValue={workAvailability.availableFrom}
-              onChange={(value) =>
-                setWorkAvailability((prevState) => ({
-                  ...prevState,
-                  availableFrom: value,
-                }))
-              }
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryColor"
+              defaultValue={workAvailability.availableFrom} // Keep defaultValue
+              readOnly // Prevent manual typing
             />
           </div>
 
+          {/* Calendar Dropdown */}
           {isCalendarOpen && (
             <div className="absolute bg-white shadow-lg mt-1 z-50">
               <Calendar
-                selectedDate={selectedDate}
-                onDateSelect={handleDateSelect}
+                selectedDate={
+                  workAvailability.availableFrom
+                    ? new Date(workAvailability.availableFrom)
+                    : null
+                }
+                onDateSelect={(date) => {
+                  const formattedDate = format(date, "yyyy-MM-dd");
+                  // Update the state with the new selected date
+                  setWorkAvailability((prevState) => ({
+                    ...prevState,
+                    availableFrom: formattedDate,
+                  }));
+
+                  // Dynamically update the input value
+                  const inputElement = document.getElementById(
+                    "availableFrom"
+                  ) as HTMLInputElement;
+                  if (inputElement) {
+                    inputElement.value = formattedDate;
+                  }
+
+                  // Close the calendar after selection
+                  setIsCalendarOpen(false);
+                }}
                 onClose={() => setIsCalendarOpen(false)}
               />
             </div>
@@ -303,47 +350,57 @@ export default function Availability() {
 
         {/* Hours Section */}
         <div className="mb-4">
-          <label className="block mb-4">Hours I am available to work:</label>
+          <label htmlFor="availableHours" className="block mb-4">
+            Hours I am available to work:
+          </label>
           <div className="flex gap-4 items-center">
+            {/* Start Time */}
             <AppFormField
               type="select"
               id="availableHoursStart"
               name="hours_available_from"
               label="Start Time"
-              defaultValue={workAvailability.availableHoursStart}
-              options={timeOptions}
+              defaultValue={workAvailability.availableHoursStart} // Reflect the default state
+              options={timeOptions.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
               onChange={(value) =>
-                setWorkAvailability((prev) => ({
-                  ...prev,
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
                   availableHoursStart: value,
                 }))
               }
             />
+
             <span>to</span>
+
+            {/* End Time */}
             <AppFormField
               type="select"
               id="availableHoursEnd"
               name="hours_available_to"
               label="End Time"
-              defaultValue={workAvailability.availableHoursEnd}
-              options={timeOptions}
+              defaultValue={workAvailability.availableHoursEnd} // Reflect the default state
+              options={timeOptions.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
               onChange={(value) =>
-                setWorkAvailability((prev) => ({
-                  ...prev,
+                setWorkAvailability((prevState) => ({
+                  ...prevState,
                   availableHoursEnd: value,
                 }))
               }
             />
           </div>
-          {timeError && (
-            <p className="text-red-500 text-sm mt-2">{timeError}</p>
-          )}
         </div>
 
+        {/* Save Button */}
         <div className="flex justify-end">
           <Button
             disabled={availabilityFetcher.state === "submitting"}
-            className="text-white py-4 px-6 rounded-xl bg-primaryColor font-medium not-active-gradient mt-2"
+            className="text-white py-4 px-6 rounded-xl bg-primaryColor font-medium not-active-gradient hover:not-active-gradient mt-2"
             type="submit"
           >
             {availabilityFetcher.state === "submitting"

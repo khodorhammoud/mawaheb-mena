@@ -783,6 +783,16 @@ export async function getFreelancerAvailability(accountId: number) {
     .where(eq(freelancersTable.accountId, accountId))
     .limit(1);
 
+  const availability = result[0] || null;
+
+  // Ensure `availableFrom` is a valid date before formatting
+  if (availability?.availableFrom) {
+    const availableFromDate = new Date(availability.availableFrom); // Convert to Date
+    availability.availableFrom = !isNaN(availableFromDate.getTime()) // Check if valid Date
+      ? availableFromDate.toISOString().split("T")[0] // Format as yyyy-MM-dd
+      : null; // Fallback to null if invalid
+  }
+
   return result[0] || null;
 }
 

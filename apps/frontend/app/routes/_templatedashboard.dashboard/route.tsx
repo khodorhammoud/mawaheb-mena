@@ -79,7 +79,9 @@ export async function action({ request }: ActionFunctionArgs) {
     // AVAILABILITY
     if (target === "freelancer-availability") {
       const availableForWork = formData.get("available_for_work") === "true";
-      const availableFrom = formData.get("available_from");
+      const availableFromInput = formData.get("available_from") as
+        | string
+        | null;
       const hoursAvailableFrom = formData.get("hours_available_from") as string;
       const hoursAvailableTo = formData.get("hours_available_to") as string;
       const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[];
@@ -98,13 +100,15 @@ export async function action({ request }: ActionFunctionArgs) {
         );
       }
 
-      const availableFromAsADate = new Date(availableFrom as string);
+      const availableFrom = availableFromInput
+        ? new Date(availableFromInput)
+        : new Date(); // Default to today's date if no input is provided
 
       const result = await saveAvailability({
         accountId,
         availableForWork,
         jobsOpenTo: jobsOpenToArray,
-        availableFrom: availableFromAsADate,
+        availableFrom,
         hoursAvailableFrom,
         hoursAvailableTo,
       });
@@ -530,22 +534,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProfile.accountId
     );
 
-    // Ensure all necessary data is returned
     const availabilityData = {
       availableForWork: freelancerAvailability?.availableForWork ?? false,
       jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
-      availableFrom: freelancerAvailability?.availableFrom ?? "",
-      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
-      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+      availableFrom: freelancerAvailability?.availableFrom
+        ? new Date(freelancerAvailability.availableFrom)
+            .toISOString()
+            .split("T")[0] // Convert to yyyy-MM-dd
+        : "", // Fallback to empty string
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
 
-    // i'll keep these consoles, to see the data in the loader were gonna pass to files using useLoaderdata
-    // console.log("Loader function called!");
-    // console.log("Account Type:", accountType);
-    // console.log("Freelancer Availability:", freelancerAvailability);
-
-    // Return response for Freelancer
-
+    console.log(freelancerAvailability, "dashhhboard");
     return Response.json({
       accountType,
       bioInfo,
