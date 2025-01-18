@@ -75,6 +75,13 @@ export default function Calendar({
               ? "bg-primaryColor text-white"
               : "hover:border hover:border-primaryColor"
           }`}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              onDateSelect(day); // Trigger parent function
+            }
+          }}
+          tabIndex={0}
+          role="button"
           style={{
             width: "2.5rem",
             height: "2.5rem",
