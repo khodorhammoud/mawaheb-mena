@@ -91,7 +91,6 @@ export default function SignupLeftComponent() {
               <a
                 href="/terms-and-conditions"
                 className="text-primaryColor font-semibold hover:underline"
-                target="_blank"
                 rel="noopener noreferrer"
               >
                 terms and conditions
