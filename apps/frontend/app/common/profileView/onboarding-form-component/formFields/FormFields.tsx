@@ -30,13 +30,15 @@ export const FormFields = {
   ),
 
   number: ({ value, onChange, name }: FormFieldProps) => (
-    <Input
+    <AppFormField
       type="number"
-      placeholder="Enter a number"
-      value={value as number}
-      onChange={onChange}
+      id="number-input"
       name={name}
-      className="w-full p-3 border border-gray-300 rounded-md"
+      label="Enter a number"
+      placeholder="Enter a number"
+      onChange={onChange}
+      className="no-spinner"
+      defaultValue={value ? value.toString() : ""}
     />
   ),
 

@@ -29,7 +29,7 @@ function WorkHistoryComponent({
   };
 
   return (
-    <div className="">
+    <div className="p-1">
       {/* Forms */}
       <div className="flex space-x-4 mt-2 mb-6">
         <AppFormField

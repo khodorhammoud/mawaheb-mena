@@ -90,6 +90,7 @@ export default function FreelancerOnboardingScreen() {
             triggerLabel="Add Bio"
             formName="freelancer-about"
             fieldName="about"
+            useRichText={true}
             editable={true}
           />
         </div>

@@ -48,6 +48,8 @@ import {
   saveAvailability,
   getFreelancerAvailability,
   updateAvailabilityStatus,
+  getFreelancerLanguages,
+  getAllLanguages,
 } from "~/servers/employer.server";
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded } from "~/auth/auth.server";
@@ -61,9 +63,12 @@ export async function action({ request }: ActionFunctionArgs) {
     const currentUser = await getCurrentUser(request);
     const userId = currentUser.id;
     const employer = (await getCurrentProfileInfo(request)) as Employer;
+    const currentProfile = await getCurrentProfileInfo(request);
+    const accountType = currentProfile.account.accountType;
+    const currentAccount = await getCurrentUserAccountInfo(request);
+    const accountId = currentAccount.id;
 
     // Get the current account info
-    const currentAccount = await getCurrentUserAccountInfo(request);
     if (!currentAccount) {
       return Response.json(
         { success: false, error: { message: "User not logged in." } },
@@ -71,30 +76,42 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    const accountId = currentAccount.id;
-
     // AVAILABILITY
     if (target === "freelancer-availability") {
-      // Extract form fields
-      const availableForWork = formData.get("available_for_work") === "true"; //true
-      const availableFrom = formData.get("available_from"); // calender string -> date (khodor)
-      const hoursAvailableFrom = formData.get("hours_available_from"); // from
-      const hoursAvailableTo = formData.get("hours_available_to"); // to
-      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[]; // carry array
+      const availableForWork = formData.get("available_for_work") === "true";
+      const availableFromInput = formData.get("available_from") as
+        | string
+        | null;
+      const hoursAvailableFrom = formData.get("hours_available_from") as string;
+      const hoursAvailableTo = formData.get("hours_available_to") as string;
+      const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[];
 
-      // transfer the string date, into an actual date
-      const availableFromAsADate = new Date(availableFrom as string);
+      // Validate hours
+      const startTime = new Date(`1970-01-01T${hoursAvailableFrom}:00Z`);
+      const endTime = new Date(`1970-01-01T${hoursAvailableTo}:00Z`);
+
+      if (endTime <= startTime) {
+        return Response.json(
+          {
+            success: false,
+            error: { message: "End time must be later than start time." },
+          },
+          { status: 400 }
+        );
+      }
+
+      const availableFrom = availableFromInput
+        ? new Date(availableFromInput)
+        : new Date(); // Default to today's date if no input is provided
 
       const result = await saveAvailability({
         accountId,
         availableForWork,
         jobsOpenTo: jobsOpenToArray,
-        availableFrom: availableFromAsADate,
-        hoursAvailableFrom: hoursAvailableFrom as string,
-        hoursAvailableTo: hoursAvailableTo as string,
+        availableFrom,
+        hoursAvailableFrom,
+        hoursAvailableTo,
       });
-
-      // console.log("Save Result:", result);
 
       return result
         ? Response.json({ success: true })
@@ -126,9 +143,6 @@ export async function action({ request }: ActionFunctionArgs) {
             { status: 500 }
           );
     }
-
-    const currentProfile = await getCurrentProfileInfo(request);
-    const accountType = currentProfile.account.accountType;
 
     // EMPLOYER
     if (accountType == AccountType.Employer) {
@@ -512,26 +526,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Freelancer-specific data
     currentProfile = currentProfile as Freelancer;
 
+    const freelancerLanguages = await getFreelancerLanguages(profile.id);
+    const allLanguages = await getAllLanguages();
+
     // Get the freelancer availability data
     const freelancerAvailability = await getFreelancerAvailability(
       currentProfile.accountId
     );
 
-    // Ensure all necessary data is returned
     const availabilityData = {
       availableForWork: freelancerAvailability?.availableForWork ?? false,
       jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
-      availableFrom: freelancerAvailability?.dateAvailableFrom ?? "",
-      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
-      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+      availableFrom: freelancerAvailability?.availableFrom
+        ? new Date(freelancerAvailability.availableFrom)
+            .toISOString()
+            .split("T")[0] // Convert to yyyy-MM-dd
+        : "", // Fallback to empty string
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
-
-    // i'll keep these consoles, to see the data in the loader were gonna pass to files using useLoaderdata
-    // console.log("Loader function called!");
-    // console.log("Account Type:", accountType);
-    // console.log("Freelancer Availability:", freelancerAvailability);
-
-    // Return response for Freelancer
 
     return Response.json({
       accountType,
@@ -550,8 +563,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       canEdit: isOwner, // Freelancers can edit if they are the owner
       currentUser: currentProfile,
       freelancerAvailability: availabilityData,
+      freelancerLanguages,
+      allLanguages,
     });
   }
+
+  return Response.json({
+    success: false,
+    error: { message: "Account type not found." },
+    status: 404,
+  });
 }
 
 // Layout component

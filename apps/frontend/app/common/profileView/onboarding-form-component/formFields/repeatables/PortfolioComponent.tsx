@@ -30,7 +30,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
   // };
 
   return (
-    <div className="">
+    <div className="p-1">
       <div className="flex space-x-4 mt-2 mb-6">
         {/* PROJECT NAME FORM */}
         <div className="relative">

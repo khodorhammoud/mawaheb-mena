@@ -8,7 +8,7 @@ interface EducationComponentProps {
 
 function EducationComponent({ data, onTextChange }: EducationComponentProps) {
   return (
-    <div className="grid gap-6 mt-2">
+    <div className="grid gap-6 mt-2 p-1">
       <AppFormField
         type="text"
         id="degree[]"

@@ -18,7 +18,7 @@ function CertificateComponent({
   onTextChange,
 }: CertificateComponentProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-1">
       <div className="mt-4">
         <FileUpload onFileChange={handleFileUpload} />
       </div>

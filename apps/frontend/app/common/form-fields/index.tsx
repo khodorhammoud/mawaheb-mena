@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PhoneNumberField from "./phoneNbs/PhoneNumberField";
 
 const AppFormField = ({
@@ -18,6 +18,11 @@ const AppFormField = ({
   const [showPassword, setShowPassword] = useState(false);
 
   const [selectedValue, setSelectedValue] = useState(defaultValue);
+
+  useEffect(() => {
+    // Sync selectedValue with defaultValue on prop update
+    setSelectedValue(defaultValue);
+  }, [defaultValue]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -71,7 +76,7 @@ const AppFormField = ({
             </select>
           ) : type === "number" || id === "number" ? ( // Numeric input for id="number"
             <input
-              type="tel" // type="tel" is used for better UX on mobile devices
+              type="number" // type="tel" is used for better UX on mobile devices
               id={id}
               name={name}
               placeholder={placeholder}
@@ -103,8 +108,8 @@ const AppFormField = ({
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
-              defaultValue={defaultValue} // Handle default value for input
-              onChange={onChange} // Attach `onChange` here
+              defaultValue={selectedValue}
+              onChange={onChange}
             />
           )}
         </>
@@ -123,7 +128,7 @@ const AppFormField = ({
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
               peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
         >
-          Password
+          {label}
         </label>
       ) : type === "textarea" ? (
         // textarea label
