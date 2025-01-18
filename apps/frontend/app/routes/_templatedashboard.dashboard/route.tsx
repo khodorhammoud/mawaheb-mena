@@ -546,7 +546,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
 
-    console.log(freelancerAvailability, "dashhhboard");
     return Response.json({
       accountType,
       bioInfo,
