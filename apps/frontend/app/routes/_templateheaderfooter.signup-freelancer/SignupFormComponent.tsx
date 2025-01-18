@@ -78,11 +78,15 @@ export default function SignupLeftComponent() {
         <div className="flex flex-col space-y-3">
           <div className="flex items-center space-x-3 ml-3">
             <Checkbox
-              checked={termsAccepted}
-              onCheckedChange={(checked) => setTermsAccepted(!!checked)}
+              name="termsAccepted"
+              id="termsAccepted"
+              required
               className="peer"
             />
-            <span className="text-sm tracking-tight text-gray-500">
+            <label
+              htmlFor="termsAccepted"
+              className="text-sm tracking-tight text-gray-500"
+            >
               I accept the{" "}
               <a
                 href="/terms-and-conditions"
@@ -92,15 +96,12 @@ export default function SignupLeftComponent() {
               >
                 terms and conditions
               </a>
-            </span>
+            </label>
           </div>
 
           <button
             type="submit"
-            disabled={!termsAccepted} // Disable submit if checkbox not checked
-            className={`w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient ${
-              !termsAccepted ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Continue
           </button>
