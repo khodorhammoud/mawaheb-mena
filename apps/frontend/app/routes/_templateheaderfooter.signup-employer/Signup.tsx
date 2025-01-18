@@ -26,15 +26,17 @@ export default function SignUpEmployerPage() {
 
   return (
     <LayoutContainer>
-      <div className="flex">
+      <div className="flex w-full mt-20 mb-36 max-w-screen-2xl mx-auto">
         {/* Left Side - Sign Up Form */}
-        <div className="md:w-1/2 flex flex-col items-center p-8 mt-14 w-[60%] ml-10">
+        <div className="w-1/2 bg-white flex flex-col justify-center items-center">
           <SignupFormComponent />
         </div>
 
         {/* Right Side - Image and Testimonial Slider */}
-        <div className="hidden md:block relative w-[40%] mt-20">
-          <RegistrationSlider slides={slides} />
+        <div className="w-1/2 bg-gray-50 flex flex-col justify-center relative">
+          <div className="relative overflow-hidden h-full w-full flex items-center">
+            <RegistrationSlider slides={slides} />
+          </div>
         </div>
       </div>
     </LayoutContainer>

@@ -26,15 +26,18 @@ const slides: registrationSlideData[] = [
 export default function SignUpFreelancerPage() {
   return (
     <LayoutContainer>
-      <div className="flex h-screen mb-52 mt-20">
+      <div className="flex w-full mt-20 mb-36 max-w-screen-2xl mx-auto">
         {/* Left Side - Login Form */}
-        <div className="md:w-1/2 bg-white flex flex-col justify-center items-center p-8 w-[60%] ml-10 mt-32">
+        <div className="w-1/2 bg-white flex flex-col justify-center items-center">
           <SignupFormComponent />
         </div>
 
         {/* Right Side - Image and Testimonial */}
-        <div className="hidden md:block bg-gray-50 relative w-[40%]">
-          <RegistrationSlider slides={slides} />
+        <div className="w-1/2 bg-gray-50 flex flex-col justify-center relative">
+          {/* Chadcn Carousel Slider */}
+          <div className="relative overflow-hidden h-full w-full flex items-center">
+            <RegistrationSlider slides={slides} />
+          </div>
         </div>
       </div>
     </LayoutContainer>
