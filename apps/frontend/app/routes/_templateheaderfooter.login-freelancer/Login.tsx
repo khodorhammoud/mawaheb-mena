@@ -7,7 +7,8 @@ import LoginFormComponent from "./LoginFormComponent";
 export default function LoginFreelancerPage() {
   const slides: registrationSlideData[] = [
     {
-      image: "https://via.placeholder.com/300", // Replace with actual image URL
+      image:
+        "https://img.freepik.com/premium-photo/young-adult-arabian-sales-agent-formal-attire-holding-laptop-slightly-smiling-modern_868783-106989.jpg?semt=ais_hybrid", // Replace with actual image URL
       quote:
         "Working with Mawaheb MENA has been an incredible experience. The platform not only provided me with access to a wide range of exciting jobs but also supported me every step of the way.",
       name: "Layla Mourad",
@@ -15,7 +16,8 @@ export default function LoginFreelancerPage() {
       rating: 2,
     },
     {
-      image: "https://via.placeholder.com/300", // Replace with actual image URL
+      image:
+        "https://img.freepik.com/premium-photo/young-adult-arabian-sales-agent-formal-attire-holding-laptop-slightly-smiling-modern_868783-106989.jpg?semt=ais_hybrid", // Replace with actual image URL
       quote:
         "Working with Mawaheb MENA has been an incredible experience. The platform not only provided me with access to a wide range of exciting jobs but also supported me every step of the way.",
       name: "Layla Mourad",
