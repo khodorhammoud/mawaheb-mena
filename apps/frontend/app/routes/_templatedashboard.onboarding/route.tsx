@@ -102,8 +102,6 @@ export async function action({ request }: ActionFunctionArgs) {
         hoursAvailableTo: hoursAvailableTo as string,
       });
 
-      // console.log("Save Result:", result);
-
       return result
         ? Response.json({ success: true })
         : Response.json(
@@ -501,7 +499,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (accountType === AccountType.Employer) {
-    console.log("Employer account detected");
     profile = profile as Employer;
 
     // Fetch data for the employer

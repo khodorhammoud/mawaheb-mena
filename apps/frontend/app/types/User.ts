@@ -6,6 +6,7 @@ import {
   EmployerAccountType,
   Language,
   ProjectType,
+  Provider,
 } from "./enums";
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   passHash?: string;
   isVerified?: boolean;
   isOnboarded?: boolean;
+  provider?: Provider;
 }
 
 export interface PreferredWorkingTimes {
@@ -25,6 +27,17 @@ export interface PreferredWorkingTimes {
   dayOfWeek: DayOfWeek;
   startTime: Date;
   endTime: Date;
+}
+
+export interface SocialAccount {
+  id?: number;
+  provider: string;
+  providerAccountId: string;
+  profileUrl?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: Date;
+  userId?: number;
 }
 
 export interface UserAccount {
@@ -40,6 +53,7 @@ export interface UserAccount {
   languages?: Language[];
   preferredWorkingTimes?: PreferredWorkingTimes[];
   user: User;
+  // socialAccounts?: SocialAccount[];
 }
 
 export interface AccountSocialMediaLinks {

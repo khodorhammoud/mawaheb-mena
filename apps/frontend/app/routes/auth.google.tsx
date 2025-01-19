@@ -1,26 +1,32 @@
 import { ActionFunction } from "@remix-run/node";
 import { authenticator } from "~/services/auth.server";
+import { AccountType } from "~/types/enums";
 
 export const action: ActionFunction = async ({ request }) => {
-  // Create a new request with the same method and headers
-  const url = new URL(request.url);
-  const formData = await request.formData();
+  const clonedRequest = request.clone();
+  const formData = await clonedRequest.formData();
 
-  // Add form data to URL search params
-  url.searchParams.set("mode", formData.get("mode") as string);
-  url.searchParams.set("accountType", formData.get("accountType") as string);
+  const accountType = formData.get("accountType") as
+    | AccountType.Freelancer
+    | AccountType.Employer;
 
-  // Create a new request with the updated URL
-  const newRequest = new Request(url.toString(), {
-    method: request.method,
-    headers: request.headers,
-  });
+  const successRedirect =
+    accountType == AccountType.Employer
+      ? process.env.GOOGLE_CALLBACK_URL_EMPLOYER!
+      : process.env.GOOGLE_CALLBACK_URL_FREELANCER!;
 
-  return authenticator.authenticate("google", newRequest, {
-    successRedirect: process.env.GOOGLE_CALLBACK_URL!,
-    failureRedirect:
-      formData.get("mode") === "login"
-        ? `/login-${formData.get("accountType")}`
-        : `/signup-${formData.get("accountType")}`,
+  const authStrategy =
+    accountType == AccountType.Employer
+      ? "google_employer"
+      : "google_freelancer";
+
+  const failureRedirect =
+    formData.get("mode") === "login"
+      ? `/login-${formData.get("accountType")}`
+      : `/signup-${formData.get("accountType")}`;
+
+  return authenticator.authenticate(authStrategy, request, {
+    successRedirect: successRedirect,
+    failureRedirect: failureRedirect,
   });
 };

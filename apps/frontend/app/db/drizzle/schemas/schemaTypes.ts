@@ -15,12 +15,19 @@ import {
   TimesheetStatus,
   JobApplicationStatus,
   JobsOpenTo,
+  Provider,
 } from "~/types/enums";
+
+export const providerEnum = pgEnum(
+  "provider",
+  Object.values(Provider) as [string, ...string[]]
+);
 
 export const accountStatusEnum = pgEnum(
   "account_status",
   Object.values(AccountStatus) as [string, ...string[]]
 );
+
 export const employerAccountTypeEnum = pgEnum(
   "eployer_account_type",
   Object.values(EmployerAccountType) as [string, ...string[]]

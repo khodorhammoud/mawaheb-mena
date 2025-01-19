@@ -6,6 +6,11 @@ export enum AccountStatus {
   Suspended = "suspended",
 }
 
+export enum Provider {
+  Credentials = "credentials",
+  SocialAccount = "social_account",
+}
+
 export enum AccountType {
   Freelancer = "freelancer",
   Employer = "employer",
