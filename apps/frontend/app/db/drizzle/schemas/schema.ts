@@ -30,6 +30,7 @@ import {
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
   jobApplicationStatusEnum,
+  providerEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -55,9 +56,32 @@ export const UsersTable = pgTable("users", {
   firstName: varchar("first_name", { length: 80 }),
   lastName: varchar("last_name", { length: 80 }),
   email: varchar("email", { length: 150 }).unique().notNull(),
-  passHash: varchar("password_hash").notNull(),
+  passHash: varchar("password_hash"),
   isVerified: boolean("is_verified").default(false),
-  isOnboarded: boolean("is_onboarded").default(false), // Make sure this matches your DB column
+  isOnboarded: boolean("is_onboarded").default(false),
+  provider: providerEnum("provider"),
+});
+
+/**
+ * Stores the social accounts of users when they log in using social media
+ * @property id - serial primary key
+ * @property user_id - integer referencing the UsersTable id
+ * @property provider - the name of the social media platform
+ * @property provider_account_id - the id of the user's account on the social media platform
+ * @property profile_url - URL to the user's profile on the social media platform
+ * @property access_token -  the access token of the user's account on the social media platform
+ * @property refresh_token -  the refresh token of the user's account on the social media platform
+ * @property expires_at - timestamp, the expiration date of the access token
+ */
+export const socialAccountsTable = pgTable("social_accounts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
+  provider: varchar("provider", { length: 50 }),
+  providerAccountId: varchar("provider_account_id", { length: 255 }),
+  profileUrl: varchar("profile_url", { length: 255 }),
+  accessToken: varchar("access_token", { length: 500 }),
+  refreshToken: varchar("refresh_token", { length: 500 }),
+  expiresAt: timestamp("expires_at"),
 });
 
 /**

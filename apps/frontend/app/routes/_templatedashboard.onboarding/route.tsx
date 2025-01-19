@@ -7,19 +7,12 @@ import {
   getCurrentUserAccountType,
   getCurrentUserAccountInfo,
 } from "~/servers/user.server";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  TypedResponse,
-} from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   CertificateFormFieldType,
   EducationFormFieldType,
   Employer,
   Freelancer,
-  LoaderFunctionError,
-  OnboardingEmployerFields,
-  OnboardingFreelancerFields,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
 } from "~/types/User";
@@ -474,6 +467,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // DEFAULT
     throw new Error("Unknown target update");
   } catch (error) {
+    console.error("Error while updating onboarding status", error);
     return Response.json({
       success: false,
       error: { message: "An unexpected error occurred." },
