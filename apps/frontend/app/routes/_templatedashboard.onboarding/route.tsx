@@ -7,19 +7,12 @@ import {
   getCurrentUserAccountType,
   getCurrentUserAccountInfo,
 } from "~/servers/user.server";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  TypedResponse,
-} from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   CertificateFormFieldType,
   EducationFormFieldType,
   Employer,
   Freelancer,
-  LoaderFunctionError,
-  OnboardingEmployerFields,
-  OnboardingFreelancerFields,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
 } from "~/types/User";
@@ -71,9 +64,11 @@ export async function action({ request }: ActionFunctionArgs) {
     // AVAILABILITY
     if (target === "freelancer-availability") {
       const availableForWork = formData.get("available_for_work") === "true"; //true
-      const availableFrom = formData.get("available_from"); // calender string -> date (khodor)
-      const hoursAvailableFrom = formData.get("hours_available_from"); // from
-      const hoursAvailableTo = formData.get("hours_available_to"); // to
+      const availableFromInput = formData.get("available_from") as
+        | string
+        | null; // calender string -> date (khodor)
+      const hoursAvailableFrom = formData.get("hours_available_from") as string; // from
+      const hoursAvailableTo = formData.get("hours_available_to") as string; // to
       const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[]; // carry array
 
       // Validate hours
@@ -90,17 +85,21 @@ export async function action({ request }: ActionFunctionArgs) {
         );
       }
 
-      // transfer the string date, into an actual date
-      const availableFromAsADate = new Date(availableFrom as string);
+      // Determine availableFrom value
+      const availableFrom = availableFromInput
+        ? new Date(availableFromInput)
+        : new Date(); // Default to today's date if no input is provided
 
       const result = await saveAvailability({
         accountId,
         availableForWork,
         jobsOpenTo: jobsOpenToArray,
-        availableFrom: availableFromAsADate,
-        hoursAvailableFrom: hoursAvailableFrom as string,
-        hoursAvailableTo: hoursAvailableTo as string,
+        availableFrom,
+        hoursAvailableFrom,
+        hoursAvailableTo,
       });
+
+      // console.log("Save Result:", result);
 
       return result
         ? Response.json({ success: true })
@@ -499,6 +498,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (accountType === AccountType.Employer) {
+    console.log("Employer account detected");
     profile = profile as Employer;
 
     // Fetch data for the employer
@@ -548,13 +548,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       profile.accountId
     );
 
-    // Ensure all necessary data is returned
     const availabilityData = {
       availableForWork: freelancerAvailability?.availableForWork ?? false,
       jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
-      availableFrom: freelancerAvailability?.availableFrom ?? "",
-      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "09:00",
-      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "17:00",
+      availableFrom: freelancerAvailability?.availableFrom
+        ? new Date(freelancerAvailability.availableFrom)
+            .toISOString()
+            .split("T")[0] // Convert to yyyy-MM-dd
+        : "", // Fallback to empty string
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
 
     return Response.json({
