@@ -220,14 +220,14 @@ export default function Availability() {
         <div className="mb-7">
           <p className="text-base mb-6">Job Types I am open to:</p>
 
-          {/* Full Time Checkbox */}
+          {/* Full Time Roles */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="full-time"
               name="jobs_open_to[]"
-              value="full-time-roles" // Match this value with the database entry
+              value="full-time-roles"
               checked={workAvailability.jobTypes.includes("full-time-roles")}
-              onCheckedChange={(checked) => {
+              onCheckedChange={(checked) =>
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -235,22 +235,22 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "full-time-roles"
                       ),
-                }));
-              }}
+                }))
+              }
             />
             <label htmlFor="full-time" className="ml-2 text-gray-700">
               Full Time Roles
             </label>
           </div>
 
-          {/* Part Time Checkbox */}
+          {/* Part Time Roles */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="part-time"
               name="jobs_open_to[]"
-              value="part-time-roles" // Match this value with the database entry
+              value="part-time-roles"
               checked={workAvailability.jobTypes.includes("part-time-roles")}
-              onCheckedChange={(checked) => {
+              onCheckedChange={(checked) =>
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -258,22 +258,22 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "part-time-roles"
                       ),
-                }));
-              }}
+                }))
+              }
             />
             <label htmlFor="part-time" className="ml-2 text-gray-700">
               Part Time Roles
             </label>
           </div>
 
-          {/* Employee Checkbox */}
+          {/* Employee Roles */}
           <div className="flex text-sm items-center ml-2 mb-4">
             <Checkbox
               id="employee"
               name="jobs_open_to[]"
-              value="employee-roles" // Match this value with the database entry
+              value="employee-roles"
               checked={workAvailability.jobTypes.includes("employee-roles")}
-              onCheckedChange={(checked) => {
+              onCheckedChange={(checked) =>
                 setWorkAvailability((prevState) => ({
                   ...prevState,
                   jobTypes: checked
@@ -281,8 +281,8 @@ export default function Availability() {
                     : prevState.jobTypes.filter(
                         (type) => type !== "employee-roles"
                       ),
-                }));
-              }}
+                }))
+              }
             />
             <label htmlFor="employee" className="ml-2 text-gray-700">
               Employee Roles
@@ -303,6 +303,13 @@ export default function Availability() {
           <div
             className="relative cursor-pointer"
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setIsCalendarOpen(!isCalendarOpen);
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <input
               type="text"
@@ -394,6 +401,9 @@ export default function Availability() {
               }
             />
           </div>
+          {timeError && (
+            <p className="text-red-500 text-sm mt-2">{timeError}</p>
+          )}
         </div>
 
         {/* Save Button */}

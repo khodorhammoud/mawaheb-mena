@@ -67,6 +67,7 @@
     "react-use": "^17.5.1",
     "remix-auth": "^3.7.0",
     "remix-auth-form": "^1.5.0",
+    "remix-auth-google": "^2.0.0",
     "remix-i18next": "^6.1.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
