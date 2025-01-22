@@ -475,6 +475,7 @@ export async function registerFreelancer({
   account,
   provider,
 }: Freelancer & { provider: Provider }): Promise<Freelancer> {
+  
   if (!account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
@@ -540,6 +541,7 @@ export async function createUserAccount(
         ErrorCode.MISSING_FIELDS,
         "Missing required fields for registration: userInfo"
       );
+    userInfo.provider = provider;
     const newUser = await registerUser(userInfo);
     userId = newUser.id;
   }
@@ -676,7 +678,8 @@ export async function verifyUserAccount({ userId }: { userId: number }) {
     .update(UsersTable)
     // @ts-expect-error this is correct syntax 🙂
     .set({ isVerified: true })
-    .where(eq(UsersTable.id, userId));
+    .where(eq(UsersTable.id, userId))
+    .returning();
 }
 
 /**
@@ -725,7 +728,6 @@ export async function verifyUserVerificationToken(token: string) {
   const userId = tokenRecord[0].userId;
   try {
     const response = await verifyUserAccount({ userId });
-    if (response.length === 0)
       if (response.length === 0)
         return {
           success: false,
