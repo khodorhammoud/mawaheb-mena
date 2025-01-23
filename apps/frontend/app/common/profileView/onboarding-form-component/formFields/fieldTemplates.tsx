@@ -123,10 +123,15 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                   <img
                     className="w-full h-full object-cover"
                     src={
-                      item.projectImageUrl ||
-                      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                      item.projectImageUrl && item.projectImageUrl.trim() !== ""
+                        ? item.projectImageUrl
+                        : "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
                     }
                     alt={item.projectName || "Portfolio Item"}
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg";
+                    }}
                   />
                 </div>
 

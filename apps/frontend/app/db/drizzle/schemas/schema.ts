@@ -475,3 +475,21 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+/**
+ * Define the attachments table schema
+ * @property id
+ * @property key
+ * @property bucket
+ * @property url
+ * @property metadata
+ * @property createdAt
+ */
+export const attachmentsTable = pgTable("attachments", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull(), // The unique key returned by AWS S3
+  bucket: varchar("bucket").notNull(), // The S3 bucket name
+  url: varchar("url").notNull(), // The file's public URL
+  metadata: jsonb("metadata").default({}), // Metadata for additional file info
+  createdAt: timestamp("created_at").defaultNow(),
+});

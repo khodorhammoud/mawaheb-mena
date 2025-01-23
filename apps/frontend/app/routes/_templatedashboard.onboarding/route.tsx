@@ -47,6 +47,8 @@ import {
   saveAvailability,
   updateAvailabilityStatus,
 } from "~/servers/employer.server";
+import { uploadFile, getFile } from "~/servers/cloudStorage.server";
+import { saveAttachment } from "~/servers/attachment.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -60,6 +62,30 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentProfile.account.accountType;
     const currentAccount = await getCurrentUserAccountInfo(request);
     const accountId = currentAccount.id;
+
+    // Handle file upload if a file exists
+    const file = formData.get("file") as File;
+
+    // Unified File Upload Logic
+    // Upload the file and save metadata to the database
+    if (file) {
+      try {
+        const prefix = "generic";
+        const uploadedMetadata = await uploadFile(prefix, file);
+        await saveAttachment(
+          uploadedMetadata.key,
+          uploadedMetadata.bucket,
+          uploadedMetadata.url
+        );
+      } catch (uploadError) {
+        console.error("File upload failed:", uploadError);
+        return Response.json({
+          success: false,
+          error: { message: "File upload failed." },
+          status: 500,
+        });
+      }
+    }
 
     // AVAILABILITY
     if (target === "freelancer-availability") {
@@ -337,65 +363,128 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // PORTFOLIO
-      if (target == "freelancer-portfolio") {
+      if (target === "freelancer-portfolio") {
         const portfolio = formData.get("portfolio") as string;
+
+        if (!portfolio) {
+          console.error("Portfolio data is missing from formData.");
+          return Response.json(
+            {
+              success: false,
+              error: { message: "Portfolio data is missing." },
+            },
+            { status: 400 }
+          );
+        }
 
         try {
           const portfolioParsed = JSON.parse(
             portfolio
           ) as PortfolioFormFieldType[];
 
-          const portfolioImages: File[] = [];
-          // iterate over indexes of portfolioParsed and get the file type from the form
+          // console.log("Parsed portfolio data:", portfolioParsed);
+
+          const failedUploads: string[] = [];
+
           for (let index = 0; index < portfolioParsed.length; index++) {
             const portfolioImage = formData.get(
               `portfolio-attachment[${index}]`
-            ) as unknown as File;
-            portfolioImages.push(portfolioImage ?? new File([], ""));
+            ) as File;
+
+            if (portfolioImage) {
+              try {
+                const uploadedMetadata = await uploadFile(
+                  "portfolio",
+                  portfolioImage
+                );
+
+                portfolioParsed[index].projectImageUrl = uploadedMetadata.url;
+                portfolioParsed[index].projectImageName = portfolioImage.name;
+                portfolioParsed[index].attachmentName = portfolioImage.name;
+              } catch (uploadError) {
+                // console.error(
+                //   `Error uploading file for index ${index}:`,
+                //   uploadError
+                // );
+                throw new Error(`Failed to upload file for index ${index}`);
+              }
+            } else {
+              portfolioParsed[index].projectImageUrl = ""; // Clear the old URL
+              portfolioParsed[index].projectImageName = ""; // Clear the old name
+              portfolioParsed[index].attachmentName = ""; // Clear the attachment name
+            }
           }
+
+          if (failedUploads.length > 0) {
+            return Response.json(
+              {
+                success: false,
+                error: {
+                  message: `Failed uploads: ${failedUploads.join(", ")}.`,
+                },
+              },
+              { status: 500 }
+            );
+          }
+
+          // console.log(
+          //   "Final portfolioParsed before database update:",
+          //   portfolioParsed
+          // );
+
           const portfolioStatus = await updateFreelancerPortfolio(
             freelancer,
             portfolioParsed,
-            portfolioImages
+            [] // Pass empty portfolioImages as it's unused here
           );
+
           return Response.json({ success: portfolioStatus.success });
         } catch (error) {
-          return Response.json({
-            success: false,
-            error: { message: "Invalid portfolio data." },
-            status: 400,
-          });
+          console.error("Error processing portfolio data:", error);
+          return Response.json(
+            { success: false, error: { message: "Invalid portfolio data." } },
+            { status: 400 }
+          );
         }
       }
 
       // CERTIFICATES
-      if (target == "freelancer-certificates") {
-        const certificates = formData.get("certificates") as string;
+      if (target === "freelancer-certificates") {
+        const certificatesImages: File[] = []; // Collect files from form data
+        const certificatesParsed: CertificateFormFieldType[] = JSON.parse(
+          formData.get("certificates") as string
+        );
 
-        try {
-          const certificatesParsed = JSON.parse(
-            certificates
-          ) as CertificateFormFieldType[];
-          const certificatesImages: File[] = [];
-          for (let index = 0; index < certificatesParsed.length; index++) {
-            const certificateImage = formData.get(
-              `certificates-attachment[${index}]`
-            ) as unknown as File;
-            certificatesImages.push(certificateImage ?? new File([], ""));
+        for (let index = 0; index < certificatesParsed.length; index++) {
+          const certificateFile = formData.get(
+            `certificates-attachment[${index}]`
+          ) as unknown as File;
+
+          if (certificateFile) {
+            try {
+              // Upload the file and save metadata
+              const uploadedMetadata = await uploadFile(
+                "certificates",
+                certificateFile
+              );
+
+              certificatesImages.push(certificateFile); // Collect the file for further use
+              // Optionally: Add the metadata to your certificates array if needed
+              certificatesParsed[index].attachmentUrl = uploadedMetadata.url;
+            } catch (error) {
+              console.error("Failed to upload certificate file:", error);
+            }
           }
-          const certificatesStatus = await updateFreelancerCertificates(
-            freelancer,
-            certificatesParsed,
-            certificatesImages
-          );
-          return Response.json({ success: certificatesStatus.success });
-        } catch (error) {
-          return Response.json({
-            success: false,
-            error: { message: "Invalid certificates data." },
-            status: 400,
-          });
         }
+
+        // Call the function to save/update certificates in the database
+        const certificatesStatus = await updateFreelancerCertificates(
+          freelancer,
+          certificatesParsed,
+          certificatesImages
+        );
+
+        return Response.json({ success: certificatesStatus.success });
       }
 
       // EDUCATION
@@ -498,10 +587,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (accountType === AccountType.Employer) {
-    console.log("Employer account detected");
     profile = profile as Employer;
 
-    // Fetch data for the employer
     const bioInfo = await getAccountBio(profile.account);
     const employerIndustries = await getEmployerIndustries(profile);
     const allIndustries = await getAllIndustries();
@@ -530,20 +617,50 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } else if (accountType === AccountType.Freelancer) {
     profile = profile as Freelancer;
 
-    // Fetch data for the freelancer
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
-    const portfolio = profile.portfolio;
+    let portfolio = profile.portfolio;
+
+    // Fetch signed URLs for portfolio images
+    if (portfolio && Array.isArray(portfolio)) {
+      portfolio = await Promise.all(
+        portfolio.map(async (item) => {
+          if (item.projectImageName) {
+            try {
+              const signedUrl = await getFile(item.projectImageName);
+              return { ...item, signedImageUrl: signedUrl }; // Append the signed URL
+            } catch (error) {
+              console.error(
+                `Error fetching signed URL for portfolio image: ${item.projectImageName}`,
+                error
+              );
+              // Replace with a default image URL if the signed URL fails
+              return {
+                ...item,
+                projectImageUrl:
+                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+              };
+            }
+          }
+          // If no projectImageName exists, use the default image
+          return {
+            ...item,
+            projectImageUrl:
+              item.projectImageUrl || // Keep existing URL if valid
+              "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+          };
+        })
+      );
+    }
+
     const certificates = profile.certificates;
     const educations = profile.educations;
     const workHistory = profile.workHistory;
 
-    // Fetch freelancer-specific data
     const freelancerLanguages = await getFreelancerLanguages(profile.id);
     const allLanguages = await getAllLanguages();
 
-    // Get the freelancer availability data
     const freelancerAvailability = await getFreelancerAvailability(
       profile.accountId
     );
@@ -554,8 +671,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       availableFrom: freelancerAvailability?.availableFrom
         ? new Date(freelancerAvailability.availableFrom)
             .toISOString()
-            .split("T")[0] // Convert to yyyy-MM-dd
-        : "", // Fallback to empty string
+            .split("T")[0]
+        : "",
       hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
       hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };

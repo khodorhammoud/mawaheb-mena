@@ -107,42 +107,32 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
 }
 
 export async function updateFreelancerPortfolio(
-  freelancer: Freelancer,
-  portfolio: PortfolioFormFieldType[],
+  freelancer: any,
+  portfolioParsed: PortfolioFormFieldType[],
   portfolioImages: File[]
-): Promise<SuccessVerificationLoaderStatus> {
+) {
   try {
-    // upload portfolio Images
-    for (let i = 0; i < portfolioImages.length; i++) {
-      const file = portfolioImages[i];
-      if (file && file.size > 0) {
-        portfolio[i].projectImageUrl = (
-          await uploadFileToBucket("portfolio", file)
-        ).fileName;
-      } else {
-        portfolio[i].projectImageUrl = "";
-      }
-      portfolio[i].projectDescription = DOMPurify.sanitize(
-        portfolio[i].projectDescription
-      );
+    if (!portfolioParsed || !Array.isArray(portfolioParsed)) {
+      throw new Error("Invalid portfolio data format.");
     }
 
-    const res = await db
+    // console.log("Updating freelancer portfolio with:", {
+    //   freelancer,
+    //   portfolioParsed,
+    //   portfolioImages,
+    // });
+
+    // Assuming you're storing this in the database
+    const result = await db
       .update(freelancersTable)
-      .set({
-        portfolio: JSON.stringify(portfolio),
-      })
+      .set({ portfolio: JSON.stringify(portfolioParsed) })
       .where(eq(freelancersTable.id, freelancer.id))
-      .returning({ id: freelancersTable.id });
+      .returning(); // Ensure this returns the updated record
 
-    if (!res.length) {
-      throw new Error("Failed to update freelancer portfolio");
-    }
-
-    return { success: true };
+    return { success: true, result };
   } catch (error) {
-    console.error("Error updating freelancer portfolio", error);
-    throw error;
+    console.error("Error updating freelancer portfolio:", error);
+    throw new Error("Failed to update freelancer portfolio.");
   }
 }
 

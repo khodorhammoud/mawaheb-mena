@@ -187,7 +187,8 @@ export interface PortfolioFormFieldType {
   projectLink: string;
   projectDescription: string;
   projectImageName: string;
-  projectImageUrl: string | null;
+  projectImageUrl: string;
+  attachmentName?: string; // Add this field as optional or required based on the use case
 }
 
 export interface WorkHistoryFormFieldType {
