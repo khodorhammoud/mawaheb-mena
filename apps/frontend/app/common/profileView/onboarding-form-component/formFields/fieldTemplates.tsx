@@ -107,6 +107,19 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
       );
     }
 
+    // Helper function to determine the file type
+    const determineFileIcon = (fileName: string) => {
+      const extension = fileName.split(".").pop()?.toLowerCase() || "";
+      if (["png", "jpg", "jpeg", "gif", "bmp"].includes(extension)) {
+        return "image";
+      } else if (["pdf"].includes(extension)) {
+        return "pdf";
+      } else if (["mp4", "mov", "avi", "mkv"].includes(extension)) {
+        return "video";
+      }
+      return "default";
+    };
+
     // Render portfolio items
     return (
       <>
@@ -115,24 +128,57 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
           const { isHtml, content: parsedDescription } = parseHtmlContent(
             item.projectDescription || ""
           );
+
+          // Get the file type dynamically
+          const icon = determineFileIcon(item.projectImageName || "");
+
+          // Render based on the file type
+          const renderFilePreview = () => {
+            if (icon === "image" && item.projectImageUrl) {
+              return (
+                <img
+                  className="w-full h-full object-cover"
+                  src={item.projectImageUrl}
+                  alt={item.projectName || "Portfolio Image"}
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg";
+                  }}
+                />
+              );
+            } else if (icon === "pdf" && item.projectImageUrl) {
+              return (
+                <embed
+                  className="w-full h-full object-cover"
+                  src={item.projectImageUrl}
+                  type="application/pdf"
+                  title={item.projectName || "Portfolio PDF"}
+                />
+              );
+            } else if (icon === "video" && item.projectImageUrl) {
+              return (
+                <video
+                  className="w-full h-full object-cover"
+                  src={item.projectImageUrl}
+                  controls
+                  title={item.projectName || "Portfolio Video"}
+                />
+              );
+            } else {
+              return (
+                <div className="flex items-center justify-center w-full h-full bg-gray-100">
+                  <span className="text-gray-500">No preview available</span>
+                </div>
+              );
+            }
+          };
+
           return (
             <div key={index} className="flex flex-col">
               <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-                {/* Image Section */}
+                {/* File Preview Section */}
                 <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
-                  <img
-                    className="w-full h-full object-cover"
-                    src={
-                      item.projectImageUrl && item.projectImageUrl.trim() !== ""
-                        ? item.projectImageUrl
-                        : "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-                    }
-                    alt={item.projectName || "Portfolio Item"}
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg";
-                    }}
-                  />
+                  {renderFilePreview()}
                 </div>
 
                 {/* Content Section */}
@@ -166,18 +212,6 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                       </div>
                     }
                   </div>
-                  {/* <ul className="list-disc text-sm pl-8">
-                  <li className="leading-relaxed text-indent-0">
-                    Conducted comprehensive research to identify improvement
-                    areas.
-                  </li>
-                  <li className="leading-relaxed">
-                    Developed detailed wireframes and high-fidelity mockups.
-                  </li>
-                  <li className="leading-relaxed">
-                    Improved overall user experience and usability.
-                  </li>
-                </ul> */}
                 </div>
               </div>
             </div>

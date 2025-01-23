@@ -3,13 +3,13 @@ import { FaUpload } from "react-icons/fa";
 
 interface FileUploadProps {
   onFileChange: (files: File[] | null) => void; // Support multiple files
-  acceptedFileTypes?: string; // e.g., "image/*,application/pdf"
+  acceptedFileTypes?: string; // e.g., "image/*,application/pdf,video/*"
   maxFileSize?: number; // Size in MB
 }
 
 export default function FileUpload({
   onFileChange,
-  acceptedFileTypes = "image/*,application/pdf",
+  acceptedFileTypes = "image/*,application/pdf,video/*", // Allow images, PDFs, and videos
   maxFileSize = 25,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]); // Store multiple files
@@ -39,8 +39,17 @@ export default function FileUpload({
   const handleFiles = (selectedFiles: File[]) => {
     const validFiles = selectedFiles.filter((file) => {
       const validTypes = acceptedFileTypes.split(",");
-      if (!validTypes.some((type) => file.type.match(type))) {
-        // Use match here
+      const isValidType = validTypes.some((type) => {
+        if (type === "video/*") {
+          return file.type.startsWith("video/");
+        }
+        if (type === "image/*") {
+          return file.type.startsWith("image/");
+        }
+        return file.type === type; // For specific MIME types like application/pdf
+      });
+
+      if (!isValidType) {
         alert(`Invalid file type: ${file.name}`);
         return false;
       }
@@ -55,9 +64,11 @@ export default function FileUpload({
       setFiles((prev) => [...prev, ...validFiles]); // Add valid files
       onFileChange(validFiles);
 
-      // Generate previews for image files
+      // Generate previews for image or video files
       const newPreviews = validFiles.map((file) =>
-        file.type.startsWith("image/") ? URL.createObjectURL(file) : ""
+        file.type.startsWith("image/") || file.type.startsWith("video/")
+          ? URL.createObjectURL(file)
+          : ""
       );
       setPreviews((prev) => [...prev, ...newPreviews]);
     }

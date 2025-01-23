@@ -48,7 +48,10 @@ import {
   updateAvailabilityStatus,
 } from "~/servers/employer.server";
 import { uploadFile, getFile } from "~/servers/cloudStorage.server";
-import { saveAttachment } from "~/servers/attachment.server";
+import {
+  saveAttachment,
+  getAttachmentByKey,
+} from "~/servers/attachment.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -628,28 +631,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         portfolio.map(async (item) => {
           if (item.projectImageName) {
             try {
-              const signedUrl = await getFile(item.projectImageName);
-              return { ...item, signedImageUrl: signedUrl }; // Append the signed URL
+              const attachment = await getAttachmentByKey(
+                item.projectImageName
+              ); // Fetch the attachment
+              return {
+                ...item,
+                projectImageUrl: attachment.url, // URL from the database
+                icon: attachment.icon, // Icon type (e.g., "pdf", "image")
+              };
             } catch (error) {
               console.error(
-                `Error fetching signed URL for portfolio image: ${item.projectImageName}`,
+                `Error fetching attachment for: ${item.projectImageName}`,
                 error
               );
-              // Replace with a default image URL if the signed URL fails
+              // Fallback in case of error
               return {
                 ...item,
                 projectImageUrl:
                   "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+                icon: "default",
               };
             }
           }
-          // If no projectImageName exists, use the default image
-          return {
-            ...item,
-            projectImageUrl:
-              item.projectImageUrl || // Keep existing URL if valid
-              "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-          };
+          return item; // Return unchanged if no projectImageName
         })
       );
     }
