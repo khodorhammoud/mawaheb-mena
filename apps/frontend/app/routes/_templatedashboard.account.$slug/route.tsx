@@ -44,6 +44,8 @@ import {
 // import { getCurrentProfile } from "~/auth/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
+  await authenticator.isAuthenticated(request);
+
   try {
     const formData = await request.formData(); // always do this :)
     const currentUser = await getCurrentProfileInfo(request);

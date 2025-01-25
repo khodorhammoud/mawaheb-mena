@@ -207,6 +207,77 @@ export async function handleFreelancerOnboardingAction(
     }
   }
 
+  async function handleFreelancerAvailability(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const availableForWork = formData.get("available_for_work") === "true";
+    const availableFromInput = formData.get("available_from") as string | null;
+    const hoursAvailableFrom = formData.get("hours_available_from") as string;
+    const hoursAvailableTo = formData.get("hours_available_to") as string;
+    const jobsOpenToArray = formData.getAll("jobs_open_to[]") as string[];
+
+    // Validate hours
+    const startTime = new Date(`1970-01-01T${hoursAvailableFrom}:00Z`);
+    const endTime = new Date(`1970-01-01T${hoursAvailableTo}:00Z`);
+
+    if (endTime <= startTime) {
+      return Response.json(
+        {
+          success: false,
+          error: { message: "End time must be later than start time." },
+        },
+        { status: 400 }
+      );
+    }
+
+    const availableFrom = availableFromInput
+      ? new Date(availableFromInput)
+      : new Date(); // Default to today's date if no input is provided
+
+    const result = await updateFreelancerAvailability({
+      accountId: freelancer.accountId,
+      availableForWork,
+      jobsOpenTo: jobsOpenToArray,
+      availableFrom,
+      hoursAvailableFrom,
+      hoursAvailableTo,
+    });
+
+    return result
+      ? Response.json({ success: true })
+      : Response.json(
+          {
+            success: false,
+            error: { message: "Failed to save availability." },
+          },
+          { status: 500 }
+        );
+  }
+
+  async function handleFreelancerIsAvailableForWork(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const availableForWork = formData.get("available_for_work") === "true";
+
+    // Call the query function to update availability status
+    const result = await updateFreelancerAvailabilityStatus(
+      freelancer.accountId,
+      availableForWork
+    );
+
+    return result
+      ? Response.json({ success: true })
+      : Response.json(
+          {
+            success: false,
+            error: { message: "Failed to update availability." },
+          },
+          { status: 500 }
+        );
+  }
+
   async function handleFreelancerOnboard(userId: number) {
     const userExists = await checkUserExists(userId);
     if (!userExists.length)
@@ -246,6 +317,10 @@ export async function handleFreelancerOnboardingAction(
       return handleFreelancerCertificates(formData, freelancer);
     case "freelancer-educations":
       return handleFreelancerEducations(formData, freelancer);
+    case "freelancer-availability":
+      return handleFreelancerAvailability(formData, freelancer);
+    case "freelancer-is-available-for-work":
+      return handleFreelancerIsAvailableForWork(formData, freelancer);
     case "freelancer-onboard":
       return handleFreelancerOnboard(userId);
     default:
