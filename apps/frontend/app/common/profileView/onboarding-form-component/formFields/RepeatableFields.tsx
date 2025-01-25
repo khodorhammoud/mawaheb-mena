@@ -28,6 +28,7 @@ const RepeatableFields = ({
   const handleAddField = () => {
     // Create a new empty field
     const newField = {
+      fieldId: values.length + 1,
       projectName: "",
       projectLink: "",
       projectDescription: "",

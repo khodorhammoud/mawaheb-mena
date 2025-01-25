@@ -47,11 +47,15 @@ import {
   saveAvailability,
   updateAvailabilityStatus,
 } from "~/servers/employer.server";
-import { uploadFile, getFile } from "~/servers/cloudStorage.server";
+import { uploadFile, deleteFile } from "~/servers/cloudStorage.server";
 import {
   saveAttachment,
+  deletePreviousAttachmentByFieldId,
+  getPreviousAttachmentByFieldId,
+  deleteAttachmentById,
   getAttachmentByKey,
 } from "~/servers/attachment.server";
+import { AttachmentBelongsTo } from "~/types/enums";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -60,26 +64,45 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData(); // always do this :)
     const target = formData.get("target-updated"); // for the switch, to not use this sentence 2 thousand times :)
     const currentProfile = await getCurrentProfileInfo(request);
+    const currentAccount = await getCurrentUserAccountInfo(request);
 
     const userId = currentProfile.account.user.id;
     const accountType = currentProfile.account.accountType;
-    const currentAccount = await getCurrentUserAccountInfo(request);
     const accountId = currentAccount.id;
 
-    // Handle file upload if a file exists
     const file = formData.get("file") as File;
 
-    // Unified File Upload Logic
-    // Upload the file and save metadata to the database
     if (file) {
       try {
-        const prefix = "generic";
-        const uploadedMetadata = await uploadFile(prefix, file);
-        await saveAttachment(
-          uploadedMetadata.key,
-          uploadedMetadata.bucket,
-          uploadedMetadata.url
+        const fieldId = parseInt(formData.get("fieldId") as string, 10); // Get fieldId
+        let belongsTo: AttachmentBelongsTo;
+
+        if (target === "freelancer-portfolio") {
+          belongsTo = AttachmentBelongsTo.Portfolio;
+        } else if (target === "freelancer-certificates") {
+          belongsTo = AttachmentBelongsTo.Certificate;
+        } else {
+          belongsTo = "generic" as AttachmentBelongsTo;
+        }
+
+        // Get previous attachment for the same fieldId
+        const previousAttachment = await getPreviousAttachmentByFieldId(
+          belongsTo,
+          accountId,
+          fieldId
         );
+
+        // THIS IS NOT WOTKING, AND THE PREVIOUS FILE IN S3 BUCKET IS NOT BEING DELETED :)))))))))
+        // THIS IS NOT WOTKING, AND THE PREVIOUS FILE IN S3 BUCKET IS NOT BEING DELETED :)))))))))
+        // THIS IS NOT WOTKING, AND THE PREVIOUS FILE IN S3 BUCKET IS NOT BEING DELETED :)))))))))
+        // THIS IS NOT WOTKING, AND THE PREVIOUS FILE IN S3 BUCKET IS NOT BEING DELETED :)))))))))
+        if (previousAttachment) {
+          // Delete the old file from S3
+          await deleteFile(previousAttachment.bucket, previousAttachment.key);
+
+          // Remove the old attachment record from the database
+          await deleteAttachmentById(previousAttachment.id);
+        }
       } catch (uploadError) {
         console.error("File upload failed:", uploadError);
         return Response.json({
@@ -367,8 +390,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // PORTFOLIO
       if (target === "freelancer-portfolio") {
-        const portfolio = formData.get("portfolio") as string;
+        // console.log("Processing portfolio data...");
 
+        const portfolio = formData.get("portfolio") as string;
         if (!portfolio) {
           console.error("Portfolio data is missing from formData.");
           return Response.json(
@@ -381,71 +405,114 @@ export async function action({ request }: ActionFunctionArgs) {
         }
 
         try {
+          // console.log("Parsing portfolio data:", portfolio);
           const portfolioParsed = JSON.parse(
             portfolio
           ) as PortfolioFormFieldType[];
-
           // console.log("Parsed portfolio data:", portfolioParsed);
 
-          const failedUploads: string[] = [];
-
           for (let index = 0; index < portfolioParsed.length; index++) {
+            // console.log(`Processing portfolio entry at index ${index}...`);
+
+            const fieldIdRaw = formData.get(`fieldId[${index}]`);
+            let fieldId: number;
+
+            if (fieldIdRaw) {
+              fieldId = parseInt(fieldIdRaw as string, 10);
+              if (isNaN(fieldId)) {
+                console.error(
+                  `Invalid fieldId for index ${index}:`,
+                  fieldIdRaw
+                );
+                return Response.json(
+                  {
+                    success: false,
+                    error: {
+                      message: `Invalid fieldId for portfolio entry at index ${index}`,
+                    },
+                  },
+                  { status: 400 }
+                );
+              }
+            } else {
+              console.warn(
+                `Missing fieldId for index ${index}. Generating fallback...`
+              );
+              fieldId = index + 1;
+            }
+            // console.log(`Field ID for index ${index}:`, fieldId);
+
             const portfolioImage = formData.get(
               `portfolio-attachment[${index}]`
             ) as File;
 
             if (portfolioImage) {
+              console.log(`Uploading file for portfolio index ${index}...`);
+
               try {
                 const uploadedMetadata = await uploadFile(
                   "portfolio",
                   portfolioImage
                 );
+                // console.log("Uploaded metadata:", uploadedMetadata);
+
+                // console.log(
+                // `Deleting previous attachment for fieldId ${fieldId}...`
+                // );
+                await deletePreviousAttachmentByFieldId(
+                  AttachmentBelongsTo.Portfolio,
+                  freelancer.accountId,
+                  fieldId,
+                  uploadedMetadata.key
+                );
+
+                // console.log("Saving new attachment metadata...");
+                await saveAttachment(
+                  uploadedMetadata.key,
+                  uploadedMetadata.bucket,
+                  uploadedMetadata.url,
+                  AttachmentBelongsTo.Portfolio,
+                  freelancer.accountId,
+                  fieldId
+                );
+
+                // console.log(
+                // `Attachment saved successfully for index ${index}.`
+                // );
 
                 portfolioParsed[index].projectImageUrl = uploadedMetadata.url;
                 portfolioParsed[index].projectImageName = portfolioImage.name;
                 portfolioParsed[index].attachmentName = portfolioImage.name;
               } catch (uploadError) {
-                // console.error(
-                //   `Error uploading file for index ${index}:`,
-                //   uploadError
-                // );
-                throw new Error(`Failed to upload file for index ${index}`);
+                console.error(
+                  `Error uploading or saving file for index ${index}:`,
+                  uploadError
+                );
+                throw new Error(`Failed to process file for index ${index}`);
               }
             } else {
-              portfolioParsed[index].projectImageUrl = ""; // Clear the old URL
-              portfolioParsed[index].projectImageName = ""; // Clear the old name
-              portfolioParsed[index].attachmentName = ""; // Clear the attachment name
+              console.warn(`No file provided for portfolio index ${index}`);
+              portfolioParsed[index].projectImageUrl = "";
+              portfolioParsed[index].projectImageName = "";
+              portfolioParsed[index].attachmentName = "";
             }
           }
 
-          if (failedUploads.length > 0) {
-            return Response.json(
-              {
-                success: false,
-                error: {
-                  message: `Failed uploads: ${failedUploads.join(", ")}.`,
-                },
-              },
-              { status: 500 }
-            );
-          }
-
-          // console.log(
-          //   "Final portfolioParsed before database update:",
-          //   portfolioParsed
-          // );
-
+          // console.log("Updating portfolio data in the database...");
           const portfolioStatus = await updateFreelancerPortfolio(
             freelancer,
-            portfolioParsed,
-            [] // Pass empty portfolioImages as it's unused here
+            portfolioParsed
           );
+          // console.log("Portfolio updated successfully:", portfolioStatus);
 
           return Response.json({ success: portfolioStatus.success });
         } catch (error) {
           console.error("Error processing portfolio data:", error);
           return Response.json(
-            { success: false, error: { message: "Invalid portfolio data." } },
+            {
+              success: false,
+              error: { message: "Invalid portfolio data." },
+            },
             { status: 400 }
           );
         }
@@ -453,41 +520,134 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // CERTIFICATES
       if (target === "freelancer-certificates") {
-        const certificatesImages: File[] = []; // Collect files from form data
-        const certificatesParsed: CertificateFormFieldType[] = JSON.parse(
-          formData.get("certificates") as string
-        );
+        console.log("Processing certificates data...");
 
-        for (let index = 0; index < certificatesParsed.length; index++) {
-          const certificateFile = formData.get(
-            `certificates-attachment[${index}]`
-          ) as unknown as File;
-
-          if (certificateFile) {
-            try {
-              // Upload the file and save metadata
-              const uploadedMetadata = await uploadFile(
-                "certificates",
-                certificateFile
-              );
-
-              certificatesImages.push(certificateFile); // Collect the file for further use
-              // Optionally: Add the metadata to your certificates array if needed
-              certificatesParsed[index].attachmentUrl = uploadedMetadata.url;
-            } catch (error) {
-              console.error("Failed to upload certificate file:", error);
-            }
-          }
+        const certificates = formData.get("certificates") as string;
+        if (!certificates) {
+          console.error("Certificates data is missing from formData.");
+          return Response.json(
+            {
+              success: false,
+              error: { message: "Certificates data is missing." },
+            },
+            { status: 400 }
+          );
         }
 
-        // Call the function to save/update certificates in the database
-        const certificatesStatus = await updateFreelancerCertificates(
-          freelancer,
-          certificatesParsed,
-          certificatesImages
-        );
+        try {
+          console.log("Parsing certificates data:", certificates);
+          const certificatesParsed = JSON.parse(
+            certificates
+          ) as CertificateFormFieldType[];
+          console.log("Parsed certificates data:", certificatesParsed);
 
-        return Response.json({ success: certificatesStatus.success });
+          for (let index = 0; index < certificatesParsed.length; index++) {
+            console.log(`Processing certificate entry at index ${index}...`);
+
+            // Attempt to retrieve fieldId from formData
+            const fieldIdRaw = formData.get(`fieldId[${index}]`);
+            let fieldId: number;
+
+            if (fieldIdRaw) {
+              fieldId = parseInt(fieldIdRaw as string, 10);
+              if (isNaN(fieldId)) {
+                console.error(
+                  `Invalid fieldId for index ${index}:`,
+                  fieldIdRaw
+                );
+                return Response.json(
+                  {
+                    success: false,
+                    error: {
+                      message: `Invalid fieldId for certificate entry at index ${index}`,
+                    },
+                  },
+                  { status: 400 }
+                );
+              }
+            } else {
+              // If fieldId is missing, log and generate a fallback
+              console.warn(
+                `Missing fieldId for index ${index}. Generating fallback...`
+              );
+              fieldId = index + 1; // Assign a fallback fieldId (e.g., index + 1)
+            }
+            console.log(`Field ID for index ${index}:`, fieldId);
+
+            const certificateFile = formData.get(
+              `certificates-attachment[${index}]`
+            ) as File;
+
+            if (certificateFile) {
+              console.log(`Uploading file for certificate index ${index}...`);
+
+              try {
+                const uploadedMetadata = await uploadFile(
+                  "certificates",
+                  certificateFile
+                );
+                console.log("Uploaded metadata:", uploadedMetadata);
+
+                // Delete previous attachment for this specific fieldId
+                console.log(
+                  `Deleting previous attachment for fieldId ${fieldId}...`
+                );
+                await deletePreviousAttachmentByFieldId(
+                  AttachmentBelongsTo.Certificate,
+                  freelancer.accountId,
+                  fieldId,
+                  uploadedMetadata.key
+                );
+
+                // Save the new attachment metadata to the database
+                console.log("Saving new attachment metadata...");
+                await saveAttachment(
+                  uploadedMetadata.key,
+                  uploadedMetadata.bucket,
+                  uploadedMetadata.url,
+                  AttachmentBelongsTo.Certificate,
+                  freelancer.accountId,
+                  fieldId
+                );
+
+                console.log(
+                  `Attachment saved successfully for index ${index}.`
+                );
+
+                // Update the parsed certificates entry with the new file details
+                certificatesParsed[index].attachmentUrl = uploadedMetadata.url;
+              } catch (uploadError) {
+                console.error(
+                  `Error uploading or saving file for index ${index}:`,
+                  uploadError
+                );
+                throw new Error(`Failed to process file for index ${index}`);
+              }
+            } else {
+              console.warn(`No file provided for certificate index ${index}`);
+              // Clear old fields if no new file is provided
+              certificatesParsed[index].attachmentUrl = "";
+            }
+          }
+
+          console.log("Updating certificates data in the database...");
+          const certificatesStatus = await updateFreelancerCertificates(
+            freelancer,
+            certificatesParsed
+          );
+          console.log("Certificates updated successfully:", certificatesStatus);
+
+          return Response.json({ success: certificatesStatus.success });
+        } catch (error) {
+          console.error("Error processing certificates data:", error);
+          return Response.json(
+            {
+              success: false,
+              error: { message: "Invalid certificates data." },
+            },
+            { status: 400 }
+          );
+        }
       }
 
       // EDUCATION

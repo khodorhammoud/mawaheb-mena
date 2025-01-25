@@ -107,27 +107,39 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
 }
 
 export async function updateFreelancerPortfolio(
-  freelancer: any,
-  portfolioParsed: PortfolioFormFieldType[],
-  portfolioImages: File[]
+  freelancer: Freelancer,
+  portfolioParsed: PortfolioFormFieldType[]
 ) {
   try {
+    if (!freelancer || !freelancer.id) {
+      throw new Error("Freelancer ID is missing or undefined.");
+    }
+
     if (!portfolioParsed || !Array.isArray(portfolioParsed)) {
       throw new Error("Invalid portfolio data format.");
     }
 
-    // console.log("Updating freelancer portfolio with:", {
-    //   freelancer,
-    //   portfolioParsed,
-    //   portfolioImages,
-    // });
+    // Ensure all fields in portfolioParsed have valid values
+    const sanitizedPortfolio = portfolioParsed.map((entry) => ({
+      projectName: entry.projectName || "Untitled",
+      projectLink: entry.projectLink || "",
+      projectDescription:
+        entry.projectDescription || "No description provided.",
+      projectImageName: entry.projectImageName || "",
+      projectImageUrl: entry.projectImageUrl || "",
+      attachmentName: entry.attachmentName || "",
+    }));
 
-    // Assuming you're storing this in the database
+    console.log("Sanitized portfolio data being saved:", sanitizedPortfolio);
+
+    // Update the freelancer's portfolio in the database
     const result = await db
       .update(freelancersTable)
-      .set({ portfolio: JSON.stringify(portfolioParsed) })
+      .set({ portfolio: JSON.stringify(sanitizedPortfolio) }) // Always stringify data
       .where(eq(freelancersTable.id, freelancer.id))
-      .returning(); // Ensure this returns the updated record
+      .returning();
+
+    console.log("Freelancer portfolio updated successfully:", result);
 
     return { success: true, result };
   } catch (error) {
@@ -138,35 +150,50 @@ export async function updateFreelancerPortfolio(
 
 export async function updateFreelancerCertificates(
   freelancer: Freelancer,
-  certificates: CertificateFormFieldType[],
-  certificatesImages: File[]
-): Promise<SuccessVerificationLoaderStatus> {
+  certificatesParsed: CertificateFormFieldType[]
+) {
   try {
-    // upload certificates Images
-    for (let i = 0; i < certificatesImages.length; i++) {
-      const file = certificatesImages[i];
-      if (file && file.size > 0) {
-        certificates[i].attachmentUrl = (
-          await uploadFileToBucket("certificates", file)
-        ).fileName;
-      } else {
-        certificates[i].attachmentUrl = "";
-      }
+    // Validate freelancer
+    if (!freelancer || !freelancer.id) {
+      throw new Error("Freelancer ID is missing or undefined.");
     }
 
-    const res = await db
+    // Validate certificates data
+    if (!certificatesParsed || !Array.isArray(certificatesParsed)) {
+      throw new Error("Invalid certificates data format.");
+    }
+
+    // Ensure all fields in certificatesParsed have valid values
+    const sanitizedCertificates = certificatesParsed.map((certificate) => ({
+      certificateName: certificate.certificateName || "Untitled",
+      issuedBy: certificate.issuedBy || "Unknown",
+      yearIssued: certificate.yearIssued || 0, // Default to 0 if not provided
+      attachmentName: certificate.attachmentName || "",
+      attachmentUrl: certificate.attachmentUrl || "",
+    }));
+
+    console.log(
+      "Sanitized certificates data being saved:",
+      sanitizedCertificates
+    );
+
+    // Update the freelancer's certificates in the database
+    const result = await db
       .update(freelancersTable)
-      .set({ certificates: JSON.stringify(certificates) })
+      .set({ certificates: JSON.stringify(sanitizedCertificates) }) // Always stringify data
       .where(eq(freelancersTable.id, freelancer.id))
-      .returning({ id: freelancersTable.id });
+      .returning();
 
-    if (!res.length) {
-      throw new Error("Failed to update freelancer certificates");
+    if (!result.length) {
+      throw new Error("Failed to update freelancer certificates.");
     }
-    return { success: true };
+
+    console.log("Freelancer certificates updated successfully:", result);
+
+    return { success: true, result };
   } catch (error) {
-    console.error("Error updating freelancer certificates", error);
-    throw error;
+    console.error("Error updating freelancer certificates:", error);
+    throw new Error("Failed to update freelancer certificates.");
   }
 }
 

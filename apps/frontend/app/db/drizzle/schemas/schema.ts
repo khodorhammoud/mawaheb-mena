@@ -31,6 +31,7 @@ import {
   experienceLevelEnum, */
   jobApplicationStatusEnum,
   providerEnum,
+  belongsToEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -487,9 +488,12 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
  */
 export const attachmentsTable = pgTable("attachments", {
   id: serial("id").primaryKey(),
-  key: varchar("key").notNull(), // The unique key returned by AWS S3
-  bucket: varchar("bucket").notNull(), // The S3 bucket name
-  url: varchar("url").notNull(), // The file's public URL
-  metadata: jsonb("metadata").default({}), // Metadata for additional file info
+  key: varchar("key").notNull(),
+  bucket: varchar("bucket").notNull(),
+  url: varchar("url").notNull(),
+  metadata: jsonb("metadata").default({}),
+  belongsTo: belongsToEnum("belongs_to").notNull(),
+  componentId: integer("component_id").notNull(),
+  fieldId: integer("field_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

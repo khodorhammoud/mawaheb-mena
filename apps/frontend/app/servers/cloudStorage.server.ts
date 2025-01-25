@@ -1,13 +1,13 @@
-// Google Cloud Functions 👇👇
 import { Storage } from "@google-cloud/storage";
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { saveAttachment } from "./attachment.server";
-import { Readable } from "stream";
+
+// Google Cloud Functions 👇👇
 
 function getStorage() {
   return new Storage({
@@ -74,6 +74,18 @@ export async function uploadFileToBucket(
   });
 }
 
+// Google Cloud: Delete File from Bucket
+export async function deleteFileFromBucket(fileName: string) {
+  const storage = getStorage();
+  const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
+  try {
+    await storage.bucket(bucketName).file(fileName).delete();
+  } catch (error) {
+    console.error("Error deleting file from Google Cloud Storage:", error);
+    throw new Error("Failed to delete file from Google Cloud Storage.");
+  }
+}
+
 // Google Cloud Functions 👆👆
 
 // AWS S3 functions 👇👇
@@ -128,6 +140,17 @@ export async function getFileFromS3(fileKey: string) {
     throw error;
   }
 }
+
+// AWS S3: Delete File from S3
+export async function deleteFileFromS3(bucket: string, key: string) {
+  try {
+    const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
+    await s3Client.send(command);
+  } catch (error) {
+    console.error("Error deleting file from S3:", error);
+    throw new Error("Failed to delete file from S3.");
+  }
+}
 // AWS S3 functions 👆👆
 
 // Unified Interface for Dynamic Storage Provider 👇👇
@@ -140,31 +163,31 @@ export async function uploadFile(prefix: string, file: File) {
     const bucket = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
     const url = uploadResult.url;
 
-    await saveAttachment(key, bucket, url);
-
     return { key, bucket, url };
   } else {
-    // console.log("Uploading file:", file.name);
     const uploadResult = await uploadFileToS3(prefix, file);
-    // console.log("File uploaded. Result:", uploadResult);
-
     const url = `https://${uploadResult.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadResult.key}`;
-
-    // console.log("Uploaded file result:", uploadResult);
-
-    await saveAttachment(uploadResult.key, uploadResult.bucket, url);
-
     return { key: uploadResult.key, bucket: uploadResult.bucket, url };
+  }
+}
+
+export async function deleteFile(bucket: string, key: string): Promise<void> {
+  try {
+    console.log(`Deleting file from S3 - Bucket: ${bucket}, Key: ${key}`);
+    const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
+    await s3Client.send(command);
+    console.log(`File deleted successfully from S3: ${key}`);
+  } catch (error) {
+    console.error(`Error deleting file from S3: ${key}`, error);
+    throw new Error("Failed to delete file from S3.");
   }
 }
 
 export async function getFile(fileKey: string): Promise<string> {
   try {
     if (isGoogleCloud) {
-      console.log(`Fetching file from Google Cloud: ${fileKey}`);
       return await getFileFromBucket(fileKey);
     } else {
-      console.log(`Fetching file from AWS S3: ${fileKey}`);
       return await getFileFromS3(fileKey);
     }
   } catch (error) {
@@ -172,5 +195,4 @@ export async function getFile(fileKey: string): Promise<string> {
     throw new Error(`Failed to fetch file: ${fileKey}`);
   }
 }
-
 // Unified Interface for Dynamic Storage Provider 👆👆
