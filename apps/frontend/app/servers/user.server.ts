@@ -475,7 +475,6 @@ export async function registerFreelancer({
   account,
   provider,
 }: Freelancer & { provider: Provider }): Promise<Freelancer> {
-  
   if (!account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
@@ -673,6 +672,15 @@ export async function generateVerificationToken(
   return token;
 }
 
+// Helper function to check if a user exists
+export async function checkUserExists(userId: number) {
+  return await db
+    .select()
+    .from(UsersTable)
+    .where(eq(UsersTable.id, userId))
+    .limit(1);
+}
+
 export async function verifyUserAccount({ userId }: { userId: number }) {
   return await db
     .update(UsersTable)
@@ -728,11 +736,11 @@ export async function verifyUserVerificationToken(token: string) {
   const userId = tokenRecord[0].userId;
   try {
     const response = await verifyUserAccount({ userId });
-      if (response.length === 0)
-        return {
-          success: false,
-          message: ErrorCode.INTERNAL_ERROR,
-        };
+    if (response.length === 0)
+      return {
+        success: false,
+        message: ErrorCode.INTERNAL_ERROR,
+      };
   } catch (e) {
     console.error("Error verifying user:", e);
     return {
@@ -805,4 +813,15 @@ export async function updateSocialAccount(socialAccount: SocialAccount) {
     .update(socialAccountsTable)
     .set(socialAccount)
     .where(eq(socialAccountsTable.id, socialAccount.id));
+}
+
+// Helper function to update onboarding status
+export async function updateOnboardingStatus(userId: number) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded: true } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return result;
 }
