@@ -6,6 +6,8 @@ import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUserAccountInfo,
+  checkUserExists,
+  updateOnboardingStatus,
 } from "~/servers/user.server";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -25,13 +27,15 @@ import {
   getEmployerBudget,
   getEmployerAbout,
   getEmployerDashboardData,
-  checkUserExists,
-  updateOnboardingStatus,
   updateAccountBio,
   updateEmployerIndustries,
   updateEmployerYearsInBusiness,
   updateEmployerBudget,
   updateEmployerAbout,
+  getAllLanguages,
+} from "~/servers/employer.server";
+
+import {
   getFreelancerAbout,
   updateFreelancerAbout,
   updateFreelancerHourlyRate,
@@ -42,11 +46,10 @@ import {
   updateFreelancerCertificates,
   updateFreelancerEducation,
   getFreelancerLanguages,
-  getAllLanguages,
   getFreelancerAvailability,
-  saveAvailability,
-  updateAvailabilityStatus,
-} from "~/servers/employer.server";
+  updateFreelancerAvailability,
+  updateFreelancerAvailabilityStatus,
+} from "~/servers/freelancer.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -90,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
         ? new Date(availableFromInput)
         : new Date(); // Default to today's date if no input is provided
 
-      const result = await saveAvailability({
+      const result = await updateFreelancerAvailability({
         accountId,
         availableForWork,
         jobsOpenTo: jobsOpenToArray,
@@ -116,7 +119,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const availableForWork = formData.get("available_for_work") === "true";
 
       // Call the query function to update availability status
-      const result = await updateAvailabilityStatus(
+      const result = await updateFreelancerAvailabilityStatus(
         accountId,
         availableForWork
       );

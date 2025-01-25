@@ -17,7 +17,8 @@ import {
   getProfileInfoByAccountId,
   getCurrentProfileInfo,
 } from "~/servers/user.server";
-import { getAccountBio, getFreelancerAbout } from "~/servers/employer.server";
+import { getAccountBio } from "~/servers/employer.server";
+import { getFreelancerAbout } from "~/servers/freelancer.server";
 import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
 import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";

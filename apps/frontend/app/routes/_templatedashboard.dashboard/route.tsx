@@ -8,6 +8,8 @@ import {
   getCurrentUserAccountType,
   getCurrentUser,
   getCurrentUserAccountInfo,
+  checkUserExists,
+  updateOnboardingStatus,
 } from "~/servers/user.server";
 import {
   CertificateFormFieldType,
@@ -33,9 +35,11 @@ import {
   updateEmployerBudget,
   updateEmployerAbout,
   getEmployerAbout,
-  checkUserExists,
-  updateOnboardingStatus,
   getEmployerDashboardData,
+  getAllLanguages,
+} from "~/servers/employer.server";
+
+import {
   getFreelancerAbout,
   updateFreelancerAbout,
   updateFreelancerHourlyRate,
@@ -45,12 +49,12 @@ import {
   updateFreelancerWorkHistory,
   updateFreelancerCertificates,
   updateFreelancerEducation,
-  saveAvailability,
+  updateFreelancerAvailability,
   getFreelancerAvailability,
-  updateAvailabilityStatus,
+  updateFreelancerAvailabilityStatus,
   getFreelancerLanguages,
-  getAllLanguages,
-} from "~/servers/employer.server";
+} from "~/servers/freelancer.server";
+
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded } from "~/auth/auth.server";
 import { Job } from "~/types/Job";
@@ -104,7 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
         ? new Date(availableFromInput)
         : new Date(); // Default to today's date if no input is provided
 
-      const result = await saveAvailability({
+      const result = await updateFreelancerAvailability({
         accountId,
         availableForWork,
         jobsOpenTo: jobsOpenToArray,
@@ -128,7 +132,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const availableForWork = formData.get("available_for_work") === "true";
 
       // Call the query function to update availability status
-      const result = await updateAvailabilityStatus(
+      const result = await updateFreelancerAvailabilityStatus(
         accountId,
         availableForWork
       );
