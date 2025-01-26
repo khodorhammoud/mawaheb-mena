@@ -18,12 +18,10 @@ function getStorage() {
   });
 }
 
-// format the date in YYYY-MM-DDTHH:mm:ss format and then concatenated with milliseconds.
 const formatDateWithMilliseconds = () => {
   return new Date().toISOString().replace(/[-:.TZ]/g, "");
 };
 
-// Google Cloud: Get File from Bucket
 export async function getFileFromBucket(fileName: string) {
   const storage = getStorage();
   const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
@@ -39,7 +37,7 @@ export async function getFileFromBucket(fileName: string) {
   return url;
 }
 
-// Google Cloud: Upload File to Bucket
+// this is used in freelancer.server.ts in these 2 functions (updateFreelancerPortfolio and updateFreelancerCertificates)
 export async function uploadFileToBucket(
   prefix: string,
   file: File
@@ -74,7 +72,6 @@ export async function uploadFileToBucket(
   });
 }
 
-// Google Cloud: Delete File from Bucket
 export async function deleteFileFromBucket(fileName: string) {
   const storage = getStorage();
   const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
@@ -89,6 +86,7 @@ export async function deleteFileFromBucket(fileName: string) {
 // Google Cloud Functions 👆👆
 
 // AWS S3 functions 👇👇
+
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
   credentials: {
@@ -97,13 +95,25 @@ const s3Client = new S3Client({
   },
 });
 
-// AWS S3: Upload File
+/**
+ * Upload a file to S3 bucket
+ * @param prefix - Prefix for the file (e.g., folder or context identifier)
+ * @param file - File object to upload
+ * @returns { key, bucket }
+ */
 export async function uploadFileToS3(prefix: string, file: File) {
+  const bucketName = process.env.S3_PRIVATE_BUCKET_NAME; // Use the private bucket
+  if (!bucketName) {
+    throw new Error(
+      "S3_PRIVATE_BUCKET_NAME is not defined in the environment variables."
+    );
+  }
+
   const fileKey = `${prefix}-${Date.now()}-${file.name}`; // Generate a unique key
   const fileBuffer = Buffer.from(await file.arrayBuffer()); // Use Buffer instead of stream
 
   const uploadParams = {
-    Bucket: process.env.S3_BUCKET_NAME!,
+    Bucket: bucketName, // Use the private bucket name
     Key: fileKey,
     Body: fileBuffer, // Pass the buffer directly
     ContentType: file.type,
@@ -113,16 +123,24 @@ export async function uploadFileToS3(prefix: string, file: File) {
     await s3Client.send(new PutObjectCommand(uploadParams));
     return {
       key: fileKey,
-      bucket: process.env.S3_BUCKET_NAME!,
+      bucket: bucketName,
     };
   } catch (error) {
     console.error("Error uploading file to S3:", error);
-    throw error;
+    throw new Error("Failed to upload file to S3.");
   }
 }
 
-// AWS S3: Get File from S3
-export async function getFileFromS3(fileKey: string) {
+/**
+ * Get a pre-signed URL for a file in S3
+ * @param fileKey - Key of the file in S3
+ * @param expiration - URL validity duration in seconds (default 3600 seconds)
+ * @returns Pre-signed URL
+ */
+export async function getFileFromS3(
+  fileKey: string,
+  expiration = 3600
+): Promise<string> {
   const getParams = {
     Bucket: process.env.S3_BUCKET_NAME!,
     Key: fileKey,
@@ -132,30 +150,89 @@ export async function getFileFromS3(fileKey: string) {
     const signedUrl = await getSignedUrl(
       s3Client,
       new GetObjectCommand(getParams),
-      { expiresIn: 3600 }
+      { expiresIn: expiration }
     );
+    return signedUrl;
+  } catch (error) {
+    console.error("Error generating signed URL from S3:", error);
+    throw new Error("Failed to generate signed URL.");
+  }
+}
+
+/**
+ * Delete a file from S3
+ * @param bucket - Name of the S3 bucket
+ * @param key - Key of the file in S3
+ */
+export async function deleteFileFromS3(
+  bucket: string,
+  key: string
+): Promise<void> {
+  if (!bucket) {
+    throw new Error("Bucket name is missing.");
+  }
+
+  if (!key) {
+    throw new Error("File key is missing.");
+  }
+
+  const params = {
+    Bucket: bucket,
+    Key: key,
+  };
+
+  try {
+    console.log("Deleting file from S3 with params:", params);
+    const command = new DeleteObjectCommand(params);
+    await s3Client.send(command);
+    console.log(`File deleted successfully from S3: ${key}`);
+  } catch (error) {
+    console.error(`Error deleting file from S3: ${key}`, error);
+    throw new Error("Failed to delete file from S3.");
+  }
+}
+
+/**
+ * Generate a signed URL for secure access to a file in a private S3 bucket
+ * @param fileKey - Key of the file in S3
+ * @param expiration - URL validity duration in seconds (default 60 seconds)
+ * @returns Pre-signed URL
+ */
+export const generatePresignedUrl = async (
+  fileKey: string,
+  expiration = 60
+): Promise<string> => {
+  const params = {
+    Bucket: process.env.S3_PRIVATE_BUCKET_NAME!,
+    Key: fileKey,
+    Expires: expiration, // URL validity duration in seconds
+  };
+
+  try {
+    const signedUrl = await getSignedUrl(
+      s3Client,
+      new GetObjectCommand(params)
+    );
+    console.log("signedUrl", signedUrl);
     return signedUrl;
   } catch (error) {
     console.error("Error generating signed URL from S3:", error);
     throw error;
   }
-}
+};
 
-// AWS S3: Delete File from S3
-export async function deleteFileFromS3(bucket: string, key: string) {
-  try {
-    const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
-    await s3Client.send(command);
-  } catch (error) {
-    console.error("Error deleting file from S3:", error);
-    throw new Error("Failed to delete file from S3.");
-  }
-}
 // AWS S3 functions 👆👆
 
-// Unified Interface for Dynamic Storage Provider 👇👇
+// functions for both cloud and s3 👇👇
+
 const isGoogleCloud = process.env.STORAGE_PROVIDER === "google";
 
+/**
+ * Unified upload function
+ * @param prefix - Prefix for the file
+ * @param file - File object to upload
+ * @returns { key, bucket, url }
+ */
 export async function uploadFile(prefix: string, file: File) {
   if (isGoogleCloud) {
     const uploadResult = await uploadFileToBucket(prefix, file);
@@ -195,4 +272,5 @@ export async function getFile(fileKey: string): Promise<string> {
     throw new Error(`Failed to fetch file: ${fileKey}`);
   }
 }
-// Unified Interface for Dynamic Storage Provider 👆👆
+
+// functions for both cloud and s3 👆👆

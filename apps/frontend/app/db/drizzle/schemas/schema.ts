@@ -481,19 +481,12 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
  * Define the attachments table schema
  * @property id
  * @property key
- * @property bucket
- * @property url
  * @property metadata
  * @property createdAt
  */
 export const attachmentsTable = pgTable("attachments", {
   id: serial("id").primaryKey(),
   key: varchar("key").notNull(),
-  bucket: varchar("bucket").notNull(),
-  url: varchar("url").notNull(),
   metadata: jsonb("metadata").default({}),
-  belongsTo: belongsToEnum("belongs_to").notNull(),
-  componentId: integer("component_id").notNull(),
-  fieldId: integer("field_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
