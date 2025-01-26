@@ -43,16 +43,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   text-left break-words whitespace-normal overflow-hidden`}
       style={{ wordBreak: "break-word", hyphens: "auto" }} // this is to let the typing go down to the second line
     >
-      {/* <CardHeader className="p-0">
-        <CardTitle className="text-lg font-semibold mb-2 md:w-[60%]">
-          {props.cardTitle}
-        </CardTitle>
-        {props.cardSubtitle && (
-          <CardDescription className="md:w-[300px]">
-            {props.cardSubtitle}
-          </CardDescription>
-        )}
-      </CardHeader> */}
       <div
         className={`flex flex-col ${props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"}`}
       >
