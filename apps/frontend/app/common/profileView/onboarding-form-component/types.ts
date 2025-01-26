@@ -16,11 +16,13 @@ export interface GeneralizableFormCardProps {
   triggerIcon?: React.ReactNode;
   formName: string;
   fieldName: string;
+  acceptedFileTypes?: string;
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
   editable?: boolean;
   useRichText?: boolean;
+  showLoadingOnSubmit?: boolean;
 }
 
 export interface FilledGeneralizableFormCardProps {

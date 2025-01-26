@@ -7,6 +7,7 @@ import VideoUpload from "~/common/upload/videoUpload";
 import Or from "~/common/or/Or";
 import RichTextEditor from "~/components/ui/richTextEditor";
 import DOMPurify from "dompurify";
+import FileUpload from "~/common/upload/fileUpload";
 
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
@@ -180,12 +181,15 @@ export const FormFields = {
     );
   },
 
-  file: ({ value, onChange, name, props }: FormFieldProps) => (
-    <Input
-      type="file"
-      name={props.fieldName}
-      onChange={onChange}
-      className="w-full p-3 border border-gray-300 rounded-md"
-    />
-  ),
+  file: ({ value, onChange, name, props }: FormFieldProps) => {
+    return (
+      <Input
+        type="file"
+        name={name}
+        accept={props.acceptedFileTypes}
+        onChange={onChange}
+        className="w-full p-3 border border-gray-300 rounded-md"
+      />
+    );
+  },
 };

@@ -18,6 +18,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { redirect } from "@remix-run/react";
 import { updateAccountBio } from "./employer.server";
 import { checkUserExists, updateOnboardingStatus } from "./user.server";
+import { genParseCV } from "./cvParser.server";
 
 /***************************************************
  ************Insert/update freelancer info************
@@ -29,6 +30,67 @@ export async function handleFreelancerOnboardingAction(
 ) {
   const target = formData.get("target-updated") as string;
   const userId = freelancer.account.user.id;
+
+  // Add this to handleFreelancerOnboardingAction switch case
+  async function handleFreelancerCV(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    try {
+      const cvFile = formData.get("cvFile") as File;
+      if (!cvFile) {
+        throw new Error("No CV file provided");
+      }
+
+      // Parse CV with OpenAI
+      const parsedData = await genParseCV(cvFile);
+
+      // Update freelancer profile with parsed data
+      await Promise.all([
+        // Update about section
+        updateFreelancerAbout(freelancer, parsedData.about),
+
+        // Update portfolio/projects
+        updateFreelancerPortfolio(
+          freelancer,
+          parsedData.projects.map((p: any) => ({
+            projectName: p.projectName,
+            projectDescription: p.projectDescription,
+            projectLink: p.projectLink,
+            projectImageUrl: "", // No image from CV
+          })),
+          [] // No images to upload
+        ),
+
+        // Update work history
+        updateFreelancerWorkHistory(freelancer, parsedData.workHistory),
+
+        // Update certificates
+        updateFreelancerCertificates(
+          freelancer,
+          parsedData.certificates.map((c: any) => ({
+            name: c.name,
+            issuer: c.issuer,
+            issueDate: c.issueDate,
+            attachmentUrl: "", // No attachment from CV
+          })),
+          [] // No images to upload
+        ),
+
+        // Update education
+        updateFreelancerEducation(freelancer, parsedData.education),
+      ]);
+
+      return Response.json({ success: true });
+    } catch (error) {
+      console.error("Error processing CV:", error);
+      return Response.json({
+        success: false,
+        error: { message: "Failed to process CV" },
+        status: 500,
+      });
+    }
+  }
 
   async function handleFreelancerBio(
     formData: FormData,
@@ -299,6 +361,8 @@ export async function handleFreelancerOnboardingAction(
   }
 
   switch (target) {
+    case "freelancer-cv":
+      return handleFreelancerCV(formData, freelancer);
     case "freelancer-bio":
       return handleFreelancerBio(formData, userId, freelancer);
     case "freelancer-hourly-rate":
