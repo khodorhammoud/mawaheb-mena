@@ -16,6 +16,7 @@ import {
   JobApplicationStatus,
   JobsOpenTo,
   Provider,
+  AttachmentBelongsTo,
 } from "~/types/enums";
 
 export const providerEnum = pgEnum(
@@ -90,6 +91,10 @@ export const jobsOpenToEnum = pgEnum(
   Object.values(JobsOpenTo) as [string, ...string[]]
 );
 
+export const belongsToEnum = pgEnum(
+  "belongs_to",
+  Object.values(AttachmentBelongsTo) as [string, ...string[]]
+);
 /* export const jobApplicationStatusEnum = pgEnum(
   "job_application_status",
   Object.values(JobApplicationStatus) as [string, ...string[]]

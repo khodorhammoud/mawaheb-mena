@@ -31,6 +31,7 @@ import {
   experienceLevelEnum, */
   jobApplicationStatusEnum,
   providerEnum,
+  belongsToEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -474,4 +475,18 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
     .default(TimesheetStatus.Submitted), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Define the attachments table schema
+ * @property id
+ * @property key
+ * @property metadata
+ * @property createdAt
+ */
+export const attachmentsTable = pgTable("attachments", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull(),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
 });

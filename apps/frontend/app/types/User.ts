@@ -186,8 +186,14 @@ export interface PortfolioFormFieldType {
   projectName: string;
   projectLink: string;
   projectDescription: string;
-  projectImageName: string;
-  projectImageUrl: string | null;
+  attachmentId?: number; // This will be set in the function
+  projectImageName?: string; // Name of the uploaded image
+  projectImageUrl?: string; // Pre-signed URL for accessing the image
+}
+
+export interface AttachmentsType {
+  key: string;
+  metadata?: Record<string, any>; // Optional because JSONB has a default
 }
 
 export interface WorkHistoryFormFieldType {
@@ -200,11 +206,12 @@ export interface WorkHistoryFormFieldType {
 }
 
 export interface CertificateFormFieldType {
-  attachmentName: string;
-  attachmentUrl: string;
   certificateName: string;
   issuedBy: string;
   yearIssued: number;
+  attachmentId?: number;
+  attachmentName?: string;
+  attachmentUrl?: string; // Pre-signed URL for accessing the file
 }
 
 export interface EducationFormFieldType {

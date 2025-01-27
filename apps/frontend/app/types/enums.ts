@@ -116,3 +116,8 @@ export enum JobsOpenTo {
   PartTimeRoles = "part-time-roles",
   EmployeeRoles = "employee-roles",
 }
+
+export enum AttachmentBelongsTo {
+  Portfolio = "portfolio",
+  Certificate = "certificate",
+}

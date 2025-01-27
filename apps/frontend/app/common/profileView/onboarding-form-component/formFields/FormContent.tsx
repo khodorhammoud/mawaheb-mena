@@ -1,5 +1,3 @@
-// This is the file of the success messages and error ones of all the GeneralizableFormCard, and the save button + its functionality
-
 import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";
@@ -50,19 +48,36 @@ const FormContent = ({
     // Add target-updated field
     formData.append("target-updated", formName);
 
+    // console.log(
+    //   "repeatableInputValues before form submission:",
+    //   repeatableInputValues
+    // );
+    // console.log(
+    //   "repeatableInputFiles before form submission:",
+    //   repeatableInputFiles
+    // );
+
     // Handle repeatable fields
     if (formType === "repeatable") {
       formData.append(
         repeatableFieldName,
         JSON.stringify(repeatableInputValues)
       );
+
+      // Append files
       repeatableInputFiles.forEach((file, index) => {
         if (file) {
+          // console.log(`Appending file at index ${index}:`, file);
           formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
+        } else {
+          console.warn(`No file found at index ${index}`);
         }
       });
     }
 
+    // console.log("Final FormData entries:", Array.from(formData.entries()));
+
+    // Pass the formData to the onSubmit callback
     onSubmit(e, formData);
   };
 
@@ -100,6 +115,8 @@ const FormContent = ({
     const numericValue = value.replace(/[^0-9.]/g, ""); // Remove non-numeric characters
     setInputValue(numericValue);
   };
+
+  // console.log("repeatableInputFiles in current state:", repeatableInputFiles);
 
   return (
     <div className="">
