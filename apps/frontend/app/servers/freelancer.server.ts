@@ -405,15 +405,10 @@ export async function updateFreelancerPortfolio(
         // Save the attachment ID and generate the pre-signed URL
         portfolio[i].attachmentId = attachmentRes.id;
         portfolio[i].projectImageName = uploadResult.key;
-        portfolio[i].projectImageUrl = await generatePresignedUrl(
-          uploadResult.key,
-          3600
-        );
       } else {
         // Handle cases where no file was uploaded
         portfolio[i].attachmentId = null;
         portfolio[i].projectImageName = null;
-        portfolio[i].projectImageUrl = null;
       }
 
       // Sanitize the project description
@@ -493,16 +488,13 @@ export async function updateFreelancerCertificates(
           throw new Error("Failed to save attachment in the database.");
         }
 
-        // Save the attachment ID and generate the pre-signed URL
+        // Save the attachment ID (but not the signed URL) in the certificates array
         certificates[i].attachmentId = attachmentRes.id;
-        certificates[i].attachmentUrl = await generatePresignedUrl(
-          uploadResult.key,
-          3600
-        );
+        certificates[i].attachmentName = uploadResult.key; // Save the file name for future use
       } else {
         // Handle cases where no file was uploaded
         certificates[i].attachmentId = null;
-        certificates[i].attachmentUrl = null;
+        certificates[i].attachmentName = null;
       }
 
       // Sanitize the certificate name and issuer

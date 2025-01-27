@@ -26,6 +26,7 @@ import {
   getFreelancerAvailability,
   handleFreelancerOnboardingAction,
 } from "~/servers/freelancer.server";
+import { getAttachmentSignedURL } from "~/servers/cloudStorage.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -114,8 +115,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
-    let portfolio = profile.portfolio;
-    const certificates = profile.certificates;
+
+    // Process portfolio
+    const portfolio = Array.isArray(profile.portfolio)
+      ? profile.portfolio
+      : JSON.parse(profile.portfolio || "[]");
+
+    const processedPortfolio = await Promise.all(
+      portfolio.map(async (item) => {
+        if (item.projectImageName) {
+          item.projectImageUrl = await getAttachmentSignedURL(
+            item.projectImageName
+          );
+        }
+        return item;
+      })
+    );
+
+    // Process certificates
+    const certificates = Array.isArray(profile.certificates)
+      ? profile.certificates
+      : JSON.parse(profile.certificates || "[]");
+
+    const processedCertificates = await Promise.all(
+      certificates.map(async (item) => {
+        if (item.attachmentName) {
+          item.attachmentUrl = await getAttachmentSignedURL(
+            item.attachmentName
+          );
+        }
+        return item;
+      })
+    );
+
     const educations = profile.educations;
     const workHistory = profile.workHistory;
 
@@ -149,8 +181,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      portfolio,
-      certificates,
+      portfolio: JSON.stringify(processedPortfolio),
+      certificates: JSON.stringify(processedCertificates),
       educations,
       workHistory,
       freelancerAvailability: availabilityData,

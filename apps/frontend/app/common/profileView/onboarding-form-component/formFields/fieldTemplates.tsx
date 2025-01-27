@@ -91,11 +91,14 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
     // Parse portfolio data
     let portfolio: PortfolioFormFieldType[] = [];
+
     try {
-      portfolio = JSON.parse(data.portfolio);
+      portfolio = data.portfolio ? JSON.parse(data.portfolio) : [];
     } catch (error) {
       console.error("Failed to parse portfolio data:", error);
     }
+
+    portfolio = Array.isArray(portfolio) ? portfolio : [];
 
     // Handle empty portfolio
     if (!Array.isArray(portfolio) || portfolio.length === 0) {
@@ -107,7 +110,6 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
       );
     }
 
-    // Render portfolio items
     return (
       <>
         <span className="text-lg font-medium">Projects</span>
@@ -116,7 +118,6 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
             item.projectDescription || ""
           );
 
-          // Render based on the file type
           const renderFilePreview = () => {
             return (
               <img
@@ -282,11 +283,14 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 
     // Parse certificates data
     let certificates: CertificateFormFieldType[] = [];
+
     try {
-      certificates = JSON.parse(data.certificates);
+      certificates = data.certificates ? JSON.parse(data.certificates) : [];
     } catch (error) {
       console.error("Failed to parse certificates data:", error);
     }
+
+    certificates = Array.isArray(certificates) ? certificates : [];
 
     // Handle empty certificates
     if (!Array.isArray(certificates) || certificates.length === 0) {
@@ -324,6 +328,16 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
                 </span>
                 <p className="text-sm">{item.yearIssued || "Year"}</p>
               </div>
+              {/* {item.attachmentUrl && (
+                <a
+                  href={item.attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {item.attachmentName || "View Certificate"}
+                </a>
+              )} */}
             </div>
           ))}
         </div>

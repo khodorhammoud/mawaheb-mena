@@ -87,13 +87,21 @@ export async function deleteFileFromBucket(fileName: string) {
 
 // AWS S3 functions 👇👇
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+// Initialize the S3 client only when needed
+let s3Client: S3Client;
+
+function getS3Client() {
+  if (!s3Client) {
+    s3Client = new S3Client({
+      region: process.env.AWS_REGION!,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    });
+  }
+  return s3Client;
+}
 
 /**
  * Upload a file to S3 bucket
@@ -120,7 +128,7 @@ export async function uploadFileToS3(prefix: string, file: File) {
   };
 
   try {
-    await s3Client.send(new PutObjectCommand(uploadParams));
+    await getS3Client().send(new PutObjectCommand(uploadParams));
     return {
       key: fileKey,
       bucket: bucketName,
@@ -148,7 +156,7 @@ export async function getFileFromS3(
 
   try {
     const signedUrl = await getSignedUrl(
-      s3Client,
+      getS3Client(),
       new GetObjectCommand(getParams),
       { expiresIn: expiration }
     );
@@ -184,7 +192,7 @@ export async function deleteFileFromS3(
   try {
     console.log("Deleting file from S3 with params:", params);
     const command = new DeleteObjectCommand(params);
-    await s3Client.send(command);
+    await getS3Client().send(command);
     console.log(`File deleted successfully from S3: ${key}`);
   } catch (error) {
     console.error(`Error deleting file from S3: ${key}`, error);
@@ -210,14 +218,29 @@ export const generatePresignedUrl = async (
 
   try {
     const signedUrl = await getSignedUrl(
-      s3Client,
+      getS3Client(),
       new GetObjectCommand(params)
     );
-    console.log("signedUrl", signedUrl);
     return signedUrl;
   } catch (error) {
     console.error("Error generating signed URL from S3:", error);
     throw error;
+  }
+};
+
+export const getAttachmentSignedURL = async (
+  fileKey: string
+): Promise<string> => {
+  if (!fileKey) {
+    throw new Error("File key is required to generate a signed URL.");
+  }
+
+  try {
+    // Reuse the generatePresignedUrl utility function here
+    return await generatePresignedUrl(fileKey, 3600); // Expiration set to 1 hour
+  } catch (error) {
+    console.error("Error generating signed URL from S3:", error);
+    throw new Error("Failed to generate signed URL.");
   }
 };
 
@@ -250,13 +273,22 @@ export async function uploadFile(prefix: string, file: File) {
 
 export async function deleteFile(bucket: string, key: string): Promise<void> {
   try {
-    console.log(`Deleting file from S3 - Bucket: ${bucket}, Key: ${key}`);
-    const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
-    await s3Client.send(command);
-    console.log(`File deleted successfully from S3: ${key}`);
+    if (isGoogleCloud) {
+      // Use Google Cloud-specific delete logic
+      await deleteFileFromBucket(key);
+    } else {
+      // Use S3 delete logic
+      const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
+      await getS3Client().send(command);
+    }
   } catch (error) {
-    console.error(`Error deleting file from S3: ${key}`, error);
-    throw new Error("Failed to delete file from S3.");
+    console.error(
+      `Error deleting file from ${isGoogleCloud ? "Google Cloud" : "S3"}: ${key}`,
+      error
+    );
+    throw new Error(
+      `Failed to delete file from ${isGoogleCloud ? "Google Cloud" : "S3"}.`
+    );
   }
 }
 
