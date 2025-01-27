@@ -3,6 +3,7 @@ import {
   freelancersTable,
   languagesTable,
   freelancerLanguagesTable,
+  attachmentsTable,
 } from "../db/drizzle/schemas/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -11,6 +12,7 @@ import {
   WorkHistoryFormFieldType,
   CertificateFormFieldType,
   EducationFormFieldType,
+  AttachmentsType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
 import { uploadFileToBucket } from "./cloudStorage.server";
@@ -18,6 +20,11 @@ import DOMPurify from "isomorphic-dompurify";
 import { redirect } from "@remix-run/react";
 import { updateAccountBio } from "./employer.server";
 import { checkUserExists, updateOnboardingStatus } from "./user.server";
+import {
+  deleteFileFromS3,
+  uploadFile,
+  generatePresignedUrl,
+} from "./cloudStorage.server";
 
 /***************************************************
  ************Insert/update freelancer info************
@@ -107,23 +114,39 @@ export async function handleFreelancerOnboardingAction(
     const portfolio = formData.get("portfolio") as string;
 
     try {
+      if (!portfolio) {
+        throw new Error("Portfolio data is missing or invalid.");
+      }
+
+      // Parse the portfolio JSON from the form
       const portfolioParsed = JSON.parse(portfolio) as PortfolioFormFieldType[];
 
       const portfolioImages: File[] = [];
-      // iterate over indexes of portfolioParsed and get the file type from the form
+
+      // Iterate over the portfolio entries to gather files from the form data
       for (let index = 0; index < portfolioParsed.length; index++) {
         const portfolioImage = formData.get(
           `portfolio-attachment[${index}]`
         ) as unknown as File;
-        portfolioImages.push(portfolioImage ?? new File([], ""));
+
+        if (portfolioImage && portfolioImage.size > 0) {
+          portfolioImages.push(portfolioImage);
+        } else {
+          portfolioImages.push(null); // No image for this portfolio entry
+        }
       }
+
+      // Update freelancer portfolio and process attachments
       const portfolioStatus = await updateFreelancerPortfolio(
         freelancer,
         portfolioParsed,
         portfolioImages
       );
+
       return Response.json({ success: portfolioStatus.success });
     } catch (error) {
+      console.error("Error processing freelancer portfolio:", error);
+
       return Response.json({
         success: false,
         error: { message: "Invalid portfolio data." },
@@ -334,36 +357,82 @@ export async function updateFreelancerPortfolio(
   portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    // upload portfolio Images
     for (let i = 0; i < portfolioImages.length; i++) {
       const file = portfolioImages[i];
+
       if (file && file.size > 0) {
-        portfolio[i].projectImageUrl = (
-          await uploadFileToBucket("portfolio", file)
-        ).fileName;
+        // Check if an attachment already exists
+        if (portfolio[i].attachmentId) {
+          const existingAttachment = await db
+            .select()
+            .from(attachmentsTable)
+            .where(eq(attachmentsTable.id, portfolio[i].attachmentId))
+            .limit(1);
+
+          if (existingAttachment.length > 0) {
+            // Delete the old file from S3
+            await deleteFileFromS3(
+              process.env.S3_PRIVATE_BUCKET_NAME!,
+              existingAttachment[0].key
+            );
+          }
+
+          // Delete the old attachment record from the database
+          await db
+            .delete(attachmentsTable)
+            .where(eq(attachmentsTable.id, portfolio[i].attachmentId));
+        }
+
+        // Upload the new file to S3
+        const uploadResult = await uploadFile("portfolio", file);
+
+        // Save the new file reference into the attachments table
+        const [attachmentRes] = await db
+          .insert(attachmentsTable)
+          .values({
+            key: uploadResult.key,
+            metadata: {
+              fileSize: file.size,
+              contentType: file.type,
+            },
+          } as AttachmentsType)
+          .returning({ id: attachmentsTable.id });
+
+        if (!attachmentRes) {
+          throw new Error("Failed to save attachment in the database.");
+        }
+
+        // Save the attachment ID and generate the pre-signed URL
+        portfolio[i].attachmentId = attachmentRes.id;
+        portfolio[i].projectImageName = uploadResult.key;
       } else {
-        portfolio[i].projectImageUrl = "";
+        // Handle cases where no file was uploaded
+        portfolio[i].attachmentId = null;
+        portfolio[i].projectImageName = null;
       }
+
+      // Sanitize the project description
       portfolio[i].projectDescription = DOMPurify.sanitize(
-        portfolio[i].projectDescription
+        portfolio[i].projectDescription || ""
       );
     }
 
+    // Update the freelancer's portfolio in the database
     const res = await db
       .update(freelancersTable)
       .set({
-        portfolio: JSON.stringify(portfolio),
+        portfolio: JSON.stringify(portfolio), // Save the updated portfolio
       })
       .where(eq(freelancersTable.id, freelancer.id))
       .returning({ id: freelancersTable.id });
 
     if (!res.length) {
-      throw new Error("Failed to update freelancer portfolio");
+      throw new Error("Failed to update freelancer portfolio.");
     }
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating freelancer portfolio", error);
+    console.error("Error updating freelancer portfolio:", error);
     throw error;
   }
 }
@@ -374,30 +443,85 @@ export async function updateFreelancerCertificates(
   certificatesImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    // upload certificates Images
     for (let i = 0; i < certificatesImages.length; i++) {
       const file = certificatesImages[i];
+
       if (file && file.size > 0) {
-        certificates[i].attachmentUrl = (
-          await uploadFileToBucket("certificates", file)
-        ).fileName;
+        // Check if an attachment already exists
+        if (certificates[i].attachmentId) {
+          const existingAttachment = await db
+            .select()
+            .from(attachmentsTable)
+            .where(eq(attachmentsTable.id, certificates[i].attachmentId))
+            .limit(1);
+
+          if (existingAttachment.length > 0) {
+            // Delete the old file from S3
+            await deleteFileFromS3(
+              process.env.S3_PRIVATE_BUCKET_NAME!,
+              existingAttachment[0].key
+            );
+          }
+
+          // Delete the old attachment record from the database
+          await db
+            .delete(attachmentsTable)
+            .where(eq(attachmentsTable.id, certificates[i].attachmentId));
+        }
+
+        // Upload the new file to S3
+        const uploadResult = await uploadFile("certificates", file);
+
+        // Save the new file reference into the attachments table
+        const [attachmentRes] = await db
+          .insert(attachmentsTable)
+          .values({
+            key: uploadResult.key,
+            metadata: {
+              fileSize: file.size,
+              contentType: file.type,
+            },
+          } as AttachmentsType)
+          .returning({ id: attachmentsTable.id });
+
+        if (!attachmentRes) {
+          throw new Error("Failed to save attachment in the database.");
+        }
+
+        // Save the attachment ID (but not the signed URL) in the certificates array
+        certificates[i].attachmentId = attachmentRes.id;
+        certificates[i].attachmentName = uploadResult.key; // Save the file name for future use
       } else {
-        certificates[i].attachmentUrl = "";
+        // Handle cases where no file was uploaded
+        certificates[i].attachmentId = null;
+        certificates[i].attachmentName = null;
       }
+
+      // Sanitize the certificate name and issuer
+      certificates[i].certificateName = DOMPurify.sanitize(
+        certificates[i].certificateName || ""
+      );
+      certificates[i].issuedBy = DOMPurify.sanitize(
+        certificates[i].issuedBy || ""
+      );
     }
 
+    // Update the freelancer's certificates in the database
     const res = await db
       .update(freelancersTable)
-      .set({ certificates: JSON.stringify(certificates) })
+      .set({
+        certificates: JSON.stringify(certificates), // Save the updated certificates
+      })
       .where(eq(freelancersTable.id, freelancer.id))
       .returning({ id: freelancersTable.id });
 
     if (!res.length) {
-      throw new Error("Failed to update freelancer certificates");
+      throw new Error("Failed to update freelancer certificates.");
     }
+
     return { success: true };
   } catch (error) {
-    console.error("Error updating freelancer certificates", error);
+    console.error("Error updating freelancer certificates:", error);
     throw error;
   }
 }
@@ -449,7 +573,6 @@ export async function updateFreelancerEducation(
   }
 }
 
-// Function to update freelancer's selected languages
 export async function updateFreelancerLanguages(
   freelancerId: number,
   languages: number[]
@@ -477,7 +600,6 @@ export async function updateFreelancerLanguages(
   return { success: true };
 }
 
-// Function to update the "About" section for a freelancer
 export async function updateFreelancerAbout(
   freelancer: Freelancer,
   aboutContent: string
@@ -629,7 +751,6 @@ export async function updateFreelancerAvailabilityStatus(
  ***************fetch freelancer info***************
  *************************************************** */
 
-// Function to get availability details from the database
 export async function getFreelancerAvailability(accountId: number) {
   const result = await db
     .select({
@@ -656,7 +777,6 @@ export async function getFreelancerAvailability(accountId: number) {
   return result[0] || null;
 }
 
-// Function to fetch the "About" section content for a freelancer
 export async function getFreelancerAbout(
   freelancer: Freelancer
 ): Promise<string> {
@@ -701,7 +821,6 @@ export async function getFreelancerHourlyRate(
   }
 }
 
-// Function to get freelancer's selected languages
 export async function getFreelancerLanguages(
   freelancerId: number
 ): Promise<{ id: number; name: string }[]> {

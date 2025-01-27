@@ -335,7 +335,6 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
   }
 }
 
-// Function to get all available languages
 export async function getAllLanguages(): Promise<
   { id: number; name: string }[]
 > {
@@ -434,7 +433,6 @@ export async function getEmployerBudget(
   }
 }
 
-// Function to fetch the "About" section content for an employer
 export async function getEmployerAbout(employer: Employer): Promise<string> {
   const accountId = employer.accountId;
 

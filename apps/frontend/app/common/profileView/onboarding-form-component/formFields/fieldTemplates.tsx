@@ -91,11 +91,14 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
     // Parse portfolio data
     let portfolio: PortfolioFormFieldType[] = [];
+
     try {
-      portfolio = JSON.parse(data.portfolio);
+      portfolio = data.portfolio ? JSON.parse(data.portfolio) : [];
     } catch (error) {
       console.error("Failed to parse portfolio data:", error);
     }
+
+    portfolio = Array.isArray(portfolio) ? portfolio : [];
 
     // Handle empty portfolio
     if (!Array.isArray(portfolio) || portfolio.length === 0) {
@@ -107,7 +110,6 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
       );
     }
 
-    // Render portfolio items
     return (
       <>
         <span className="text-lg font-medium">Projects</span>
@@ -115,19 +117,27 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
           const { isHtml, content: parsedDescription } = parseHtmlContent(
             item.projectDescription || ""
           );
+
+          const renderFilePreview = () => {
+            return (
+              <img
+                className="w-full h-full object-cover"
+                src={item.projectImageUrl}
+                alt={item.projectName || "Portfolio Image"}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg";
+                }}
+              />
+            );
+          };
+
           return (
             <div key={index} className="flex flex-col">
               <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-                {/* Image Section */}
+                {/* File Preview Section */}
                 <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
-                  <img
-                    className="w-full h-full object-cover"
-                    src={
-                      item.projectImageUrl ||
-                      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-                    }
-                    alt={item.projectName || "Portfolio Item"}
-                  />
+                  {renderFilePreview()}
                 </div>
 
                 {/* Content Section */}
@@ -161,18 +171,6 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                       </div>
                     }
                   </div>
-                  {/* <ul className="list-disc text-sm pl-8">
-                  <li className="leading-relaxed text-indent-0">
-                    Conducted comprehensive research to identify improvement
-                    areas.
-                  </li>
-                  <li className="leading-relaxed">
-                    Developed detailed wireframes and high-fidelity mockups.
-                  </li>
-                  <li className="leading-relaxed">
-                    Improved overall user experience and usability.
-                  </li>
-                </ul> */}
                 </div>
               </div>
             </div>
@@ -285,11 +283,14 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 
     // Parse certificates data
     let certificates: CertificateFormFieldType[] = [];
+
     try {
-      certificates = JSON.parse(data.certificates);
+      certificates = data.certificates ? JSON.parse(data.certificates) : [];
     } catch (error) {
       console.error("Failed to parse certificates data:", error);
     }
+
+    certificates = Array.isArray(certificates) ? certificates : [];
 
     // Handle empty certificates
     if (!Array.isArray(certificates) || certificates.length === 0) {
@@ -327,6 +328,16 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
                 </span>
                 <p className="text-sm">{item.yearIssued || "Year"}</p>
               </div>
+              {/* {item.attachmentUrl && (
+                <a
+                  href={item.attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {item.attachmentName || "View Certificate"}
+                </a>
+              )} */}
             </div>
           ))}
         </div>
