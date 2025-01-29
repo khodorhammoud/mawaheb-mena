@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import { Button } from "~/components/ui/button";
+import { Skill } from "~/types/Skill"; // Ensure the type exists
 
 interface JobCardProps {
-  job: Job;
+  job: Job & { jobSkills?: Skill[] }; // Ensure job has jobSkills
 }
 
 export default function SingleJobView({ job }: JobCardProps) {
@@ -13,18 +14,18 @@ export default function SingleJobView({ job }: JobCardProps) {
   const relatedJobs = fetcher.data?.jobs || [];
 
   useEffect(() => {
-    const params = new URLSearchParams({
-      jobType: "by-employer",
-      employerId: job.employerId.toString(),
-    });
+    if (job.employerId) {
+      const params = new URLSearchParams({
+        jobType: "by-employer",
+        employerId: job.employerId.toString(),
+      });
 
-    // :(
-    // send get request with query params: jobType: by-employer, employerId: job.employerId
-    fetcher.submit(null, {
-      method: "get",
-      action: `/api/jobs-related?${params.toString()}`,
-    });
-  }, []);
+      fetcher.submit(null, {
+        method: "get",
+        action: `/api/jobs-related?${params.toString()}`,
+      });
+    }
+  }, [job.employerId]); // ✅ Added dependency
 
   return (
     <div className="rounded-lg p-6 mx-auto">
@@ -55,18 +56,22 @@ export default function SingleJobView({ job }: JobCardProps) {
         </div>
       </div>
 
-      {/* Skills */}
+      {/* Skills Section */}
       <div className="mb-6">
         <h3 className="font-medium text-gray-900 mb-2">Skills</h3>
         <div className="flex flex-wrap gap-2">
-          {job.requiredSkills.map((skill) => (
-            <span
-              key={skill.name}
-              className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-            >
-              {skill.name}
-            </span>
-          ))}
+          {job.jobSkills && job.jobSkills.length > 0 ? (
+            job.jobSkills.map((skill) => (
+              <span
+                key={skill.id}
+                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+              >
+                {skill.name}
+              </span>
+            ))
+          ) : (
+            <p className="text-gray-500">No skills listed for this job.</p>
+          )}
         </div>
       </div>
 
@@ -80,9 +85,11 @@ export default function SingleJobView({ job }: JobCardProps) {
         </ul>
       </div>
 
-      {/* Interested Button clicking on it should send a post request to /api/jobs/:jobId/interested */}
+      {/* Interested Button */}
       <Button
-        disabled={fetcher.data?.success || fetcher.state === "submitting"}
+        disabled={
+          fetcher.data?.success === true || fetcher.state === "submitting"
+        }
         onClick={() => {
           if (!fetcher.data?.success) {
             fetcher.submit(null, {
@@ -100,12 +107,16 @@ export default function SingleJobView({ job }: JobCardProps) {
         {fetcher.data?.success ? "Applied" : "Interested"}
       </Button>
 
-      {/* Related Jobs */}
+      {/* Related Jobs Section */}
       <div className="mb-6">
         <h3 className="font-medium text-gray-900 mb-2">Related Jobs</h3>
-        {relatedJobs.map((job) => (
-          <JobCard key={job.id} job={job} onSelect={() => {}} />
-        ))}
+        {relatedJobs.length > 0 ? (
+          relatedJobs.map((relatedJob) => (
+            <JobCard key={relatedJob.id} job={relatedJob} onSelect={() => {}} />
+          ))
+        ) : (
+          <p className="text-gray-500">No related jobs found.</p>
+        )}
       </div>
     </div>
   );

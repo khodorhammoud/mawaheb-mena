@@ -62,9 +62,9 @@ export default function JobCard({ job, onSelect }: JobProps) {
             skills.map((skill) => (
               <Badge
                 key={skill.id}
-                className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${
+                className={`px-4 py-2 rounded-full border bg-white hover:bg-white cursor-default ${
                   skill.isStarred
-                    ? "bg-blue-100 text-blue-600 border-blue-600"
+                    ? "bg-blue-100 text-blue-600 border-blue-600 hover:bg-blue-100"
                     : "text-gray-600 border-gray-300"
                 }`}
               >
