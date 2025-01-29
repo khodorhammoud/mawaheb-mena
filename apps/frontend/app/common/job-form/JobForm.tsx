@@ -6,6 +6,8 @@ import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "~/routes/_templatedashboard.new-job/required-skills";
 import { JobCategory } from "~/types/User";
 import { Skill } from "~/types/Skill";
+import RichTextEditor from "~/components/ui/richTextEditor";
+import DOMPurify from "dompurify";
 
 interface JobFormProps {
   job?: {
@@ -42,16 +44,15 @@ export default function JobForm({
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     job?.jobCategoryId || null
   );
-
   const [selectedExperience, setSelectedExperience] = useState(
     job?.experienceLevel || ""
   );
+  const [jobDescription, setJobDescription] = useState(job?.description || "");
 
-  // Handlers
-  const handleSkillsChange = (skills: Skill[]) => setRequiredSkills(skills);
-  const handleCategoryClick = (categoryId: number) =>
-    setSelectedCategory(categoryId);
-  const handleExperienceClick = (level: string) => setSelectedExperience(level);
+  const getWordCount = (html: string) =>
+    DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim().length;
+  const handleDescriptionChange = (content: string) =>
+    setJobDescription(content);
 
   return (
     <div className="font-['Switzer-Regular'] mt-10 w-full">
@@ -65,7 +66,6 @@ export default function JobForm({
             method="post"
             className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
-            {/* Hidden Inputs */}
             {job?.id && <input type="hidden" name="jobId" value={job.id} />}
             <input
               type="hidden"
@@ -79,7 +79,6 @@ export default function JobForm({
               value={requiredSkills.map((skill) => skill.name).join(",")}
             />
 
-            {/* Job Title */}
             <AppFormField
               type="text"
               id="jobTitle"
@@ -88,8 +87,6 @@ export default function JobForm({
               defaultValue={job?.title || ""}
               className="w-full"
             />
-
-            {/* Working Hours */}
             <AppFormField
               type="number"
               id="workingHours"
@@ -99,19 +96,32 @@ export default function JobForm({
               className="col-span-1 w-full"
             />
 
-            {/* Job Description */}
-            <AppFormField
-              type="textarea"
-              id="jobDescription"
-              name="jobDescription"
-              label="Job Description"
-              defaultValue={job?.description || ""}
-              className="w-full"
-              col={10}
-            />
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="jobDescription"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Description
+              </label>
+              <input
+                type="hidden"
+                name="jobDescription"
+                value={jobDescription}
+              />
+              {/* the hidden input is needed for the description as a richTextEditor to be saved :) */}
+              <RichTextEditor
+                value={jobDescription}
+                onChange={handleDescriptionChange}
+                placeholder="Enter the job description"
+                className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
+                style={{ wordBreak: "break-word", hyphens: "auto" }}
+              />
+              <div className="ml-6 text-xs text-gray-500">
+                {getWordCount(jobDescription)} / 2000 words
+              </div>
+            </div>
 
             <div className="flex flex-col gap-6">
-              {/* Location */}
               <AppFormField
                 type="text"
                 id="location"
@@ -120,14 +130,10 @@ export default function JobForm({
                 defaultValue={job?.locationPreference || ""}
                 className="col-span-1 w-full"
               />
-
-              {/* Skills */}
               <RequiredSkills
                 selectedSkills={requiredSkills}
-                onChange={handleSkillsChange}
+                onChange={setRequiredSkills}
               />
-
-              {/* Project Type */}
               <AppFormField
                 type="select"
                 id="projectType"
@@ -141,8 +147,6 @@ export default function JobForm({
                 defaultValue={job?.projectType || ""}
                 className="col-span-1 w-full"
               />
-
-              {/* Budget */}
               <AppFormField
                 type="number"
                 id="budget"
@@ -153,7 +157,6 @@ export default function JobForm({
               />
             </div>
 
-            {/* Job Category */}
             <div className="col-span-2 mt-6">
               <label
                 htmlFor="jobCategory"
@@ -170,12 +173,8 @@ export default function JobForm({
                 {jobCategories.map((category) => (
                   <Badge
                     key={category.id}
-                    onClick={() => handleCategoryClick(category.id)}
-                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
-                      selectedCategory === category.id
-                        ? "bg-blue-100 text-blue-600 border-blue-600"
-                        : "text-gray-600 border-gray-300"
-                    }`}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${selectedCategory === category.id ? "bg-blue-100 text-blue-600 border-blue-600" : "text-gray-600 border-gray-300"}`}
                   >
                     {category.label}
                   </Badge>
@@ -183,41 +182,18 @@ export default function JobForm({
               </div>
             </div>
 
-            {/* Experience Level */}
-            <div className="col-span-2 mt-6">
-              <h3 className="block md:text-2xl text-xl font-semibold mb-4">
-                Experience Level
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
-                  <Badge
-                    key={level}
-                    onClick={() => handleExperienceClick(level)}
-                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
-                      selectedExperience === level
-                        ? "bg-blue-100 text-blue-600 border-blue-600"
-                        : "text-gray-600 border-gray-300"
-                    }`}
-                  >
-                    {level}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Buttons */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
               <Button
                 type="submit"
                 name="target"
                 value="save-draft"
-                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor"
+                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor bg-white not-active-gradient"
               >
                 {isEdit ? "Cancel" : "Save as Draft"}
               </Button>
               <Button
                 type="submit"
-                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor"
+                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor not-active-gradient"
               >
                 {isEdit ? "Update Job" : "Post Job"}
               </Button>
