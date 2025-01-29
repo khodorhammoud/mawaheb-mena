@@ -18,28 +18,34 @@ import {
 } from "~/components/ui/sheet";
 import { Job } from "~/types/Job";
 import SingleJobView from "./singleJobView";
+import { getJobSkills } from "~/servers/skill.server";
+import { Skill } from "~/types/Skill";
 
-// export async function action({ request }: ActionFunctionArgs) {}
+// ✅ Define a type for the Loader's return data
+export type LoaderData = {
+  jobSkills: Skill[];
+};
 
-// the loader is sending the employer data to file
 export async function loader({ request }: LoaderFunctionArgs) {
-  // current user must be a published
-
   const userId = await requireUserIsFreelancerPublished(request);
   if (!userId) {
     return redirect("/login-employer");
   }
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
-  // return if user is not freelancer
   if (accountType !== AccountType.Freelancer) {
     return redirect("/dashboard");
   }
 
-  const employer = await getCurrentProfileInfo(request);
+  // ✅ FIXED: Get jobId from query params
+  const url = new URL(request.url);
+  const jobId = parseInt(url.searchParams.get("jobId") || "0", 10);
+  // console.log("🔎 Extracted Job ID:", jobId);
 
-  // Return the response data
-  return Response.json({ employer });
+  const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
+  // console.log("📌 Returning Job Skills:", jobSkills);
+
+  return Response.json({ jobSkills });
 }
 
 // Layout component

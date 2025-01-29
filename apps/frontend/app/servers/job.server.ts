@@ -6,6 +6,8 @@ import {
   jobCategoriesTable,
   jobsTable,
   freelancersTable,
+  jobSkillsTable,
+  skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
@@ -26,9 +28,11 @@ export async function getAllJobCategories(): Promise<JobCategory[]> {
 
 // Create a job posting
 export async function createJobPosting(
-  jobData: Job
+  jobData: Job,
+  skills: { name: string; isStarred: boolean }[] // Separate skills
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // ✅ Step 1: Insert Job First
     const [job] = await db
       .insert(jobsTable)
       .values({
@@ -43,20 +47,47 @@ export async function createJobPosting(
         experienceLevel: jobData.experienceLevel,
         status: jobData.status,
       })
-      .returning();
+      .returning({ id: jobsTable.id });
 
     if (!job) {
-      console.error("Job insertion failed: No rows returned after insertion.");
-      throw new Error("Job insertion failed, no rows returned.");
+      console.error("❌ Job insertion failed: No rows returned.");
+      throw new Error("Job insertion failed.");
     }
+
+    console.log("✅ New Job Created:", job.id);
+
+    // ✅ Step 2: Insert Skills and Link to Job
+    for (const skill of skills) {
+      let [existingSkill] = await db
+        .select({ id: skillsTable.id })
+        .from(skillsTable)
+        .where(eq(skillsTable.name, skill.name));
+
+      // If skill doesn’t exist, insert it
+      if (!existingSkill) {
+        [existingSkill] = await db
+          .insert(skillsTable)
+          .values({ name: skill.name })
+          .returning({ id: skillsTable.id });
+
+        console.log("🆕 Inserted new skill:", existingSkill.id);
+      }
+
+      // ✅ Insert into `jobSkillsTable` (Link Job & Skill)
+      await db.insert(jobSkillsTable).values({
+        jobId: job.id,
+        skillId: existingSkill.id,
+        isStarred: skill.isStarred,
+      });
+
+      console.log(`🔗 Linked Skill ID ${existingSkill.id} to Job ID ${job.id}`);
+    }
+
     return { success: true };
   } catch (error) {
-    console.error("Detailed error during job creation:");
+    console.error("Detailed error during job creation:", error);
   }
-  // Return a more specific error message if possible
-  return {
-    success: false,
-  };
+  return { success: false };
 }
 
 /**

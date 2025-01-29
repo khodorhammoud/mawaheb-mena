@@ -33,6 +33,7 @@ export default function JobForm({
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
     Array.isArray(job?.requiredSkills)
       ? job.requiredSkills.map((skill: any) => ({
+          id: skill.id || 0,
           name: skill.name || "",
           isStarred: skill.isStarred || false,
         }))

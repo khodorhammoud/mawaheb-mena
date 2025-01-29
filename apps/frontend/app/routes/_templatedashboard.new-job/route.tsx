@@ -5,57 +5,51 @@ import { Job } from "~/types/Job";
 import { Employer } from "~/types/User";
 import { JobStatus } from "~/types/enums";
 import NewJob from "./jobs/NewJob";
-
-export async function loader() {
-  const jobCategories = await getAllJobCategories();
-  return Response.json({
-    jobCategories: jobCategories || [],
-  });
-}
+import { getAllSkills } from "~/servers/skill.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData();
-    const target = formData.get("target") as string; // Updated to use the target
+    const target = formData.get("target") as string;
     const employer = (await getCurrentProfileInfo(request)) as Employer;
 
-    // Determine job status based on the target action
     const jobStatus =
       target === "save-draft" ? JobStatus.Draft : JobStatus.Active;
 
+    // ✅ Extract skills separately
+    const skills = (formData.getAll("jobSkills") as string[]).map((skill) => ({
+      name: skill.trim(),
+      isStarred: false, // Default value
+    }));
+
+    // ✅ Create job object (WITHOUT `requiredSkills`)
     const jobData: Job = {
-      id: null, // id is auto generated in database
+      id: null,
       employerId: employer.id,
       title: formData.get("jobTitle") as string,
       description: formData.get("jobDescription") as string,
-      createdAt: null, // createdAt is set by the database
+      createdAt: null,
       jobCategoryId: parseInt(formData.get("jobCategory") as string) || null,
       workingHoursPerWeek:
         parseInt(formData.get("workingHours") as string, 10) || 0,
       locationPreference: formData.get("location") as string,
-      requiredSkills: (formData.getAll("jobSkills") as string[]).map(
-        (skill) => ({
-          name: skill.trim(),
-          isStarred: false,
-        })
-      ),
       projectType: formData.get("projectType") as string,
       budget: parseInt(formData.get("budget") as string, 10) || 0,
       experienceLevel: formData.get("experienceLevel") as string,
-      status: jobStatus, // based on action i did
+      status: jobStatus,
       fulfilledAt: null,
     };
 
-    const jobStatusResponse = await createJobPosting(jobData);
+    console.log("📝 Job Data to be inserted:", jobData);
+    console.log("📌 Skills to be linked:", skills);
+
+    const jobStatusResponse = await createJobPosting(jobData, skills);
 
     if (jobStatusResponse.success) {
       return redirect("/dashboard");
     } else {
       return Response.json(
-        {
-          success: false,
-          error: { message: "Failed to create job posting" },
-        },
+        { success: false, error: { message: "Failed to create job posting" } },
         { status: 500 }
       );
     }
@@ -66,6 +60,16 @@ export async function action({ request }: ActionFunctionArgs) {
       { status: 500 }
     );
   }
+}
+
+export async function loader() {
+  const jobCategories = await getAllJobCategories();
+  const allSkills = await getAllSkills();
+
+  return Response.json({
+    jobCategories: jobCategories || [],
+    skills: allSkills || [],
+  });
 }
 
 export default function JobPostingForm() {

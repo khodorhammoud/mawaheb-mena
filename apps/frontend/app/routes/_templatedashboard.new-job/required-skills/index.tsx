@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLoaderData } from "@remix-run/react";
 import { Badge } from "../../../components/ui/badge";
 import {
   Popover,
@@ -20,6 +21,7 @@ export default function RequiredSkills({
 }: RequiredSkillsProps) {
   const triggerRef = useRef(null);
   const [popoverWidth, setPopoverWidth] = useState(350);
+  const { skills } = useLoaderData<{ skills: Skill[] }>(); // Fetch skills from the server
 
   useEffect(() => {
     const updatePopoverWidth = () => {
@@ -33,17 +35,6 @@ export default function RequiredSkills({
       window.removeEventListener("resize", updatePopoverWidth);
     };
   }, []);
-
-  const popularSkills: Skill[] = [
-    { name: "Responsive Web Design", isStarred: false },
-    { name: "JavaScript", isStarred: false },
-    { name: "HTML/CSS", isStarred: false },
-    { name: "Social Media Marketing", isStarred: false },
-    { name: "Accounting", isStarred: false },
-    { name: "DevOps", isStarred: false },
-    { name: "Technical Support", isStarred: false },
-    { name: "Other", isStarred: false },
-  ];
 
   const toggleSkill = (skill: Skill) => {
     const updatedSkills = selectedSkills.some((s) => s.name === skill.name)
@@ -116,11 +107,9 @@ export default function RequiredSkills({
         }}
         className="p-4 bg-white shadow-xl rounded-xl"
       >
-        <h4 className="text-lg font-semibold mb-2">
-          Popular skills for Design
-        </h4>
+        <h4 className="text-lg font-semibold mb-2">Popular skills</h4>
         <div className="flex flex-wrap gap-2 mb-4">
-          {popularSkills
+          {skills
             .filter(
               (skill) => !selectedSkills.some((s) => s.name === skill.name)
             )
@@ -157,9 +146,7 @@ export default function RequiredSkills({
                 </Badge>
                 <FaStar
                   onClick={() => toggleStarredSkill(skill)}
-                  className={`h-5 w-5 ${
-                    skill.isStarred ? "text-yellow-400" : "text-gray-400"
-                  } cursor-pointer hover:scale-110 transition-transform`}
+                  className={`h-5 w-5 ${skill.isStarred ? "text-yellow-400" : "text-gray-400"} cursor-pointer hover:scale-110 transition-transform`}
                 />
               </div>
             ))}
