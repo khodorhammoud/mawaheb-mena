@@ -122,10 +122,11 @@ export interface LoggedInUser {
 export interface AccountBio {
   firstName: string;
   lastName: string;
-  location: string;
+  address: string;
+  country: string;
   socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
-  userId: number; // Add this property
+  userId: number;
 }
 
 export interface Industry {
