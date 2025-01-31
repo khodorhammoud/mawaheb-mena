@@ -8,12 +8,13 @@ const PhoneNumberField = ({
   defaultValue = "",
   onChange,
 }) => {
-  const [selectedCode, setSelectedCode] = useState("+961");
+  const [selectedCode, setSelectedCode] = useState(defaultValue || "+961");
   const [selectedFlag, setSelectedFlag] = useState("");
   const [countries, setCountries] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
+    // 🏴🏳️ fetching countries dropdown
     const fetchCountries = async () => {
       try {
         const response = await fetch("https://restcountries.com/v3.1/all");
@@ -28,12 +29,15 @@ const PhoneNumberField = ({
           .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
         setCountries(countryData);
 
-        // Set default flag
-        const defaultCountry = countryData.find(
-          (country) => country.code === "+961"
-        );
-        if (defaultCountry) {
-          setSelectedFlag(defaultCountry.flag);
+        // Set the flag based on the `defaultValue` (fixing refresh issue)
+        if (defaultValue) {
+          const matchedCountry = countryData.find(
+            (country) => country.code === defaultValue
+          );
+          if (matchedCountry) {
+            setSelectedCode(matchedCountry.code);
+            setSelectedFlag(matchedCountry.flag);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch country codes:", error);

@@ -220,3 +220,15 @@ export interface EducationFormFieldType {
   institution: string;
   graduationYear: number;
 }
+
+export interface SettingsInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  address: string;
+  region: string;
+  phone: string;
+  websiteURL?: string;
+  socialMediaLinks?: Record<string, string>;
+}
