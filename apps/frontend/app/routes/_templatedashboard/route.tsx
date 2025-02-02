@@ -27,11 +27,11 @@ export default function Layout() {
   return (
     <div>
       <Header />
-      <div className="flex mt-[12px]">
+      <div className="flex mt-[100px]">
         {isOnboarded ? (
           <>
             <Sidebar />
-            <div className="container mt-10 p-5 lg:mr-8">
+            <div className="container">
               <Outlet />
             </div>
           </>

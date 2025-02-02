@@ -6,6 +6,11 @@ export enum AccountStatus {
   Suspended = "suspended",
 }
 
+export enum Provider {
+  Credentials = "credentials",
+  SocialAccount = "social_account",
+}
+
 export enum AccountType {
   Freelancer = "freelancer",
   Employer = "employer",
@@ -110,4 +115,9 @@ export enum JobsOpenTo {
   FullTimeRoles = "full-time-roles",
   PartTimeRoles = "part-time-roles",
   EmployeeRoles = "employee-roles",
+}
+
+export enum AttachmentBelongsTo {
+  Portfolio = "portfolio",
+  Certificate = "certificate",
 }

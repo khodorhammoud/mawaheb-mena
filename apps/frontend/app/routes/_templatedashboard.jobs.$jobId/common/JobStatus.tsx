@@ -36,10 +36,6 @@ export default function StatusDropdown({
   }, []);
 
   const handleStatusChange = (newStatus: JobApplicationStatus) => {
-    console.log("Submitting data:", {
-      applicationId: applicationId.toString(),
-      status: newStatus,
-    });
     fetcher.submit(
       { applicationId: applicationId.toString(), status: newStatus },
       { method: "post" }

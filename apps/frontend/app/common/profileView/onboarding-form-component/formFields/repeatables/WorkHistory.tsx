@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/popover";
 import AppFormField from "~/common/form-fields";
 import RichTextEditor from "~/components/ui/richTextEditor";
-import DOMPurify from "dompurify";
+import { getWordCount } from "~/lib/utils";
 
 interface WorkHistoryComponentProps {
   data: WorkHistoryFormFieldType;
@@ -21,15 +21,12 @@ function WorkHistoryComponent({
   data,
   onTextChange,
 }: WorkHistoryComponentProps) {
-  const getWordCount = (html: string) =>
-    DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim().length;
-
   const handleDescriptionChange = (content: string) => {
     onTextChange({ ...data, jobDescription: content });
   };
 
   return (
-    <div className="">
+    <div className="p-1">
       {/* Forms */}
       <div className="flex space-x-4 mt-2 mb-6">
         <AppFormField

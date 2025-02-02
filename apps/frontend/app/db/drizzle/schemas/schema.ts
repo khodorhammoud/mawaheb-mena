@@ -30,6 +30,8 @@ import {
   locationPreferenceTypeEnum,
   experienceLevelEnum, */
   jobApplicationStatusEnum,
+  providerEnum,
+  belongsToEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -55,9 +57,32 @@ export const UsersTable = pgTable("users", {
   firstName: varchar("first_name", { length: 80 }),
   lastName: varchar("last_name", { length: 80 }),
   email: varchar("email", { length: 150 }).unique().notNull(),
-  passHash: varchar("password_hash").notNull(),
+  passHash: varchar("password_hash"),
   isVerified: boolean("is_verified").default(false),
-  isOnboarded: boolean("is_onboarded").default(false), // Make sure this matches your DB column
+  isOnboarded: boolean("is_onboarded").default(false),
+  provider: providerEnum("provider"),
+});
+
+/**
+ * Stores the social accounts of users when they log in using social media
+ * @property id - serial primary key
+ * @property user_id - integer referencing the UsersTable id
+ * @property provider - the name of the social media platform
+ * @property provider_account_id - the id of the user's account on the social media platform
+ * @property profile_url - URL to the user's profile on the social media platform
+ * @property access_token -  the access token of the user's account on the social media platform
+ * @property refresh_token -  the refresh token of the user's account on the social media platform
+ * @property expires_at - timestamp, the expiration date of the access token
+ */
+export const socialAccountsTable = pgTable("social_accounts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
+  provider: varchar("provider", { length: 50 }),
+  providerAccountId: varchar("provider_account_id", { length: 255 }),
+  profileUrl: varchar("profile_url", { length: 255 }),
+  accessToken: varchar("access_token", { length: 500 }),
+  refreshToken: varchar("refresh_token", { length: 500 }),
+  expiresAt: timestamp("expires_at"),
 });
 
 /**
@@ -76,14 +101,14 @@ export const UsersTable = pgTable("users", {
  * @property social_media_links - text array with default ''
  */
 export const accountsTable = pgTable("accounts", {
-  id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
-  userId: integer("user_id").references(() => UsersTable.id), // foreign key
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
   slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
-  location: varchar("location", { length: 150 }),
-  country: countryEnum("country"), // countryEnum is a variable, and we are calling it only, and the name inside paranthesis is the one that will apear in the table schema // click on countryEnum if you want
+  country: varchar("country", { length: 100 }),
+  address: varchar("address", { length: 150 }),
   region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
+  accountStatus: accountStatusEnum("account_status"),
   phone: varchar("phone", { length: 30 }),
   websiteURL: text("website_url"),
   socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
@@ -450,4 +475,18 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
     .default(TimesheetStatus.Submitted), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Define the attachments table schema
+ * @property id
+ * @property key
+ * @property metadata
+ * @property createdAt
+ */
+export const attachmentsTable = pgTable("attachments", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull(),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
 });

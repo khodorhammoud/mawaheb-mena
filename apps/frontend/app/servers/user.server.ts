@@ -4,6 +4,7 @@ import {
   accountsTable,
   employersTable,
   freelancersTable,
+  socialAccountsTable,
   UsersTable,
   userVerificationsTable,
 } from "../db/drizzle/schemas/schema";
@@ -14,10 +15,11 @@ import {
   Freelancer,
   UserAccount,
   PortfolioFormFieldType,
+  SocialAccount,
 } from "../types/User";
-import { eq /* lt, gte, ne */ } from "drizzle-orm";
+import { and, eq /* lt, gte, ne */ } from "drizzle-orm";
 import { RegistrationError, ErrorCode } from "../common/errors/UserError";
-import { AccountStatus, AccountType } from "../types/enums";
+import { AccountStatus, AccountType, Provider } from "../types/enums";
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from "../auth/auth.server";
 
@@ -50,13 +52,16 @@ export async function getUser(
     }
   } else if (userEmail) {
     userEmail = userEmail.toLowerCase();
-
-    const userRes = await db
-      .select()
-      .from(UsersTable)
-      .where(eq(UsersTable.email, userEmail));
-    if (userRes.length > 0) {
-      user = userRes[0] as User;
+    try {
+      const userRes = await db
+        .select()
+        .from(UsersTable)
+        .where(eq(UsersTable.email, userEmail));
+      if (userRes.length > 0) {
+        user = userRes[0] as User;
+      }
+    } catch (error) {
+      console.error("error getting user with userEmail", error);
     }
   }
   if (!user) return null;
@@ -179,42 +184,6 @@ export async function getProfileInfo(
   let account = null;
   let employer = null;
   let freelancer = null;
-
-  /* // if the employerId or freelancerId are provided, get the full info from the employer/freelancer
-  if ("employerId" in identifier || "freelancerId" in identifier) {
-    let accountId = 0;
-    if ("employerId" in identifier) {
-      employer = await db
-        .select()
-        .from(employersTable)
-        .where(eq(employersTable.id, identifier.employerId));
-      if (employer.length === 0) return null;
-      employer = employer[0];
-      accountId = employer.accountId;
-      const userAccount = await getUserAccountInfo({ accountId });
-      if (!userAccount) return null;
-      return {
-        account: userAccount,
-        ...employer,
-      } as Employer;
-    }
-    if ("freelancerId" in identifier) {
-      freelancer = await db
-        .select()
-        .from(freelancersTable)
-        .where(eq(freelancersTable.id, identifier.freelancerId));
-      if (freelancer.length === 0) return null;
-      freelancer = freelancer[0];
-      accountId = freelancer.accountId;
-      const userAccount = await getUserAccountInfo({ accountId });
-      if (!userAccount) return null;
-      return {
-        account: userAccount,
-        ...freelancer,
-      } as Freelancer;
-    }
-    return null;
-  } */
 
   // if the  userId, userEmail, or accountId are provided, get the full info from the user/account
   if (
@@ -420,7 +389,8 @@ export async function getCurrentUserAccountType(
 export async function registerEmployer({
   account,
   employerAccountType,
-}: Employer): Promise<Employer> {
+  provider,
+}: Employer & { provider: Provider }): Promise<Employer> {
   if (!employerAccountType || !account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
@@ -433,6 +403,7 @@ export async function registerEmployer({
     {
       userId: null,
       accountType: AccountType.Employer,
+      provider,
     },
     true,
     {
@@ -502,7 +473,8 @@ export async function createAccountSlug(
  */
 export async function registerFreelancer({
   account,
-}: Freelancer): Promise<Freelancer> {
+  provider,
+}: Freelancer & { provider: Provider }): Promise<Freelancer> {
   if (!account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
@@ -515,6 +487,7 @@ export async function registerFreelancer({
     {
       userId: null,
       accountType: AccountType.Freelancer,
+      provider,
     },
     true,
     {
@@ -548,7 +521,15 @@ export async function registerFreelancer({
  * @returns NewAccount: the newly created account
  */
 export async function createUserAccount(
-  { userId, accountType },
+  {
+    userId,
+    accountType,
+    provider,
+  }: {
+    userId: number | null;
+    accountType: AccountType;
+    provider: Provider;
+  },
   freshInsert: boolean = false,
   userInfo: User = null
 ): Promise<UserAccount> {
@@ -559,6 +540,7 @@ export async function createUserAccount(
         ErrorCode.MISSING_FIELDS,
         "Missing required fields for registration: userInfo"
       );
+    userInfo.provider = provider;
     const newUser = await registerUser(userInfo);
     userId = newUser.id;
   }
@@ -566,6 +548,7 @@ export async function createUserAccount(
   const newAccount: NewAccount = {
     userId,
     accountType,
+    provider,
   };
 
   const result = (await db
@@ -599,35 +582,46 @@ export async function registerUser({
   lastName,
   email,
   password,
+  provider,
 }: User): Promise<User> {
-  if (!password)
+  if (!password && provider === Provider.Credentials)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
       "Missing required fields for registration: password"
     );
 
-  const passHash = await hash(
-    password,
-    process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
-  );
-  email = email.toLowerCase();
-  // get the user type from the db schema
-  type NewUser = typeof UsersTable.$inferInsert;
-  const newUser: NewUser = {
-    // @ts-expect-error this is correct syntax 🙂
-    firstName: firstName,
-    lastName: lastName,
-    passHash,
-    email,
-  };
-
   // check if user exists
-  const existingUsers = await getUser({ userEmail: newUser.email });
+  const existingUsers = await getUser({ userEmail: email });
   if (existingUsers)
     throw new RegistrationError(
       ErrorCode.EMAIL_ALREADY_EXISTS,
       "Email already exists"
     );
+
+  type NewUser = typeof UsersTable.$inferInsert;
+  let newUser: NewUser;
+  if (provider === Provider.Credentials) {
+    const passHash = await hash(
+      password,
+      process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
+    );
+    email = email.toLowerCase();
+    // get the user type from the db schema
+    newUser = {
+      // @ts-expect-error this is correct syntax 🙂
+      firstName: firstName,
+      lastName: lastName,
+      passHash,
+      email,
+    };
+  } else {
+    newUser = {
+      // @ts-expect-error this is correct syntax 🙂
+      firstName: firstName,
+      lastName: lastName,
+      email,
+    };
+  }
 
   // insert user
   const result = (await db
@@ -678,6 +672,24 @@ export async function generateVerificationToken(
   return token;
 }
 
+// Helper function to check if a user exists
+export async function checkUserExists(userId: number) {
+  return await db
+    .select()
+    .from(UsersTable)
+    .where(eq(UsersTable.id, userId))
+    .limit(1);
+}
+
+export async function verifyUserAccount({ userId }: { userId: number }) {
+  return await db
+    .update(UsersTable)
+    // @ts-expect-error this is correct syntax 🙂
+    .set({ isVerified: true })
+    .where(eq(UsersTable.id, userId))
+    .returning();
+}
+
 /**
  * update the user's verification status
  *
@@ -723,12 +735,7 @@ export async function verifyUserVerificationToken(token: string) {
   // update the user to be verified
   const userId = tokenRecord[0].userId;
   try {
-    const response = await db
-      .update(UsersTable)
-      // @ts-expect-error this is correct syntax 🙂
-      .set({ isVerified: true })
-      .where(eq(UsersTable.id, userId))
-      .returning({ updatedId: UsersTable.id });
+    const response = await verifyUserAccount({ userId });
     if (response.length === 0)
       return {
         success: false,
@@ -774,4 +781,107 @@ export async function checkUserStatuses(
       return account.accountStatus === checkingFor;
   }
   return false;
+}
+
+/******************* Social Accounts *******************/
+export async function getSocialAccount({
+  userId,
+  provider,
+}: {
+  userId: number;
+  provider: string;
+}): Promise<SocialAccount | null> {
+  const socialAccount = await db
+    .select()
+    .from(socialAccountsTable)
+    .where(
+      and(
+        eq(socialAccountsTable.userId, userId),
+        eq(socialAccountsTable.provider, provider)
+      )
+    );
+  if (socialAccount.length === 0) return null;
+  return socialAccount[0] as SocialAccount;
+}
+
+export async function createSocialAccount(socialAccount: SocialAccount) {
+  await db.insert(socialAccountsTable).values(socialAccount);
+}
+
+export async function updateSocialAccount(socialAccount: SocialAccount) {
+  await db
+    .update(socialAccountsTable)
+    .set(socialAccount)
+    .where(eq(socialAccountsTable.id, socialAccount.id));
+}
+
+// Helper function to update onboarding status
+export async function updateOnboardingStatus(userId: number) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded: true } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return result;
+}
+
+export async function getUserSettings(userId: number) {
+  const result = await db
+    .select({
+      firstName: UsersTable.firstName,
+      lastName: UsersTable.lastName,
+      email: UsersTable.email,
+      country: accountsTable.country,
+      address: accountsTable.address,
+      region: accountsTable.region,
+      phone: accountsTable.phone,
+      websiteURL: accountsTable.websiteURL,
+      socialMediaLinks: accountsTable.socialMediaLinks,
+    })
+    .from(UsersTable)
+    .leftJoin(accountsTable, eq(UsersTable.id, accountsTable.userId))
+    .where(eq(UsersTable.id, userId))
+    .limit(1); // Fix: Use limit instead of first()
+
+  return result.length > 0 ? result[0] : null; // Fix: Return the first row safely
+}
+
+export async function updateUserSettings(userId: number, updatedSettings: any) {
+  const userUpdateResult = await db
+    .update(UsersTable)
+    .set({
+      firstName: updatedSettings.firstName,
+      lastName: updatedSettings.lastName,
+      email: updatedSettings.email,
+    } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  const accountUpdateResult = await db
+    .update(accountsTable)
+    .set({
+      country: updatedSettings.country,
+      address: updatedSettings.address,
+      region: updatedSettings.region,
+      phone: updatedSettings.phone, // ✅ Saves "{countryCode}||{phoneNumber}"
+      websiteURL: updatedSettings.websiteURL,
+      socialMediaLinks: updatedSettings.socialMediaLinks,
+    })
+    .where(eq(accountsTable.userId, userId))
+    .returning();
+
+  return { userUpdateResult, accountUpdateResult };
+}
+
+export async function updateUserPassword(
+  userId: number,
+  hashedPassword: string
+) {
+  const result = await db
+    .update(UsersTable)
+    .set({ passHash: hashedPassword } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+  return result.length > 0;
 }

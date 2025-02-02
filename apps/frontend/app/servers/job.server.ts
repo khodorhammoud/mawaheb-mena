@@ -483,8 +483,6 @@ export async function getJobApplicationsByFreelancerId(freelancerId: number) {
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.freelancerId, freelancerId));
 
-  // console.log("Fetched Job Applications:", jobApplications);
-
   return jobApplications;
 }
 

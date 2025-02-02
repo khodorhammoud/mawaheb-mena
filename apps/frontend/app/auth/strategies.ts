@@ -7,7 +7,7 @@ import {
 } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
 import { Employer, Freelancer } from "../types/User";
-import { AccountType, EmployerAccountType } from "../types/enums";
+import { AccountType, EmployerAccountType, Provider } from "../types/enums";
 
 export const loginStrategy = new FormStrategy(
   async ({ form }): Promise<number> => {
@@ -52,27 +52,29 @@ export const registerationStrategy = new FormStrategy(
           profile = await registerEmployer({
             account: {
               user: {
-                firstName: firstName.toLowerCase().trim(),
-                lastName: lastName.toLowerCase().trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 email: email.toLowerCase().trim(),
                 password,
               },
             },
             employerAccountType,
-          } as Employer);
+            provider: Provider.Credentials,
+          } as Employer & { provider: Provider });
 
           break;
         case AccountType.Freelancer:
           profile = await registerFreelancer({
             account: {
               user: {
-                firstName: firstName.toLowerCase().trim(),
-                lastName: lastName.toLowerCase().trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 email: email.toLowerCase().trim(),
                 password,
               },
             },
-          } as Freelancer);
+            provider: Provider.Credentials,
+          } as Freelancer & { provider: Provider });
           break;
         default:
           throw new Error("Invalid registration type");

@@ -62,8 +62,8 @@ export default function EmployerOnboardingScreen() {
             cardTitle="Average Project Budget"
             popupTitle="Add Average Budget"
             triggerLabel="Add Average Budget"
-            formName="employer-budget"
-            fieldName="employerBudget"
+            formName="employer-budget" // used in the action function
+            fieldName="employerBudget" // used in GeneralizableForCard
             triggerIcon={<BsCurrencyDollar />}
             editable={true}
           />
@@ -78,81 +78,9 @@ export default function EmployerOnboardingScreen() {
             formName="employer-about"
             fieldName="about"
             editable={true}
+            useRichText={true}
           />
         </div>
-        {/* 
-        </div>
-        {/* <div className="grid grid-cols-3">
-          <div className="p-4">
-            <BudgetModuleForm />
-          </div>
-          <div className="p-4">
-            <YearsInBusiness />
-          </div>
-        </div> */}
-        {/* <HourlyRate /> */}
-        {/* 
-        "text"
-    | "number"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "custom";
-        */}
-
-        {/* range */}
-        {/* <GeneralizableFormCard
-          formType="range"
-          minVal={12}
-          maxVal={24}
-          cardTitle="Range Card Title"
-          popupTitle="Range Popup Title"
-          triggerLabel="Edit Range"
-          formName="employer-years-in-business"
-          fieldName="years-in-business"
-          triggerIcon={<SlBadge />}
-          onSave={() => alert("save")}
-        /> */}
-        {/* <GeneralizableFormCard
-          formType="number"
-          title="Number"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="textArea"
-          title="Text Area"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="increment"
-          title="Increment"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="video"
-          title="Video"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="file"
-          title="File"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-        />
-        <GeneralizableFormCard
-          formType="custom"
-          title="Custom"
-          triggerLabel="Trigger Label"
-          onSave={() => alert("save")}
-          customComponents={[
-            <div key="custom-component">Custom Component</div>,
-          ]}
-        /> */}
       </div>
       {/* <About /> */}
 

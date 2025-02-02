@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ALTER COLUMN "country" SET DATA TYPE varchar(100);

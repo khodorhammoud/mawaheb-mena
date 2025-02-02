@@ -6,6 +6,7 @@ import {
   EmployerAccountType,
   Language,
   ProjectType,
+  Provider,
 } from "./enums";
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   passHash?: string;
   isVerified?: boolean;
   isOnboarded?: boolean;
+  provider?: Provider;
 }
 
 export interface PreferredWorkingTimes {
@@ -25,6 +27,17 @@ export interface PreferredWorkingTimes {
   dayOfWeek: DayOfWeek;
   startTime: Date;
   endTime: Date;
+}
+
+export interface SocialAccount {
+  id?: number;
+  provider: string;
+  providerAccountId: string;
+  profileUrl?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: Date;
+  userId?: number;
 }
 
 export interface UserAccount {
@@ -40,6 +53,7 @@ export interface UserAccount {
   languages?: Language[];
   preferredWorkingTimes?: PreferredWorkingTimes[];
   user: User;
+  // socialAccounts?: SocialAccount[];
 }
 
 export interface AccountSocialMediaLinks {
@@ -108,10 +122,11 @@ export interface LoggedInUser {
 export interface AccountBio {
   firstName: string;
   lastName: string;
-  location: string;
+  address: string;
+  country: string;
   socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
-  userId: number; // Add this property
+  userId: number;
 }
 
 export interface Industry {
@@ -172,8 +187,14 @@ export interface PortfolioFormFieldType {
   projectName: string;
   projectLink: string;
   projectDescription: string;
-  projectImageName: string;
-  projectImageUrl: string | null;
+  attachmentId?: number; // This will be set in the function
+  projectImageName?: string; // Name of the uploaded image
+  projectImageUrl?: string; // Pre-signed URL for accessing the image
+}
+
+export interface AttachmentsType {
+  key: string;
+  metadata?: Record<string, any>; // Optional because JSONB has a default
 }
 
 export interface WorkHistoryFormFieldType {
@@ -186,15 +207,28 @@ export interface WorkHistoryFormFieldType {
 }
 
 export interface CertificateFormFieldType {
-  attachmentName: string;
-  attachmentUrl: string;
   certificateName: string;
   issuedBy: string;
   yearIssued: number;
+  attachmentId?: number;
+  attachmentName?: string;
+  attachmentUrl?: string; // Pre-signed URL for accessing the file
 }
 
 export interface EducationFormFieldType {
   degree: string;
   institution: string;
   graduationYear: number;
+}
+
+export interface SettingsInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  address: string;
+  region: string;
+  phone: string;
+  websiteURL?: string;
+  socialMediaLinks?: Record<string, string>;
 }

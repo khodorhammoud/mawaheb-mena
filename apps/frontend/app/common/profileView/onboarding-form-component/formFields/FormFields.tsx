@@ -6,15 +6,10 @@ import type { FormFieldProps } from "../types";
 import VideoUpload from "~/common/upload/videoUpload";
 import Or from "~/common/or/Or";
 import RichTextEditor from "~/components/ui/richTextEditor";
-import DOMPurify from "dompurify";
+import { getWordCount } from "~/lib/utils";
 
 const handleVideoUpload = (file: File | null) => {
   console.log("Video uploaded:", file);
-};
-
-const getWordCount = (html: string) => {
-  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
-  return plainText.length || 0; // Return 0 for empty or invalid input
 };
 
 export const FormFields = {
@@ -30,13 +25,15 @@ export const FormFields = {
   ),
 
   number: ({ value, onChange, name }: FormFieldProps) => (
-    <Input
+    <AppFormField
       type="number"
-      placeholder="Enter a number"
-      value={value as number}
-      onChange={onChange}
+      id="number-input"
       name={name}
-      className="w-full p-3 border border-gray-300 rounded-md"
+      label="Enter a number"
+      placeholder="Enter a number"
+      onChange={onChange}
+      className="no-spinner"
+      defaultValue={value ? value.toString() : ""}
     />
   ),
 
