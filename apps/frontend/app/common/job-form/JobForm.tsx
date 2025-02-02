@@ -7,8 +7,7 @@ import RequiredSkills from "~/routes/_templatedashboard.new-job/required-skills"
 import { JobCategory } from "~/types/User";
 import { Skill } from "~/types/Skill";
 import RichTextEditor from "~/components/ui/richTextEditor";
-import DOMPurify from "dompurify";
-
+import { getWordCount } from "~/lib/utils";
 interface JobFormProps {
   job?: {
     id: string;
@@ -49,8 +48,6 @@ export default function JobForm({
   );
   const [jobDescription, setJobDescription] = useState(job?.description || "");
 
-  const getWordCount = (html: string) =>
-    DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim().length;
   const handleDescriptionChange = (content: string) =>
     setJobDescription(content);
 
@@ -117,7 +114,7 @@ export default function JobForm({
                 style={{ wordBreak: "break-word", hyphens: "auto" }}
               />
               <div className="ml-6 text-xs text-gray-500">
-                {getWordCount(jobDescription)} / 2000 words
+                {getWordCount(jobDescription)} 2000 words
               </div>
             </div>
 
