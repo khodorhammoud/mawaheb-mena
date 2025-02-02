@@ -105,8 +105,8 @@ export const accountsTable = pgTable("accounts", {
   userId: integer("user_id").references(() => UsersTable.id),
   slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
-  country: countryEnum("country"), // New field for country selection
-  address: varchar("address", { length: 150 }), // Renamed from location
+  country: varchar("country", { length: 100 }),
+  address: varchar("address", { length: 150 }),
   region: varchar("region", { length: 100 }),
   accountStatus: accountStatusEnum("account_status"),
   phone: varchar("phone", { length: 30 }),

@@ -164,10 +164,13 @@ export default function Heading() {
                         name="country"
                         label="Country"
                         type="select"
-                        options={Object.values(Country).map((country) => ({
-                          value: country,
-                          label: country,
-                        }))}
+                        options={[
+                          { value: "", label: "--" },
+                          ...Object.values(Country).map((country) => ({
+                            value: country,
+                            label: country,
+                          })),
+                        ]}
                         defaultValue={bioInfo.country}
                       />
                     </div>
