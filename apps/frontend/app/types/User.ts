@@ -122,10 +122,11 @@ export interface LoggedInUser {
 export interface AccountBio {
   firstName: string;
   lastName: string;
-  location: string;
+  address: string;
+  country: string;
   socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
-  userId: number; // Add this property
+  userId: number;
 }
 
 export interface Industry {
@@ -218,4 +219,16 @@ export interface EducationFormFieldType {
   degree: string;
   institution: string;
   graduationYear: number;
+}
+
+export interface SettingsInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  address: string;
+  region: string;
+  phone: string;
+  websiteURL?: string;
+  socialMediaLinks?: Record<string, string>;
 }

@@ -23,7 +23,7 @@ import {
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
 import { AccountBio } from "~/types/User";
 import AppFormField from "~/common/form-fields";
-import { AccountType } from "~/types/enums";
+import { AccountType, Country } from "~/types/enums";
 
 export default function Heading() {
   const { accountType } = useLoaderData<{ accountType: AccountType }>();
@@ -42,7 +42,8 @@ export default function Heading() {
   };
 
   // Refs for location and website input fields
-  const locationInputRef = useRef<HTMLInputElement>(null);
+  const countryInputRef = useRef<HTMLInputElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
   const websiteInputRef = useRef<HTMLInputElement>(null);
 
   // Handle opening the bio dialog and focusing the relevant input
@@ -156,20 +157,33 @@ export default function Heading() {
                       />
                     </div>
 
-                    {/* Location */}
-                    <div className="">
-                      <div className="relative">
-                        {/* Location */}
-                        <AppFormField
-                          id="location"
-                          name="location"
-                          label="Location"
-                          className="peer mt-1"
-                          defaultValue={bioInfo.location} // comment that for the wierd error (cannot find ...)
-                        />
-                        <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
-                        {/* ref={locationInputRef} */}
-                      </div>
+                    {/* Country Dropdown */}
+                    <div>
+                      <AppFormField
+                        id="country"
+                        name="country"
+                        label="Country"
+                        type="select"
+                        options={[
+                          { value: "", label: "--" },
+                          ...Object.values(Country).map((country) => ({
+                            value: country,
+                            label: country,
+                          })),
+                        ]}
+                        defaultValue={bioInfo.country}
+                      />
+                    </div>
+                    {/* Address Input */}
+                    <div className="relative">
+                      <AppFormField
+                        id="address"
+                        name="address"
+                        label="Address"
+                        className=""
+                        defaultValue={bioInfo.address}
+                      />
+                      <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                     </div>
                   </div>
 
@@ -261,21 +275,33 @@ export default function Heading() {
           {/* ADD LOCATION + ADD WEBSITE */}
           <div className="flex items-center sm:h-10 md:ml-0 sm:ml-10 ml-10 xl:-mt-1 lg:-mt-2 sm:-mt-3">
             <div className="flex sm:mt-6">
-              {/* ADD LOCATION */}
-              {bioInfo.location ? (
-                // comment that for the wierd error (cannot find ...)
+              {/* ADD COUNTRY */}
+              {bioInfo.country ? (
                 <span className="text-sm text-black font-semibold tracking-wide">
-                  {bioInfo.location}
-                  {/* // comment that for the wierd error (cannot find ...) */}
+                  {bioInfo.country}
                 </span>
               ) : (
-                // comment that for the wierd error (cannot find ...)
                 <button
-                  onClick={() => handleTriggerClick(locationInputRef)}
+                  onClick={() => handleTriggerClick(countryInputRef)}
+                  className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                >
+                  <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                  Add Country
+                </button>
+              )}
+
+              {/* ADD ADDRESS */}
+              {bioInfo.address ? (
+                <span className="text-sm text-black font-semibold tracking-wide">
+                  , {bioInfo.address}
+                </span>
+              ) : (
+                <button
+                  onClick={() => handleTriggerClick(addressInputRef)}
                   className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
                 >
                   <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
-                  Add Location
+                  Add Address
                 </button>
               )}
 
