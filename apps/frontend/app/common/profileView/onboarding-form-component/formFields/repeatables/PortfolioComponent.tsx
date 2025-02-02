@@ -2,15 +2,10 @@ import { PortfolioFormFieldType } from "~/types/User";
 import { FaLink } from "react-icons/fa";
 import AppFormField from "~/common/form-fields";
 import FileUpload from "~/common/upload/fileUpload";
-import DOMPurify from "dompurify";
 import RichTextEditor from "~/components/ui/richTextEditor";
 import { useRef, useState } from "react";
 import { IoPencilSharp } from "react-icons/io5";
-
-const getWordCount = (html: string) => {
-  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
-  return plainText.length || 0; // Return 0 for empty or invalid input
-};
+import { getWordCount } from "~/lib/utils";
 
 interface PortfolioComponentProps {
   data: PortfolioFormFieldType;
