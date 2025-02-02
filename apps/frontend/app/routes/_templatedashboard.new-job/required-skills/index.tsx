@@ -74,7 +74,7 @@ export default function RequiredSkills({
         {visibleSkills.map((skill) => (
           <Badge
             key={skill.name}
-            className="bg-blue-500 text-white flex items-center p-1 px-2 gap-1 xl:px-3 py-2"
+            className="bg-blue-500 text-white flex items-center p-1 px-2 gap-1 xl:px-3 py-2 hover:bg-blue-600"
           >
             {skill.name.length > 10
               ? skill.name.slice(0, 10) + "..."
@@ -83,7 +83,7 @@ export default function RequiredSkills({
           </Badge>
         ))}
         {moreSkillsCount > 0 && (
-          <Badge className="bg-gray-300 text-gray-700 flex justify-center px-4 py-2">
+          <Badge className="bg-gray-300 text-gray-700 flex justify-center px-4 py-2 hover:bg-gray-400">
             +{moreSkillsCount} more
           </Badge>
         )}
@@ -128,10 +128,10 @@ export default function RequiredSkills({
               <Badge
                 key={skill.name}
                 onClick={() => toggleSkill(skill)}
-                className={`cursor-pointer px-2 gap-1 xl:px-3 py-2 ${
+                className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${
                   selectedSkills.some((s) => s.name === skill.name)
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
+                    ? "bg-blue-100 text-blue-600 border-blue-600"
+                    : "text-gray-600 border-gray-300"
                 }`}
               >
                 {skill.name}
@@ -139,28 +139,27 @@ export default function RequiredSkills({
             ))}
         </div>
         <div className="border-t pt-4">
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <div className="flex flex-wrap">
             {selectedSkills.map((skill) => (
               <div
                 key={skill.name}
-                className="flex items-center gap-2 cursor-pointer border rounded-xl p-2"
+                className="flex items-center cursor-pointer rounded-xl p-2"
               >
                 <Badge
-                  onClick={() => toggleSkill(skill)}
                   className={`cursor-pointer px-2 gap-1 xl:px-3 py-2 ${
                     selectedSkills.some((s) => s.name === skill.name)
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
                       : "bg-gray-200"
                   }`}
                 >
-                  {skill.name}
+                  <FaStar
+                    onClick={() => toggleStarredSkill(skill)}
+                    className={`h-4 w-4 ${
+                      skill.isStarred ? "text-yellow-400" : "text-gray-400"
+                    } cursor-pointer hover:scale-110 transition-transform`}
+                  />
+                  <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
                 </Badge>
-                <FaStar
-                  onClick={() => toggleStarredSkill(skill)}
-                  className={`h-5 w-5 ${
-                    skill.isStarred ? "text-yellow-400" : "text-gray-400"
-                  } cursor-pointer hover:scale-110 transition-transform`}
-                />
               </div>
             ))}
           </div>
