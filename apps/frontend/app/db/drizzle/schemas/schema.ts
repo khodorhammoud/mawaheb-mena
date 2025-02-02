@@ -101,14 +101,14 @@ export const socialAccountsTable = pgTable("social_accounts", {
  * @property social_media_links - text array with default ''
  */
 export const accountsTable = pgTable("accounts", {
-  id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
-  userId: integer("user_id").references(() => UsersTable.id), // foreign key
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
   slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
-  location: varchar("location", { length: 150 }),
-  country: countryEnum("country"), // countryEnum is a variable, and we are calling it only, and the name inside paranthesis is the one that will apear in the table schema // click on countryEnum if you want
+  country: varchar("country", { length: 100 }),
+  address: varchar("address", { length: 150 }),
   region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
+  accountStatus: accountStatusEnum("account_status"),
   phone: varchar("phone", { length: 30 }),
   websiteURL: text("website_url"),
   socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
