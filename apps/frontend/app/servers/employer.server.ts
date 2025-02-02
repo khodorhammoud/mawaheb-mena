@@ -52,7 +52,8 @@ export async function handleEmployerOnboardingAction(
     const bio = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
-      location: formData.get("location") as string,
+      address: formData.get("address") as string,
+      country: formData.get("country") as string,
       websiteURL: formData.get("website") as string,
       socialMediaLinks: {
         linkedin: formData.get("linkedin") as string,
@@ -150,26 +151,30 @@ export async function updateAccountBio(
   const accountId = account.id;
 
   try {
-    // update user info first
     const res1 = await db
       .update(UsersTable)
-      .set({ firstName: bio.firstName, lastName: bio.lastName } as unknown) // Casting as any to bypass type check
+      .set({
+        firstName: bio.firstName,
+        lastName: bio.lastName,
+      } as unknown)
       .where(eq(UsersTable.id, userId))
-      .returning();
-
-    // update employer info
-    const socialMediaLinks: AccountSocialMediaLinks = bio.socialMediaLinks;
+      .returning({ id: UsersTable.id });
 
     const res2 = await db
       .update(accountsTable)
-      .set({ socialMediaLinks, websiteURL: bio.websiteURL })
+      .set({
+        socialMediaLinks: bio.socialMediaLinks,
+        websiteURL: bio.websiteURL,
+      })
       .where(eq(accountsTable.id, accountId))
       .returning({ id: accountsTable.id });
 
-    // update location in accounts table
     const res3 = await db
       .update(accountsTable)
-      .set({ location: bio.location })
+      .set({
+        address: bio.address,
+        country: bio.country,
+      })
       .where(eq(accountsTable.userId, userId))
       .returning({ id: accountsTable.id });
 
@@ -180,6 +185,7 @@ export async function updateAccountBio(
     console.error("Error updating employer bio", error);
     throw error;
   }
+
   return { success: true };
 }
 
@@ -314,7 +320,8 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
 
     const emp = await db
       .select({
-        location: accountsTable.location,
+        address: accountsTable.address,
+        country: accountsTable.country,
         websiteURL: accountsTable.websiteURL,
         socialMediaLinks: accountsTable.socialMediaLinks,
         firstName: UsersTable.firstName,

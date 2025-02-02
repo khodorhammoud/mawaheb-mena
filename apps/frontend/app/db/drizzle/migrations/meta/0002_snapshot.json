@@ -1,6 +1,6 @@
 {
-  "id": "3ce3d7a7-c024-4d01-9f3b-8da7a252d3a9",
-  "prevId": "a655eab0-7cdb-40a9-8ad7-b881aebae682",
+  "id": "8b71bd95-b765-47c7-b4e1-1aecda784625",
+  "prevId": "3ce3d7a7-c024-4d01-9f3b-8da7a252d3a9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -214,8 +214,7 @@
         },
         "country": {
           "name": "country",
-          "type": "country",
-          "typeSchema": "public",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },

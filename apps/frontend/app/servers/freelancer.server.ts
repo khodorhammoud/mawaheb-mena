@@ -45,7 +45,8 @@ export async function handleFreelancerOnboardingAction(
     const bio = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
-      location: formData.get("location") as string,
+      address: formData.get("address") as string,
+      country: formData.get("country") as string,
       websiteURL: formData.get("website") as string,
       socialMediaLinks: {
         linkedin: formData.get("linkedin") as string,
