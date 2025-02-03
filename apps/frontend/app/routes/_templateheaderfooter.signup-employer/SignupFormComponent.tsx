@@ -3,6 +3,8 @@ import SocialLinks from "../../common/registration/socialLinks";
 import { useActionData, useNavigate, Form } from "@remix-run/react";
 import AppFormField from "../../common/form-fields";
 import { AccountType } from "~/types/enums";
+import { Link } from "@chakra-ui/react";
+import { Checkbox } from "~/components/ui/checkbox";
 
 interface ActionData {
   success?: boolean;
@@ -23,6 +25,8 @@ export default function SignupLeftComponent() {
   }, [actionData, navigate]);
 
   const [employerAccountType, setEmployerAccountType] = useState("personal");
+  const [termsAccepted, setTermsAccepted] = useState(false); // State for checkbox
+
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white pl-2 pr-12 mt-20">
       <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
@@ -46,7 +50,7 @@ export default function SignupLeftComponent() {
         You can change your account at any time
       </p>
 
-      {/* the 2 buttons 🔳🔲 */}
+      {/* the 2 buttons */}
       <div className="flex mb-6 space-x-4 lg:w-[450px] self-start">
         <button
           onClick={() => setEmployerAccountType("personal")}
@@ -55,7 +59,6 @@ export default function SignupLeftComponent() {
               ? "bg-blue-100 border-blue-300"
               : "border-gray-200"
           }`}
-          // this is the styles for the selected button 👍
         >
           <div className="flex flex-col items-center rounded-xl">
             <span className="text-4xl">👤</span>
@@ -87,6 +90,7 @@ export default function SignupLeftComponent() {
           name="employerAccountType"
           value={employerAccountType}
         />
+
         {/* AppFormField for email */}
         <AppFormField id="email" name="email" label="Email Address" />
 
@@ -115,12 +119,37 @@ export default function SignupLeftComponent() {
           label="Password"
         />
 
-        <button
-          type="submit"
-          className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
-        >
-          Continue
-        </button>
+        {/* Checkbox for Terms and Conditions */}
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center space-x-3 ml-3">
+            <Checkbox
+              name="termsAccepted"
+              id="termsAccepted"
+              required
+              className="peer"
+            />
+            <label
+              htmlFor="termsAccepted"
+              className="text-sm tracking-tight text-gray-500"
+            >
+              I accept the{" "}
+              <a
+                href="/terms-and-conditions"
+                className="text-primaryColor font-semibold hover:underline"
+                rel="noopener noreferrer"
+              >
+                terms and conditions
+              </a>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Continue
+          </button>
+        </div>
 
         {/* success message when all is done */}
         {actionData?.success && (
@@ -141,7 +170,7 @@ export default function SignupLeftComponent() {
 
       <SocialLinks />
 
-      {/* Alredy have an account? Login */}
+      {/* Already have an account? Login */}
       <div className="text-center mt-8">
         <p className="text-sm text-gray-600">
           Already have an account?{" "}
