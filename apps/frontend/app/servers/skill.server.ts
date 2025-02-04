@@ -21,7 +21,7 @@ export async function getJobSkills(jobId: number): Promise<Skill[]> {
 }
 
 export async function getAllSkills(): Promise<Skill[]> {
-  console.log("🔍 Fetching all skills from DB...");
+  // console.log("🔍 Fetching all skills from DB...");
 
   const skills = await db
     .select({
@@ -30,6 +30,6 @@ export async function getAllSkills(): Promise<Skill[]> {
     })
     .from(skillsTable);
 
-  console.log("📌 SQL Query Result (All Skills):", skills);
+  // console.log("📌 SQL Query Result (All Skills):", skills);
   return skills;
 }

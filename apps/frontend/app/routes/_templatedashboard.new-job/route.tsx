@@ -17,10 +17,9 @@ export async function action({ request }: ActionFunctionArgs) {
       target === "save-draft" ? JobStatus.Draft : JobStatus.Active;
 
     // ✅ Extract skills separately
-    const skills = (formData.getAll("jobSkills") as string[]).map((skill) => ({
-      name: skill.trim(),
-      isStarred: false, // Default value
-    }));
+    const skillsRaw = formData.get("jobSkills") as string;
+    const skills: { name: string; isStarred: boolean }[] =
+      JSON.parse(skillsRaw);
 
     // ✅ Create job object (WITHOUT `requiredSkills`)
     const jobData: Job = {
@@ -40,8 +39,8 @@ export async function action({ request }: ActionFunctionArgs) {
       fulfilledAt: null,
     };
 
-    console.log("📝 Job Data to be inserted:", jobData);
-    console.log("📌 Skills to be linked:", skills);
+    // console.log("📝 Job Data to be inserted:", jobData);
+    // console.log("📌 Skills to be linked:", skills);
 
     const jobStatusResponse = await createJobPosting(jobData, skills);
 

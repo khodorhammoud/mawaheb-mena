@@ -64,6 +64,7 @@ export default function JobForm({
             method="post"
             className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
+            {/* Hidden Inputs */}
             {job?.id && <input type="hidden" name="jobId" value={job.id} />}
             <input
               type="hidden"
@@ -73,10 +74,11 @@ export default function JobForm({
             <input type="hidden" name="jobCategory" value={selectedCategory} />
             <input
               type="hidden"
-              name="requiredSkills"
-              value={requiredSkills.map((skill) => skill.name).join(",")}
+              name="jobSkills"
+              value={JSON.stringify(requiredSkills)}
             />
 
+            {/* Job Title */}
             <AppFormField
               type="text"
               id="jobTitle"
@@ -85,6 +87,8 @@ export default function JobForm({
               defaultValue={job?.title || ""}
               className="w-full"
             />
+
+            {/* Working Hours */}
             <AppFormField
               type="number"
               id="workingHours"
@@ -94,6 +98,7 @@ export default function JobForm({
               className="col-span-1 w-full"
             />
 
+            {/* Job Description */}
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="jobDescription"
@@ -120,6 +125,7 @@ export default function JobForm({
             </div>
 
             <div className="flex flex-col gap-6">
+              {/* Location */}
               <AppFormField
                 type="text"
                 id="location"
@@ -128,10 +134,15 @@ export default function JobForm({
                 defaultValue={job?.locationPreference || ""}
                 className="col-span-1 w-full"
               />
+
+              {/* Skills */}
+
               <RequiredSkills
                 selectedSkills={requiredSkills}
                 onChange={setRequiredSkills}
               />
+
+              {/* Project Type */}
               <AppFormField
                 type="select"
                 id="projectType"
@@ -145,6 +156,8 @@ export default function JobForm({
                 defaultValue={job?.projectType || ""}
                 className="col-span-1 w-full"
               />
+
+              {/* Budget */}
               <AppFormField
                 type="number"
                 id="budget"
@@ -155,6 +168,7 @@ export default function JobForm({
               />
             </div>
 
+            {/* Job Category */}
             <div className="col-span-2 mt-6">
               <label
                 htmlFor="jobCategory"
@@ -175,6 +189,28 @@ export default function JobForm({
                     className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${selectedCategory === category.id ? "bg-blue-100 text-blue-600 border-blue-600" : "text-gray-600 border-gray-300"}`}
                   >
                     {category.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Experience Level */}
+            <div className="col-span-2 mt-6">
+              <h3 className="block md:text-2xl text-xl font-semibold mb-4">
+                Experience Level
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
+                  <Badge
+                    key={level}
+                    onClick={() => setSelectedExperience(level)}
+                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
+                      selectedExperience === level
+                        ? "bg-blue-100 text-blue-600 border-blue-600"
+                        : "text-gray-600 border-gray-300"
+                    }`}
+                  >
+                    {level}
                   </Badge>
                 ))}
               </div>

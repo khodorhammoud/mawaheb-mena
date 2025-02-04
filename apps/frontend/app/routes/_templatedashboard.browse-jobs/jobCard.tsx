@@ -54,7 +54,10 @@ export default function JobCard({ job, onSelect }: JobProps) {
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
-        <div className="mt-4">{job.description}</div>
+        <div
+          className="mt-4"
+          dangerouslySetInnerHTML={{ __html: job.description }}
+        />
 
         {/* Dynamic Skills from Database */}
         <div className="flex flex-wrap gap-2 mt-3">

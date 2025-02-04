@@ -163,10 +163,14 @@ export default function JobDesignTwo({
             jobId={job.id}
           />
         )}
+
         {status === JobStatus.Draft && (
-          <button className="ml-4 bg-blue-500 text-white lg:px-4 px-2 lg:py-2 py-1 rounded lg:text-base text-sm mr-2">
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2 hover:bg-blue-600 flex items-center justify-center"
+          >
             Edit
-          </button>
+          </Link>
         )}
       </div>
     </div>

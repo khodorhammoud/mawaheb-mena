@@ -21,7 +21,7 @@ export default function RequiredSkills({
 }: RequiredSkillsProps) {
   const triggerRef = useRef(null);
   const [popoverWidth, setPopoverWidth] = useState(350);
-  const { skills } = useLoaderData<{ skills: Skill[] }>(); // Fetch skills from the server
+  const { skills = [] } = useLoaderData<{ skills?: Skill[] }>();
 
   useEffect(() => {
     const updatePopoverWidth = () => {
@@ -163,7 +163,7 @@ export default function RequiredSkills({
           {/* {Math.max(
             0,
             3 - selectedSkills.filter((skill) => skill.isStarred).length
-          )}{" "} */}
+            )}{" "} */}
           3 more skills.
         </p>
       </PopoverContent>

@@ -54,12 +54,14 @@ export default function JobDesignOne({
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
-        <p className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm">
-          {job.description}
-        </p>
+        {/* in that way, i remove the HTML tags */}
+        <div
+          className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
+          dangerouslySetInnerHTML={{ __html: job.description }}
+        ></div>
+
         <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
-          {job.requiredSkills &&
-          Array.isArray(job.requiredSkills) &&
+          {Array.isArray(job?.requiredSkills) &&
           job.requiredSkills.length > 0 ? (
             job.requiredSkills.map((skill, index) => (
               <SkillBadge
