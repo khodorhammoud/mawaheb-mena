@@ -2,10 +2,12 @@ import { Link } from "@remix-run/react";
 import { parseDate } from "~/lib/utils";
 import { JobCardData } from "../../../types/Job";
 import Calendar from "~/common/calender/Calender";
-import SkillBadge from "~/common/skill/SkillBadge";
+import SkillBadgeList from "~/common/skill/SkillBadge";
 import JobStateButton from "../../../common/job-state-button/JobStateButton";
 import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
 import { JobStatus } from "~/types/enums";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
+import { IoPencilSharp } from "react-icons/io5";
 
 export default function JobDesignOne({
   data,
@@ -30,15 +32,17 @@ export default function JobDesignOne({
   return !data ? (
     <p>Job details are not available.</p>
   ) : (
-    <div className="md:flex lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10">
+    <div
+      className={`grid lg:p-8 p-4 bg-white border rounded-xl shadow-xl xl:gap-10 lg:gap-6 gap-3 mb-10 ${status === JobStatus.Draft || status === JobStatus.Closed || status === JobStatus.Deleted ? "grid-cols-[3fr_1fr_1fr]" : "md:grid-cols-[4fr_1fr_2fr_1fr] grid-cols-[3fr_1fr]"}`}
+    >
       {/* Left Section */}
-      <div className="xl:w-[42%] w-[30%] mr-2">
+      <div className="mr-2">
         <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
 
         <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
-          Fixed price - Posted {formattedDate?.toDateString() || "N/A"}
+          Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : "N/A"}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6">
           <div>
@@ -54,20 +58,18 @@ export default function JobDesignOne({
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
-        <p className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm">
-          {job.description}
-        </p>
-        <div className="lg:mt-8 mt-4 flex flex-wrap gap-2 xl:text-base text-sm">
+        {/* in that way, i remove the HTML tags */}
+        <div
+          className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
+          dangerouslySetInnerHTML={{ __html: job.description }}
+        ></div>
+
+        {/* SKILLS */}
+        <div className="lg:mt-8 mt-4 xl:text-base text-sm">
           {job.requiredSkills &&
           Array.isArray(job.requiredSkills) &&
           job.requiredSkills.length > 0 ? (
-            job.requiredSkills.map((skill, index) => (
-              <SkillBadge
-                key={index}
-                name={skill.name}
-                isStarred={skill.isStarred}
-              />
-            ))
+            <SkillBadgeList skills={job.requiredSkills} />
           ) : (
             <p>No skills provided.</p>
           )}
@@ -75,49 +77,38 @@ export default function JobDesignOne({
       </div>
 
       {/* Middle Section */}
-      {/* Middle Section */}
-      <div className="flex flex-col gap-8 w-[18%] text-left">
+      <div className="flex flex-col gap-8 text-left">
         {/* Applicants Section */}
-        {data.applications && data.applications.length > 0 ? (
-          <ProfilePhotosSection
-            label="Applicants"
-            images={applicantsPhotos}
-            profiles={data.applications}
-          />
-        ) : (
-          <p>No applicants available for this job.</p>
-        )}
+        <ProfilePhotosSection
+          label="Applicants"
+          images={applicantsPhotos}
+          profiles={data.applications}
+        />
 
         {/* Interviewed Section */}
-        {data.applications && data.applications.length > 0 ? (
-          <ProfilePhotosSection
-            label="Interviewed"
-            images={applicantsPhotos}
-            profiles={data.applications}
-          />
-        ) : (
-          <p>No interviewed freelancers available.</p>
-        )}
+        <ProfilePhotosSection
+          label="Interviewed"
+          images={applicantsPhotos}
+          profiles={data.applications}
+        />
 
         {/* Hired Section */}
-        {status === JobStatus.Paused &&
-          (data.applications && data.applications.length > 0 ? (
-            <ProfilePhotosSection
-              label="Hired"
-              images={applicantsPhotos}
-              profiles={data.applications}
-            />
-          ) : (
-            <p>No hired freelancers available.</p>
-          ))}
+        <ProfilePhotosSection
+          label="Hired"
+          images={applicantsPhotos}
+          profiles={data.applications}
+          className={`${status === JobStatus.Active || status === JobStatus.Paused ? "hidden" : ""}`}
+        />
       </div>
 
       {/* Right Section */}
       <div
         className={`${
-          status === JobStatus.Draft || status === JobStatus.Closed
+          status === JobStatus.Draft ||
+          status === JobStatus.Closed ||
+          status === JobStatus.Deleted
             ? "hidden"
-            : "lg:w-[30%] lg:-mr-10"
+            : "lg:-mr-10"
         }`}
       >
         <p className="font-semibold mb-4 xl:text-base text-sm">
@@ -127,22 +118,26 @@ export default function JobDesignOne({
       </div>
 
       {/* Action Section */}
-      <div className="w-[16%] lg:flex justify-end h-min xl:ml-4 lg:ml-12 space-x-2">
+      <div className="flex space-x-2 justify-end">
+        {/* Edit Button - Matches the Same Size */}
+        {status === JobStatus.Draft && (
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+          >
+            <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
+            Edit
+          </Link>
+        )}
+
+        {/* JobStateButton - Force Same Width & Height */}
         {status && (
           <JobStateButton
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
+            className="w-[106px] h-[36px]" // 👈 Now it matches the Edit button
           />
-        )}
-
-        {status === JobStatus.Draft && (
-          <Link
-            to={`/edit-job/${job.id}`}
-            className="bg-blue-500 text-white px-3 py-1 lg:text-base text-sm rounded lg:mt-0 mt-2 hover:bg-blue-600 flex items-center justify-center"
-          >
-            Edit
-          </Link>
         )}
       </div>
     </div>
