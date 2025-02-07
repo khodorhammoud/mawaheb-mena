@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "../../../components/ui/popover";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaRegStar } from "react-icons/fa";
 import { Input } from "../../../components/ui/input";
 import { Skill } from "~/types/Skill";
 
@@ -64,13 +64,16 @@ export default function RequiredSkills({
         />
         {visibleSkills.map((skill) => (
           <Badge
-            key={skill.name}
-            className="bg-blue-500 text-white flex items-center p-1 px-2 gap-1 xl:px-3 py-2 hover:bg-blue-600"
+            className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? "bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none" : "border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400"}`}
           >
-            {skill.name.length > 10
-              ? skill.name.slice(0, 10) + "..."
-              : skill.name}
-            {skill.isStarred && <FaStar className="h-3 w-4 text-yellow-400" />}
+            <div onClick={() => toggleStarredSkill(skill)}>
+              {skill.isStarred ? (
+                <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
+              ) : (
+                <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
+              )}
+            </div>
+            <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
           </Badge>
         ))}
         {moreSkillsCount > 0 && (
@@ -105,10 +108,12 @@ export default function RequiredSkills({
           width: `${popoverWidth}px`,
           zIndex: 1000,
         }}
-        className="p-4 bg-white shadow-xl rounded-xl"
+        className="p-8 bg-white shadow-xl rounded-xl"
       >
-        <h4 className="text-lg font-semibold mb-2">Popular skills</h4>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <p className="text-lg mb-6 font-semibold">Popular skills for Design</p>
+
+        {/* skills to choose */}
+        <div className="flex flex-wrap gap-y-3 gap-x-2 mb-6">
           {skills
             .filter(
               (skill) => !selectedSkills.some((s) => s.name === skill.name)
@@ -117,41 +122,37 @@ export default function RequiredSkills({
               <Badge
                 key={skill.name}
                 onClick={() => toggleSkill(skill)}
-                className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${
-                  selectedSkills.some((s) => s.name === skill.name)
-                    ? "bg-blue-100 text-blue-600 border-blue-600"
-                    : "text-gray-600 border-gray-300"
-                }`}
+                className="cursor-pointer tracking-wide text-sm px-4 py-2 rounded-full border bg-white text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-gray-400"
               >
                 {skill.name}
               </Badge>
             ))}
         </div>
-        <div className="border-t pt-4">
-          <div className="flex flex-wrap">
-            {selectedSkills.map((skill) => (
-              <div
-                key={skill.name}
-                className="flex items-center cursor-pointer rounded-xl p-2"
+
+        {/* separator line -------------- */}
+        <div className="border-t mb-6"></div>
+
+        {/* selected skills */}
+        <div className="flex flex-wrap gap-y-3 gap-x-2">
+          {selectedSkills.map((skill) => (
+            <div
+              key={skill.name}
+              className="flex items-center font-medium cursor-pointer rounded-xl"
+            >
+              <Badge
+                className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? "bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none" : "border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400"}`}
               >
-                <Badge
-                  className={`cursor-pointer px-2 gap-1 xl:px-3 py-2 ${
-                    selectedSkills.some((s) => s.name === skill.name)
-                      ? "bg-blue-500 text-white hover:bg-blue-600"
-                      : "bg-gray-200"
-                  }`}
-                >
-                  <FaStar
-                    onClick={() => toggleStarredSkill(skill)}
-                    className={`h-4 w-4 ${
-                      skill.isStarred ? "text-yellow-400" : "text-gray-400"
-                    } cursor-pointer hover:scale-110 transition-transform`}
-                  />
-                  <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
-                </Badge>
-              </div>
-            ))}
-          </div>
+                <div onClick={() => toggleStarredSkill(skill)}>
+                  {skill.isStarred ? (
+                    <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
+                  ) : (
+                    <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
+                  )}
+                </div>
+                <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
+              </Badge>
+            </div>
+          ))}
         </div>
         <p className="mt-4 text-sm text-gray-600">
           Add at least 5 skills, then star 3-4 of them you consider your top
@@ -160,11 +161,11 @@ export default function RequiredSkills({
         <p className="mt-2 text-sm text-gray-600">
           You need to select at least {Math.max(0, 5 - selectedSkills.length)}{" "}
           more skills and star{" "}
-          {/* {Math.max(
+          {Math.max(
             0,
             3 - selectedSkills.filter((skill) => skill.isStarred).length
-            )}{" "} */}
-          3 more skills.
+          )}{" "}
+          more skills.
         </p>
       </PopoverContent>
     </Popover>

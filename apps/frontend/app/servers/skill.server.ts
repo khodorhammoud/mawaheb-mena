@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { Skill } from "~/types/Skill";
 
 export async function getJobSkills(jobId: number): Promise<Skill[]> {
-  //   console.log("🔎 Fetching job skills for jobId:", jobId);
+  // console.log("🔍 Checking Job ID:", jobId);
 
   const jobSkills = await db
     .select({
@@ -16,7 +16,8 @@ export async function getJobSkills(jobId: number): Promise<Skill[]> {
     .innerJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
     .where(eq(jobSkillsTable.jobId, jobId));
 
-  //   console.log("📌 SQL Query Result (jobSkills):", jobSkills);
+  // console.log("📌 SQL Query Result (jobSkills):", jobSkills);
+
   return jobSkills;
 }
 

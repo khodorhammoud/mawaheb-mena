@@ -3,15 +3,28 @@ import { useEffect } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import { Button } from "~/components/ui/button";
-import { Skill } from "~/types/Skill"; // Ensure the type exists
+import { Skill } from "~/types/Skill";
+import SkillBadgeList from "~/common/skill/SkillBadge";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
+import { Info } from "lucide-react";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 
 interface JobCardProps {
-  job: Job & { jobSkills?: Skill[] }; // Ensure job has jobSkills
+  job: Job;
+  jobSkills: Skill[]; // ✅ Accept jobSkills as a separate prop
 }
 
-export default function SingleJobView({ job }: JobCardProps) {
+export default function SingleJobView({ job, jobSkills }: JobCardProps) {
+  // console.log("📌 Job Skills in SingleJobView:", jobSkills); // ✅ Debugging log
+
   const fetcher = useFetcher<{ jobs: Job[]; success?: boolean }>();
   const relatedJobs = fetcher.data?.jobs || [];
+
+  // ✅ Transform `jobSkills` to match `SkillBadgeList` expected format
+  const requiredSkills = jobSkills.map((skill) => ({
+    name: skill.name,
+    isStarred: skill.isStarred || false,
+  }));
 
   useEffect(() => {
     if (job.employerId) {
@@ -28,95 +41,121 @@ export default function SingleJobView({ job }: JobCardProps) {
   }, [job.employerId]); // ✅ Added dependency
 
   return (
-    <div className="rounded-lg p-6 mx-auto">
+    <div className="rounded-lg mx-auto text-black pr-10">
       {/* Job Title */}
-      <h2 className="text-lg font-bold mb-2">{job.title}</h2>
-      <p className="text-gray-500 text-sm mb-4">
-        {job.budget} - {job.createdAt || "recently"}
-      </p>
+      <div className="pt-6 px-6">
+        <h2 className="lg:text-3xl md:text-2xl text-xl mb-3">{job.title}</h2>
 
-      {/* Description */}
-      <p className="text-gray-700 mb-6">{job.description}</p>
-
-      {/* Budget, Experience Level, and Project Type */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">${job.budget}</span>
-          <span className="text-sm text-gray-500">Fixed price</span>
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">
-            {job.experienceLevel}
-          </span>
-          <span className="text-sm text-gray-500">Experience level</span>
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">{job.projectType}</span>
-          <span className="text-sm text-gray-500">Project type</span>
-        </div>
+        {/* Date */}
+        <p className="text-sm mb-8 text-gray-400">
+          Fixed price -{" "}
+          {job.createdAt ? formatTimeAgo(job.createdAt) : "recently"}
+        </p>
       </div>
 
-      {/* Skills Section */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Skills</h3>
-        <div className="flex flex-wrap gap-2">
-          {job.jobSkills && job.jobSkills.length > 0 ? (
-            job.jobSkills.map((skill) => (
-              <span
-                key={skill.id}
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-              >
-                {skill.name}
-              </span>
-            ))
-          ) : (
-            <p className="text-gray-500">No skills listed for this job.</p>
-          )}
+      <div className="grid grid-cols-[60%,40%] mb-8">
+        {/* Description */}
+        <div className="px-6 py-4 border-r border-gray-200">
+          <div
+            className="mb-12"
+            dangerouslySetInnerHTML={{ __html: job.description }}
+          />
+
+          <div className="flex justify-between items-center mb-12">
+            {/* Budget */}
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">${job.budget}</span>
+              <span className="text-sm text-gray-500">Fixed price</span>
+            </div>
+
+            {/* Experience Level */}
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">{job.experienceLevel}</span>
+              <span className="text-sm text-gray-500">Experience level</span>
+            </div>
+
+            {/* Project Type */}
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">{job.projectType}</span>
+              <span className="text-sm text-gray-500">Project type</span>
+            </div>
+          </div>
+
+          {/* Skills Section */}
+          <div className="mb-12">
+            <p className="text-base mb-2">Skills</p>
+            {/* SKILLS */}
+            <div className="mt-2 text-base">
+              {requiredSkills.length > 0 ? (
+                <SkillBadgeList skills={requiredSkills} /> // ✅ Use SkillBadgeList instead of manual mapping
+              ) : (
+                <p>No skills provided.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Activity Section */}
+          <div className="mb-6">
+            <p className="text-base font-medium text-gray-900 mb-2">
+              Activity on this job
+            </p>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>Interested: 3</li>
+              <li>Interviewed: 1</li>
+              <li>Invites sent: 0</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Interested Button */}
+        <div className="pl-6 pr-6 pt-4">
+          <Button
+            disabled={
+              fetcher.data?.success === true || fetcher.state === "submitting"
+            }
+            onClick={() => {
+              if (!fetcher.data?.success) {
+                fetcher.submit(null, {
+                  method: "post",
+                  action: `/api/jobs/${job.id}/interested`,
+                });
+              }
+            }}
+            className={`w-full mb-4 ${
+              fetcher.data?.success
+                ? "bg-slate-600 cursor-not-allowed"
+                : "bg-primaryColor"
+            } text-white py-2 rounded-md font-semibold`}
+          >
+            {fetcher.data?.success ? "Applied" : "Interested"}
+          </Button>
+          <div className="flex items-start text-gray-500 text-sm">
+            <InformationCircleIcon className="w-8 h-8 text-gray-600 mr-2" />
+            <p className="mt-1">
+              Clicking "Interested" notifies the job poster, who can then
+              interview you.
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Activity Section */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Activity on this job</h3>
-        <ul className="text-sm text-gray-700 space-y-1">
-          <li>Interested: 3</li>
-          <li>Interviewed: 1</li>
-          <li>Invites sent: 0</li>
-        </ul>
-      </div>
-
-      {/* Interested Button */}
-      <Button
-        disabled={
-          fetcher.data?.success === true || fetcher.state === "submitting"
-        }
-        onClick={() => {
-          if (!fetcher.data?.success) {
-            fetcher.submit(null, {
-              method: "post",
-              action: `/api/jobs/${job.id}/interested`,
-            });
-          }
-        }}
-        className={`w-full ${
-          fetcher.data?.success
-            ? "bg-slate-600 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-        } text-white py-2 rounded-md font-semibold`}
-      >
-        {fetcher.data?.success ? "Applied" : "Interested"}
-      </Button>
 
       {/* Related Jobs Section */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Related Jobs</h3>
-        {relatedJobs.length > 0 ? (
-          relatedJobs.map((relatedJob) => (
-            <JobCard key={relatedJob.id} job={relatedJob} onSelect={() => {}} />
-          ))
-        ) : (
-          <p className="text-gray-500">No related jobs found.</p>
-        )}
+      <div className="grid grid-cols-[60%,40%] mb-10">
+        <div className="pl-6 py-10 pr-2">
+          <p className="text-lg mb-6">Employer's recent jobs (2)</p>
+          {relatedJobs.length > 0 ? (
+            relatedJobs.map((relatedJob) => (
+              <JobCard
+                key={relatedJob.id}
+                job={relatedJob}
+                onSelect={() => {}}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500">No related jobs found.</p>
+          )}
+        </div>
+        <div className=""></div>
       </div>
     </div>
   );

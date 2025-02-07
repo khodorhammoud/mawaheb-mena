@@ -2,7 +2,8 @@ import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Job as JobType } from "~/types/Job";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
+import SkillBadgeList from "~/common/skill/SkillBadge";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
 
 interface JobProps {
   job: JobType;
@@ -38,7 +39,7 @@ export default function JobCard({ job, onSelect }: JobProps) {
       <div>
         <h1 className="text-2xl mb-3">{job.title}</h1>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
-          Fixed price - Posted {new Date(job.createdAt).toDateString()}
+          Fixed price - {formatTimeAgo(job.createdAt)}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
           <div>
@@ -60,20 +61,9 @@ export default function JobCard({ job, onSelect }: JobProps) {
         />
 
         {/* Dynamic Skills from Database */}
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="lg:mt-8 mt-4 xl:text-base text-sm">
           {skills.length > 0 ? (
-            skills.map((skill) => (
-              <Badge
-                key={skill.id}
-                className={`px-4 py-2 rounded-full border bg-white hover:bg-white cursor-default ${
-                  skill.isStarred
-                    ? "bg-blue-100 text-blue-600 border-blue-600 hover:bg-blue-100"
-                    : "text-gray-600 border-gray-300"
-                }`}
-              >
-                {skill.name}
-              </Badge>
-            ))
+            <SkillBadgeList skills={skills} />
           ) : (
             <p className="text-gray-500">No skills listed for this job.</p>
           )}
