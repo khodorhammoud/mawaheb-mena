@@ -1,9 +1,6 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useState } from "react";
-import {
-  getCurrentProfileInfo,
-  getCurrentUserAccountType,
-} from "~/servers/user.server";
+import { getCurrentUserAccountType } from "~/servers/user.server";
 import { AccountType } from "~/types/enums";
 import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -14,13 +11,12 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-  SheetTitle,
 } from "~/components/ui/sheet";
 import { Job } from "~/types/Job";
 import SingleJobView from "./singleJobView";
 import { getJobSkills } from "~/servers/skill.server";
 import { Skill } from "~/types/Skill";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
@@ -75,7 +71,7 @@ export default function Layout() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="bg-white w-1/2 px-2 max-h-screen overflow-y-auto"
+          className="bg-white xl:w-[800px] lg:w-[800px] md:w-3/4 w-full px-2 max-h-screen overflow-y-auto"
         >
           <SheetHeader>
             {isLoading ? (

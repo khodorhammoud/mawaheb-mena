@@ -6,7 +6,6 @@ import { Button } from "~/components/ui/button";
 import { Skill } from "~/types/Skill";
 import SkillBadgeList from "~/common/skill/SkillBadge";
 import { formatTimeAgo } from "~/utils/formatTimeAgo";
-import { Info } from "lucide-react";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 
 interface JobCardProps {
@@ -132,31 +131,35 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
           <div className="flex items-start text-gray-500 text-sm">
             <InformationCircleIcon className="w-8 h-8 text-gray-600 mr-2" />
             <p className="mt-1">
-              Clicking "Interested" notifies the job poster, who can then
-              interview you.
+              Clicking &quot;Interested&quot; notifies the job poster, who can
+              then interview you.
             </p>
           </div>
         </div>
       </div>
 
       {/* Related Jobs Section */}
-      <div className="grid grid-cols-[60%,40%] mb-10">
-        <div className="pl-6 py-10 pr-2">
-          <p className="text-lg mb-6">Employer's recent jobs (2)</p>
-          {relatedJobs.length > 0 ? (
-            relatedJobs.map((relatedJob) => (
-              <JobCard
-                key={relatedJob.id}
-                job={relatedJob}
-                onSelect={() => {}}
-              />
-            ))
-          ) : (
-            <p className="text-gray-500">No related jobs found.</p>
-          )}
+      {relatedJobs.length > 0 && (
+        <div className="grid grid-cols-[60%,40%] mb-10">
+          <div className="pl-6 py-10 pr-2">
+            <p className="text-lg mb-6">
+              Employer&apos;s recent jobs ({relatedJobs.length})
+            </p>
+            {relatedJobs.length > 0 ? (
+              relatedJobs.map((relatedJob) => (
+                <JobCard
+                  key={relatedJob.id}
+                  job={relatedJob}
+                  onSelect={() => {}}
+                />
+              ))
+            ) : (
+              <p className="text-gray-500">No related jobs found.</p>
+            )}
+          </div>
+          <div className=""></div>
         </div>
-        <div className=""></div>
-      </div>
+      )}
     </div>
   );
 }
