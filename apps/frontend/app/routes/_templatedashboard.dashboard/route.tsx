@@ -25,14 +25,12 @@ import {
   getAllLanguages,
   handleEmployerOnboardingAction,
 } from "~/servers/employer.server";
-
 import {
   getFreelancerAbout,
   getFreelancerAvailability,
   getFreelancerLanguages,
   handleFreelancerOnboardingAction,
 } from "~/servers/freelancer.server";
-
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded, requireUserVerified } from "~/auth/auth.server";
 

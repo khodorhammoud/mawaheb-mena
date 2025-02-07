@@ -348,11 +348,6 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-  // Updated requiredSkills to be an array of JSON objects
-  // TODO: remove required skills since we are using job_skills table
-  requiredSkills: json("required_skills")
-    .notNull()
-    .default(sql`'[]'::jsonb`),
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
   experienceLevel: text("experience_level"),
