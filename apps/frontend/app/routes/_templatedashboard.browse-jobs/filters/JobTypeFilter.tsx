@@ -79,7 +79,7 @@ export default function JobTypeFilter({
             <X
               size={32}
               className="text-gray-500 p-1 rounded-full transition 
-              group-hover:text-white"
+              group-hover:text-white hover:bg-gray-400"
               onClick={(e) => {
                 e.stopPropagation();
                 clearJobType();

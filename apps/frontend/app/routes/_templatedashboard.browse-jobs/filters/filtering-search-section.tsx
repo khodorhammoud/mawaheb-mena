@@ -24,6 +24,25 @@ export default function FilteringSearchSection({
   filters,
   setFilters,
 }: FilteringSearchSectionProps) {
+  // ✅ Check if any filter is applied
+  const isAnyFilterApplied =
+    searchQuery ||
+    filters.workingHours ||
+    filters.jobType ||
+    filters.yearsOfExperience ||
+    filters.hourlyRate;
+
+  // ✅ Function to clear all filters
+  const clearAllFilters = () => {
+    setSearchQuery(""); // Reset search query
+    setFilters({
+      workingHours: null,
+      jobType: null,
+      yearsOfExperience: null,
+      hourlyRate: null,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mt-4 mb-8 max-w-6xl">
       {/* 🔥 Search Field */}
@@ -32,13 +51,13 @@ export default function FilteringSearchSection({
           id="search"
           name="search"
           type="text"
-          placeholder="Search for jobs..."
+          placeholder="Hinted search text"
           defaultValue={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           label={
             <div className="flex items-center">
               <span className="text-gray-500">🔍</span>
-              <span className="ml-2">Search Jobs</span>
+              <span className="ml-2">Hinted search text</span>
             </div>
           }
         />
@@ -60,6 +79,16 @@ export default function FilteringSearchSection({
 
         {/* 🔥 Hourly Rate Button & Functionality */}
         <HourlyRateFilter filters={filters} setFilters={setFilters} />
+
+        {/* 🔥 "Clear All Filters" Button (Appears only when filters are applied) */}
+        {isAnyFilterApplied && (
+          <button
+            className="text-primaryColor underline hover:text-red-500 transition ml-2 whitespace-nowrap"
+            onClick={clearAllFilters}
+          >
+            Clear All Filters
+          </button>
+        )}
       </div>
     </div>
   );
