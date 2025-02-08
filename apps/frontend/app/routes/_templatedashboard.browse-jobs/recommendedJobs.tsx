@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
-import FilteringSearchSection from "./filtering-search-section";
+import FilteringSearchSection from "./filters/filtering-search-section";
 
 interface RecommendedJobsProps {
   onJobSelect: (job: Job) => void;
@@ -11,6 +11,7 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     workingHours: null, // Stores the working hours filter
+    jobType: null, // ✅ Fix: Add jobType so FilteringSearchSection gets correct props
   });
 
   // ✅ Load jobs ONCE when the component mounts (No backend filtering)
@@ -42,7 +43,12 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
         filters.workingHours.to &&
         job.workingHoursPerWeek <= filters.workingHours.to); // Check max
 
-    return matchesSearch && matchesWorkingHours;
+    // ✅ Job Type Filter: Check if job matches selected job type
+    const matchesJobType =
+      !filters.jobType || // No filter applied → show all jobs
+      job.projectType === filters.jobType; // Match job type
+
+    return matchesSearch && matchesWorkingHours && matchesJobType;
   });
 
   return (
