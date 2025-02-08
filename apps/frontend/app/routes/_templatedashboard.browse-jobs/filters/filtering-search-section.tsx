@@ -1,6 +1,8 @@
 import WorkingHoursFilter from "./WorkingHoursFilter";
 import JobTypeFilter from "./JobTypeFilter";
 import SkillsFilter from "./SkillsFilter";
+import YearsOfExperienceFilter from "./YearsOfExperienceFilter";
+import HourlyRateFilter from "./HourlyRateFilter";
 import AppFormField from "~/common/form-fields";
 import { ProjectType } from "~/types/enums";
 
@@ -10,6 +12,8 @@ interface FilteringSearchSectionProps {
   filters: {
     workingHours: { from: string; to: string } | null;
     jobType: ProjectType | null;
+    yearsOfExperience: number | null;
+    hourlyRate: number | null;
   };
   setFilters: (filters: any) => void;
 }
@@ -21,26 +25,27 @@ export default function FilteringSearchSection({
   setFilters,
 }: FilteringSearchSectionProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 lg:gap-6 xl:gap-8 mt-4 mb-8">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mt-4 mb-8 max-w-6xl">
       {/* 🔥 Search Field */}
-      <div className="relative md:w-1/3 w-full">
+      <div className="relative w-full lg:w-1/3">
         <AppFormField
           id="search"
           name="search"
           type="text"
-          placeholder="Hinted search text"
+          placeholder="Search for jobs..."
           defaultValue={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           label={
             <div className="flex items-center">
               <span className="text-gray-500">🔍</span>
-              <span className="ml-2">Hinted search text</span>
+              <span className="ml-2">Search Jobs</span>
             </div>
           }
         />
       </div>
 
-      <div className="flex gap-2">
+      {/* 🔥 Filters Section */}
+      <div className="flex flex-wrap gap-3 w-full whitespace-nowrap">
         {/* 🔥 Skills Button (Functionality Coming Later) */}
         <SkillsFilter />
 
@@ -49,6 +54,12 @@ export default function FilteringSearchSection({
 
         {/* 🔥 Job Type Button & Functionality */}
         <JobTypeFilter filters={filters} setFilters={setFilters} />
+
+        {/* 🔥 Years of Experience Button & Functionality */}
+        <YearsOfExperienceFilter filters={filters} setFilters={setFilters} />
+
+        {/* 🔥 Hourly Rate Button & Functionality */}
+        <HourlyRateFilter filters={filters} setFilters={setFilters} />
       </div>
     </div>
   );

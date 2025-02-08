@@ -11,7 +11,9 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     workingHours: null, // Stores the working hours filter
-    jobType: null, // ✅ Fix: Add jobType so FilteringSearchSection gets correct props
+    jobType: null, // ✅ Job Type filter
+    yearsOfExperience: null, // ✅ Years of Experience filter
+    hourlyRate: null, // 🔥 FIX: Add hourlyRate filter
   });
 
   // ✅ Load jobs ONCE when the component mounts (No backend filtering)
