@@ -98,7 +98,7 @@ export default function WorkingHoursFilter({
 
         {errorMessage && (
           <div
-            className={`px-4 py-3 rounded relative mb-4 text-center bg-red-100 border border-red-400 text-red-700 transition-opacity duration-500 ${
+            className={`px-4 py-3 rounded relative mt-2 text-center bg-red-100 border border-red-400 text-red-700 transition-opacity duration-500 ${
               fadeOut ? "opacity-0" : "opacity-100"
             }`}
           >

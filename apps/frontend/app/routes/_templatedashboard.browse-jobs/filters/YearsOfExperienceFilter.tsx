@@ -10,48 +10,46 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import AppFormField from "~/common/form-fields";
-import { ProjectType } from "~/types/enums";
 
-interface JobTypeFilterProps {
-  filters: { jobType: ProjectType | null };
+interface YearsOfExperienceFilterProps {
+  filters: { yearsOfExperience: number | null };
   setFilters: (filters: any) => void;
 }
 
-export default function JobTypeFilter({
+export default function YearsOfExperienceFilter({
   filters,
   setFilters,
-}: JobTypeFilterProps) {
+}: YearsOfExperienceFilterProps) {
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedJobType, setSelectedJobType] = useState<ProjectType | "">(
-    filters.jobType || ""
+  const [yearsOfExperience, setYearsOfExperience] = useState<number | "">(
+    filters.yearsOfExperience || ""
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fadeOut, setFadeOut] = useState(false);
-  const [inputKey, setInputKey] = useState(0); // ✅ Force re-render on clear
+  const [inputKey, setInputKey] = useState(0); // ✅ Forces input reset
 
-  // ✅ Remove error message when user selects a job type
+  // ✅ Remove error message when user enters a value
   useEffect(() => {
-    if (selectedJobType) {
+    if (yearsOfExperience !== "") {
       setErrorMessage(null);
     }
-  }, [selectedJobType]);
+  }, [yearsOfExperience]);
 
-  const saveJobType = () => {
-    if (!selectedJobType) {
-      showError("Please select a job type.");
+  const saveExperience = () => {
+    if (yearsOfExperience === "" || yearsOfExperience < 0) {
+      showError("Please enter a valid number of years.");
       return;
     }
 
-    setFilters((prev: any) => ({ ...prev, jobType: selectedJobType }));
-
+    setFilters((prev: any) => ({ ...prev, yearsOfExperience }));
     setOpenDialog(false);
   };
 
-  const clearJobType = () => {
-    setFilters((prev: any) => ({ ...prev, jobType: null }));
-    setSelectedJobType(""); // ✅ Reset selected job type
+  const clearExperience = () => {
+    setFilters((prev: any) => ({ ...prev, yearsOfExperience: null }));
+    setYearsOfExperience("");
     setErrorMessage(null);
-    setInputKey((prevKey) => prevKey + 1); // ✅ Force re-render of dropdown
+    setInputKey((prevKey) => prevKey + 1); // ✅ Force re-render
   };
 
   const showError = (message: string) => {
@@ -66,23 +64,28 @@ export default function JobTypeFilter({
     }, 2000);
   };
 
-  const handleJobTypeChange = (value: string) => {
-    setSelectedJobType(value as ProjectType);
+  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "") {
+      setYearsOfExperience(""); // ✅ Allow clearing the field
+    } else if (!isNaN(Number(value)) && Number(value) >= 0) {
+      setYearsOfExperience(Number(value)); // ✅ Store as a number
+    }
   };
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
         <button className="group border border-gray-300 text-primaryColor bg-white rounded-[10px] px-4 py-2 flex items-center gap-2 hover:bg-primaryColor hover:text-white transition">
-          Job Type
-          {filters.jobType && (
+          Years of Experience
+          {filters.yearsOfExperience !== null && (
             <X
               size={32}
               className="text-gray-500 p-1 rounded-full transition 
-              group-hover:text-white"
+              group-hover:text-white hover:text-green-500"
               onClick={(e) => {
                 e.stopPropagation();
-                clearJobType();
+                clearExperience();
               }}
             />
           )}
@@ -90,7 +93,7 @@ export default function JobTypeFilter({
       </DialogTrigger>
       <DialogContent className="bg-white">
         <DialogHeader>
-          <DialogTitle>Select Job Type</DialogTitle>
+          <DialogTitle>Specify Years of Experience</DialogTitle>
         </DialogHeader>
 
         {errorMessage && (
@@ -103,23 +106,16 @@ export default function JobTypeFilter({
           </div>
         )}
 
-        {/* ✅ Use AppFormField with a Unique `key` to Force Re-render */}
-        <div className="mb-4 mt-4" key={inputKey}>
+        {/* ✅ Use AppFormField for Number Input */}
+        <div className="mt-4 mb-4" key={inputKey}>
           <AppFormField
-            id="jobType"
-            name="jobType"
-            label="Select Job Type"
-            type="select"
-            options={[
-              {
-                value: ProjectType.PerProjectBasis,
-                label: "Per Project Basis",
-              },
-              { value: ProjectType.ShortTerm, label: "Short Term" },
-              { value: ProjectType.LongTerm, label: "Long Term" },
-            ]}
-            defaultValue={selectedJobType}
-            onChange={(e) => handleJobTypeChange(e)} // ✅ Ensure correct state update
+            id="yearsOfExperience"
+            name="yearsOfExperience"
+            label="Years of Experience"
+            type="number"
+            placeholder="Enter years of experience"
+            defaultValue={yearsOfExperience.toString()} // 🔥 FIX: Convert number to string
+            onChange={(e) => handleExperienceChange(e)} // ✅ Ensure correct state update
           />
         </div>
 
@@ -127,12 +123,12 @@ export default function JobTypeFilter({
           <Button
             variant="ghost"
             className="text-primaryColor hover:bg-gray-300 hover:text-white transition rounded-xl px-4 py-2 border border-gray-300"
-            onClick={clearJobType}
+            onClick={clearExperience}
           >
             Clear
           </Button>
           <Button
-            onClick={saveJobType}
+            onClick={saveExperience}
             className="bg-primaryColor text-white px-4 py-2 rounded-xl not-active-gradient hover:bg-primaryColor"
           >
             Save
