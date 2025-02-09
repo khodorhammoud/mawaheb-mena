@@ -3,7 +3,9 @@ import { useRef, useEffect, useState } from "react";
 import { useLoaderData } from "@remix-run/react"; // Import to access loader data
 import ZoomingText from "./ZoomingText";
 
-// Define the type for PreWhatTheySayAboutUs
+// Define the type for
+// which is a long name :D
+
 interface PreWhatTheySayAboutUs {
   content: string;
 }
