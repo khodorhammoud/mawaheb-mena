@@ -22,6 +22,34 @@
       "when": 1738497882789,
       "tag": "0002_organic_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1739005968360,
+      "tag": "0003_talented_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1739006493119,
+      "tag": "0004_cheerful_odin",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1739017841938,
+      "tag": "0005_perfect_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1739022732114,
+      "tag": "0006_long_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

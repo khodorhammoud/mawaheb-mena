@@ -54,7 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", as: "style", href: stylesheet },
-  { rel: "stylesheet", as: "style", href: appStylesheet }, // shall these href's stay like that ???
+  { rel: "stylesheet", href: appStylesheet }, // shall these href's stay like that ???
 ];
 
 export const meta: MetaFunction = () => {
