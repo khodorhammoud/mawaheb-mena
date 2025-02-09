@@ -6,6 +6,8 @@ import {
   jobCategoriesTable,
   jobsTable,
   freelancersTable,
+  jobSkillsTable,
+  skillsTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
@@ -26,9 +28,11 @@ export async function getAllJobCategories(): Promise<JobCategory[]> {
 
 // Create a job posting
 export async function createJobPosting(
-  jobData: Job
+  jobData: Job,
+  skills: { name: string; isStarred: boolean }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // ✅ Step 1: Insert the Job First
     const [job] = await db
       .insert(jobsTable)
       .values({
@@ -43,20 +47,54 @@ export async function createJobPosting(
         experienceLevel: jobData.experienceLevel,
         status: jobData.status,
       })
-      .returning();
+      .returning({ id: jobsTable.id });
 
     if (!job) {
-      console.error("Job insertion failed: No rows returned after insertion.");
-      throw new Error("Job insertion failed, no rows returned.");
+      console.error("❌ Job insertion failed: No rows returned.");
+      throw new Error("Job insertion failed.");
     }
+
+    // console.log("✅ New Job Created:", job.id);
+
+    // ✅ Step 2: Process Each Skill Separately
+    for (const skill of skills) {
+      // 🔹 SPLIT skills if they come in as a comma-separated string
+      const skillNames = skill.name.split(",").map((s) => s.trim());
+
+      for (const skillName of skillNames) {
+        let [existingSkill] = await db
+          .select({ id: skillsTable.id })
+          .from(skillsTable)
+          .where(eq(skillsTable.name, skillName));
+
+        // ✅ Only insert new skills if they don’t exist
+        if (!existingSkill) {
+          [existingSkill] = await db
+            .insert(skillsTable)
+            .values({ name: skillName }) // Insert skill separately
+            .returning({ id: skillsTable.id });
+
+          // console.log("🆕 Inserted new skill:", existingSkill.id, skillName);
+        }
+
+        // ✅ Insert into `jobSkillsTable` (Link Job & Skill)
+        await db.insert(jobSkillsTable).values({
+          jobId: job.id,
+          skillId: existingSkill.id,
+          isStarred: skill.isStarred,
+        });
+
+        // console.log(
+        //   `🔗 Linked Skill ID ${existingSkill.id} (${skillName}) to Job ID ${job.id}`
+        // );
+      }
+    }
+
     return { success: true };
   } catch (error) {
-    console.error("Detailed error during job creation:");
+    console.error("Detailed error during job creation:", error);
   }
-  // Return a more specific error message if possible
-  return {
-    success: false,
-  };
+  return { success: false };
 }
 
 /**
@@ -66,99 +104,197 @@ export async function createJobPosting(
  * @param jobData the data i'll update in the job
  * @returns success or failure :)
  */
-export async function updateJob(
-  jobId: number,
-  jobData: Partial<Job>
-): Promise<{ success: boolean; error?: string }> {
+export async function updateJob(jobId: number, jobData: Partial<Job>) {
   try {
-    // validating and cleaning data before passing them to drizzle update or insert script 🍔
     const requiredSkills = Array.isArray(jobData.requiredSkills)
       ? jobData.requiredSkills.map((skill) => ({
+          id: skill.id,
           name: skill.name.trim(),
-          isStarred: !!skill.isStarred,
+          isStarred: skill.isStarred || false,
         }))
       : [];
 
-    const validatedJobData = {
-      title: jobData.title?.trim(),
-      description: jobData.description?.trim(),
-      jobCategoryId: jobData.jobCategoryId || null,
-      workingHoursPerWeek: jobData.workingHoursPerWeek || null,
-      locationPreference: jobData.locationPreference?.trim(),
-      requiredSkills:
-        requiredSkills.length > 0
-          ? {
-              set: [], // Clear existing skills
-              create: requiredSkills,
-            }
-          : undefined,
-      projectType: jobData.projectType?.trim(),
-      budget: jobData.budget || null,
-      experienceLevel: jobData.experienceLevel?.trim(),
-      status: jobData.status || null,
-    };
+    await db.transaction(async (tx) => {
+      // 🗑 1️⃣ Delete old skills to avoid duplicates
+      await tx.delete(jobSkillsTable).where(eq(jobSkillsTable.jobId, jobId));
 
-    // Step 2: Perform the update using validated data
-    const updatedJob = await db
-      .update(jobsTable)
-      .set(validatedJobData)
-      .where(eq(jobsTable.id, jobId))
-      .returning();
+      // ✅ 2️⃣ Re-insert updated skills into `job_skills`
+      if (requiredSkills.length > 0) {
+        await tx.insert(jobSkillsTable).values(
+          requiredSkills.map((skill) => ({
+            jobId,
+            skillId: skill.id, // Skill ID must be valid
+            isStarred: skill.isStarred, // ✅ Ensure this is inserted
+          }))
+        );
+      }
 
-    // Step 3: Check if the update was successful
-    if (!updatedJob || updatedJob.length === 0) {
-      throw new Error("Job update failed: No rows returned.");
-    }
+      // 🔄 3️⃣ Update the main job details
+      const updatedJob = await tx
+        .update(jobsTable)
+        .set({
+          title: jobData.title?.trim(),
+          description: jobData.description?.trim(),
+          jobCategoryId: jobData.jobCategoryId || null,
+          workingHoursPerWeek: jobData.workingHoursPerWeek || null,
+          locationPreference: jobData.locationPreference?.trim(),
+          projectType: jobData.projectType?.trim(),
+          budget: jobData.budget || null,
+          experienceLevel: jobData.experienceLevel?.trim(),
+          status: jobData.status || "draft", // ✅ Default to "draft" if null
+        })
+        .where(eq(jobsTable.id, jobId))
+        .returning();
+
+      if (!updatedJob || updatedJob.length === 0) {
+        throw new Error("Job update failed: No rows returned.");
+      }
+    });
 
     return { success: true };
   } catch (error) {
-    console.error("Error during job update:", error);
-    return {
-      success: false,
-      error: "Failed to update job posting.",
-    };
+    console.error("❌ Error during job update:", error);
+    return { success: false, error: "Failed to update job posting." };
   }
 }
 
+// MANAGE JOBS
 export async function getEmployerJobs(
   employerId: number,
   jobStatus?: JobStatus[]
 ): Promise<Job[]> {
-  // Fetch all jobs from the database that relate to current user
-  let jobs = null;
-  if (jobStatus) {
-    jobs = await db
-      .select()
-      .from(jobsTable)
-      .where(
-        and(
-          eq(jobsTable.employerId, employerId),
-          inArray(jobsTable.status, jobStatus)
-        )
-      );
-  } else {
-    jobs = await db
-      .select()
-      .from(jobsTable)
-      .where(eq(jobsTable.employerId, employerId));
+  // Retrieves all jobs for a given employer
+  // Joins the jobSkillsTable to get the skills linked to each job
+  // Joins the skillsTable to get the skill names
+  // Filters the jobs based on employerId to get only the relevant jobs
+  let jobsQuery = db
+    .select({
+      id: jobsTable.id,
+      employerId: jobsTable.employerId,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      status: jobsTable.status,
+      createdAt: jobsTable.createdAt,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
+      skillId: jobSkillsTable.skillId,
+      skillName: skillsTable.name,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobsTable)
+    .leftJoin(jobSkillsTable, eq(jobSkillsTable.jobId, jobsTable.id))
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(eq(jobsTable.employerId, employerId));
+
+  // runs the query
+  const jobsRaw = await jobsQuery.execute();
+
+  // This avoids duplicate job entries when multiple skills are attached to a job
+  const jobsMap = new Map<number, Job>();
+
+  // Loops through the raw job data
+  // If the job doesn’t exist in the map, it adds the job without skills
+  // If a skill is found, it adds the skill to the job’s requiredSkills list
+  // This ensures that each job is stored once and its skills are properly grouped
+  for (const row of jobsRaw) {
+    if (!jobsMap.has(row.id)) {
+      jobsMap.set(row.id, {
+        id: row.id,
+        employerId: row.employerId,
+        title: row.title,
+        description: row.description,
+        workingHoursPerWeek: row.workingHoursPerWeek,
+        locationPreference: row.locationPreference,
+        projectType: row.projectType,
+        budget: row.budget,
+        experienceLevel: row.experienceLevel,
+        status: row.status as JobStatus,
+        createdAt: row.createdAt,
+        jobCategoryId: row.jobCategoryId,
+        fulfilledAt: row.fulfilledAt,
+        requiredSkills: [],
+      });
+    }
+
+    if (row.skillId) {
+      jobsMap.get(row.id)?.requiredSkills.push({
+        id: row.skillId,
+        name: row.skillName,
+        isStarred: row.isStarred,
+      });
+    }
   }
 
-  // Map each job result to a structured object
-  return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    // requiredSkills: job.requiredSkills as Skill[],
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
-    status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
-  }));
+  // Converts the Map structure back into an array of jobs (which is the expected output format)
+  // Now, each job has a clean list of skills inside requiredSkills
+  return Array.from(jobsMap.values());
+}
+
+export async function getJobById(jobId: number): Promise<Job | null> {
+  let jobQuery = db
+    .select({
+      id: jobsTable.id,
+      employerId: jobsTable.employerId,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      status: jobsTable.status,
+      createdAt: jobsTable.createdAt,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
+      skillId: jobSkillsTable.skillId,
+      skillName: skillsTable.name,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobsTable)
+    .leftJoin(jobSkillsTable, eq(jobSkillsTable.jobId, jobsTable.id))
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(eq(jobsTable.id, jobId));
+
+  const jobRaw = await jobQuery.execute();
+
+  if (!jobRaw.length) {
+    return null;
+  }
+
+  // Group skills under `requiredSkills`
+  const jobData: Job = {
+    id: jobRaw[0].id,
+    employerId: jobRaw[0].employerId,
+    title: jobRaw[0].title,
+    description: jobRaw[0].description,
+    workingHoursPerWeek: jobRaw[0].workingHoursPerWeek,
+    locationPreference: jobRaw[0].locationPreference,
+    projectType: jobRaw[0].projectType,
+    budget: jobRaw[0].budget,
+    experienceLevel: jobRaw[0].experienceLevel,
+    status: jobRaw[0].status as JobStatus,
+    createdAt: jobRaw[0].createdAt,
+    jobCategoryId: jobRaw[0].jobCategoryId,
+    fulfilledAt: jobRaw[0].fulfilledAt,
+    requiredSkills: [],
+  };
+
+  for (const row of jobRaw) {
+    if (row.skillId) {
+      jobData.requiredSkills.push({
+        id: row.skillId,
+        name: row.skillName,
+        isStarred: row.isStarred,
+      });
+    }
+  }
+
+  return jobData;
 }
 
 /* export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
@@ -178,20 +314,6 @@ export async function getEmployerJobs(
     status: job.status as JobStatus,
   }));
 } */
-
-/**
- * get a single job by its ID
- *
- * @param jobId the ID of the job to get
- * @returns the job with the given ID or null if it doesn't exist
- */
-export async function getJobById(jobId: number): Promise<Job | null> {
-  const job = await db.select().from(jobsTable).where(eq(jobsTable.id, jobId));
-  if (!job) {
-    return null;
-  }
-  return job[0] as unknown as Job;
-}
 
 export async function getAllJobs(): Promise<Job[]> {
   // Query to select all jobs that are active

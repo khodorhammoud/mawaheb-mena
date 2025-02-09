@@ -1,43 +1,45 @@
+import { useFetcher } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { Job as JobType } from "~/types/Job";
 import { Button } from "~/components/ui/button";
+import SkillBadgeList from "~/common/skill/SkillBadge";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
 
 interface JobProps {
   job: JobType;
   onSelect: (job: JobType) => void;
 }
 
-export default function Job(props: JobProps) {
-  const { job, onSelect } = props;
-  const formattedDate =
-    typeof job.createdAt === "string" ? new Date(job.createdAt) : job.createdAt;
+export default function JobCard({ job, onSelect }: JobProps) {
+  const fetcher = useFetcher<{
+    jobSkills: { id: number; name: string; isStarred: boolean }[];
+  }>();
+  const [skills, setSkills] = useState<
+    { id: number; name: string; isStarred: boolean }[]
+  >([]);
+
+  useEffect(() => {
+    // console.log(`🔎 Fetching skills for job ID: ${job.id}`);
+    fetcher.load(`/browse-jobs?jobId=${job.id}`); // THIS FIXES IT
+  }, [job.id]);
+
+  useEffect(() => {
+    if (fetcher.data) {
+      // console.log(
+      //   `✅ Loaded skills for job ${job.id}:`,
+      //   fetcher.data.jobSkills
+      // );
+      setSkills(fetcher.data.jobSkills);
+    }
+  }, [fetcher.data]);
 
   return (
-    <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
-      {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center mb-6">
-        {/* <JobStateButton
-          status={jobStatus}
-          onStatusChange={handleStatusChange}
-        /> */}
-
-        {/* Show Edit button only when the job status is "draft" */}
-        {/* {jobStatus === "draft" && ( */}
-        <button
-          className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-          // This button has no functionality
-        >
-          Edit
-        </button>
-        {/* )} */}
-      </div>
-
+    <div className="lg:grid xl:p-6 p-4 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* JOB INFORMATION */}
       <div>
-        <h3 className="xl:text-2xl lg:text-xl text-base leading-tight mb-4">
-          {job.title}
-        </h3>
+        <h1 className="text-2xl mb-3">{job.title}</h1>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
-          Fixed price - Posted {formattedDate.toDateString()}
+          Fixed price - {formatTimeAgo(job.createdAt)}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
           <div>
@@ -53,9 +55,27 @@ export default function Job(props: JobProps) {
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
+        <div
+          className="mt-4"
+          dangerouslySetInnerHTML={{ __html: job.description }}
+        />
+
+        {/* Dynamic Skills from Database */}
+        <div className="lg:mt-8 mt-4 xl:text-base text-sm">
+          {skills.length > 0 ? (
+            <SkillBadgeList skills={skills} />
+          ) : (
+            <p className="text-gray-500">No skills listed for this job.</p>
+          )}
+        </div>
       </div>
 
-      <Button onClick={() => onSelect(job)}>View Details</Button>
+      <Button
+        className="border border-gray-300 text-primaryColor bg-white rounded-[10px] md:text-base text-sm xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white mt-4"
+        onClick={() => onSelect(job)}
+      >
+        Interested
+      </Button>
     </div>
   );
 }

@@ -79,8 +79,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       } catch (error) {
         console.error("Error fetching profile or account bio:", error);
       }
-    } else {
-      console.log("No freelancers available for this job.");
     }
 
     const jobData: JobCardData = {
@@ -182,9 +180,9 @@ const Layout = () => {
   return (
     <div>
       {/* BACKWARDS ICON */}
-      <div className="mb-8">
+      <div className="mb-8 mt-4">
         <Link to="/manage-jobs">
-          <FaArrowLeft className="h-7 w-7 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer" />
+          <FaArrowLeft className="h-10 w-10 hover:bg-slate-100 transition-all hover:rounded-full p-2 text-primaryColor cursor-pointer" />
         </Link>
       </div>
 
