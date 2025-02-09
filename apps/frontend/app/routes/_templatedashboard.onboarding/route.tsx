@@ -25,8 +25,10 @@ import {
   getFreelancerLanguages,
   getFreelancerAvailability,
   handleFreelancerOnboardingAction,
+  fetchFreelancerSkills,
 } from "~/servers/freelancer.server";
 import { getAttachmentSignedURL } from "~/servers/cloudStorage.server";
+import { fetchSkills } from "~/servers/general.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -172,6 +174,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
 
+    const initialSkills = await fetchSkills(true, 10);
+    const freelancerSkills = await fetchFreelancerSkills(profile.id);
+
     return Response.json({
       accountType,
       bioInfo,
@@ -188,6 +193,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       freelancerAvailability: availabilityData,
       freelancerLanguages,
       allLanguages,
+      initialSkills,
+      freelancerSkills,
     });
   }
 
