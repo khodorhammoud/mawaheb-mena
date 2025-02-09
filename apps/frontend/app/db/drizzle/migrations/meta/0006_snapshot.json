@@ -1,6 +1,6 @@
 {
-  "id": "af76a0f8-93c4-42cc-9ceb-fd959f075823",
-  "prevId": "1899cd6d-8778-473f-afdd-af8fb7342f98",
+  "id": "909477ff-bfaa-49b8-ab3c-7d752a2e68b0",
+  "prevId": "b8a91d1b-320d-4e44-abf3-32cb164df87d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1122,10 +1122,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "language": {
-          "name": "language",
-          "type": "language",
-          "typeSchema": "public",
+        "name": {
+          "name": "name",
+          "type": "varchar(25)",
           "primaryKey": false,
           "notNull": false
         }
@@ -1200,18 +1199,18 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "label": {
+          "name": "label",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "meta_data": {
           "name": "meta_data",
-          "type": "jsonb",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::jsonb"
+          "default": "'[]'"
         },
         "is_hot": {
           "name": "is_hot",

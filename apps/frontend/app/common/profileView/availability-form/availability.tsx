@@ -67,8 +67,6 @@ export default function Availability() {
         }
       : undefined;
 
-  // console.log(data, "wiixxxxx");
-
   const formatDate = (date: Date | null) =>
     date ? format(date, "yyyy-MM-dd") : "";
 

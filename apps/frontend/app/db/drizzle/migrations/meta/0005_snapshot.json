@@ -1,6 +1,6 @@
 {
-  "id": "af76a0f8-93c4-42cc-9ceb-fd959f075823",
-  "prevId": "1899cd6d-8778-473f-afdd-af8fb7342f98",
+  "id": "b8a91d1b-320d-4e44-abf3-32cb164df87d",
+  "prevId": "4664a42b-77eb-4426-a3fb-5ecacc4026f6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1200,18 +1200,18 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "label": {
+          "name": "label",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "meta_data": {
           "name": "meta_data",
-          "type": "jsonb",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::jsonb"
+          "default": "'[]'"
         },
         "is_hot": {
           "name": "is_hot",

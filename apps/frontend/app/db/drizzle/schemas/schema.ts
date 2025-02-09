@@ -18,8 +18,8 @@ import {
   projectTypeEnum,
   accountStatusEnum,
   accountTypeEnum,
-  languageEnum,
-  countryEnum,
+  // languageEnum,
+  // countryEnum,
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
@@ -31,7 +31,7 @@ import {
   experienceLevelEnum, */
   jobApplicationStatusEnum,
   providerEnum,
-  belongsToEnum,
+  // belongsToEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -237,11 +237,11 @@ export const employersTable = pgTable("employers", {
  * Define the languagesTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property name - languageEnum
+ * @property name - varchar with length 25
  */
 export const languagesTable = pgTable("languages", {
   id: serial("id").primaryKey(),
-  name: languageEnum("language"),
+  name: varchar("name", { length: 25 }),
 });
 
 /**
@@ -371,8 +371,10 @@ export const jobsTable = pgTable("jobs", {
  */
 export const skillsTable = pgTable("skills", {
   id: serial("id").primaryKey(),
-  name: text("name"),
-  metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
+  label: text("label"),
+  metaData: text("meta_data").default("[]"),
+  isHot: boolean("is_hot").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
 });
 
 /**
@@ -387,6 +389,20 @@ export const jobSkillsTable = pgTable("job_skills", {
   jobId: integer("job_id").references(() => jobsTable.id),
   skillId: integer("skill_id").references(() => skillsTable.id),
   isStarred: boolean("is_starred").default(false),
+});
+
+/**
+ * Define the relation between freelancers and skills where each freelancer can have zero to many skills
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable
+ * @property skill_id - integer referencing the skillsTable id
+ * @property years_of_experience - integer the number of years of experience the freelancer has with the skill
+ */
+export const freelancerSkillsTable = pgTable("freelancer_skills", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  skillId: integer("skill_id").references(() => skillsTable.id),
+  yearsOfExperience: integer("years_of_experience"),
 });
 
 /**
