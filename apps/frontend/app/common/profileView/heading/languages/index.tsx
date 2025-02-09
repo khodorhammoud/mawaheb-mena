@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { IoPencilSharp } from "react-icons/io5";
@@ -22,16 +23,17 @@ export default function Languages() {
   }>(); // Fetcher for Language form
 
   // Load data
-  const { freelancerLanguages, allLanguages } = useLoaderData() as {
+  const { freelancerLanguages } = useLoaderData() as {
     freelancerLanguages: { id: number; name: string }[];
-    allLanguages: { id: number; name: string }[];
   };
 
-  const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   // Set initial Languages selected
   useEffect(() => {
-    setSelectedLanguages(freelancerLanguages.map((lang) => lang.id));
+    setSelectedLanguages(freelancerLanguages);
   }, [freelancerLanguages]);
 
   // Handle showing the Language submission message
@@ -47,6 +49,20 @@ export default function Languages() {
     if (!isOpen) {
       setShowLanguageMessage(false); // Clear Language message when dialog is closed
     }
+  };
+
+  const handleSubmit = () => {
+    const languagesWithExperience = selectedLanguages.map((language) => ({
+      id: language.id,
+    }));
+
+    languageFetcher.submit(
+      {
+        languages: JSON.stringify(languagesWithExperience),
+        "target-updated": "freelancer-languages",
+      },
+      { method: "post" }
+    );
   };
 
   return (
@@ -70,6 +86,7 @@ export default function Languages() {
           <DialogContent className="bg-white w-80">
             <DialogHeader>
               <DialogTitle className="mt-3">Languages</DialogTitle>
+              <DialogDescription>Add the languages you speak</DialogDescription>
             </DialogHeader>
 
             {/* ERROR MESSAGE */}
@@ -84,8 +101,9 @@ export default function Languages() {
 
             {/* THE FORM */}
             <SearcheableTagSelector<{ id: number; name: string }>
-              data={allLanguages}
-              selectedKeys={selectedLanguages}
+              dataType="language"
+              setSelectedItems={setSelectedLanguages}
+              selectedItems={selectedLanguages}
               itemLabel={(item) => item.name}
               itemKey={(item) => item.id}
               formName="freelancer-languages"
@@ -98,6 +116,8 @@ export default function Languages() {
                 className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient hover:bg-primaryColor"
                 type="submit"
                 form="freelancer-languages-form"
+                onClick={handleSubmit}
+                disabled={languageFetcher.state === "submitting"}
               >
                 Save
               </Button>
