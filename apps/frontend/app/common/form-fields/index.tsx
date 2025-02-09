@@ -6,13 +6,13 @@ const AppFormField = ({
   type = "text",
   id,
   name,
-  label,
+  label = "",
   placeholder = "",
   options = [],
   className = "",
   showPasswordHint = true,
   col = 4,
-  defaultValue = "",
+  defaultValue,
   onChange,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +20,6 @@ const AppFormField = ({
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   useEffect(() => {
-    // Sync selectedValue with defaultValue on prop update
     setSelectedValue(defaultValue);
   }, [defaultValue]);
 
@@ -36,6 +35,14 @@ const AppFormField = ({
     }
   };
 
+  const handleIncrement = (increment: number) => {
+    if (onChange) {
+      onChange({
+        target: { id, name, value: (selectedValue as number) + increment },
+      });
+    }
+  };
+
   const textareaHeight = `${col * 1.5}rem`;
 
   return (
@@ -47,7 +54,7 @@ const AppFormField = ({
         <PhoneNumberField
           id={id}
           name={name}
-          defaultValue={defaultValue}
+          defaultValue={defaultValue.toString()}
           placeholder={placeholder}
           onChange={onChange}
         />
@@ -86,6 +93,35 @@ const AppFormField = ({
               defaultValue={defaultValue}
               onChange={handleNumberChange} // Custom handler for numeric validation
             />
+          ) : type === "increment" ? (
+            <div className="flex flex-col items-center space-y-4 w-full">
+              <div className="flex items-center border border-gray-300 rounded-xl w-full">
+                {/* - Button */}
+                <button
+                  type="button"
+                  className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
+                  style={{ borderRight: "none" }} // Remove the right border of the - button
+                  onClick={() => handleIncrement(-1)}
+                >
+                  <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
+                </button>
+
+                {/* Input Display */}
+                <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
+                  {selectedValue}
+                </div>
+
+                {/* + Button */}
+                <button
+                  type="button"
+                  className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
+                  style={{ borderLeft: "none" }} // Remove the left border of the + button
+                  onClick={() => handleIncrement(1)}
+                >
+                  <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
+                </button>
+              </div>
+            </div>
           ) : type === "textarea" ? (
             // textarea input
             <textarea
@@ -186,7 +222,7 @@ AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  label: PropTypes.node.isRequired,
+  label: PropTypes.node,
   placeholder: PropTypes.string,
   showPasswordHint: PropTypes.bool,
   options: PropTypes.arrayOf(
@@ -198,7 +234,7 @@ AppFormField.propTypes = {
   className: PropTypes.string,
   col: PropTypes.number,
   placeholderTextSize: PropTypes.string,
-  defaultValue: PropTypes.string,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,
   useRichText: PropTypes.bool,
 };

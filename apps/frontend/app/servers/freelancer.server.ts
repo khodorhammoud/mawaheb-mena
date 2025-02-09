@@ -4,8 +4,10 @@ import {
   languagesTable,
   freelancerLanguagesTable,
   attachmentsTable,
+  freelancerSkillsTable,
+  skillsTable,
 } from "../db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import {
   Freelancer,
   PortfolioFormFieldType,
@@ -15,7 +17,6 @@ import {
   AttachmentsType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
-import { uploadFileToBucket } from "./cloudStorage.server";
 import DOMPurify from "isomorphic-dompurify";
 import { redirect } from "@remix-run/react";
 import { updateAccountBio } from "./employer.server";
@@ -23,8 +24,10 @@ import { checkUserExists, updateOnboardingStatus } from "./user.server";
 import {
   deleteFileFromS3,
   uploadFile,
-  generatePresignedUrl,
+  // generatePresignedUrl,
+  // uploadFileToBucket,
 } from "./cloudStorage.server";
+import { FreelancerSkill } from "~/routes/_templatedashboard.onboarding/types";
 
 /***************************************************
  ************Insert/update freelancer info************
@@ -37,11 +40,7 @@ export async function handleFreelancerOnboardingAction(
   const target = formData.get("target-updated") as string;
   const userId = freelancer.account.user.id;
 
-  async function handleFreelancerBio(
-    formData: FormData,
-    userId: number,
-    freelancer: Freelancer
-  ) {
+  async function handleFreelancerBio(formData: FormData, userId: number) {
     const bio = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
@@ -302,6 +301,46 @@ export async function handleFreelancerOnboardingAction(
         );
   }
 
+  async function handleFreelancerLanguages(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const languages = formData.get("languages") as string;
+    // languages are a string of ids separated by commas
+    try {
+      const languagesParsed = JSON.parse(languages) as { id: number }[];
+      const languagesStatus = await updateFreelancerLanguages(
+        freelancer.id,
+        languagesParsed.map((language) => language.id)
+      );
+      return Response.json({ success: languagesStatus.success });
+    } catch (error) {
+      console.error("Error parsing languages", error);
+      return Response.json(
+        { success: false, error: { message: "Invalid languages data." } },
+        { status: 400 }
+      );
+    }
+  }
+
+  async function handleFreelancerSkills(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const skills = formData.get("skills");
+    try {
+      const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
+      const skillsStatus = await updateFreelancerSkills(
+        freelancer.id,
+        skillsParsed
+      );
+      return Response.json({ success: skillsStatus.success });
+    } catch (error) {
+      console.error("Error parsing skills", error);
+    }
+    return Response.json({ success: true });
+  }
+
   async function handleFreelancerOnboard(userId: number) {
     const userExists = await checkUserExists(userId);
     if (!userExists.length)
@@ -324,7 +363,7 @@ export async function handleFreelancerOnboardingAction(
 
   switch (target) {
     case "freelancer-bio":
-      return handleFreelancerBio(formData, userId, freelancer);
+      return handleFreelancerBio(formData, userId);
     case "freelancer-hourly-rate":
       return handleFreelancerHourlyRate(formData, freelancer);
     case "freelancer-years-of-experience":
@@ -345,6 +384,10 @@ export async function handleFreelancerOnboardingAction(
       return handleFreelancerAvailability(formData, freelancer);
     case "freelancer-is-available-for-work":
       return handleFreelancerIsAvailableForWork(formData, freelancer);
+    case "freelancer-skills":
+      return handleFreelancerSkills(formData, freelancer);
+    case "freelancer-languages":
+      return handleFreelancerLanguages(formData, freelancer);
     case "freelancer-onboard":
       return handleFreelancerOnboard(userId);
     default:
@@ -601,6 +644,34 @@ export async function updateFreelancerLanguages(
   return { success: true };
 }
 
+export async function updateFreelancerSkills(
+  freelancerId: number,
+  skillsData: FreelancerSkill[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // delete existing skills
+    await db
+      .delete(freelancerSkillsTable)
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // insert new skills
+    await db.insert(freelancerSkillsTable).values(
+      skillsData.map(
+        (skill: { skillId: number; yearsOfExperience: number }) => ({
+          freelancerId,
+          skillId: skill.skillId,
+          yearsOfExperience: skill.yearsOfExperience,
+        })
+      )
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer skills", error);
+    throw error;
+  }
+}
+
 export async function updateFreelancerAbout(
   freelancer: Freelancer,
   aboutContent: string
@@ -842,4 +913,34 @@ export async function getFreelancerLanguages(
     console.error("Error getting freelancer languages", error);
     throw error;
   }
+}
+
+// fetch freelancer's skills
+export async function fetchFreelancerSkills(
+  freelancerId: number
+): Promise<FreelancerSkill[]> {
+  const skills = await db
+    .select()
+    .from(freelancerSkillsTable)
+    .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+  // get skill labels from skills table
+  const skillLabels = await db
+    .select({ id: skillsTable.id, label: skillsTable.label })
+    .from(skillsTable)
+    .where(
+      inArray(
+        skillsTable.id,
+        skills.map((skill) => skill.skillId)
+      )
+    );
+
+  // add skill labels to skills
+  const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
+    skillId: skill.skillId,
+    label: skillLabels.find((label) => label.id === skill.skillId)?.label,
+    yearsOfExperience: skill.yearsOfExperience,
+  }));
+
+  return freelancerSkills;
 }
