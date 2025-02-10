@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import DOMPurify from "dompurify";
+// import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,5 +22,9 @@ export function getWordCount(html: string) {
   if (html.trim() === "") {
     return 0;
   }
+  console.log(
+    "length",
+    DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim().length
+  );
   return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim().length || 0;
 }
