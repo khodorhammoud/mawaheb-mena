@@ -9,7 +9,7 @@ export async function getJobSkills(jobId: number): Promise<Skill[]> {
   const jobSkills = await db
     .select({
       id: skillsTable.id,
-      name: skillsTable.name,
+      name: skillsTable.label,
       isStarred: jobSkillsTable.isStarred,
     })
     .from(jobSkillsTable)
@@ -27,7 +27,7 @@ export async function getAllSkills(): Promise<Skill[]> {
   const skills = await db
     .select({
       id: skillsTable.id,
-      name: skillsTable.name,
+      name: skillsTable.label,
     })
     .from(skillsTable);
 

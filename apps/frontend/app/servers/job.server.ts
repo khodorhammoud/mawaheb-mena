@@ -65,13 +65,13 @@ export async function createJobPosting(
         let [existingSkill] = await db
           .select({ id: skillsTable.id })
           .from(skillsTable)
-          .where(eq(skillsTable.name, skillName));
+          .where(eq(skillsTable.label, skillName));
 
         // ✅ Only insert new skills if they don’t exist
         if (!existingSkill) {
           [existingSkill] = await db
             .insert(skillsTable)
-            .values({ name: skillName }) // Insert skill separately
+            .values({ label: skillName }) // Insert skill separately
             .returning({ id: skillsTable.id });
 
           // console.log("🆕 Inserted new skill:", existingSkill.id, skillName);
@@ -160,14 +160,14 @@ export async function updateJob(jobId: number, jobData: Partial<Job>) {
 
 // MANAGE JOBS
 export async function getEmployerJobs(
-  employerId: number,
-  jobStatus?: JobStatus[]
+  employerId: number
+  // jobStatus?: JobStatus[]
 ): Promise<Job[]> {
   // Retrieves all jobs for a given employer
   // Joins the jobSkillsTable to get the skills linked to each job
   // Joins the skillsTable to get the skill names
   // Filters the jobs based on employerId to get only the relevant jobs
-  let jobsQuery = db
+  const jobsQuery = db
     .select({
       id: jobsTable.id,
       employerId: jobsTable.employerId,
@@ -183,7 +183,7 @@ export async function getEmployerJobs(
       jobCategoryId: jobsTable.jobCategoryId,
       fulfilledAt: jobsTable.fulfilledAt,
       skillId: jobSkillsTable.skillId,
-      skillName: skillsTable.name,
+      skillName: skillsTable.label,
       isStarred: jobSkillsTable.isStarred,
     })
     .from(jobsTable)
@@ -236,7 +236,7 @@ export async function getEmployerJobs(
 }
 
 export async function getJobById(jobId: number): Promise<Job | null> {
-  let jobQuery = db
+  const jobQuery = db
     .select({
       id: jobsTable.id,
       employerId: jobsTable.employerId,
@@ -252,7 +252,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
       jobCategoryId: jobsTable.jobCategoryId,
       fulfilledAt: jobsTable.fulfilledAt,
       skillId: jobSkillsTable.skillId,
-      skillName: skillsTable.name,
+      skillName: skillsTable.label,
       isStarred: jobSkillsTable.isStarred,
     })
     .from(jobsTable)
