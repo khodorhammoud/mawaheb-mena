@@ -120,7 +120,7 @@ export default function JobForm({
                 style={{ wordBreak: "break-word", hyphens: "auto" }}
               />
               <div className="ml-6 text-xs text-gray-500">
-                {getWordCount(jobDescription)} 2000 words
+                {getWordCount(jobDescription)} / 2000 characters
               </div>
             </div>
 
