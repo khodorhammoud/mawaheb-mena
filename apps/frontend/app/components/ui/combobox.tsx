@@ -57,11 +57,11 @@ export function ComboBoxItem({
   children,
 }: ComboBoxItemProps) {
   return (
-    <div
+    <button
       onClick={() => onSelect && onSelect(value)}
       className={`${className} px-4 py-2 cursor-pointer hover:bg-primaryColor hover:text-white transition`}
     >
       {children}
-    </div>
+    </button>
   );
 }
