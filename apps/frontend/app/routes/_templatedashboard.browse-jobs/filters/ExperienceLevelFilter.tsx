@@ -90,7 +90,7 @@ export default function ExperienceLevelFilter({
               key={level}
               value={level}
               onSelect={() => handleExperienceChange(level)}
-              className={`px-4 py-2 cursor-pointer transition 
+              className={`px-4 py-2 cursor-pointer transition w-[120px] 
                 ${index === 0 ? "rounded-t-md" : ""} 
                 ${index === experienceLevels.length - 1 ? "rounded-b-md" : ""} 
                 ${
