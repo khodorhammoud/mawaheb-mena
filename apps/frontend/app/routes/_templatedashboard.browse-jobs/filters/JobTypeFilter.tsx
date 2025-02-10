@@ -85,7 +85,7 @@ export default function JobTypeFilter({
               key={jobType}
               value={jobType}
               onSelect={() => handleJobTypeChange(jobType)}
-              className={`px-4 py-2 cursor-pointer transition 
+              className={`px-4 py-2 cursor-pointer transition w-[160px]
                 ${index === 0 ? "rounded-t-md" : ""} 
                 ${index === jobTypes.length - 1 ? "rounded-b-md" : ""} 
                 ${selectedJobType === jobType ? "bg-gray-400 text-white" : "hover:bg-gray-200"}`}
