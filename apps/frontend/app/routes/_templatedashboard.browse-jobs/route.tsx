@@ -17,6 +17,8 @@ import SingleJobView from "./singleJobView";
 import { getJobSkills } from "~/servers/skill.server";
 import { Skill } from "~/types/Skill";
 import { useFetcher } from "@remix-run/react";
+// import AppFormField from "~/common/form-fields";
+// import { BsSearch } from "react-icons/bs";
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
@@ -95,7 +97,7 @@ export default function Layout() {
       {/* TABS */}
       <Tabs defaultValue="account" className="">
         <TabsList className="mt-4 mb-6">
-          <TabsTrigger value="account">Recommended Jobs</TabsTrigger>
+          <TabsTrigger value="account">Design Jobs</TabsTrigger>
           <TabsTrigger value="password">All Jobs</TabsTrigger>
         </TabsList>
         <TabsContent value="account" className="">
