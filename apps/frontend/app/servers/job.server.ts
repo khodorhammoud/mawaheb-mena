@@ -65,7 +65,7 @@ export async function createJobPosting(
         let [existingSkill] = await db
           .select({ id: skillsTable.id })
           .from(skillsTable)
-          .where(eq(skillsTable.name, skillName));
+          .where(eq(skillsTable.label, skillName));
 
         // ✅ Only insert new skills if they don’t exist
         if (!existingSkill) {
@@ -183,7 +183,7 @@ export async function getEmployerJobs(
       jobCategoryId: jobsTable.jobCategoryId,
       fulfilledAt: jobsTable.fulfilledAt,
       skillId: jobSkillsTable.skillId,
-      skillName: skillsTable.name,
+      skillName: skillsTable.label,
       isStarred: jobSkillsTable.isStarred,
     })
     .from(jobsTable)
@@ -252,7 +252,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
       jobCategoryId: jobsTable.jobCategoryId,
       fulfilledAt: jobsTable.fulfilledAt,
       skillId: jobSkillsTable.skillId,
-      skillName: skillsTable.name,
+      skillName: skillsTable.label,
       isStarred: jobSkillsTable.isStarred,
     })
     .from(jobsTable)

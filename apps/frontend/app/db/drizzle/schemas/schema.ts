@@ -27,11 +27,11 @@ import {
   // timesheetStatusEnum,
   timesheetStatusEnum,
   /*  jobStatusEnum,
-  locationPreferenceTypeEnum,
-  experienceLevelEnum, */
+  locationPreferenceTypeEnum, */
   jobApplicationStatusEnum,
   providerEnum,
   // belongsToEnum,
+  experienceLevelEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -350,8 +350,7 @@ export const jobsTable = pgTable("jobs", {
   //locationPreferenceTypeEnum("location_preference_type"),
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
-  experienceLevel: text("experience_level"),
-  //experienceLevelEnum("experience_level"),
+  experienceLevel: experienceLevelEnum("experience_level"),
   status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
   fulfilledAt: timestamp("fulfilled_at"),

@@ -10,10 +10,10 @@ interface RecommendedJobsProps {
 export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
-    workingHours: null, // Stores the working hours filter
-    jobType: null, // ✅ Job Type filter
-    yearsOfExperience: null, // ✅ Years of Experience filter
-    hourlyRate: null, // 🔥 FIX: Add hourlyRate filter
+    workingHours: null,
+    jobType: null,
+    experienceLevel: null,
+    budget: null,
   });
 
   // ✅ Load jobs ONCE when the component mounts (No backend filtering)
@@ -22,21 +22,20 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
   useEffect(() => {
     async function fetchJobs() {
       // ✅ Fetch all jobs once (No filtering on the backend)
-      const response = await fetch("/api/jobs-recommended"); // Assume this endpoint returns ALL jobs
+      const response = await fetch("/api/jobs-recommended"); // this endpoint returns ALL jobs
       const data = await response.json();
       setAllJobs(data.jobs);
     }
     fetchJobs();
   }, []);
 
-  // ✅ Filter jobs completely in the frontend
   const filteredJobs = allJobs.filter((job) => {
-    // ✅ Search Filter: Matches job title or description
+    // ✅ Search Filter
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // ✅ Working Hours Filter: Check if job fits within selected working hours range
+    // ✅ Working Hours Filter
     const matchesWorkingHours =
       !filters.workingHours || // No filter applied → show all jobs
       (!filters.workingHours.from && !filters.workingHours.to) || // No min/max set → show all
@@ -45,12 +44,25 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
         filters.workingHours.to &&
         job.workingHoursPerWeek <= filters.workingHours.to); // Check max
 
-    // ✅ Job Type Filter: Check if job matches selected job type
+    // ✅ Job Type Filter
     const matchesJobType =
       !filters.jobType || // No filter applied → show all jobs
       job.projectType === filters.jobType; // Match job type
 
-    return matchesSearch && matchesWorkingHours && matchesJobType;
+    // ✅ Experience Level Filter
+    const matchesExperienceLevel =
+      !filters.experienceLevel ||
+      job.experienceLevel === filters.experienceLevel;
+
+    const matchesBudget = !filters.budget || job.budget >= filters.budget;
+
+    return (
+      matchesSearch &&
+      matchesWorkingHours &&
+      matchesJobType &&
+      matchesExperienceLevel &&
+      matchesBudget
+    );
   });
 
   return (

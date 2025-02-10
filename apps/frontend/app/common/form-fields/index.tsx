@@ -14,6 +14,7 @@ const AppFormField = ({
   col = 4,
   defaultValue,
   onChange,
+  min,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,7 +30,14 @@ const AppFormField = ({
 
   const handleNumberChange = (event) => {
     const { value } = event.target;
-    const numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+    let numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+
+    if (min !== undefined && Number(numericValue) < min) {
+      numericValue = min.toString(); // ✅ Enforce min value
+    }
+
+    setSelectedValue(numericValue); // Update state
+
     if (onChange) {
       onChange({ target: { id, name, value: numericValue } });
     }
@@ -92,6 +100,7 @@ const AppFormField = ({
               spellCheck="false"
               defaultValue={defaultValue}
               onChange={handleNumberChange} // Custom handler for numeric validation
+              min={min} // ✅ Apply the min prop
             />
           ) : type === "increment" ? (
             <div className="flex flex-col items-center space-y-4 w-full">
@@ -237,6 +246,7 @@ AppFormField.propTypes = {
   defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,
   useRichText: PropTypes.bool,
+  min: PropTypes.number, // ✅ Add min to prop types
 };
 
 export default AppFormField;
