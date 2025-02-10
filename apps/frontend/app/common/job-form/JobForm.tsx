@@ -8,6 +8,8 @@ import { JobCategory } from "~/types/User";
 import { Skill } from "~/types/Skill";
 import RichTextEditor from "~/components/ui/richTextEditor";
 import { getWordCount } from "~/lib/utils";
+import { ExperienceLevel } from "~/types/enums";
+
 interface JobFormProps {
   job?: {
     id: string;
@@ -18,7 +20,8 @@ interface JobFormProps {
     requiredSkills: Skill[];
     projectType: string;
     budget: number;
-    experienceLevel: string;
+    experienceLevel: ExperienceLevel;
+    // experienceLevel: string;
     jobCategoryId: number | null;
   };
   jobCategories: JobCategory[];
@@ -200,7 +203,7 @@ export default function JobForm({
                 Experience Level
               </h3>
               <div className="flex flex-wrap gap-2">
-                {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
+                {Object.values(ExperienceLevel).map((level) => (
                   <Badge
                     key={level}
                     onClick={() => setSelectedExperience(level)}
