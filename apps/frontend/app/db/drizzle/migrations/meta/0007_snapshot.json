@@ -1,5 +1,5 @@
 {
-  "id": "1002fc71-41c6-444f-99fc-7199b232ace8",
+  "id": "e85c720e-71a3-414a-ad75-2b40b913cd39",
   "prevId": "909477ff-bfaa-49b8-ab3c-7d752a2e68b0",
   "version": "7",
   "dialect": "postgresql",
@@ -33,12 +33,8 @@
           "name": "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk",
           "tableFrom": "timesheet_submission_entries",
           "tableTo": "timesheet_submissions",
-          "columnsFrom": [
-            "timesheet_submission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["timesheet_submission_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -46,12 +42,8 @@
           "name": "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk",
           "tableFrom": "timesheet_submission_entries",
           "tableTo": "timesheet_entries",
-          "columnsFrom": [
-            "timesheet_entry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["timesheet_entry_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -122,9 +114,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     },
@@ -157,12 +147,8 @@
           "name": "account_languages_account_id_accounts_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -170,12 +156,8 @@
           "name": "account_languages_language_id_languages_id_fk",
           "tableFrom": "account_languages",
           "tableTo": "languages",
-          "columnsFrom": [
-            "language_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["language_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -270,12 +252,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -285,9 +263,7 @@
         "accounts_slug_unique": {
           "name": "accounts_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       }
     },
@@ -363,12 +339,8 @@
           "name": "employer_industries_employer_id_employers_id_fk",
           "tableFrom": "employer_industries",
           "tableTo": "employers",
-          "columnsFrom": [
-            "employer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["employer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -376,12 +348,8 @@
           "name": "employer_industries_industry_id_industries_id_fk",
           "tableFrom": "employer_industries",
           "tableTo": "industries",
-          "columnsFrom": [
-            "industry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["industry_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -509,12 +477,8 @@
           "name": "employers_account_id_accounts_id_fk",
           "tableFrom": "employers",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -558,12 +522,8 @@
           "name": "freelancer_languages_freelancer_id_freelancers_id_fk",
           "tableFrom": "freelancer_languages",
           "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["freelancer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -571,12 +531,8 @@
           "name": "freelancer_languages_language_id_languages_id_fk",
           "tableFrom": "freelancer_languages",
           "tableTo": "languages",
-          "columnsFrom": [
-            "language_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["language_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -619,12 +575,8 @@
           "name": "freelancer_skills_freelancer_id_freelancers_id_fk",
           "tableFrom": "freelancer_skills",
           "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["freelancer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -632,12 +584,8 @@
           "name": "freelancer_skills_skill_id_skills_id_fk",
           "tableFrom": "freelancer_skills",
           "tableTo": "skills",
-          "columnsFrom": [
-            "skill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["skill_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -779,12 +727,8 @@
           "name": "freelancers_account_id_accounts_id_fk",
           "tableFrom": "freelancers",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -822,9 +766,7 @@
         "industries_label_unique": {
           "name": "industries_label_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "label"
-          ]
+          "columns": ["label"]
         }
       }
     },
@@ -871,12 +813,8 @@
           "name": "job_applications_job_id_jobs_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -884,12 +822,8 @@
           "name": "job_applications_freelancer_id_freelancers_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["freelancer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -962,12 +896,8 @@
           "name": "job_skills_job_id_jobs_id_fk",
           "tableFrom": "job_skills",
           "tableTo": "jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -975,12 +905,8 @@
           "name": "job_skills_skill_id_skills_id_fk",
           "tableFrom": "job_skills",
           "tableTo": "skills",
-          "columnsFrom": [
-            "skill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["skill_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1079,12 +1005,8 @@
           "name": "jobs_employer_id_employers_id_fk",
           "tableFrom": "jobs",
           "tableTo": "employers",
-          "columnsFrom": [
-            "employer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["employer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1092,12 +1014,8 @@
           "name": "jobs_job_category_id_job_categories_id_fk",
           "tableFrom": "jobs",
           "tableTo": "job_categories",
-          "columnsFrom": [
-            "job_category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_category_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1169,12 +1087,8 @@
           "name": "preferred_working_times_account_id_accounts_id_fk",
           "tableFrom": "preferred_working_times",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1284,12 +1198,8 @@
           "name": "social_accounts_user_id_users_id_fk",
           "tableFrom": "social_accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1357,12 +1267,8 @@
           "name": "timesheet_entries_freelancer_id_freelancers_id_fk",
           "tableFrom": "timesheet_entries",
           "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["freelancer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1370,12 +1276,8 @@
           "name": "timesheet_entries_job_application_id_job_applications_id_fk",
           "tableFrom": "timesheet_entries",
           "tableTo": "job_applications",
-          "columnsFrom": [
-            "job_application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_application_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1446,12 +1348,8 @@
           "name": "timesheet_submissions_freelancer_id_freelancers_id_fk",
           "tableFrom": "timesheet_submissions",
           "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["freelancer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1459,12 +1357,8 @@
           "name": "timesheet_submissions_job_application_id_job_applications_id_fk",
           "tableFrom": "timesheet_submissions",
           "tableTo": "job_applications",
-          "columnsFrom": [
-            "job_application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_application_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1521,12 +1415,8 @@
           "name": "user_verifications_user_id_users_id_fk",
           "tableFrom": "user_verifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
