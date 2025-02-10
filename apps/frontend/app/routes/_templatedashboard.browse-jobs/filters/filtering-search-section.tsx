@@ -1,10 +1,11 @@
 import WorkingHoursFilter from "./WorkingHoursFilter";
 import JobTypeFilter from "./JobTypeFilter";
 import SkillsFilter from "./SkillsFilter";
-import YearsOfExperienceFilter from "./YearsOfExperienceFilter";
-import HourlyRateFilter from "./HourlyRateFilter";
+import ExperienceLevelFilter from "./ExperienceLevelFilter";
+import HourlyRateFilter from "./BudgetFilter";
 import AppFormField from "~/common/form-fields";
-import { ProjectType } from "~/types/enums";
+import { ProjectType, ExperienceLevel } from "~/types/enums";
+import { BsSearch } from "react-icons/bs";
 
 interface FilteringSearchSectionProps {
   searchQuery: string;
@@ -12,8 +13,8 @@ interface FilteringSearchSectionProps {
   filters: {
     workingHours: { from: string; to: string } | null;
     jobType: ProjectType | null;
-    yearsOfExperience: number | null;
-    hourlyRate: number | null;
+    experienceLevel: ExperienceLevel | null;
+    budget: number | null;
   };
   setFilters: (filters: any) => void;
 }
@@ -29,8 +30,8 @@ export default function FilteringSearchSection({
     searchQuery ||
     filters.workingHours ||
     filters.jobType ||
-    filters.yearsOfExperience ||
-    filters.hourlyRate;
+    filters.experienceLevel ||
+    filters.budget;
 
   // ✅ Function to clear all filters
   const clearAllFilters = () => {
@@ -38,15 +39,16 @@ export default function FilteringSearchSection({
     setFilters({
       workingHours: null,
       jobType: null,
-      yearsOfExperience: null,
+      experienceLevel: null, // ✅ Fixed wrong key (was yearsOfExperience)
       hourlyRate: null,
+      budget: null,
     });
   };
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mt-4 mb-8 max-w-6xl">
+    <div className="flex flex-col xl:flex-row gap-2 mt-4 mb-8 max-w-7xl">
       {/* 🔥 Search Field */}
-      <div className="relative w-full lg:w-1/3">
+      <div className="relative w-full sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-1/4 mb-1">
         <AppFormField
           id="search"
           name="search"
@@ -55,16 +57,15 @@ export default function FilteringSearchSection({
           defaultValue={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           label={
-            <div className="flex items-center">
-              <span className="text-gray-500">🔍</span>
-              <span className="ml-2">Hinted search text</span>
+            <div className="flex items-center justify-center">
+              <BsSearch /> <div className="ml-4">Hinted search text</div>
             </div>
           }
         />
       </div>
 
       {/* 🔥 Filters Section */}
-      <div className="flex flex-wrap gap-3 w-full whitespace-nowrap">
+      <div className="hidden md:grid md:grid-cols-3 gap-2 w-fit lg:flex h-fit xl:self-center">
         {/* 🔥 Skills Button (Functionality Coming Later) */}
         <SkillsFilter />
 
@@ -74,8 +75,8 @@ export default function FilteringSearchSection({
         {/* 🔥 Job Type Button & Functionality */}
         <JobTypeFilter filters={filters} setFilters={setFilters} />
 
-        {/* 🔥 Years of Experience Button & Functionality */}
-        <YearsOfExperienceFilter filters={filters} setFilters={setFilters} />
+        {/* 🔥 Experience Level Button & Functionality */}
+        <ExperienceLevelFilter filters={filters} setFilters={setFilters} />
 
         {/* 🔥 Hourly Rate Button & Functionality */}
         <HourlyRateFilter filters={filters} setFilters={setFilters} />
@@ -83,7 +84,7 @@ export default function FilteringSearchSection({
         {/* 🔥 "Clear All Filters" Button (Appears only when filters are applied) */}
         {isAnyFilterApplied && (
           <button
-            className="text-primaryColor underline hover:text-red-500 transition ml-2 whitespace-nowrap"
+            className="text-primaryColor underline hover:text-red-500 transition whitespace-nowrap ml-1 text-sm"
             onClick={clearAllFilters}
           >
             Clear All Filters

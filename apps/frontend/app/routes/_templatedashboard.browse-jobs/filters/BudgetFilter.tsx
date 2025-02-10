@@ -8,62 +8,44 @@ import {
 import { Button } from "~/components/ui/button";
 import AppFormField from "~/common/form-fields";
 
-interface WorkingHoursFilterProps {
-  filters: { workingHours: { from: string; to: string } | null };
+interface BudgetFilterProps {
+  filters: { budget: number | null };
   setFilters: (filters: any) => void;
 }
 
-export default function WorkingHoursFilter({
+export default function BudgetFilter({
   filters,
   setFilters,
-}: WorkingHoursFilterProps) {
-  const [workingHours, setWorkingHours] = useState({
-    from: filters.workingHours?.from || "",
-    to: filters.workingHours?.to || "",
-  });
-
+}: BudgetFilterProps) {
+  const [budget, setBudget] = useState<number | "">(filters.budget || "");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fadeOut, setFadeOut] = useState(false);
   const [inputKey, setInputKey] = useState(0);
-  const [hasValue, setHasValue] = useState<boolean>(
-    filters.workingHours !== null
-  );
+  const [hasValue, setHasValue] = useState<boolean>(filters.budget !== null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (filters.workingHours === null) {
+    if (filters.budget === null) {
       setHasValue(false);
     }
-  }, [filters.workingHours]);
+  }, [filters.budget]);
 
-  const saveWorkingHours = () => {
-    const from = parseInt(workingHours.from);
-    const to = parseInt(workingHours.to);
+  const saveBudget = () => {
+    const budgetValue = parseInt(budget.toString(), 10);
 
-    if (isNaN(from) || isNaN(to)) {
-      showError("Both 'From' and 'To' fields must be filled.");
-      return;
-    }
-    if (from < 0 || to < 0) {
-      showError("Values cannot be negative.");
-      return;
-    }
-    if (from >= to) {
-      showError("'From' value must be less than 'To' value.");
+    if (isNaN(budgetValue) || budgetValue < 1) {
+      showError("Budget must be at least $1.");
       return;
     }
 
-    setFilters((prev: any) => ({
-      ...prev,
-      workingHours: { from, to },
-    }));
+    setFilters((prev: any) => ({ ...prev, budget: budgetValue }));
     setHasValue(true);
     setIsOpen(false);
   };
 
-  const clearWorkingHours = () => {
-    setFilters((prev: any) => ({ ...prev, workingHours: null }));
-    setWorkingHours({ from: "", to: "" });
+  const clearBudget = () => {
+    setFilters((prev: any) => ({ ...prev, budget: null }));
+    setBudget("");
     setErrorMessage(null);
     setHasValue(false);
     setInputKey((prevKey) => prevKey + 1);
@@ -82,22 +64,6 @@ export default function WorkingHoursFilter({
     }, 2000);
   };
 
-  const handleInputChange = (e: any, field: "from" | "to") => {
-    let value = e.target.value;
-
-    // Prevents negative input by resetting the field if a negative number is typed
-    if (value.includes("-")) {
-      showError("Values cannot be negative.");
-      setWorkingHours((prev) => ({ ...prev, [field]: "" }));
-      return;
-    }
-
-    // Only allow numbers (removes non-numeric characters)
-    if (!/^\d*$/.test(value)) return;
-
-    setWorkingHours((prev) => ({ ...prev, [field]: value }));
-  };
-
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -105,7 +71,7 @@ export default function WorkingHoursFilter({
           className="group border border-gray-300 text-primaryColor bg-white rounded-[10px] px-3 py-2 flex items-center gap-2 hover:bg-primaryColor hover:text-white transition not-active-gradient text-sm leading-4"
           onClick={() => setIsOpen(true)}
         >
-          Working Hours
+          Budget
           {hasValue && (
             <X
               size={20}
@@ -113,7 +79,7 @@ export default function WorkingHoursFilter({
               group-hover:text-white hover:bg-gray-400"
               onClick={(e) => {
                 e.stopPropagation();
-                clearWorkingHours();
+                clearBudget();
               }}
             />
           )}
@@ -121,13 +87,13 @@ export default function WorkingHoursFilter({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-[380px] mt-2 border border-gray-300 rounded-[10px]"
+        className="w-[290px] mt-2 border border-gray-300 rounded-[10px]"
         align="center"
         side="bottom"
         onPointerDownOutside={() => setIsOpen(false)}
       >
         <div className="py-1 px-2">
-          <h1 className="mb-4">Enter Working Hours:</h1>
+          <h3 className="mb-4">Enter Budget ($)</h3>
 
           {errorMessage && (
             <div
@@ -139,26 +105,21 @@ export default function WorkingHoursFilter({
             </div>
           )}
 
-          <div className="flex gap-4 mb-4" key={inputKey}>
+          <div className="mb-4" key={inputKey}>
             <AppFormField
-              key={inputKey + "-from"}
-              id="from"
-              name="from"
-              type="text"
-              placeholder="From (hours)"
-              label="From (hours)"
-              defaultValue={workingHours.from}
-              onChange={(e) => handleInputChange(e, "from")}
-            />
-            <AppFormField
-              key={inputKey + "-to"}
-              id="to"
-              name="to"
-              type="text"
-              placeholder="To (hours)"
-              label="To (hours)"
-              defaultValue={workingHours.to}
-              onChange={(e) => handleInputChange(e, "to")}
+              key={inputKey}
+              id="budget"
+              name="budget"
+              label="Budget ($)"
+              type="number"
+              placeholder="Enter budget (min $1)"
+              min={1}
+              defaultValue={budget.toString()}
+              onChange={(e) =>
+                setBudget(
+                  e.target.value.replace(/[^0-9]/g, "") // Prevents non-numeric input
+                )
+              }
             />
           </div>
 
@@ -166,12 +127,12 @@ export default function WorkingHoursFilter({
             <Button
               variant="ghost"
               className="text-primaryColor hover:bg-gray-300 hover:text-white transition rounded-xl px-4 py-2 border border-gray-300 mt-1"
-              onClick={clearWorkingHours}
+              onClick={clearBudget}
             >
               Clear
             </Button>
             <Button
-              onClick={saveWorkingHours}
+              onClick={saveBudget}
               className="bg-primaryColor text-white px-4 py-2 rounded-xl not-active-gradient hover:bg-primaryColor mt-1"
             >
               Save

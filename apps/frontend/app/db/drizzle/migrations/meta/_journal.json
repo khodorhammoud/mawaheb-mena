@@ -50,6 +50,13 @@
       "when": 1739022732114,
       "tag": "0006_long_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1739117836502,
+      "tag": "0007_fearless_sunspot",
+      "breakpoints": true
     }
   ]
 }

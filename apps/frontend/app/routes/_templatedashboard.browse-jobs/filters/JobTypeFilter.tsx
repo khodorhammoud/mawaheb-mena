@@ -1,15 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import AppFormField from "~/common/form-fields";
+import { ComboBox, ComboBoxItem } from "~/components/ui/combobox";
 import { ProjectType } from "~/types/enums";
 
 interface JobTypeFilterProps {
@@ -21,124 +12,89 @@ export default function JobTypeFilter({
   filters,
   setFilters,
 }: JobTypeFilterProps) {
-  const [openDialog, setOpenDialog] = useState(false);
   const [selectedJobType, setSelectedJobType] = useState<ProjectType | "">(
     filters.jobType || ""
   );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fadeOut, setFadeOut] = useState(false);
-  const [inputKey, setInputKey] = useState(0); // ✅ Force re-render on clear
-
-  // ✅ Remove error message when user selects a job type
-  useEffect(() => {
-    if (selectedJobType) {
-      setErrorMessage(null);
-    }
-  }, [selectedJobType]);
-
-  const saveJobType = () => {
-    if (!selectedJobType) {
-      showError("Please select a job type.");
-      return;
-    }
-
-    setFilters((prev: any) => ({ ...prev, jobType: selectedJobType }));
-
-    setOpenDialog(false);
-  };
-
-  const clearJobType = () => {
-    setFilters((prev: any) => ({ ...prev, jobType: null }));
-    setSelectedJobType(""); // ✅ Reset selected job type
-    setErrorMessage(null);
-    setInputKey((prevKey) => prevKey + 1); // ✅ Force re-render of dropdown
-  };
-
-  const showError = (message: string) => {
-    setFadeOut(false);
-    setErrorMessage(message);
-
-    setTimeout(() => {
-      setFadeOut(true);
-      setTimeout(() => {
-        setErrorMessage(null);
-      }, 500);
-    }, 2000);
-  };
+  const [isOpen, setIsOpen] = useState(false); // ✅ Controls dropdown visibility
+  const dropdownRef = useRef<HTMLDivElement>(null); // ✅ Ref for detecting outside clicks
 
   const handleJobTypeChange = (value: string) => {
     setSelectedJobType(value as ProjectType);
+    setFilters((prev: any) => ({ ...prev, jobType: value }));
+    setIsOpen(false); // ✅ Close dropdown after selection
   };
 
+  // ✅ Reset selectedJobType when filters.jobType is cleared
+  useEffect(() => {
+    if (!filters.jobType) {
+      setSelectedJobType("");
+    }
+  }, [filters.jobType]);
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false); // ✅ Close dropdown if clicked outside
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const jobTypes = Object.values(ProjectType);
+
   return (
-    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-      <DialogTrigger asChild>
-        <button className="group border border-gray-300 text-primaryColor bg-white rounded-[10px] px-4 py-2 flex items-center gap-2 hover:bg-primaryColor hover:text-white transition">
-          Job Type
-          {filters.jobType && (
-            <X
-              size={32}
-              className="text-gray-500 p-1 rounded-full transition 
-              group-hover:text-white hover:bg-gray-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                clearJobType();
-              }}
-            />
-          )}
-        </button>
-      </DialogTrigger>
-      <DialogContent className="bg-white">
-        <DialogHeader>
-          <DialogTitle>Select Job Type</DialogTitle>
-        </DialogHeader>
-
-        {errorMessage && (
-          <div
-            className={`px-4 py-3 rounded relative mt-2 text-center bg-red-100 border border-red-400 text-red-700 transition-opacity duration-500 ${
-              fadeOut ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {errorMessage}
-          </div>
-        )}
-
-        {/* ✅ Use AppFormField with a Unique `key` to Force Re-render */}
-        <div className="mb-4 mt-4" key={inputKey}>
-          <AppFormField
-            id="jobType"
-            name="jobType"
-            label="Select Job Type"
-            type="select"
-            options={[
-              {
-                value: ProjectType.PerProjectBasis,
-                label: "Per Project Basis",
-              },
-              { value: ProjectType.ShortTerm, label: "Short Term" },
-              { value: ProjectType.LongTerm, label: "Long Term" },
-            ]}
-            defaultValue={selectedJobType}
-            onChange={(e) => handleJobTypeChange(e)} // ✅ Ensure correct state update
+    <div className="relative" ref={dropdownRef}>
+      {/* Button to open dropdown */}
+      <button
+        onClick={() => setIsOpen(true)} // ✅ Always opens dropdown on first click
+        className="flex items-center gap-2 px-3 py-2 rounded-[10px] transition border w-full not-active-gradient
+            border-gray-300 text-primaryColor bg-white hover:bg-primaryColor hover:text-white group text-sm"
+      >
+        Job Type
+        {selectedJobType && (
+          <X
+            size={20}
+            className="group-hover:text-white text-primaryColor hover:text-white hover:bg-gray-400 rounded-full p-[2px] transition"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedJobType("");
+              setFilters((prev: any) => ({ ...prev, jobType: null }));
+              handleJobTypeChange(""); // ✅ Reset selected job type
+            }}
           />
-        </div>
+        )}
+      </button>
 
-        <DialogFooter className="flex justify-between">
-          <Button
-            variant="ghost"
-            className="text-primaryColor hover:bg-gray-300 hover:text-white transition rounded-xl px-4 py-2 border border-gray-300"
-            onClick={clearJobType}
-          >
-            Clear
-          </Button>
-          <Button
-            onClick={saveJobType}
-            className="bg-primaryColor text-white px-4 py-2 rounded-xl not-active-gradient hover:bg-primaryColor"
-          >
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {/* Dropdown Options - Always Opens on First Click */}
+      {isOpen && (
+        <div className="absolute left-0 mt-2 w-[160px] border border-gray-300 bg-white rounded-[10px] shadow-md z-10">
+          {jobTypes.map((jobType, index) => (
+            <ComboBoxItem
+              key={jobType}
+              value={jobType}
+              onSelect={() => handleJobTypeChange(jobType)}
+              className={`px-4 py-2 cursor-pointer transition 
+                ${index === 0 ? "rounded-t-md" : ""} 
+                ${index === jobTypes.length - 1 ? "rounded-b-md" : ""} 
+                ${selectedJobType === jobType ? "bg-gray-400 text-white" : "hover:bg-gray-200"}`}
+            >
+              {jobType}
+            </ComboBoxItem>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
