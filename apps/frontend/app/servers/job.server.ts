@@ -8,6 +8,8 @@ import {
   freelancersTable,
   jobSkillsTable,
   skillsTable,
+  reviewsTable,
+  employersTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
@@ -297,10 +299,10 @@ export async function getJobById(jobId: number): Promise<Job | null> {
   return jobData;
 }
 
-/* export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
+/* export async function getFreelancerDesignJobs(): Promise<Job[]> {
   // freelancer: Freelancer
-  // fetch recommended jobs
-  const recommendedJobs = await db
+  // fetch Design jobs
+  const DesignJobs = await db
     .select()
     .from(jobsTable)
     .where(
@@ -309,35 +311,31 @@ export async function getJobById(jobId: number): Promise<Job | null> {
         eq(jobsTable.employerId, freelancer.id)
       )
     );
-  return recommendedJobs.map((job) => ({
+  return DesignJobs.map((job) => ({
     ...job,
     status: job.status as JobStatus,
   }));
 } */
 
-export async function getAllJobs(): Promise<Job[]> {
-  // Query to select all jobs that are active
+// ✅ Get Design Jobs (Jobs Freelancer Hasn't Applied To)
+export async function getDesignJobs(freelancerId: number) {
+  // Query to select all jobs that are active and the freelancer hasn't applied
   const jobs = await db
-    .select()
-    .from(jobsTable)
-    .where(eq(jobsTable.status, JobStatus.Active));
-
-  return jobs.map((job) => ({
-    ...job,
-    status: job.status as JobStatus, // Ensuring correct enum typing
-  }));
-}
-
-/**
- * A function to get recommended jobs for freelancers it does not return the jobs that the freelancer has already applied to
- *
- * @param freelancerId
- * @returns
- */
-export async function getRecommendedJobs(freelancerId: number) {
-  // Get jobs that the freelancer hasn't applied to yet
-  const jobs = await db
-    .select()
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      applicationStatus: jobApplicationsTable.status,
+      createdAt: jobsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+    })
     .from(jobsTable)
     .leftJoin(
       jobApplicationsTable,
@@ -349,12 +347,187 @@ export async function getRecommendedJobs(freelancerId: number) {
     .where(
       and(
         eq(jobsTable.status, JobStatus.Active),
-        isNull(jobApplicationsTable.id)
+        isNull(jobApplicationsTable.id) // ✅ Exclude jobs where freelancer has applied
       )
     )
     .orderBy(desc(jobsTable.createdAt));
-  return jobs ? jobs.map((job) => job.jobs) : [];
+
+  return jobs;
 }
+
+// ✅ Get All Jobs (No Restrictions)
+export async function getAllJobs() {
+  // Query to select all jobs that are active even if the freelancer applied
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      applicationStatus: jobApplicationsTable.status,
+      createdAt: jobsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+    })
+    .from(jobsTable)
+    .leftJoin(
+      jobApplicationsTable,
+      eq(jobApplicationsTable.jobId, jobsTable.id) // ✅ LEFT JOIN ensures all jobs are included
+    )
+    .where(eq(jobsTable.status, JobStatus.Active)) // Only active jobs
+    .orderBy(desc(jobsTable.createdAt));
+
+  return jobs;
+}
+
+// ✅ Get My Jobs (Jobs Freelancer Applied To)
+export async function getMyJobs(freelancerId: number) {
+  // Query to select all jobs that the freelancer has applied to
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      applicationStatus: jobApplicationsTable.status,
+      createdAt: jobsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+    })
+    .from(jobsTable)
+    .innerJoin(
+      jobApplicationsTable,
+      and(
+        eq(jobApplicationsTable.jobId, jobsTable.id),
+        eq(jobApplicationsTable.freelancerId, freelancerId)
+      )
+    )
+    .orderBy(desc(jobsTable.createdAt));
+
+  return jobs;
+}
+
+// ✅ Save Review to Database
+// ✅ Ensure freelancer exists before saving review
+export async function saveReview({
+  employerId,
+  freelancerId,
+  rating,
+  comment,
+}: {
+  employerId: number;
+  freelancerId: number;
+  rating: number;
+  comment?: string;
+}) {
+  // ✅ Check if freelancer exists
+  const freelancer = await db
+    .select()
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, freelancerId)) // 🔥 Check by `accountId` instead of `id`
+    .limit(1);
+
+  if (freelancer.length === 0) {
+    throw new Error(`❌ Freelancer with ID ${freelancerId} does not exist.`);
+  }
+
+  const actualFreelancerId = freelancer[0].id; // ✅ Get actual freelancer ID from DB
+
+  // ✅ If freelancer exists, insert the review
+  return db.insert(reviewsTable).values({
+    employerId,
+    freelancerId: actualFreelancerId, // ✅ Use correct freelancer ID
+    rating,
+    comment,
+  } as typeof reviewsTable.$inferInsert);
+}
+
+// ✅ Get Review for a Specific Job & Freelancer
+export async function getReview(freelancerId: number, employerId: number) {
+  return db
+    .select()
+    .from(reviewsTable)
+    .where(
+      and(
+        eq(reviewsTable.freelancerId, freelancerId),
+        eq(reviewsTable.employerId, employerId)
+      )
+    )
+    .limit(1);
+}
+
+export async function updateReview({
+  employerId,
+  freelancerId,
+  rating,
+  comment,
+}: {
+  employerId: number;
+  freelancerId: number;
+  rating: number;
+  comment?: string | null; // ✅ Allow null values explicitly
+}) {
+  const updateData: { rating: number; comment?: string | null } = { rating };
+
+  if (comment !== undefined) {
+    updateData.comment = comment; // ✅ Only include comment if provided
+  }
+
+  return db
+    .update(reviewsTable)
+    .set(updateData)
+    .where(
+      and(
+        eq(reviewsTable.freelancerId, freelancerId),
+        eq(reviewsTable.employerId, employerId)
+      )
+    );
+}
+
+// export async function getJobApplicationStatus(jobId: number) {
+//   const application = await db
+//     .select({ status: jobApplicationsTable.status })
+//     .from(jobApplicationsTable)
+//     .where(eq(jobApplicationsTable.jobId, jobId))
+//     .limit(1);
+
+//   // console.log(`🔍 Job ${jobId} - Found Application Status:`, application);
+
+//   return application.length > 0 ? application[0].status : null;
+// }
+
+// export async function getExistingReview(jobId: number, freelancerId: number) {
+//   // const review = await db
+//   //   .select({
+//   //     rating: reviewsTable.rating,
+//   //     comment: reviewsTable.comment,
+//   //   })
+//   //   .from(reviewsTable)
+//   //   .where(
+//   //     and(
+//   //       eq(
+//   //         reviewsTable.employerId,
+//   //         db
+//   //           .select({ employerId: jobsTable.employerId })
+//   //           .from(jobsTable)
+//   //           .where(eq(jobsTable.id, jobId))
+//   //       ),
+//   //       eq(reviewsTable.freelancerId, freelancerId)
+//   //     )
+//   //   )
+//   //   .limit(1);
+//   // return review.length > 0 ? review[0] : null;
+// }
 
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
