@@ -1,13 +1,20 @@
+// All jobs that are not applied to yet :)
+
+import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import FilteringSearchSection from "./filters/filtering-search-section";
 
-interface RecommendedJobsProps {
+interface DesignJobsProps {
   onJobSelect: (job: Job) => void;
 }
 
-export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
+export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
+  const fetcher = useFetcher<{ jobs: Job[] }>();
+  const DesignJobs = fetcher.data?.jobs || [];
+
+  // ✅ Filters (same as AllJobs)
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     workingHours: null,
@@ -16,40 +23,31 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
     budget: null,
   });
 
-  // ✅ Load jobs ONCE when the component mounts (No backend filtering)
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
-
+  // ✅ Use useFetcher to load Design jobs dynamically
   useEffect(() => {
-    async function fetchJobs() {
-      // ✅ Fetch all jobs once (No filtering on the backend)
-      const response = await fetch("/api/jobs-recommended"); // this endpoint returns ALL jobs
-      const data = await response.json();
-      setAllJobs(data.jobs);
-    }
-    fetchJobs();
+    fetcher.submit(null, {
+      method: "get",
+      action: "/api/jobs-designJobs",
+    });
   }, []);
 
-  const filteredJobs = allJobs.filter((job) => {
-    // ✅ Search Filter
+  // ✅ Apply frontend filtering logic
+  const filteredJobs = DesignJobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // ✅ Working Hours Filter
     const matchesWorkingHours =
-      !filters.workingHours || // No filter applied → show all jobs
-      (!filters.workingHours.from && !filters.workingHours.to) || // No min/max set → show all
+      !filters.workingHours ||
+      (!filters.workingHours.from && !filters.workingHours.to) ||
       (filters.workingHours.from &&
-        job.workingHoursPerWeek >= filters.workingHours.from && // Check min
+        job.workingHoursPerWeek >= filters.workingHours.from &&
         filters.workingHours.to &&
-        job.workingHoursPerWeek <= filters.workingHours.to); // Check max
+        job.workingHoursPerWeek <= filters.workingHours.to);
 
-    // ✅ Job Type Filter
     const matchesJobType =
-      !filters.jobType || // No filter applied → show all jobs
-      job.projectType === filters.jobType; // Match job type
+      !filters.jobType || job.projectType === filters.jobType;
 
-    // ✅ Experience Level Filter
     const matchesExperienceLevel =
       !filters.experienceLevel ||
       job.experienceLevel === filters.experienceLevel;
@@ -75,8 +73,12 @@ export default function RecommendedJobs({ onJobSelect }: RecommendedJobsProps) {
         setFilters={setFilters}
       />
 
+      <p className="text-black text-sm mt-2 ml-4 mb-10">
+        {filteredJobs.length} Job{filteredJobs.length === 1 ? "" : "s"} Found
+      </p>
+
       {/* ✅ Jobs List */}
-      <div className="grid md:grid-cols-2 gap-x-10 max-w-6xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
             <JobCard key={job.id} onSelect={onJobSelect} job={job} />

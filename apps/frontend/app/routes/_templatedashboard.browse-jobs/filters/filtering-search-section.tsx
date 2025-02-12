@@ -46,7 +46,7 @@ export default function FilteringSearchSection({
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-2 mt-4 mb-8 max-w-7xl">
+    <div className="flex flex-col xl:flex-row gap-2 mt-4 mb-2 max-w-7xl">
       {/* 🔥 Search Field */}
       <div className="relative w-full sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-1/4 mb-1">
         <AppFormField
