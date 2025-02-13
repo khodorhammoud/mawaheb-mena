@@ -27,12 +27,10 @@ import {
   saveReview,
   updateReview,
   hasAcceptedApplication,
+  getEmployerIdByJobId,
+  getFreelancerIdbyAccountId,
 } from "~/servers/job.server";
 import { getFreelancerIdByAccountId } from "~/servers/freelancer.server";
-import { db } from "~/db/drizzle/connector";
-import { jobsTable } from "~/db/drizzle/schemas/schema";
-import { freelancersTable } from "~/db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
@@ -43,16 +41,12 @@ export type LoaderData = {
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log("🔥 Review submission received - action function started");
-
   const accountId = await requireUserIsFreelancerPublished(request);
   if (!accountId) {
-    console.log("❌ No account ID found, redirecting...");
     return redirect("/login-employer");
   }
 
   const formData = await request.formData();
-  console.log("📨 Form Data:", Object.fromEntries(formData));
 
   const actionType = formData.get("_action");
   const jobId = Number(formData.get("jobId"));
@@ -60,11 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const rating = Number(formData.get("rating"));
   const comment = formData.get("comment") as string;
 
-  console.log("🔍 Action Type:", actionType);
-  console.log("📌 Parsed Data: ", { jobId, employerId, rating, comment });
-
   if (!jobId || !employerId) {
-    console.error("❌ Invalid job or employer ID");
     return Response.json({
       success: false,
       message: "Invalid job or employer ID.",
@@ -73,7 +63,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
   if (!freelancerId) {
-    console.error("❌ Freelancer account not found");
     return Response.json({
       success: false,
       message: "Freelancer account not found.",
@@ -81,14 +70,9 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // ✅ Check if the freelancer has an accepted job application for this employer
-  console.log(
-    `✅ Checking accepted job application for Freelancer ${freelancerId} at Employer ${employerId}`
-  );
   const hasApplication = await hasAcceptedApplication(freelancerId, employerId);
-  console.log("🛠 Accepted Application Exists? ", hasApplication);
 
   if (!hasApplication) {
-    console.error("❌ No accepted application found, rejecting review");
     return Response.json({
       success: false,
       message:
@@ -98,27 +82,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     if (actionType === "review") {
-      console.log("✅ Processing Review Submission");
-
       const existingReview = await getReview(freelancerId, employerId);
-      console.log("🔍 Existing Review:", existingReview);
 
       if (existingReview) {
-        console.log("✏️ Updating Review...");
         await updateReview({ employerId, freelancerId, rating, comment });
       } else {
-        console.log("🆕 Saving New Review...");
         await saveReview({ employerId, freelancerId, rating, comment });
       }
 
-      console.log("✅ Review Successfully Processed");
       return Response.json({ success: true });
     }
 
-    console.error("❌ Invalid action type:", actionType);
     return Response.json({ success: false, message: "Invalid action type." });
   } catch (error) {
-    console.error("❌ Error in action function:", error);
     return Response.json({ success: false, message: (error as Error).message });
   }
 }
@@ -135,21 +111,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let employerId = parseInt(url.searchParams.get("employerId") || "0", 10);
 
   if (jobId > 0 && employerId === 0) {
-    const job = await db
-      .select({ employerId: jobsTable.employerId })
-      .from(jobsTable)
-      .where(eq(jobsTable.id, jobId))
-      .limit(1);
-    if (job.length > 0) employerId = job[0].employerId;
+    employerId = (await getEmployerIdByJobId(jobId)) || 0;
   }
 
-  const freelancer = await db
-    .select()
-    .from(freelancersTable)
-    .where(eq(freelancersTable.accountId, accountId))
-    .limit(1);
-
-  if (!Array.isArray(freelancer) || freelancer.length === 0) {
+  const freelancerId = await getFreelancerIdbyAccountId(accountId);
+  if (!freelancerId) {
     return Response.json({
       success: false,
       message: "Freelancer not found.",
@@ -159,7 +125,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  const freelancerId = freelancer[0].id;
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
 
   // ✅ Ensure `hasAcceptedApplication` checks by employerId, not jobId
