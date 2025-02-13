@@ -453,13 +453,6 @@ export async function saveReview({
   rating: number;
   comment: string;
 }) {
-  // console.log("🆕 Attempting to save review:", {
-  //   employerId,
-  //   freelancerId,
-  //   rating,
-  //   comment,
-  // });
-
   try {
     const result = await db
       .insert(reviewsTable)
@@ -471,20 +464,14 @@ export async function saveReview({
       } as typeof reviewsTable.$inferInsert)
       .returning({ id: reviewsTable.id }); // ✅ Ensure an ID is returned
 
-    // console.log("✅ Review successfully saved:", result);
     return { success: true, message: "Review submitted successfully." };
   } catch (error) {
-    // console.error("❌ Error inserting review:", error);
     return { success: false, message: (error as Error).message };
   }
 }
 
 // ✅ Get Review for a Specific Freelancer and Employer
 export async function getReview(freelancerId: number, employerId: number) {
-  // console.log(
-  //   `🔍 Fetching review for Freelancer ${freelancerId}, Employer ${employerId}`
-  // );
-
   const result = await db
     .select()
     .from(reviewsTable)
@@ -496,7 +483,6 @@ export async function getReview(freelancerId: number, employerId: number) {
     )
     .limit(1);
 
-  // console.log("📨 Retrieved Review Data:", result);
   return result.length > 0 ? result[0] : null; // ✅ Ensure `null` is returned if no review exists
 }
 
@@ -529,6 +515,35 @@ export async function updateReview({
   return result;
 }
 
+// used in the laoder for the review task
+// used in the laoder for the review task
+
+/** ✅ Get employerId by Job ID */
+export async function getEmployerIdByJobId(jobId: number) {
+  const job = await db
+    .select({ employerId: jobsTable.employerId })
+    .from(jobsTable)
+    .where(eq(jobsTable.id, jobId))
+    .limit(1);
+
+  return job.length > 0 ? job[0].employerId : null;
+}
+
+/** ✅ Get Freelancer ID by Account ID */
+export async function getFreelancerIdbyAccountId(accountId: number) {
+  const freelancer = await db
+    .select()
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
+
+  return freelancer.length > 0 ? freelancer[0].id : null;
+}
+
+// used in the laoder for the review task
+// used in the laoder for the review task
+
+// 👇 is not with 👆 :D
 // export async function getJobApplicationStatus(jobId: number) {
 //   const application = await db
 //     .select({ status: jobApplicationsTable.status })
