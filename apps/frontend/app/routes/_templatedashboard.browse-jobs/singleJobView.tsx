@@ -19,26 +19,61 @@ import { FaStar } from "react-icons/fa";
 interface JobCardProps {
   job: Job & { applicationStatus?: string };
   jobSkills: Skill[];
-  review?: { rating: number; comment: string } | null;
+  review?: { rating: number; comment: string; employerId: number } | null;
+  canReview: boolean; // ✅ Ensure this is included
 }
 
 export default function SingleJobView({
   job,
   jobSkills,
   review,
+  canReview,
 }: JobCardProps) {
-  const fetcher = useFetcher<{ jobs: Job[]; success?: boolean }>();
+  const fetcher = useFetcher<{
+    jobs: Job[];
+    success?: boolean;
+    error?: { message: string };
+  }>();
   const relatedJobs = fetcher.data?.jobs || [];
-
-  const [open, setOpen] = useState(false);
-  const [rating, setRating] = useState(review?.rating || 0);
-  const [comment, setComment] = useState(review?.comment || "");
 
   const requiredSkills = jobSkills.map((skill) => ({
     name: skill.name,
     isStarred: skill.isStarred || false,
   }));
 
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  // ✅ Ensure correct employer review is loaded
+  const isCorrectReview = review && review.employerId === job.employerId;
+  const hasReview =
+    isCorrectReview &&
+    review.rating !== undefined &&
+    review.comment !== undefined;
+
+  const handleOpenReview = () => {
+    if (!canReview) {
+      alert(
+        "You must have an accepted job application to review this employer."
+      );
+      return;
+    }
+    setOpen(true);
+  };
+
+  // ✅ Set review data when opening the modal
+  useEffect(() => {
+    if (isCorrectReview) {
+      setRating(review.rating);
+      setComment(review.comment);
+    } else {
+      setRating(0);
+      setComment("");
+    }
+  }, [review, job.employerId]);
+
+  // ✅ Fetch related jobs when employerId changes
   useEffect(() => {
     if (job.employerId) {
       const params = new URLSearchParams({
@@ -84,6 +119,7 @@ export default function SingleJobView({
             </div>
           </div>
 
+          {/* Skills Section */}
           <div className="mb-12">
             <p className="text-base mb-2">Skills</p>
             <div className="mt-2 text-base">
@@ -95,6 +131,7 @@ export default function SingleJobView({
             </div>
           </div>
 
+          {/* Activity Section */}
           <div className="mb-6">
             <p className="text-base font-medium text-gray-900 mb-2">
               Activity on this job
@@ -109,23 +146,16 @@ export default function SingleJobView({
 
         {/* ✅ Interested / Review Employer / Edit Review Button */}
         <div className="pl-6 pr-6 pt-4">
-          {/* ✅ Match JobCard behavior: If job is applied, show Review/ Edit Review */}
           {job.applicationStatus ? (
-            review ? (
-              <Button
-                className="w-full mb-4 bg-primaryColor text-white py-2 rounded-md font-semibold"
-                onClick={() => setOpen(true)}
-              >
-                Edit Review
-              </Button>
-            ) : (
-              <Button
-                className="w-full mb-4 bg-primaryColor text-white py-2 rounded-md font-semibold"
-                onClick={() => setOpen(true)}
-              >
-                Review Employer
-              </Button>
-            )
+            <Button
+              className="w-full mb-4 bg-primaryColor text-white py-2 rounded-xl font-semibold not-active-gradient"
+              onClick={() => {
+                setOpen(true), handleOpenReview;
+              }}
+              disabled={!canReview}
+            >
+              {hasReview ? "Edit Review" : "Review Employer"}
+            </Button>
           ) : (
             <Button
               disabled={
@@ -139,11 +169,11 @@ export default function SingleJobView({
                   });
                 }
               }}
-              className={`w-full mb-4 ${
+              className={`w-full mb-4 not-active-gradient ${
                 fetcher.data?.success
                   ? "bg-slate-600 cursor-not-allowed"
                   : "bg-primaryColor"
-              } text-white py-2 rounded-md font-semibold`}
+              } text-white py-2 rounded-xl font-semibold`}
             >
               {fetcher.data?.success ? "Applied" : "Interested"}
             </Button>
@@ -158,31 +188,32 @@ export default function SingleJobView({
         </div>
       </div>
 
-      {/* ✅ Review Employer Modal */}
+      {/* ✅ Review Employer Modal (Closes when clicking outside) */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-6 bg-white rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
-              {review ? "Edit your review" : "Leave a review"}
+              {hasReview ? "Edit your review" : "Leave a review"}
             </DialogTitle>
           </DialogHeader>
 
-          {/* ⭐ Star Rating */}
           <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 onClick={() => setRating(star)}
-                className={`text-3xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
+                className={`text-3xl ${
+                  star <= rating ? "text-yellow-400" : "text-gray-300"
+                }`}
               >
                 <FaStar className="w-6 h-6" />
               </button>
             ))}
           </div>
 
-          {/* 💬 Comment Box using AppFormField */}
           <Form method="post" action="/browse-jobs">
             <input type="hidden" name="_action" value="review" />
+            <input type="hidden" name="jobId" value={job.id || ""} />
             <input type="hidden" name="employerId" value={job.employerId} />
             <input type="hidden" name="rating" value={rating} />
 
@@ -197,19 +228,17 @@ export default function SingleJobView({
               onChange={(e) => setComment(e.target.value)}
             />
 
-            {/* ✅ Submit Review */}
             <div className="flex justify-end">
               <Button
                 type="submit"
                 className="mt-2 w-fit bg-primaryColor text-white rounded-xl px-10"
               >
-                {review ? "Update Review" : "Submit"}
+                {hasReview ? "Update Review" : "Submit"}
               </Button>
             </div>
           </Form>
         </DialogContent>
       </Dialog>
-
       {/* Related Jobs Section */}
       {relatedJobs.length > 0 && (
         <div className="grid grid-cols-[60%,40%] mb-10">
@@ -229,6 +258,7 @@ export default function SingleJobView({
               <p className="text-gray-500">No related jobs found.</p>
             )}
           </div>
+          <div className=""></div>
         </div>
       )}
     </div>

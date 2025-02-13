@@ -417,6 +417,29 @@ export async function getMyJobs(freelancerId: number) {
   return jobs;
 }
 
+// ✅ Ensure the freelancer has an accepted job application before reviewing
+export async function hasAcceptedApplication(
+  freelancerId: number,
+  employerId: number
+) {
+  // ✅ Join job applications with jobs to check employer
+  const result = await db
+    .select()
+    .from(jobApplicationsTable)
+    .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id)) // ✅ Join jobs table
+    .where(
+      and(
+        eq(jobApplicationsTable.freelancerId, freelancerId),
+        eq(jobsTable.employerId, employerId), // ✅ Check for employer, not just jobId
+        eq(jobApplicationsTable.status, "accepted") // ✅ Ensure status is "accepted"
+      )
+    )
+    .limit(1);
+
+  // console.log("📨 Retrieved Applications:", result);
+  return result.length > 0;
+}
+
 // ✅ Save Review to Database
 // ✅ Ensure freelancer exists before saving review
 export async function saveReview({
@@ -428,33 +451,41 @@ export async function saveReview({
   employerId: number;
   freelancerId: number;
   rating: number;
-  comment?: string;
+  comment: string;
 }) {
-  // ✅ Check if freelancer exists
-  const freelancer = await db
-    .select()
-    .from(freelancersTable)
-    .where(eq(freelancersTable.accountId, freelancerId)) // 🔥 Check by `accountId` instead of `id`
-    .limit(1);
+  // console.log("🆕 Attempting to save review:", {
+  //   employerId,
+  //   freelancerId,
+  //   rating,
+  //   comment,
+  // });
 
-  if (freelancer.length === 0) {
-    throw new Error(`❌ Freelancer with ID ${freelancerId} does not exist.`);
+  try {
+    const result = await db
+      .insert(reviewsTable)
+      .values({
+        employerId,
+        freelancerId,
+        rating,
+        comment,
+      } as typeof reviewsTable.$inferInsert)
+      .returning({ id: reviewsTable.id }); // ✅ Ensure an ID is returned
+
+    // console.log("✅ Review successfully saved:", result);
+    return { success: true, message: "Review submitted successfully." };
+  } catch (error) {
+    // console.error("❌ Error inserting review:", error);
+    return { success: false, message: (error as Error).message };
   }
-
-  const actualFreelancerId = freelancer[0].id; // ✅ Get actual freelancer ID from DB
-
-  // ✅ If freelancer exists, insert the review
-  return db.insert(reviewsTable).values({
-    employerId,
-    freelancerId: actualFreelancerId, // ✅ Use correct freelancer ID
-    rating,
-    comment,
-  } as typeof reviewsTable.$inferInsert);
 }
 
-// ✅ Get Review for a Specific Job & Freelancer
+// ✅ Get Review for a Specific Freelancer and Employer
 export async function getReview(freelancerId: number, employerId: number) {
-  return db
+  // console.log(
+  //   `🔍 Fetching review for Freelancer ${freelancerId}, Employer ${employerId}`
+  // );
+
+  const result = await db
     .select()
     .from(reviewsTable)
     .where(
@@ -464,6 +495,9 @@ export async function getReview(freelancerId: number, employerId: number) {
       )
     )
     .limit(1);
+
+  // console.log("📨 Retrieved Review Data:", result);
+  return result.length > 0 ? result[0] : null; // ✅ Ensure `null` is returned if no review exists
 }
 
 export async function updateReview({
@@ -475,15 +509,14 @@ export async function updateReview({
   employerId: number;
   freelancerId: number;
   rating: number;
-  comment?: string | null; // ✅ Allow null values explicitly
+  comment?: string | null;
 }) {
   const updateData: { rating: number; comment?: string | null } = { rating };
-
   if (comment !== undefined) {
-    updateData.comment = comment; // ✅ Only include comment if provided
+    updateData.comment = comment;
   }
 
-  return db
+  const result = await db
     .update(reviewsTable)
     .set(updateData)
     .where(
@@ -492,6 +525,8 @@ export async function updateReview({
         eq(reviewsTable.employerId, employerId)
       )
     );
+
+  return result;
 }
 
 // export async function getJobApplicationStatus(jobId: number) {
