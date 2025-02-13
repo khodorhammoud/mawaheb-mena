@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"user_id" integer,
 	"slug" varchar(60),
 	"account_type" "account_type",
-	"location" varchar(150),
-	"country" "country",
+	"country" varchar(100),
+	"address" varchar(150),
 	"region" varchar(100),
 	"account_status" "account_status",
 	"phone" varchar(30),
@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"social_media_links" jsonb DEFAULT '{}'::jsonb,
 	"is_creation_complete" boolean DEFAULT false,
 	CONSTRAINT "accounts_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "attachments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"key" varchar NOT NULL,
+	"metadata" jsonb DEFAULT '{}'::jsonb,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employer_industries" (
@@ -71,6 +78,13 @@ CREATE TABLE IF NOT EXISTS "freelancer_languages" (
 	"freelancer_id" integer,
 	"language_id" integer,
 	"timestamp" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "freelancer_skills" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"freelancer_id" integer,
+	"skill_id" integer,
+	"years_of_experience" integer
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "freelancers" (
@@ -131,10 +145,9 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"job_category_id" integer,
 	"working_hours_per_week" integer,
 	"location_preference" text,
-	"required_skills" json DEFAULT '[]'::jsonb NOT NULL,
 	"project_type" "project_type",
 	"budget" integer,
-	"experience_level" text,
+	"experience_level" "experience_level",
 	"status" text,
 	"created_at" timestamp DEFAULT now(),
 	"fulfilled_at" timestamp
@@ -142,7 +155,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "languages" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"language" "language"
+	"name" varchar(25)
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "preferred_working_times" (
@@ -153,10 +166,21 @@ CREATE TABLE IF NOT EXISTS "preferred_working_times" (
 	"end_time" time
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "reviews" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"employer_id" integer NOT NULL,
+	"freelancer_id" integer NOT NULL,
+	"rating" real NOT NULL,
+	"comment" text DEFAULT null,
+	"created_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "skills" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"name" text,
-	"meta_data" jsonb DEFAULT '{}'::jsonb
+	"label" text,
+	"meta_data" text DEFAULT '[]',
+	"is_hot" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "social_accounts" (
@@ -200,7 +224,6 @@ CREATE TABLE IF NOT EXISTS "user_verifications" (
 	"is_used" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now()
 );
-
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "timesheet_submission_entries" ADD CONSTRAINT "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk" FOREIGN KEY ("timesheet_submission_id") REFERENCES "public"."timesheet_submissions"("id") ON DELETE no action ON UPDATE no action;
@@ -263,6 +286,18 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "freelancer_skills" ADD CONSTRAINT "freelancer_skills_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "freelancer_skills" ADD CONSTRAINT "freelancer_skills_skill_id_skills_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skills"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "freelancers" ADD CONSTRAINT "freelancers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -306,6 +341,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "preferred_working_times" ADD CONSTRAINT "preferred_working_times_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
