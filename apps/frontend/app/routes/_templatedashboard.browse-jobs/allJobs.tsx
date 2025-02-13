@@ -70,10 +70,10 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
 
   return (
     <div>
-      <h1>
+      {/* <h1>
         mix 7elo 3ammi. 3melet 3alehon job application hadol + ma 3melete
         3alehon, mix 3ammi
-      </h1>
+      </h1> */}
 
       {/* ✅ Search and Filtering Section */}
       <FilteringSearchSection
