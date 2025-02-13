@@ -65,7 +65,7 @@ export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
 
   return (
     <div>
-      <h1>Still ma 3melet job application hon 3ammi</h1>
+      {/* <h1>Still ma 3melet job application hon 3ammi</h1> */}
 
       {/* ✅ Search and Filtering Section */}
       <FilteringSearchSection

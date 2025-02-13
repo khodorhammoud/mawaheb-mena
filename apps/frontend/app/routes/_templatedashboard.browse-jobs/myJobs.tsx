@@ -101,10 +101,10 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
 
   return (
     <div>
-      <h1>
+      {/* <h1>
         hadol bs li 3melet 3alehon job application w hiye active job akid for
         now
-      </h1>
+      </h1> */}
 
       <FilteringSearchSection
         searchQuery={searchQuery}
