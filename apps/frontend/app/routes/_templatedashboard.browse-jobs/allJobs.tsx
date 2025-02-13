@@ -1,3 +1,5 @@
+// All Jobs, but the ones that are active (active till now, and the employer didnt make it draft or pased or closed or deleted ❤️)
+
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Job } from "~/types/Job";
@@ -25,7 +27,7 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
   useEffect(() => {
     fetcher.submit(null, {
       method: "get",
-      action: "/api/jobs-filtered",
+      action: "/api/jobs-allJobs",
     });
   }, []);
 
@@ -68,6 +70,11 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
 
   return (
     <div>
+      {/* <h1>
+        mix 7elo 3ammi. 3melet 3alehon job application hadol + ma 3melete
+        3alehon, mix 3ammi
+      </h1> */}
+
       {/* ✅ Search and Filtering Section */}
       <FilteringSearchSection
         searchQuery={searchQuery}
@@ -75,6 +82,10 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
         filters={filters}
         setFilters={setFilters}
       />
+
+      <p className="text-black text-sm mt-2 ml-4 mb-10">
+        {filteredJobs.length} Job{filteredJobs.length === 1 ? "" : "s"} Found
+      </p>
 
       {/* ✅ Jobs List */}
       <div className="grid md:grid-cols-2 gap-x-10 max-w-6xl">

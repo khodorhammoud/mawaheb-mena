@@ -1,1 +1,0 @@
-ALTER TABLE "skills" RENAME COLUMN "name" TO "label";
