@@ -395,6 +395,18 @@ export async function handleFreelancerOnboardingAction(
   }
 }
 
+export async function getFreelancerIdByAccountId(
+  accountId: number
+): Promise<number | null> {
+  const freelancer = await db
+    .select({ id: freelancersTable.id })
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
+
+  return freelancer.length > 0 ? freelancer[0].id : null;
+}
+
 export async function updateFreelancerPortfolio(
   freelancer: Freelancer,
   portfolio: PortfolioFormFieldType[],

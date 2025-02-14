@@ -1,4 +1,4 @@
-// All Jobs, but the ones that are active (active till now, and the employer didnt make it draft or pased or closed or deleted ❤️)
+// All jobs that are not applied to yet :)
 
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
@@ -6,15 +6,15 @@ import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import FilteringSearchSection from "./filters/filtering-search-section";
 
-interface AllJobsProps {
+interface DesignJobsProps {
   onJobSelect: (job: Job) => void;
 }
 
-export default function AllJobs({ onJobSelect }: AllJobsProps) {
+export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
   const fetcher = useFetcher<{ jobs: Job[] }>();
-  const allJobs = fetcher.data?.jobs || [];
+  const DesignJobs = fetcher.data?.jobs || [];
 
-  // ✅ Filters (same as RecommendedJobs)
+  // ✅ Filters (same as AllJobs)
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     workingHours: null,
@@ -23,22 +23,20 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
     budget: null,
   });
 
-  // ✅ Fetch jobs from the backend (No backend filtering)
+  // ✅ Use useFetcher to load Design jobs dynamically
   useEffect(() => {
     fetcher.submit(null, {
       method: "get",
-      action: "/api/jobs-allJobs",
+      action: "/api/jobs-designJobs",
     });
   }, []);
 
-  // ✅ Apply same frontend filtering logic
-  const filteredJobs = allJobs.filter((job) => {
-    // ✅ Search Filter
+  // ✅ Apply frontend filtering logic
+  const filteredJobs = DesignJobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // ✅ Working Hours Filter
     const matchesWorkingHours =
       !filters.workingHours ||
       (!filters.workingHours.from && !filters.workingHours.to) ||
@@ -47,16 +45,13 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
         filters.workingHours.to &&
         job.workingHoursPerWeek <= filters.workingHours.to);
 
-    // ✅ Job Type Filter
     const matchesJobType =
       !filters.jobType || job.projectType === filters.jobType;
 
-    // ✅ Experience Level Filter
     const matchesExperienceLevel =
       !filters.experienceLevel ||
       job.experienceLevel === filters.experienceLevel;
 
-    // ✅ Budget Filter (Job budget must be >= selected budget)
     const matchesBudget = !filters.budget || job.budget >= filters.budget;
 
     return (
@@ -70,10 +65,7 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
 
   return (
     <div>
-      {/* <h1>
-        mix 7elo 3ammi. 3melet 3alehon job application hadol + ma 3melete
-        3alehon, mix 3ammi
-      </h1> */}
+      {/* <h1>Still ma 3melet job application hon 3ammi</h1> */}
 
       {/* ✅ Search and Filtering Section */}
       <FilteringSearchSection
@@ -88,7 +80,7 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
       </p>
 
       {/* ✅ Jobs List */}
-      <div className="grid md:grid-cols-2 gap-x-10 max-w-6xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
             <JobCard key={job.id} onSelect={onJobSelect} job={job} />

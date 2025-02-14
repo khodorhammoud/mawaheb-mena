@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1737534320381,
-      "tag": "0000_strong_weapon_omega",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1738497371957,
-      "tag": "0001_flashy_korg",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1738497882789,
-      "tag": "0002_organic_timeslip",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1739005968360,
-      "tag": "0003_talented_bedlam",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1739006493119,
-      "tag": "0004_cheerful_odin",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1739017841938,
-      "tag": "0005_perfect_chronomancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1739022732114,
-      "tag": "0006_long_johnny_blaze",
+      "when": 1739330974039,
+      "tag": "0000_heavy_big_bertha",
       "breakpoints": true
     }
   ]

@@ -14,6 +14,7 @@ const AppFormField = ({
   col = 4,
   defaultValue,
   onChange,
+  min,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,7 +30,14 @@ const AppFormField = ({
 
   const handleNumberChange = (event) => {
     const { value } = event.target;
-    const numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+    let numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+
+    if (min !== undefined && Number(numericValue) < min) {
+      numericValue = min.toString(); // ✅ Enforce min value
+    }
+
+    setSelectedValue(numericValue); // Update state
+
     if (onChange) {
       onChange({ target: { id, name, value: numericValue } });
     }
@@ -92,6 +100,7 @@ const AppFormField = ({
               spellCheck="false"
               defaultValue={defaultValue}
               onChange={handleNumberChange} // Custom handler for numeric validation
+              min={min} // ✅ Apply the min prop
             />
           ) : type === "increment" ? (
             <div className="flex flex-col items-center space-y-4 w-full">
@@ -141,7 +150,7 @@ const AppFormField = ({
               id={id}
               name={name}
               placeholder={placeholder}
-              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
+              className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
               defaultValue={selectedValue}
@@ -182,7 +191,7 @@ const AppFormField = ({
         // else labels
         <label
           htmlFor={id}
-          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
@@ -237,6 +246,7 @@ AppFormField.propTypes = {
   defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,
   useRichText: PropTypes.bool,
+  min: PropTypes.number, // ✅ Add min to prop types
 };
 
 export default AppFormField;
