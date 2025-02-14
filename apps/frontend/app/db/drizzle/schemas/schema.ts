@@ -9,6 +9,7 @@ import {
   timestamp,
   jsonb,
   json,
+  real,
   date,
   numeric,
 } from "drizzle-orm/pg-core";
@@ -27,11 +28,11 @@ import {
   // timesheetStatusEnum,
   timesheetStatusEnum,
   /*  jobStatusEnum,
-  locationPreferenceTypeEnum,
-  experienceLevelEnum, */
+  locationPreferenceTypeEnum, */
   jobApplicationStatusEnum,
   providerEnum,
   // belongsToEnum,
+  experienceLevelEnum,
 } from "./schemaTypes";
 
 import { sql } from "drizzle-orm";
@@ -350,8 +351,7 @@ export const jobsTable = pgTable("jobs", {
   //locationPreferenceTypeEnum("location_preference_type"),
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
-  experienceLevel: text("experience_level"),
-  //experienceLevelEnum("experience_level"),
+  experienceLevel: experienceLevelEnum("experience_level"),
   status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
   fulfilledAt: timestamp("fulfilled_at"),
@@ -418,6 +418,29 @@ export const jobApplicationsTable = pgTable("job_applications", {
 });
 
 // projectType: projectTypeEnum("project_type"),
+
+/**
+ * Define the Reviews table schema
+ *
+ * @property id - serial primary key
+ * @property employer_id - integer referencing the employersTable id
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property rating - real (floating-point) rating between 1.0 and 5.0
+ * @property comment - text field for review comments
+ * @property created_at - timestamp when the review was submitted
+ */
+export const reviewsTable = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  employerId: integer("employer_id")
+    .references(() => employersTable.id)
+    .notNull(),
+  freelancerId: integer("freelancer_id")
+    .references(() => freelancersTable.id)
+    .notNull(),
+  rating: real("rating").notNull(),
+  comment: text("comment").default(null), // ✅ Ensure nullable field
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
 
 /**
  * Define the Timesheets table schema

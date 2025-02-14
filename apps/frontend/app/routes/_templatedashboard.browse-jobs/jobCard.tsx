@@ -6,7 +6,7 @@ import SkillBadgeList from "~/common/skill/SkillBadge";
 import { formatTimeAgo } from "~/utils/formatTimeAgo";
 
 interface JobProps {
-  job: JobType;
+  job: JobType & { applicationStatus?: string }; // ✅ Add applicationStatus
   onSelect: (job: JobType) => void;
 }
 
@@ -19,16 +19,11 @@ export default function JobCard({ job, onSelect }: JobProps) {
   >([]);
 
   useEffect(() => {
-    // console.log(`🔎 Fetching skills for job ID: ${job.id}`);
-    fetcher.load(`/browse-jobs?jobId=${job.id}`); // THIS FIXES IT
+    fetcher.load(`/browse-jobs?jobId=${job.id}`);
   }, [job.id]);
 
   useEffect(() => {
     if (fetcher.data) {
-      // console.log(
-      //   `✅ Loaded skills for job ${job.id}:`,
-      //   fetcher.data.jobSkills
-      // );
       setSkills(fetcher.data.jobSkills);
     }
   }, [fetcher.data]);
@@ -70,11 +65,12 @@ export default function JobCard({ job, onSelect }: JobProps) {
         </div>
       </div>
 
+      {/* ✅ Change Button Text if Job is Applied */}
       <Button
-        className="border border-gray-300 text-primaryColor bg-white rounded-[10px] md:text-base text-sm xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white mt-4"
+        className="border border-gray-300 text-primaryColor bg-white rounded-[10px] md:text-base text-sm xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white hover:bg-primaryColor not-active-gradient mt-4"
         onClick={() => onSelect(job)}
       >
-        Interested
+        {job.applicationStatus ? "Read more" : "Interested"}
       </Button>
     </div>
   );

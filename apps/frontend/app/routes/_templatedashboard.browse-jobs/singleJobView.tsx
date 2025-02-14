@@ -1,5 +1,5 @@
-import { useFetcher } from "@remix-run/react";
-import { useEffect } from "react";
+import { useFetcher, Form } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import { Button } from "~/components/ui/button";
@@ -7,24 +7,73 @@ import { Skill } from "~/types/Skill";
 import SkillBadgeList from "~/common/skill/SkillBadge";
 import { formatTimeAgo } from "~/utils/formatTimeAgo";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import AppFormField from "~/common/form-fields";
+import { FaStar } from "react-icons/fa";
 
 interface JobCardProps {
-  job: Job;
-  jobSkills: Skill[]; // ✅ Accept jobSkills as a separate prop
+  job: Job & { applicationStatus?: string };
+  jobSkills: Skill[];
+  review?: { rating: number; comment: string; employerId: number } | null;
+  canReview: boolean; // ✅ Ensure this is included
 }
 
-export default function SingleJobView({ job, jobSkills }: JobCardProps) {
-  // console.log("📌 Job Skills in SingleJobView:", jobSkills); // ✅ Debugging log
-
-  const fetcher = useFetcher<{ jobs: Job[]; success?: boolean }>();
+export default function SingleJobView({
+  job,
+  jobSkills,
+  review,
+  canReview,
+}: JobCardProps) {
+  const fetcher = useFetcher<{
+    jobs: Job[];
+    success?: boolean;
+    error?: { message: string };
+  }>();
   const relatedJobs = fetcher.data?.jobs || [];
 
-  // ✅ Transform `jobSkills` to match `SkillBadgeList` expected format
   const requiredSkills = jobSkills.map((skill) => ({
     name: skill.name,
     isStarred: skill.isStarred || false,
   }));
 
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  // ✅ Ensure correct employer review is loaded
+  const isCorrectReview = review && review.employerId === job.employerId;
+  const hasReview =
+    isCorrectReview &&
+    review.rating !== undefined &&
+    review.comment !== undefined;
+
+  const handleOpenReview = () => {
+    if (!canReview) {
+      alert(
+        "You must have an accepted job application to review this employer."
+      );
+      return;
+    }
+    setOpen(true);
+  };
+
+  // ✅ Set review data when opening the modal
+  useEffect(() => {
+    if (isCorrectReview) {
+      setRating(review.rating);
+      setComment(review.comment);
+    } else {
+      setRating(0);
+      setComment("");
+    }
+  }, [review, job.employerId]);
+
+  // ✅ Fetch related jobs when employerId changes
   useEffect(() => {
     if (job.employerId) {
       const params = new URLSearchParams({
@@ -37,15 +86,12 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
         action: `/api/jobs-related?${params.toString()}`,
       });
     }
-  }, [job.employerId]); // ✅ Added dependency
+  }, [job.employerId]);
 
   return (
     <div className="rounded-lg mx-auto text-black pr-10">
-      {/* Job Title */}
       <div className="pt-6 px-6">
         <h2 className="lg:text-3xl md:text-2xl text-xl mb-3">{job.title}</h2>
-
-        {/* Date */}
         <p className="text-sm mb-8 text-gray-400">
           Fixed price -{" "}
           {job.createdAt ? formatTimeAgo(job.createdAt) : "recently"}
@@ -53,27 +99,20 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
       </div>
 
       <div className="grid grid-cols-[60%,40%] mb-8">
-        {/* Description */}
         <div className="px-6 py-4 border-r border-gray-200">
           <div
             className="mb-12"
             dangerouslySetInnerHTML={{ __html: job.description }}
           />
-
           <div className="flex justify-between items-center mb-12">
-            {/* Budget */}
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">${job.budget}</span>
               <span className="text-sm text-gray-500">Fixed price</span>
             </div>
-
-            {/* Experience Level */}
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">{job.experienceLevel}</span>
               <span className="text-sm text-gray-500">Experience level</span>
             </div>
-
-            {/* Project Type */}
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">{job.projectType}</span>
               <span className="text-sm text-gray-500">Project type</span>
@@ -83,10 +122,9 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
           {/* Skills Section */}
           <div className="mb-12">
             <p className="text-base mb-2">Skills</p>
-            {/* SKILLS */}
             <div className="mt-2 text-base">
               {requiredSkills.length > 0 ? (
-                <SkillBadgeList skills={requiredSkills} /> // ✅ Use SkillBadgeList instead of manual mapping
+                <SkillBadgeList skills={requiredSkills} />
               ) : (
                 <p>No skills provided.</p>
               )}
@@ -106,28 +144,40 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
           </div>
         </div>
 
-        {/* Interested Button */}
+        {/* ✅ Interested / Review Employer / Edit Review Button */}
         <div className="pl-6 pr-6 pt-4">
-          <Button
-            disabled={
-              fetcher.data?.success === true || fetcher.state === "submitting"
-            }
-            onClick={() => {
-              if (!fetcher.data?.success) {
-                fetcher.submit(null, {
-                  method: "post",
-                  action: `/api/jobs/${job.id}/interested`,
-                });
+          {job.applicationStatus ? (
+            <Button
+              className="w-full mb-4 bg-primaryColor text-white py-2 rounded-xl font-semibold not-active-gradient"
+              onClick={() => {
+                setOpen(true), handleOpenReview;
+              }}
+              disabled={!canReview}
+            >
+              {hasReview ? "Edit Review" : "Review Employer"}
+            </Button>
+          ) : (
+            <Button
+              disabled={
+                fetcher.data?.success === true || fetcher.state === "submitting"
               }
-            }}
-            className={`w-full mb-4 ${
-              fetcher.data?.success
-                ? "bg-slate-600 cursor-not-allowed"
-                : "bg-primaryColor"
-            } text-white py-2 rounded-md font-semibold`}
-          >
-            {fetcher.data?.success ? "Applied" : "Interested"}
-          </Button>
+              onClick={() => {
+                if (!fetcher.data?.success) {
+                  fetcher.submit(null, {
+                    method: "post",
+                    action: `/api/jobs/${job.id}/interested`,
+                  });
+                }
+              }}
+              className={`w-full mb-4 not-active-gradient ${
+                fetcher.data?.success
+                  ? "bg-slate-600 cursor-not-allowed"
+                  : "bg-primaryColor"
+              } text-white py-2 rounded-xl font-semibold`}
+            >
+              {fetcher.data?.success ? "Applied" : "Interested"}
+            </Button>
+          )}
           <div className="flex items-start text-gray-500 text-sm">
             <InformationCircleIcon className="w-8 h-8 text-gray-600 mr-2" />
             <p className="mt-1">
@@ -138,6 +188,57 @@ export default function SingleJobView({ job, jobSkills }: JobCardProps) {
         </div>
       </div>
 
+      {/* ✅ Review Employer Modal (Closes when clicking outside) */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="p-6 bg-white rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              {hasReview ? "Edit your review" : "Leave a review"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`text-3xl ${
+                  star <= rating ? "text-yellow-400" : "text-gray-300"
+                }`}
+              >
+                <FaStar className="w-6 h-6" />
+              </button>
+            ))}
+          </div>
+
+          <Form method="post" action="/browse-jobs">
+            <input type="hidden" name="_action" value="review" />
+            <input type="hidden" name="jobId" value={job.id || ""} />
+            <input type="hidden" name="employerId" value={job.employerId} />
+            <input type="hidden" name="rating" value={rating} />
+
+            <AppFormField
+              id="reviewComment"
+              name="comment"
+              type="textarea"
+              label="Comments"
+              placeholder="Write your feedback..."
+              defaultValue={comment}
+              col={6}
+              onChange={(e) => setComment(e.target.value)}
+            />
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="mt-2 w-fit bg-primaryColor text-white rounded-xl px-10"
+              >
+                {hasReview ? "Update Review" : "Submit"}
+              </Button>
+            </div>
+          </Form>
+        </DialogContent>
+      </Dialog>
       {/* Related Jobs Section */}
       {relatedJobs.length > 0 && (
         <div className="grid grid-cols-[60%,40%] mb-10">
