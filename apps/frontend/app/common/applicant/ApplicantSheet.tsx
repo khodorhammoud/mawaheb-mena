@@ -16,33 +16,10 @@ export default function ApplicantSheet({
   onClose,
   freelancer,
 }: ApplicantSheetProps) {
-  // console.log("🟡 Freelancer Data:", freelancer);
-
   if (!freelancer) {
     console.warn("⚠️ No freelancer data received!");
     return null;
   }
-
-  // console.log("💰 Hourly Rate:", freelancer.hourlyRate);
-  // console.log("🏅 Experience:", freelancer.yearsOfExperience);
-  // console.log("📹 Video Link:", freelancer.videoLink);
-  // console.log("📜 About:", freelancer.about);
-  // console.log("🖼 Portfolio:", freelancer.portfolio);
-  // console.log("💼 Work History:", freelancer.workHistory);
-  // console.log("🎓 Education:", freelancer.educations);
-
-  // console.log("🟡 Passing to GeneralizableFormCard:", {
-  //   hourlyRate: freelancer.hourlyRate,
-  //   yearsOfExperience: freelancer.yearsOfExperience,
-  //   videoLink: freelancer.videoLink,
-  //   about: freelancer.about,
-  //   portfolio: freelancer.portfolio,
-  // });
-
-  // console.log("📚 Freelancer Educations Data:", freelancer.educations);
-  // console.log("📚 Freelancer Cerfiticates Data:", freelancer.certificates);
-  // console.log("📚 Freelancer WorkHistory Data:", freelancer.workHistory);
-  // console.log("📚 Freelancer Portfolio Data:", freelancer.portfolio);
 
   const parseArray = (data: any) => {
     try {
@@ -59,14 +36,6 @@ export default function ApplicantSheet({
     certificates: parseArray(freelancer.certificates),
     educations: parseArray(freelancer.educations),
   };
-
-  // console.log(
-  //   "🟢 Portfolio passed to GeneralizableFormCard:",
-  //   normalizedFreelancer.portfolio
-  // );
-
-  // console.log("Video value:", freelancer.videoLink);
-  // console.log("About value:", freelancer.about);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

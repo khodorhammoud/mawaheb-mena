@@ -984,11 +984,6 @@ export async function getFreelancerDetails(freelancerIds: number[]) {
     )
     .where(inArray(freelancersTable.id, freelancerIds));
 
-  // console.log(
-  //   "🔍 Full Freelancers with User Info:",
-  //   JSON.stringify(freelancers, null, 2)
-  // );
-
   // ✅ Return Results Directly
   return freelancers;
 }

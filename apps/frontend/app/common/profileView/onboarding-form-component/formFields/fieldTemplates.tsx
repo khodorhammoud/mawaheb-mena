@@ -1,16 +1,9 @@
 import React from "react";
 import { RepeatableInputType } from "../types";
-import { useLoaderData } from "@remix-run/react";
 import type { FieldTemplateState, FormStateType } from "../types";
-import { IoLinkSharp, IoBriefcaseSharp } from "react-icons/io5";
+import { IoBriefcaseSharp } from "react-icons/io5";
 import { RiAwardFill } from "react-icons/ri";
 import { FaTimes, FaGraduationCap } from "react-icons/fa";
-import {
-  PortfolioFormFieldType,
-  WorkHistoryFormFieldType,
-  CertificateFormFieldType,
-  EducationFormFieldType,
-} from "~/types/User";
 import { parseHtmlContent } from "~/utils/api-helpers";
 
 interface FieldTemplateProps {
