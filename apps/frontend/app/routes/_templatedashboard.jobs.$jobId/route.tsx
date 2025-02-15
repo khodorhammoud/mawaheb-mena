@@ -8,8 +8,6 @@ import {
   getFreelancerDetails,
   getFreelancersIdsByJobId,
   updateJobApplicationStatus,
-  // getJobApplicationsByJobId,
-  // getJobApplicationById,
   getJobApplicationOwnerByApplicationId,
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
@@ -24,7 +22,7 @@ import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesig
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
 import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
-import { JobApplicationStatus, AccountType } from "~/types/enums";
+import { JobApplicationStatus } from "~/types/enums";
 
 export type LoaderData = {
   jobData: JobCardData;

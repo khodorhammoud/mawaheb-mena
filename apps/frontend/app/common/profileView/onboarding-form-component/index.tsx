@@ -40,14 +40,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     ? Template.FilledState
     : Template.EmptyState;
 
-  // console.log("📥 Received Props in GeneralizableFormCard:", {
-  //   formType: props.formType,
-  //   fieldName: props.fieldName,
-  //   value: props.value,
-  //   repeatableFieldName: props.repeatableFieldName,
-  //   editable: props.editable,
-  // });
-
   return (
     <Card
       className={`border-2 rounded-xl ${isFilled ? "bg-[#F1F0F3]" : "bg-gray-100 border-gray-300 border-dashed"}`}

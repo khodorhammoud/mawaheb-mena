@@ -24,8 +24,6 @@ export default function Applicants({
     setIsSheetOpen(true);
   };
 
-  // console.log("👀 All Freelancers:", freelancers);
-
   return (
     <div className="">
       {freelancers && freelancers.length > 0 ? (
