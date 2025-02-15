@@ -64,7 +64,7 @@ export default function JobApplicants({
           status={selectedStatus}
         />
       ) : (
-        <p className="text-center text-gray-500">
+        <p className="text-center text-gray-500 mb-10">
           No applicants found for this status.
         </p>
       )}
