@@ -5,7 +5,12 @@ import { useLoaderData } from "@remix-run/react";
 import { AccountType } from "~/types/enums";
 import Skills from "./skills";
 
-export default function Heading() {
+// ✅ Added Type for Props
+interface HeadingProps {
+  isViewing?: boolean; // Optional prop with default false
+}
+
+export default function Heading({ isViewing = false }: HeadingProps) {
   const { accountType } = useLoaderData<{
     accountType: AccountType; // account type Enum
   }>();
@@ -26,7 +31,7 @@ export default function Heading() {
       ) : (
         <>
           {/* Industries Served ✏️ */}
-          <IndustriesServed />
+          {!isViewing && <IndustriesServed />}
         </>
       )}
     </div>

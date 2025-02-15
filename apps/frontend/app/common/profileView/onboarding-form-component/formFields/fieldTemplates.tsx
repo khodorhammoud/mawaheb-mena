@@ -53,9 +53,14 @@ export const TextAreaFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-8 pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-sm font-medium mt-4 text-gray-400">
-        {value as string}
-      </span>
+      {value ? (
+        <div
+          className="text-sm font-medium mt-4 text-gray-600"
+          dangerouslySetInnerHTML={{ __html: value as string }}
+        />
+      ) : (
+        <span className="text-base text-gray-400 italic">Not filled</span>
+      )}
     </div>
   ),
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
@@ -84,24 +89,12 @@ export const NumberFieldTemplate: FieldTemplateState = {
 };
 
 const Project_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      portfolio: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const portfolio = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse portfolio data
-    let portfolio: PortfolioFormFieldType[] = [];
-
-    try {
-      portfolio = data.portfolio ? JSON.parse(data.portfolio) : [];
-    } catch (error) {
-      console.error("Failed to parse portfolio data:", error);
-    }
-
-    portfolio = Array.isArray(portfolio) ? portfolio : [];
-
-    // Handle empty portfolio
-    if (!Array.isArray(portfolio) || portfolio.length === 0) {
+    if (portfolio.length === 0) {
       return (
         <div className="flex flex-col py-4 pl-5 pr-8">
           <span className="text-lg font-medium">Portfolio</span>
@@ -113,69 +106,43 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
     return (
       <>
         <span className="text-lg font-medium">Projects</span>
-        {portfolio.map((item, index) => {
-          const { isHtml, content: parsedDescription } = parseHtmlContent(
-            item.projectDescription || ""
-          );
-
-          const renderFilePreview = () => {
-            return (
+        {portfolio.map((item, index) => (
+          <div key={index} className="flex flex-col">
+            <div className="flex w-full rounded-xl mt-4 bg-white">
               <img
-                className="w-full h-full object-cover"
-                src={item.projectImageUrl}
+                className="w-1/4 object-cover rounded-l-xl"
+                src={
+                  item.projectImageUrl ||
+                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                }
                 alt={item.projectName || "Portfolio Image"}
-                onError={(e) => {
-                  e.currentTarget.src =
-                    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg";
-                }}
               />
-            );
-          };
-
-          return (
-            <div key={index} className="flex flex-col">
-              <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-                {/* File Preview Section */}
-                <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
-                  {renderFilePreview()}
-                </div>
-
-                {/* Content Section */}
-                <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                  <h1 className="flex items-center text-xl mb-4 gap-4">
-                    {item.projectName}
-                    {item.projectLink && (
-                      <a
-                        href={item.projectLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center"
-                        aria-label="Link"
-                      >
-                        <IoLinkSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                      </a>
-                    )}
-                  </h1>
-                  <div className="mb-2 text-sm">
-                    {
-                      <div>
-                        {isHtml ? (
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: parsedDescription,
-                            }}
-                          />
-                        ) : (
-                          <div>{parsedDescription}</div>
-                        )}
-                      </div>
-                    }
-                  </div>
-                </div>
+              <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
+                <h1 className="text-xl mb-4">
+                  {item.projectName || "Unnamed Project"}
+                  {item.projectLink && (
+                    <a
+                      href={item.projectLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      View Project
+                    </a>
+                  )}
+                </h1>
+                {item.projectDescription && (
+                  <div
+                    className="text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: item.projectDescription,
+                    }}
+                  />
+                )}
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </>
     );
   },
@@ -188,82 +155,58 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      workHistory: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const workHistory = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse work history data
-    let workHistory: WorkHistoryFormFieldType[] = [];
-    try {
-      workHistory = JSON.parse(data.workHistory);
-    } catch (error) {
-      console.error("Failed to parse work history data:", error);
-    }
-
-    // Handle empty work history
-    if (!Array.isArray(workHistory) || workHistory.length === 0) {
+    if (workHistory.length === 0) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Work History</span>
+          <span className="text-lg font-medium">{cardTitle}</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render work history items
     return (
       <>
         <span className="text-lg font-medium">Work History</span>
-        {workHistory.map((item, index) => {
-          const { isHtml, content: parsedDescription } = parseHtmlContent(
-            item.jobDescription || "No description provided."
-          );
-          return (
-            <div key={index} className="flex flex-col">
-              <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-                <h1 className="flex items-center text-xl mb-4 gap-2">
-                  <button
-                    className="flex items-center justify-center"
-                    aria-label="Link"
-                  >
-                    <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                  </button>
-                  {item.title || "Job Title"}
-                </h1>
-                <div className="flex gap-3 items-center">
-                  <p className="">{item.company || "Company Name"}</p>
-                  <span className="text-2xl text-gray-200 font-extralight">
-                    |
-                  </span>
-                  <p className="text-sm">
-                    {new Date(item.startDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      year: "numeric",
-                    })}{" "}
-                    -{" "}
-                    {item.currentlyWorkingThere
-                      ? "Present" // Display "Present" if I currently work here is checked ❤️
-                      : new Date(item.endDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        })}
-                  </p>
-                </div>
-                {isHtml ? (
-                  <div
-                    className="text-sm leading-6"
-                    dangerouslySetInnerHTML={{
-                      __html: parsedDescription,
-                    }}
-                  />
-                ) : (
-                  <div>{parsedDescription}</div>
-                )}
+        {workHistory.map((item, index) => (
+          <div key={index} className="flex flex-col">
+            <div className="flex flex-col w-full rounded-xl mt-4 bg-white p-7 gap-3">
+              <h1 className="flex items-center text-xl mb-4 gap-2">
+                <IoBriefcaseSharp className="h-8 w-8 text-primaryColor p-1" />
+                {item.title || "Job Title"}
+              </h1>
+              <div className="flex gap-3 items-center">
+                <p>{item.company || "Company Name"}</p>
+                <span className="text-2xl text-gray-200 font-extralight">
+                  |
+                </span>
+                <p className="text-sm">
+                  {new Date(item.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  -{" "}
+                  {item.currentlyWorkingThere
+                    ? "Present"
+                    : new Date(item.endDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                </p>
               </div>
+              {item.jobDescription && (
+                <div
+                  className="text-sm leading-6"
+                  dangerouslySetInnerHTML={{ __html: item.jobDescription }}
+                />
+              )}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </>
     );
   },
@@ -276,24 +219,12 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      certificates: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const certificates = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse certificates data
-    let certificates: CertificateFormFieldType[] = [];
-
-    try {
-      certificates = data.certificates ? JSON.parse(data.certificates) : [];
-    } catch (error) {
-      console.error("Failed to parse certificates data:", error);
-    }
-
-    certificates = Array.isArray(certificates) ? certificates : [];
-
-    // Handle empty certificates
-    if (!Array.isArray(certificates) || certificates.length === 0) {
+    if (certificates.length === 0) {
       return (
         <div className="flex flex-col pb-4">
           <span className="text-lg font-medium">Certificates</span>
@@ -302,7 +233,6 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
       );
     }
 
-    // Render certificates items
     return (
       <>
         <span className="text-lg font-medium">Certificates</span>
@@ -310,34 +240,19 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
           {certificates.map((item, index) => (
             <div
               key={index}
-              className="flex flex-col w-full h-auto rounded-xl bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white p-8 gap-3"
             >
               <h1 className="flex text-xl mb-4 gap-1">
-                <button
-                  className="flex items-center justify-center self-start mb-2"
-                  aria-label="Certificate"
-                >
-                  <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                </button>
+                <RiAwardFill className="h-8 w-8 text-primaryColor" />
                 {item.certificateName || "Certificate Name"}
               </h1>
               <div className="flex gap-3 items-center">
-                <p className="">{item.issuedBy || "Issuer Name"}</p>
+                <p>{item.issuedBy || "Issuer Name"}</p>
                 <span className="text-2xl text-gray-200 font-extralight">
                   |
                 </span>
                 <p className="text-sm">{item.yearIssued || "Year"}</p>
               </div>
-              {/* {item.attachmentUrl && (
-                <a
-                  href={item.attachmentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 underline"
-                >
-                  {item.attachmentName || "View Certificate"}
-                </a>
-              )} */}
             </div>
           ))}
         </div>
@@ -353,60 +268,45 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Education_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      educations: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const educations = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse education data
-    let educations: EducationFormFieldType[] = [];
-    try {
-      educations = JSON.parse(data.educations);
-    } catch (error) {
-      console.error("Failed to parse education data:", error);
-    }
-
-    // Handle empty education data
-    if (!Array.isArray(educations) || educations.length === 0) {
+    if (!educations.length) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Education</span>
+          <span className="text-lg font-medium">{cardTitle}</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render education items
     return (
-      <div className="flex flex-col">
-        <span className="text-lg font-medium mb-2">Education</span>
+      <>
+        <span className="text-lg font-medium">Education</span>
         <div className="grid grid-cols-2 gap-4">
-          {educations.map((item, index) => (
+          {educations.map(({ degree, institution, graduationYear }, index) => (
             <div
               key={index}
-              className="flex flex-col w-full h-auto rounded-xl bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white p-8 gap-3"
             >
               <h1 className="flex text-xl mb-4 gap-1">
-                <button
-                  className="flex items-center justify-center self-start"
-                  aria-label="Education"
-                >
-                  <FaGraduationCap className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                </button>
-                {item.degree || "Degree Name"}
-                {item.institution && `, ${item.institution}`}
+                <FaGraduationCap className="h-8 w-8 text-primaryColor" />
+                {degree ?? "Degree Name"}
+                {institution && `, ${institution}`}
               </h1>
               <div className="flex gap-3 items-center">
-                <p className="">{item.institution || "Institution Name"}</p>
+                <p>{institution ?? "Institution Name"}</p>
                 <span className="text-2xl text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">{item.graduationYear || "Year"}</p>
+                <p className="text-sm">{graduationYear ?? "Year"}</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </>
     );
   },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
