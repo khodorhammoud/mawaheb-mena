@@ -21,6 +21,7 @@ export interface GeneralizableFormCardProps {
   repeatableFieldName?: string;
   editable?: boolean;
   useRichText?: boolean;
+  value?: string | number | string[]; // ✅ Ensure value prop exists
 }
 
 export interface FilledGeneralizableFormCardProps {

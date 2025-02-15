@@ -146,7 +146,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return Response.json({
       accountType,
-      bioInfo,
+      bioInfo,  
       currentProfile: profile,
       about,
       videoLink,

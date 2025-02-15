@@ -10,6 +10,8 @@ import {
   skillsTable,
   reviewsTable,
   employersTable,
+  accountsTable,
+  UsersTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
 import { JobApplicationStatus, JobStatus } from "~/types/enums";
@@ -925,24 +927,70 @@ export async function getFreelancersIdsByJobId(jobId: number) {
   return freelancerIds || [];
 }
 
-/**
- *
- * get freelancers content
- * @param freelancerIds
- * @returns
- * @throws Error
- */
+// ✅ Full Query: Fetch Freelancers with `account` and `user`
 export async function getFreelancerDetails(freelancerIds: number[]) {
   if (freelancerIds.length === 0) {
     return [];
   }
 
   const freelancers = await db
-    .select()
+    .select({
+      // 🆕 Freelancer Fields
+      id: freelancersTable.id,
+      accountId: freelancersTable.accountId,
+      about: freelancersTable.about,
+      fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+      portfolio: freelancersTable.portfolio,
+      workHistory: freelancersTable.workHistory,
+      cvLink: freelancersTable.cvLink,
+      videoLink: freelancersTable.videoLink,
+      certificates: freelancersTable.certificates,
+      educations: freelancersTable.educations,
+      yearsOfExperience: freelancersTable.yearsOfExperience,
+      hourlyRate: freelancersTable.hourlyRate,
+      compensationType: freelancersTable.compensationType,
+      availableForWork: freelancersTable.availableForWork,
+      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+      hoursAvailableTo: freelancersTable.hoursAvailableTo,
+
+      // 🆕 UserAccount Fields
+      accountType: accountsTable.accountType,
+      slug: accountsTable.slug,
+      isCreationComplete: accountsTable.isCreationComplete,
+      country: accountsTable.country,
+      address: accountsTable.address,
+      region: accountsTable.region,
+      phone: accountsTable.phone,
+      websiteURL: accountsTable.websiteURL,
+      socialMediaLinks: accountsTable.socialMediaLinks,
+
+      // 🆕 User Fields
+      userId: UsersTable.id,
+      firstName: UsersTable.firstName,
+      lastName: UsersTable.lastName,
+      email: UsersTable.email,
+      isVerified: UsersTable.isVerified,
+      isOnboarded: UsersTable.isOnboarded,
+    })
     .from(freelancersTable)
+    .leftJoin(
+      accountsTable,
+      eq(accountsTable.id, freelancersTable.accountId) // ✅ FIXED: Proper eq() usage
+    )
+    .leftJoin(
+      UsersTable,
+      eq(UsersTable.id, accountsTable.userId) // ✅ FIXED: Proper eq() usage
+    )
     .where(inArray(freelancersTable.id, freelancerIds));
 
-  return freelancers; // Return the raw result directly
+  // console.log(
+  //   "🔍 Full Freelancers with User Info:",
+  //   JSON.stringify(freelancers, null, 2)
+  // );
+
+  // ✅ Return Results Directly
+  return freelancers;
 }
 
 export async function updateJobStatus(

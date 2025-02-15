@@ -25,12 +25,14 @@ export default function Industires() {
   // const industryFormRef = useRef<HTMLFormElement>(null); // Ref for industry form
 
   // Load data
-  const { employerIndustries, allIndustries } = useLoaderData() as {
-    employerIndustries: Industry[];
-    allIndustries: Industry[];
-  };
+  const { employerIndustries = [], allIndustries = [] } = useLoaderData<{
+    employerIndustries?: Industry[];
+    allIndustries?: Industry[];
+  }>();
 
-  const [selectedIndustries, setSelectedIndustries] = useState<number[]>([]);
+  const [selectedIndustries, setSelectedIndustries] = useState<number[]>(
+    (employerIndustries ?? []).map((i) => i.id)
+  );
 
   // Set initial industries selected
   useEffect(() => {

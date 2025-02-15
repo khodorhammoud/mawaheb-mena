@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { JobCardData } from "~/types/Job";
-import { Freelancer } from "~/types/User";
+import { Freelancer, UserAccount } from "~/types/User";
 import {
   getJobById,
   fetchJobApplications,
@@ -14,94 +14,98 @@ import {
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import {
-  getProfileInfoByAccountId,
   getCurrentProfileInfo,
+  getCurrentUserAccountType,
+  getCurrentUser,
 } from "~/servers/user.server";
 import { getAccountBio } from "~/servers/employer.server";
-import { getFreelancerAbout } from "~/servers/freelancer.server";
 import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
 import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
 import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
-import { JobApplicationStatus } from "~/types/enums";
+import { JobApplicationStatus, AccountType } from "~/types/enums";
 
 export type LoaderData = {
   jobData: JobCardData;
   freelancers: Freelancer[];
-  accountBio;
-  about;
+  accountBio: any;
+  about: string;
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  try {
-    // Ensures that the user is an employer
-    await requireUserIsEmployerPublished(request);
+  await requireUserIsEmployerPublished(request);
 
-    // Fetch the logged-in employer profile
-    const currentProfile = await getCurrentProfileInfo(request);
+  const [accountType, currentProfile, currentUser] = await Promise.all([
+    getCurrentUserAccountType(request),
+    getCurrentProfileInfo(request),
+    getCurrentUser(request),
+  ]);
+  if (!currentUser) throw new Error("User not authenticated");
 
-    const { jobId } = params;
-    if (!jobId) {
-      return Response.json({ error: "Job ID is required" }, { status: 400 });
+  const { jobId } = params;
+  if (!jobId) throw new Error("Job ID is required");
+
+  const [job, freelancerIds, jobApplications] = await Promise.all([
+    getJobById(parseInt(jobId)),
+    getFreelancersIdsByJobId(parseInt(jobId)),
+    fetchJobApplications(parseInt(jobId)),
+  ]);
+
+  if (!job) throw new Error("Job not found");
+  if (job.employerId !== currentProfile.id) return redirect(`/manage-jobs`);
+
+  const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
+
+  function safeParseArray(data: any): any[] {
+    try {
+      return typeof data === "string"
+        ? JSON.parse(data)
+        : Array.isArray(data)
+          ? data
+          : [];
+    } catch {
+      console.error("Error parsing array:", data);
+      return [];
     }
-
-    const job = await getJobById(parseInt(jobId));
-    if (!job) {
-      return Response.json({ error: "Job not found" }, { status: 404 });
-    }
-
-    // Restrict access: Ensure the job belongs to the logged-in employer, if not, redirect to the all jobs page
-    if (job.employerId !== currentProfile.id) {
-      return redirect(`/manage-jobs`);
-    }
-
-    const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
-
-    // Fetch freelancers
-    const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
-
-    // Fetch applicants
-    const jobApplications = await fetchJobApplications(parseInt(jobId));
-
-    let profile = null;
-    let accountBio = null;
-    let about = null;
-
-    if (freelancers.length > 0) {
-      try {
-        // Fetch the profile for the first freelancer (as an example)
-        profile = await getProfileInfoByAccountId(freelancers[0].accountId);
-        if (profile && profile.account) {
-          accountBio = await getAccountBio(profile.account);
-          about = await getFreelancerAbout(profile);
-        }
-      } catch (error) {
-        console.error("Error fetching profile or account bio:", error);
-      }
-    }
-
-    const jobData: JobCardData = {
-      job: {
-        ...job,
-      },
-      applications: jobApplications,
-    };
-
-    return Response.json({
-      jobData,
-      accountBio,
-      freelancers,
-      about,
-      applications: jobApplications,
-    });
-  } catch (error) {
-    console.error("Failed to load job details:", error);
-    return Response.json(
-      { success: false, error: "Failed to load job details" },
-      { status: 500 }
-    );
   }
+
+  const parsedFreelancers = freelancers.map((f) => ({
+    ...f,
+    portfolio: Array.isArray(f.portfolio)
+      ? f.portfolio
+      : safeParseArray(f.portfolio),
+    workHistory: Array.isArray(f.workHistory)
+      ? f.workHistory
+      : safeParseArray(f.workHistory),
+    certificates: Array.isArray(f.certificates)
+      ? f.certificates
+      : safeParseArray(f.certificates),
+    educations: Array.isArray(f.educations)
+      ? f.educations
+      : safeParseArray(f.educations),
+  }));
+
+  const profile = parsedFreelancers[0]
+    ? await getCurrentProfileInfo(request)
+    : null;
+
+  const accountBio = profile ? await getAccountBio(profile.account) : null;
+
+  // const bioInfo = await getAccountBio(currentProfile.account);
+
+  return Response.json({
+    jobData: { job, applications: jobApplications },
+    freelancers: parsedFreelancers,
+    profile,
+    accountBio,
+    accountType,
+    currentProfile,
+    currentUser,
+    isOwner: currentProfile.account.user.id === currentUser.id,
+    accountOnboarded: currentProfile.account.user.isOnboarded,
+    // bioInfo, // add this for the if you want to add the Heading component
+  });
 }
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
@@ -171,11 +175,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const Layout = () => {
-  const { jobData } = useLoaderData<{
-    jobData: JobCardData;
-  }>();
-
-  const { freelancers, accountBio, about } = useLoaderData<LoaderData>(); // needed for the ApplicantComponent
+  const { jobData, freelancers, accountBio } = useLoaderData<LoaderData>();
 
   return (
     <div>
@@ -206,16 +206,17 @@ const Layout = () => {
         <p className="text-center text-gray-500">Job details not available.</p>
       )}
 
-      {freelancers.length > 0 ? (
-        <JobApplicants
-          freelancers={freelancers}
-          accountBio={accountBio}
-          about={about}
-          status={JobApplicationStatus.Pending}
-        />
+      {jobData ? (
+        <div>
+          <JobApplicants
+            freelancers={freelancers ?? []}
+            accountBio={accountBio ?? {}}
+            status={JobApplicationStatus.Pending}
+          />
+        </div>
       ) : (
         <p className="text-center text-gray-500">
-          No freelancers available for this job.
+          Job applicants not available.
         </p>
       )}
     </div>
