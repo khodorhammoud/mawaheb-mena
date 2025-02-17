@@ -66,7 +66,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
     );
   };
 
-  const maxVisibleLanguages = 3;
+  const maxVisibleLanguages = 2;
   const extraLanguages = selectedLanguages.length - maxVisibleLanguages;
   const visibleLanguages = selectedLanguages.slice(0, maxVisibleLanguages);
   const hiddenLanguages = selectedLanguages.slice(maxVisibleLanguages);
@@ -74,10 +74,10 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
   // console.log("Received profile.languages:", profile.languages);
 
   return (
-    <div className="ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
+    <div className="lg:ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
       {/* HEADER - Languages Title & Edit Button */}
       <div className="flex items-center justify-between w-full">
-        <span className="lg:text-lg sm:text-base text-sm font-medium">
+        <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">
           Languages
         </span>
 
@@ -86,12 +86,13 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
             open={languagesServedOpen}
             onOpenChange={handleLanguageDialogChange}
           >
+            {/* ✏️ */}
             <DialogTrigger asChild>
               <Button variant="link">
-                <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
+                <IoPencilSharp className="lg:relative absolute lg:left-0 left-20 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white w-[500px] max-h-[80vh] overflow-y-auto">
+            <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="mt-3">Languages</DialogTitle>
                 <DialogDescription>
@@ -100,7 +101,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
               </DialogHeader>
 
               {showLanguageMessage && languageFetcher.data?.error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <div className="bg-red-100 border border-red-400 text-red-700 lg:px-4 px-2 lg:py-3 py-1 rounded relative mb-4">
                   <strong className="font-bold">Error: </strong>
                   <span className="block sm:inline">
                     {languageFetcher.data.error.message}
@@ -121,7 +122,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
 
               <DialogFooter className="mt-6">
                 <Button
-                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
+                  className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
                   type="submit"
                   form="freelancer-languages-form"
                   onClick={handleSubmit}
@@ -142,7 +143,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
             {visibleLanguages.map((language) => (
               <Badge
                 key={language.id}
-                className="px-4 py-1 text-sm bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
+                className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
               >
                 {language.name}
               </Badge>
@@ -153,21 +154,23 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                 <DialogTrigger asChild>
                   <Badge
                     variant="outline"
-                    className="px-4 py-1 text-sm bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
+                    className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
                   >
                     +{extraLanguages} more
                   </Badge>
                 </DialogTrigger>
                 <DialogContent className="bg-white max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="text-lg">All Languages</DialogTitle>
+                    <DialogTitle className="xl:text-lg text-base">
+                      All Languages
+                    </DialogTitle>
                   </DialogHeader>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                  <div className="flex flex-wrap items-start gap-2 mt-4">
                     {hiddenLanguages.map((language) => (
                       <Badge
                         key={language.id}
-                        className="px-3 py-1 text-sm bg-blue-100 text-gray-900 rounded-xl shadow-sm flex items-center justify-center"
+                        className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"
                       >
                         {language.name}
                       </Badge>

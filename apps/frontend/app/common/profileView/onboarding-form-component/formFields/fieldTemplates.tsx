@@ -19,8 +19,10 @@ export const TextFieldTemplate: FieldTemplateState = {
 
     return (
       <div className="flex flex-col ">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <div className="text-sm font-medium mt-4 text-gray-400">
+        <span className="lg:text-lg text-base font-medium text-left">
+          {cardTitle}
+        </span>
+        <div className="text-sm font-medium mt-4 text-gray-400 text-left">
           {isHtml ? (
             <div
               dangerouslySetInnerHTML={{
@@ -45,10 +47,12 @@ export const TextFieldTemplate: FieldTemplateState = {
 export const TextAreaFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-8 pl-5 pr-8">
-      <span className="text-lg font-medium">{cardTitle}</span>
+      <span className="lg:text-lg text-base font-medium text-left">
+        {cardTitle}
+      </span>
       {value ? (
         <div
-          className="text-sm font-medium mt-4 text-gray-600"
+          className="text-sm font-medium mt-4 text-gray-600 text-left"
           dangerouslySetInnerHTML={{ __html: value as string }}
         />
       ) : (
@@ -66,10 +70,10 @@ export const TextAreaFieldTemplate: FieldTemplateState = {
 
 export const NumberFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center justify-between pl-5 pr-8">
       <div className="flex flex-col gap-1">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <span className="text-2xl mt-4">{value as number} $</span>
+        <span className="lg:text-lg text-base font-medium">{cardTitle}</span>
+        <span className="lg:text-xl text-lg mt-4">{value as number} $</span>
       </div>
     </div>
   ),
@@ -89,7 +93,7 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
     if (portfolio.length === 0) {
       return (
-        <div className="flex flex-col py-4 pl-5 pr-8">
+        <div className="flex flex-col">
           <span className="text-lg font-medium">Portfolio</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
@@ -98,9 +102,11 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="text-lg font-medium">Projects</span>
+        <span className="lg:text-lg text-base font-medium text-left">
+          Projects
+        </span>
         {portfolio.map((item, index) => (
-          <div key={index} className="flex flex-col">
+          <div key={index} className="flex flex-col text-left">
             <div className="flex w-full rounded-xl mt-4 bg-white">
               <img
                 className="w-1/4 object-cover rounded-l-xl"
@@ -111,7 +117,7 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                 alt={item.projectName || "Portfolio Image"}
               />
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                <h1 className="text-xl mb-4">
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4">
                   {item.projectName || "Unnamed Project"}
                   {item.projectLink && (
                     <a
@@ -164,20 +170,22 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="text-lg font-medium">Work History</span>
+        <span className="lg:text-lg text-base font-medium text-left">
+          Work History
+        </span>
         {workHistory.map((item, index) => (
-          <div key={index} className="flex flex-col">
-            <div className="flex flex-col w-full rounded-xl mt-4 bg-white p-7 gap-3">
-              <h1 className="flex items-center text-xl mb-4 gap-2">
-                <IoBriefcaseSharp className="h-8 w-8 text-primaryColor p-1" />
+          <div key={index} className="flex flex-col text-left">
+            <div className="flex flex-col w-full rounded-xl md:mt-4 mt-2 bg-white lg:p-6 p-4 md:gap-3 gap-1">
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 md:gap-2 gap-1">
+                <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
                 {item.title || "Job Title"}
               </h1>
               <div className="flex gap-3 items-center">
                 <p>{item.company || "Company Name"}</p>
-                <span className="text-2xl text-gray-200 font-extralight">
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">
+                <p className="md:text-sm text-xs">
                   {new Date(item.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -193,7 +201,7 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
               </div>
               {item.jobDescription && (
                 <div
-                  className="text-sm leading-6"
+                  className="md:text-sm text-xs leading-6"
                   dangerouslySetInnerHTML={{ __html: item.jobDescription }}
                 />
               )}
@@ -220,7 +228,7 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
     if (certificates.length === 0) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Certificates</span>
+          <span className="xl:text-lg text-base font-medium">Certificates</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
@@ -228,23 +236,27 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="text-lg font-medium">Certificates</span>
-        <div className="grid grid-cols-2 gap-4">
+        <span className="xl:text-lg text-base font-medium text-left">
+          Certificates
+        </span>
+        <div className="grid grid-cols-2 xl:gap-4 gap-2 text-left">
           {certificates.map((item, index) => (
             <div
               key={index}
-              className="flex flex-col w-full rounded-xl bg-white p-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-1"
             >
-              <h1 className="flex text-xl mb-4 gap-1">
-                <RiAwardFill className="h-8 w-8 text-primaryColor" />
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
+                <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
                 {item.certificateName || "Certificate Name"}
               </h1>
-              <div className="flex gap-3 items-center">
+              <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{item.issuedBy || "Issuer Name"}</p>
-                <span className="text-2xl text-gray-200 font-extralight">
+                <span className="xl:text-2xl lg:text-xl text-lg text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">{item.yearIssued || "Year"}</p>
+                <p className="md:text-sm text-xs">
+                  {item.yearIssued || "Year"}
+                </p>
               </div>
             </div>
           ))}
@@ -277,24 +289,26 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="text-lg font-medium">Education</span>
-        <div className="grid grid-cols-2 gap-4">
+        <span className="xl:text-lg text-base font-medium text-left">
+          Education
+        </span>
+        <div className="grid grid-cols-2 gap-4 text-left">
           {educations.map(({ degree, institution, graduationYear }, index) => (
             <div
               key={index}
-              className="flex flex-col w-full rounded-xl bg-white p-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-2"
             >
-              <h1 className="flex text-xl mb-4 gap-1">
-                <FaGraduationCap className="h-8 w-8 text-primaryColor" />
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
+                <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
                 {degree ?? "Degree Name"}
                 {institution && `, ${institution}`}
               </h1>
-              <div className="flex gap-3 items-center">
+              <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{institution ?? "Institution Name"}</p>
-                <span className="text-2xl text-gray-200 font-extralight">
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">{graduationYear ?? "Year"}</p>
+                <p className="md:text-sm text-xs">{graduationYear ?? "Year"}</p>
               </div>
             </div>
           ))}
@@ -310,12 +324,13 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
   ),
 };
 
+// 2
 export const IncrementFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center">
       <div className="flex flex-col gap-1">
-        <span className="text-lg">{cardTitle}</span>
-        <span className="text-2xl mt-4">
+        <span className="lg:text-lg test-base">{cardTitle}</span>
+        <span className="lg:text-xl text-lg mt-4">
           {value as number} year
           {(value as number) > 1 || (value as number) == 0 ? "s" : ""}
         </span>
@@ -518,10 +533,10 @@ export const FileFieldTemplate: FieldTemplateState = {
 
 export const RangeFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center">
       <div className="flex flex-col gap-1">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <span className="text-2xl font-medium mt-4">
+        <span className="lg:text-lg text-base font-medium">{cardTitle}</span>
+        <span className="lg:text-xl text-lg font-medium mt-4">
           ${value as number}.00 / hour
         </span>
       </div>
@@ -537,7 +552,7 @@ export const RangeFieldTemplate: FieldTemplateState = {
 
 export const CustomFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col py-4 pl-5 pr-8">
+    <div className="flex flex-col pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
       <span className="text-base font-medium">{value as string}</span>
     </div>

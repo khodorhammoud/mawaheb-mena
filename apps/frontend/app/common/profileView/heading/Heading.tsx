@@ -50,7 +50,7 @@ export default function Heading({
   return (
     <div className="flex items-center mb-6 font-['Switzer-Regular'] relative">
       {/* Bio Info ✏️ */}
-      <div className="z-10 -mt-14">
+      <div className="z-10 -mt-14 lg:mb-4 md:mb-24 mb-40">
         <BioInfo
           profile={{ ...profile?.account?.user, ...profileData }}
           canEdit={canEdit}
@@ -58,7 +58,7 @@ export default function Heading({
       </div>
 
       {profileData.accountType === AccountType.Freelancer ? (
-        <div className="sm:absolute sm:flex sm:flex-col sm:gap-4 hidden sm:top-0 xl:-right-14 md:-right-10 right-0 top-20">
+        <div className="absolute flex flex-col gap-4 xl:-right-10 lg:right-0 lg:top-0 left-2 md:top-20 top-24 md:mr-0 mr-10">
           {/* Languages Served ✏️ */}
           <Languages profile={profileData} canEdit={canEdit} />
           <Skills profile={profileData} canEdit={canEdit} />

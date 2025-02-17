@@ -50,7 +50,7 @@ export default function UserProfile({
     <div className="relative">
       {/* Profile Header */}
       <div
-        className="h-32 sm:h-36 md:h-40 w-auto sm:my-4 mb-2 rounded-xl border-2 relative"
+        className="h-32 sm:h-36 md:h-40 w-auto sm:my-4 mb-2 rounded-xl border-2 relative mr-11"
         style={{
           background: "linear-gradient(to right, #27638a 0%, white 75%)",
         }}
@@ -72,7 +72,9 @@ export default function UserProfile({
         </div>
       </div>
 
-      <Heading profile={profile} canEdit={canEdit} />
+      <div className="mb-10">
+        <Heading profile={profile} canEdit={canEdit} />
+      </div>
 
       {/* Grid Layout with Flexbox */}
       <div className="flex flex-col items-center gap-6">

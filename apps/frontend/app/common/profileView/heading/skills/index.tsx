@@ -98,17 +98,17 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
     );
   };
 
-  const maxVisibleSkills = 3;
+  const maxVisibleSkills = 2;
   const extraSkills = freelancerSkills.length - maxVisibleSkills;
   const visibleSkills = freelancerSkills.slice(0, maxVisibleSkills);
   const hiddenSkills = freelancerSkills.slice(maxVisibleSkills);
 
   return (
     <>
-      <div className="ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
+      <div className="lg:ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
         {/* HEADER - Skills Title & Edit Button */}
         <div className="flex items-center justify-between w-full">
-          <span className="lg:text-lg sm:text-base text-sm font-medium">
+          <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">
             Skills
           </span>
 
@@ -119,10 +119,11 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
             >
               <DialogTrigger asChild>
                 <Button variant="link">
-                  <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
+                  {/* ✏️ */}
+                  <IoPencilSharp className="lg:relative absolute lg:left-0 left-10 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white w-[500px] max-h-[80vh] overflow-y-auto">
+              <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="mt-3">Skills</DialogTitle>
                   <DialogDescription>
@@ -132,7 +133,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 </DialogHeader>
 
                 {showMessage && skillsFetcher.data?.error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                  <div className="bg-red-100 border border-red-400 text-red-700 lg:px-4 px-2 lg:py-3 py-1 rounded relative mb-4">
                     <span className="block sm:inline">
                       {skillsFetcher.data.error.message}
                     </span>
@@ -158,11 +159,11 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                     <div key={skill.skillId} className="mb-4">
                       <div className="relative inline-block group">
                         <Badge
-                          className="cursor-pointer px-4 py-2 bg-blue-100 text-gray-900 rounded-2xl hover:bg-blue-200 transition"
+                          className="cursor-pointer xl:px-4 px-3 xl:py-2 py-1 bg-blue-100 text-gray-900 rounded-2xl hover:bg-blue-200 transition"
                           onClick={() => handleRemoveSkill(skill.skillId)}
                         >
                           {skill.label}
-                          <span className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                          <span className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 text-white rounded-full lg:w-4 w-3 lg:h-4 h-3 flex items-center justify-center text-xs">
                             ×
                           </span>
                         </Badge>
@@ -191,7 +192,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                   <Button
                     onClick={handleSubmit}
                     disabled={skillsFetcher.state === "submitting"}
-                    className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium"
+                    className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
                   >
                     Save
                   </Button>
@@ -208,7 +209,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
               {visibleSkills.map((skill) => (
                 <Badge
                   key={skill.skillId}
-                  className="px-4 py-1 text-sm bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
+                  className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
                 >
                   {skill.label}
                 </Badge>
@@ -219,21 +220,23 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                   <DialogTrigger asChild>
                     <Badge
                       variant="outline"
-                      className="px-4 py-1 text-sm bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
+                      className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
                     >
                       +{extraSkills} more
                     </Badge>
                   </DialogTrigger>
                   <DialogContent className="bg-white max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="text-lg">All Skills</DialogTitle>
+                      <DialogTitle className="xl:text-lg text-base">
+                        All Skills
+                      </DialogTitle>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                    <div className="flex flex-wrap items-start gap-2 mt-4">
                       {hiddenSkills.map((skill) => (
                         <Badge
                           key={skill.skillId}
-                          className="px-3 py-1 text-sm bg-blue-100 text-gray-900 rounded-xl shadow-sm flex items-center justify-center"
+                          className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"
                         >
                           {skill.label}
                         </Badge>

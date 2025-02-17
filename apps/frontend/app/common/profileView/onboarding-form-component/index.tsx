@@ -51,7 +51,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
       {/* ✅ Full height wrapper to force equal heights */}
       <div className="flex flex-col h-full">
         {/* ✅ Inner content takes full height */}
-        <div className="flex-1 flex flex-col pt-8 pb-6 pl-7 pr-10 relative">
+        <div className="flex-1 flex flex-col pt-8 pb-6 pl-6 pr-6 relative">
           <TemplateComponent
             value={
               Array.isArray(value)

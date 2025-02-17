@@ -46,7 +46,7 @@ export default function ApplicantSheet({
       >
         <div className="h-full overflow-y-auto overflow-x-hidden">
           <SheetHeader>
-            <div className=" ml-6 mr-4 mb-10">
+            <div className="w-full ml-6 mb-10">
               <UserProfile
                 canEdit={false} // Read-only mode
                 accountOnboarded={true} // Assume already onboarded
@@ -64,7 +64,7 @@ export default function ApplicantSheet({
                       value: freelancer.hourlyRate, // needed
                       minVal: 10,
                       maxVal: 100,
-                      width: "49%",
+                      width: "38%",
                     },
                     {
                       formType: "increment",
@@ -75,7 +75,7 @@ export default function ApplicantSheet({
                       fieldName: "yearsOfExperience",
                       value: freelancer.yearsOfExperience,
                       triggerIcon: <SlBadge />,
-                      width: "49%",
+                      width: "38%",
                     },
                   ],
                   [
@@ -87,7 +87,7 @@ export default function ApplicantSheet({
                       formName: "freelancer-video",
                       fieldName: "videoLink",
                       value: freelancer.videoLink,
-                      width: "49%",
+                      width: "38%",
                     },
                     {
                       formType: "textArea",
@@ -98,7 +98,7 @@ export default function ApplicantSheet({
                       fieldName: "about",
                       value: freelancer.about,
                       useRichText: true,
-                      width: "49%",
+                      width: "38%",
                     },
                   ],
                   [
@@ -111,7 +111,7 @@ export default function ApplicantSheet({
                       fieldName: "portfolio",
                       value: normalizedFreelancer.portfolio,
                       repeatableFieldName: "portfolio",
-                      width: "100%",
+                      width: "92%",
                     },
                   ],
                   [
@@ -124,7 +124,7 @@ export default function ApplicantSheet({
                       fieldName: "workHistory",
                       value: normalizedFreelancer.workHistory,
                       repeatableFieldName: "workHistory",
-                      width: "100%",
+                      width: "92%",
                     },
                   ],
                   [
@@ -137,7 +137,7 @@ export default function ApplicantSheet({
                       fieldName: "certificates",
                       value: normalizedFreelancer.certificates,
                       repeatableFieldName: "certificates",
-                      width: "100%",
+                      width: "92%",
                     },
                   ],
                   [
@@ -150,7 +150,7 @@ export default function ApplicantSheet({
                       fieldName: "educations",
                       value: normalizedFreelancer.educations,
                       repeatableFieldName: "educations",
-                      width: "100%",
+                      width: "92%",
                     },
                   ],
                 ]}
