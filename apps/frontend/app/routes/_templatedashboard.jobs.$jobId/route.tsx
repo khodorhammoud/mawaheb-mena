@@ -23,6 +23,10 @@ import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDes
 import JobApplicants from "~/common/applicant/JobApplicants";
 import { FaArrowLeft } from "react-icons/fa";
 import { JobApplicationStatus } from "~/types/enums";
+import {
+  getFreelancerLanguages,
+  getFreelancerSkills,
+} from "~/servers/freelancer.server";
 
 export type LoaderData = {
   jobData: JobCardData;
@@ -68,6 +72,23 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
   }
 
+  // ✅ Fetch languages for each freelancer
+  const freelancerLanguages = await Promise.all(
+    freelancers.map(async (freelancer) => ({
+      freelancerId: freelancer.id,
+      languages: await getFreelancerLanguages(freelancer.id), // Fetch from DB
+    }))
+  );
+
+  // ✅ Fetch skills for each freelancer
+  const freelancerSkills = await Promise.all(
+    freelancers.map(async (freelancer) => ({
+      freelancerId: freelancer.id,
+      skills: await getFreelancerSkills(freelancer.id), // Fetch from DB
+    }))
+  );
+
+  // ✅ Attach languages to each freelancer
   const parsedFreelancers = freelancers.map((f) => ({
     ...f,
     portfolio: Array.isArray(f.portfolio)
@@ -82,15 +103,26 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     educations: Array.isArray(f.educations)
       ? f.educations
       : safeParseArray(f.educations),
+
+    // ✅ Attach languages
+    languages:
+      freelancerLanguages.find((fl) => fl.freelancerId === f.id)?.languages ||
+      [],
+
+    // ✅ Attach skills
+    skills:
+      freelancerSkills.find((fs) => fs.freelancerId === f.id)?.skills || [],
   }));
 
   const profile = parsedFreelancers[0]
     ? await getCurrentProfileInfo(request)
     : null;
 
+  // console.log("Parsed Freelancers with Skills:", parsedFreelancers);
+
   const accountBio = profile ? await getAccountBio(profile.account) : null;
 
-  // const bioInfo = await getAccountBio(currentProfile.account);
+  const bioInfo = await getAccountBio(currentProfile.account); // add this to have the heading functioning well
 
   return Response.json({
     jobData: { job, applications: jobApplications },
@@ -102,7 +134,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     currentUser,
     isOwner: currentProfile.account.user.id === currentUser.id,
     accountOnboarded: currentProfile.account.user.isOnboarded,
-    // bioInfo, // add this for the if you want to add the Heading component
+    bioInfo, // add this for if you want to add the Heading component
   });
 }
 

@@ -2,7 +2,6 @@ import { JobApplicationStatus } from "~/types/enums";
 import { useState } from "react";
 import StatusDropdown from "~/routes/_templatedashboard.jobs.$jobId/common/JobStatus";
 import ApplicantSheet from "./ApplicantSheet";
-import DOMPurify from "isomorphic-dompurify";
 
 type ApplicantsProps = {
   freelancers: any[];
@@ -48,23 +47,20 @@ export default function Applicants({
                 </div>
 
                 <div className="lg:w-[40%] md:w-[30%]">
-                  <h2
-                    className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300 p-0"
-                    onClick={() => handleApplicantClick(freelancer)}
-                  >
-                    {freelancer.firstName ?? "Unknown"}{" "}
-                    {freelancer.lastName?.charAt(0).toUpperCase() ?? ""}.
+                  <h2 className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300 p-0">
+                    <button onClick={() => handleApplicantClick(freelancer)}>
+                      {freelancer.firstName ?? "Unknown"}{" "}
+                      {freelancer.lastName?.charAt(0).toUpperCase() ?? ""}.
+                    </button>
                   </h2>
 
                   <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
-                  <p
+                  <div
                     className="text-sm leading-6 mb-6"
                     dangerouslySetInnerHTML={{
-                      __html: freelancer.about
-                        ? DOMPurify.sanitize(freelancer.about)
-                        : "No portfolio description available",
+                      __html: freelancer.about || "No description available",
                     }}
-                  />
+                  ></div>
                 </div>
                 <div>
                   <div>
