@@ -81,23 +81,21 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
 
   return (
     <div className="">
-      <div className="md:flex">
+      <div className="flex">
         {/* CIRCLE */}
-        <div className="bg-blue-100 rounded-full lg:w-36 lg:h-36 sm:h-32 sm:w-32 h-28 w-28 flex items-center justify-center lg:mr-5 mr-2 lg:ml-20 ml-8 md:mb-14 border-4 border-white">
-          <span className="lg:text-5xl sm:text-4xl text-3xl font-semibold text-primaryColor">
+        <div className="bg-blue-100 rounded-full xl:w-36 xl:h-36 lg:h-32 lg:w-32 h-28 w-28 flex items-center justify-center lg:mr-5 mr-2 2xl:ml-16 ml-4 md:mb-14 border-4 border-white">
+          <span className="xl:text-5xl lg:text-4xl md:text-3xl text-2xl font-semibold text-primaryColor">
             {(profileData?.firstName?.charAt(0) || "?").toUpperCase()}
             {(profileData?.lastName?.charAt(0) || "?").toUpperCase()}
-
-            {/* // comment that for the wierd error (cannot find ...) */}
           </span>
         </div>
 
         {/* NAME + ✏️ + POPUP + BUTTONS */}
         <div className="md:mb-14 mb-4">
           {/* NAME + ✏️ + POPUP */}
-          <div className="flex md:mt-14 mt-4">
+          <div className="flex mt-14">
             {/* NAME */}
-            <h1 className="xl:text-3xl lg:text-2xl sm:text-xl text-lg xl:mt-0 md:mt-1 mt-1 md:ml-0 ml-10">
+            <h1 className="2xl:text-2xl lg:text-xl md:text-lg text-base xl:mt-0 mt-1 md:ml-0 sm:ml-4 ml-0">
               {profileData.firstName || "?"} {profileData.lastName || "?"}
               {/* // comment that for the wierd error (cannot find ...) */}
             </h1>
@@ -108,14 +106,16 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                 {/* ✏️ */}
                 <DialogTrigger asChild>
                   <Button variant="link">
-                    <IoPencilSharp className="h-8 w-8 text-small text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
+                    <IoPencilSharp className="2xl:h-8 xl:h-7 h-6 2xl:w-8 xl:w-7 w-6 text-sm text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
                   </Button>
                 </DialogTrigger>
                 {/* POPUP CONTENT */}
                 <DialogContent className="bg-white">
                   {/* BIO */}
                   <DialogHeader>
-                    <DialogTitle className="mt-3 text-lg">Bio</DialogTitle>
+                    <DialogTitle className="mt-3 lg:text-lg text-base">
+                      Bio
+                    </DialogTitle>
                   </DialogHeader>
 
                   {/* ERROR MESSAGE */}
@@ -129,7 +129,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
 
                   {/* SUCCESS MESSAGE */}
                   {showBioMessage && bioFetcher.data?.success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                    <div className="bg-green-100 border border-green-400 text-green-700 lg:px-4 px-2 lg:py-3 py-2 rounded relative mb-4">
                       <span className="block sm:inline">
                         Bio updated successfully
                       </span>
@@ -320,20 +320,20 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
           </div>
 
           {/* ADD LOCATION + ADD WEBSITE */}
-          <div className="flex items-center sm:h-10 md:ml-0 sm:ml-10 ml-10 xl:-mt-1 lg:-mt-2 sm:-mt-3">
-            <div className="flex sm:mt-6 items-center justify-center">
+          <div className="relative flex flex-wrap items-center justify-start sm:h-10 md:ml-0 sm:ml-4 xl:-mt-1 lg:-mt-2 sm:-mt-3 gap-x-3">
+            <div className="flex sm:mt-2 items-center justify-start gap-x-2">
               {/* COUNTRY */}
               {profileData?.country || profileData?.account?.country ? (
-                <span className="text-sm text-black font-semibold tracking-wide">
+                <span className="lg:text-sm text-xs text-black font-semibold tracking-wide">
                   {profileData?.country || profileData?.account?.country}
                 </span>
               ) : (
                 canEdit && (
                   <button
                     onClick={() => handleTriggerClick?.(countryInputRef)}
-                    className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit"
                   >
-                    <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                    <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Country
                   </button>
                 )
@@ -341,7 +341,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
 
               {/* ADDRESS */}
               {profileData?.address || profileData?.account?.address ? (
-                <span className="text-sm text-black font-semibold tracking-wide ml-1">
+                <span className="lg:text-sm text-xs text-black font-semibold tracking-wide">
                   {profileData?.country || profileData?.account?.country
                     ? ", "
                     : ""}
@@ -351,9 +351,9 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                 canEdit && (
                   <button
                     onClick={() => handleTriggerClick?.(addressInputRef)}
-                    className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit ml-2"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit"
                   >
-                    <FaMapMarkerAlt className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                    <FaMapMarkerAlt className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Address
                   </button>
                 )
@@ -361,69 +361,76 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
 
               {/* WEBSITE */}
               {profileData?.websiteURL || profileData?.account?.websiteURL ? (
-                <span className="text-sm text-black font-semibold tracking-wide ml-2">
+                <span className="lg:text-sm text-xs text-black font-semibold tracking-wide">
                   {profileData?.websiteURL || profileData?.account?.websiteURL}
                 </span>
               ) : (
                 canEdit && (
                   <button
                     onClick={() => handleTriggerClick?.(websiteInputRef)}
-                    className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-4 sm:py-2 px-2 py-1 font-semibold tracking-wide not-active-gradient hover:text-white sm:mr-2 sm:mb-0 mb-2 w-fit ml-2"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:ml-2 ml-1 sm:mb-0 mb-2 w-fit"
                   >
-                    <FaGlobe className="md:h-4 h-3 md:w-4 w-3 mr-2" />
+                    <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Website
                   </button>
                 )
               )}
             </div>
 
-            {/* SOCIAL MEDIA ICONS */}
-            <div className="flex items-center justify-center gap-2 ml-2 sm:mt-6">
-              {(profileData?.socialMediaLinks?.linkedin ||
-                profileData?.account?.socialMediaLinks?.linkedin) && (
-                <a
-                  href={
-                    profileData?.socialMediaLinks?.linkedin ||
-                    profileData?.account?.socialMediaLinks?.linkedin
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
-                >
-                  <FaLinkedin className="w-4 h-4" />
-                </a>
-              )}
+            {/* SOCIAL MEDIA ICONS (Only Show If At Least One Exists) */}
+            {(profileData?.socialMediaLinks?.linkedin ||
+              profileData?.account?.socialMediaLinks?.linkedin ||
+              profileData?.socialMediaLinks?.gitlab ||
+              profileData?.account?.socialMediaLinks?.gitlab ||
+              profileData?.socialMediaLinks?.dribbble ||
+              profileData?.account?.socialMediaLinks?.dribbble) && (
+              <div className="inline-flex items-center gap-x-2 sm:mt-2 mt-1">
+                {profileData?.socialMediaLinks?.linkedin ||
+                profileData?.account?.socialMediaLinks?.linkedin ? (
+                  <a
+                    href={
+                      profileData?.socialMediaLinks?.linkedin ||
+                      profileData?.account?.socialMediaLinks?.linkedin
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
+                  >
+                    <FaLinkedin className="lg:w-4 w-3 lg:h-4 h-3" />
+                  </a>
+                ) : null}
 
-              {(profileData?.socialMediaLinks?.gitlab ||
-                profileData?.account?.socialMediaLinks?.gitlab) && (
-                <a
-                  href={
-                    profileData?.socialMediaLinks?.gitlab ||
-                    profileData?.account?.socialMediaLinks?.gitlab
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
-                >
-                  <FaGitlab className="w-4 h-4" />
-                </a>
-              )}
+                {profileData?.socialMediaLinks?.gitlab ||
+                profileData?.account?.socialMediaLinks?.gitlab ? (
+                  <a
+                    href={
+                      profileData?.socialMediaLinks?.gitlab ||
+                      profileData?.account?.socialMediaLinks?.gitlab
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
+                  >
+                    <FaGitlab className="lg:w-4 w-3 lg:h-4 h-3" />
+                  </a>
+                ) : null}
 
-              {(profileData?.socialMediaLinks?.dribbble ||
-                profileData?.account?.socialMediaLinks?.dribbble) && (
-                <a
-                  href={
-                    profileData?.socialMediaLinks?.dribbble ||
-                    profileData?.account?.socialMediaLinks?.dribbble
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
-                >
-                  <FaDribbble className="w-4 h-4" />
-                </a>
-              )}
-            </div>
+                {profileData?.socialMediaLinks?.dribbble ||
+                profileData?.account?.socialMediaLinks?.dribbble ? (
+                  <a
+                    href={
+                      profileData?.socialMediaLinks?.dribbble ||
+                      profileData?.account?.socialMediaLinks?.dribbble
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
+                  >
+                    <FaDribbble className="lg:w-4 w-3 lg:h-4 h-3" />
+                  </a>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
       </div>
