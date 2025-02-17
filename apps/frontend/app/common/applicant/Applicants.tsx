@@ -47,8 +47,11 @@ export default function Applicants({
                 </div>
 
                 <div className="lg:w-[40%] md:w-[30%]">
-                  <h2 className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300 p-0">
-                    <button onClick={() => handleApplicantClick(freelancer)}>
+                  <h2 className="tracking-wide mb-4  inline-block transition-transform duration-300 p-0">
+                    <button
+                      className="text-xl font-semibold hover:underline"
+                      onClick={() => handleApplicantClick(freelancer)}
+                    >
                       {freelancer.firstName ?? "Unknown"}{" "}
                       {freelancer.lastName?.charAt(0).toUpperCase() ?? ""}.
                     </button>
