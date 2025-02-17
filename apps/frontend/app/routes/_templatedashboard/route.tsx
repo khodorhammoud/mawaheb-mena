@@ -27,7 +27,7 @@ export default function Layout() {
   return (
     <div>
       <Header />
-      <div className="flex mt-[100px]">
+      <div className="flex mt-[100px] mb-10">
         {isOnboarded ? (
           <>
             <Sidebar />
@@ -37,7 +37,7 @@ export default function Layout() {
           </>
         ) : (
           // Add 'w-full' to make the container take full width when no sidebar
-          <div className="container w-full mt-10 p-5">
+          <div className="container w-full mt-10 p-5 mb-10">
             <Outlet />
           </div>
         )}
