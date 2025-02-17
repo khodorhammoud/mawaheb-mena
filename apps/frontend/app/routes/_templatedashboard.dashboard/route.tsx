@@ -30,6 +30,7 @@ import {
   getFreelancerAvailability,
   getFreelancerLanguages,
   handleFreelancerOnboardingAction,
+  getFreelancerSkills,
 } from "~/servers/freelancer.server";
 import Header from "../_templatedashboard/header";
 import { requireUserOnboarded, requireUserVerified } from "~/auth/auth.server";
@@ -64,10 +65,10 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // see that the user is verified
+  // Ensure user is verified
   await requireUserOnboarded(request);
 
-  // Determine the account type (freelancer/employer)
+  // Determine account type (Freelancer/Employer)
   const accountType: AccountType = await getCurrentUserAccountType(request);
 
   // Get the current profile
@@ -77,15 +78,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!currentUser) {
     throw new Error("User not authenticated");
   }
-  // Determine if the current user owns the account
-  const isOwner = currentProfile.account.user.id === currentUser.id;
 
+  // Check if current user owns the account
+  const isOwner = currentProfile.account.user.id === currentUser.id;
   const accountOnboarded = currentProfile?.account?.user?.isOnboarded;
   const bioInfo = await getAccountBio(currentProfile.account);
 
-  // Check if the user is an Employer
+  // ✅ Employer Handling
   if (accountType === AccountType.Employer) {
     currentProfile = currentProfile as Employer;
+
+    // Fetch employer-specific data
     const employerIndustries = await getEmployerIndustries(currentProfile);
     const allIndustries = (await getAllIndustries()) || [];
     const yearsInBusiness = await getEmployerYearsInBusiness(currentProfile);
@@ -95,7 +98,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       await getEmployerDashboardData(request);
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
-    // Return response for Employer
     return Response.json({
       accountType,
       bioInfo,
@@ -113,41 +115,51 @@ export async function loader({ request }: LoaderFunctionArgs) {
       isOwner, // Added isOwner
       canEdit: false, // Employers cannot edit
     });
-  } else if (accountType === AccountType.Freelancer) {
-    const profile = currentProfile as Freelancer;
+  }
 
-    // Fetch all the necessary data safely
+  // ✅ Freelancer Handling
+  if (accountType === AccountType.Freelancer) {
+    currentProfile = currentProfile as Freelancer;
+    const profile = currentProfile;
+
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     const portfolio = profile.portfolio as PortfolioFormFieldType[];
     const workHistory = profile.workHistory as WorkHistoryFormFieldType[];
-    // Freelancer-specific data
-    currentProfile = currentProfile as Freelancer;
 
-    const freelancerLanguages = await getFreelancerLanguages(profile.id);
-    const allLanguages = await getAllLanguages();
-
-    // Get the freelancer availability data
-    const freelancerAvailability = await getFreelancerAvailability(
-      currentProfile.accountId
-    );
-
-    const availabilityData = {
-      availableForWork: freelancerAvailability?.availableForWork ?? false,
-      jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
-      availableFrom: freelancerAvailability?.availableFrom
-        ? new Date(freelancerAvailability.availableFrom)
-            .toISOString()
-            .split("T")[0] // Convert to yyyy-MM-dd
-        : "", // Fallback to empty string
-      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
-      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
+    const safeParseArray = (data: any): any[] => {
+      try {
+        return Array.isArray(data) ? data : JSON.parse(data ?? "[]");
+      } catch {
+        console.error("Error parsing array:", data);
+        return [];
+      }
     };
+
+    // ✅ Fetch skills and languages using the correct ID
+    const skills = await getFreelancerSkills(currentProfile.id);
+    const languages = await getFreelancerLanguages(currentProfile.id);
+
+    // console.log("🔥 LOADER: Fetched Skills:", skills);
+    // console.log("🔥 LOADER: Fetched Languages:", languages);
+
+    // ✅ Attach skills and languages to the processed profile
+    const processedProfile = {
+      ...currentProfile,
+      portfolio: safeParseArray(currentProfile.portfolio),
+      workHistory: safeParseArray(currentProfile.workHistory),
+      certificates: safeParseArray(currentProfile.certificates),
+      educations: safeParseArray(currentProfile.educations),
+      skills, // ✅ Attach skills here
+      languages, // ✅ Attach languages here
+    };
+
+    // console.log("🔥 LOADER: Final Processed Profile:", processedProfile);
 
     return Response.json({
       accountType,
-      bioInfo,  
-      currentProfile: profile,
+      bioInfo,
+      currentProfile: processedProfile,
       about,
       videoLink,
       hourlyRate: profile.hourlyRate,
@@ -157,12 +169,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       certificates: profile.certificates,
       portfolio,
       workHistory,
-      isOwner, // Added isOwner
-      canEdit: isOwner, // Freelancers can edit if they are the owner
-      currentUser: currentProfile,
-      freelancerAvailability: availabilityData,
-      freelancerLanguages,
-      allLanguages,
+      isOwner,
+      canEdit: isOwner,
+      currentUser,
+      freelancerAvailability: {
+        availableForWork: profile.availableForWork ?? false,
+        jobsOpenTo: profile.jobsOpenTo ?? [],
+        availableFrom: profile.availableFrom ?? "",
+        hoursAvailableFrom: profile.hoursAvailableFrom ?? "",
+        hoursAvailableTo: profile.hoursAvailableTo ?? "",
+      },
     });
   }
 

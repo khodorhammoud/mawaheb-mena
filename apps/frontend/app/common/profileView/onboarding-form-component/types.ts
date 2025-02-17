@@ -1,4 +1,7 @@
+import { FetcherWithComponents } from "@remix-run/react";
+
 export interface GeneralizableFormCardProps {
+  fetcher: FetcherWithComponents<any>; // ✅ Accept fetcher from UserProfile
   formType:
     | "text"
     | "number"
