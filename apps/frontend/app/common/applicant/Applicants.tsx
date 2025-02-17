@@ -2,7 +2,7 @@ import { JobApplicationStatus } from "~/types/enums";
 import { useState } from "react";
 import StatusDropdown from "~/routes/_templatedashboard.jobs.$jobId/common/JobStatus";
 import ApplicantSheet from "./ApplicantSheet";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 type ApplicantsProps = {
   freelancers: any[];
