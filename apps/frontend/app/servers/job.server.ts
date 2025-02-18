@@ -1,5 +1,5 @@
 import { db } from "../db/drizzle/connector";
-import { and, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
@@ -417,12 +417,12 @@ export async function getMyJobs(freelancerId: number) {
   return jobs;
 }
 
-// ✅ Ensure the freelancer has an accepted job application before reviewing
+// ✅ Check if a freelancer has at least one accepted job application with an employer
 export async function hasAcceptedApplication(
   freelancerId: number,
   employerId: number
 ) {
-  // ✅ Join job applications with jobs to check employer
+  // ✅ Join job applications with jobs to verify the employer
   const result = await db
     .select()
     .from(jobApplicationsTable)
@@ -430,72 +430,113 @@ export async function hasAcceptedApplication(
     .where(
       and(
         eq(jobApplicationsTable.freelancerId, freelancerId),
-        eq(jobsTable.employerId, employerId), // ✅ Check for employer, not just jobId
-        eq(jobApplicationsTable.status, "accepted") // ✅ Ensure status is "accepted"
+        eq(jobsTable.employerId, employerId), // ✅ Ensure the job belongs to the employer
+        eq(jobApplicationsTable.status, "accepted") // ✅ Only check accepted applications
       )
     )
     .limit(1);
 
-  // console.log("📨 Retrieved Applications:", result);
-  return result.length > 0;
+  return result.length > 0; // ✅ Returns true if at least one accepted job exists
+}
+
+// ✅ Retrieve all accepted job applications between a freelancer and an employer
+export async function getJobApplicationsForFreelancer(
+  freelancerId: number,
+  employerId: number
+) {
+  // ✅ Join job applications with jobs to verify employer-freelancer relation
+  const result = await db
+    .select()
+    .from(jobApplicationsTable)
+    .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id)) // ✅ Join jobs table
+    .where(
+      and(
+        eq(jobApplicationsTable.freelancerId, freelancerId),
+        eq(jobsTable.employerId, employerId), // ✅ Ensure employer owns the job
+        eq(jobApplicationsTable.status, "accepted") // ✅ Filter only accepted applications
+      )
+    );
+
+  return result; // ✅ Returns a list of all accepted job applications
 }
 
 // ✅ Save Review to Database
 // ✅ Ensure freelancer exists before saving review
 export async function saveReview({
-  employerId,
-  freelancerId,
+  reviewerId,
+  revieweeId,
   rating,
   comment,
+  reviewType,
 }: {
-  employerId: number;
-  freelancerId: number;
+  reviewerId: number;
+  revieweeId: number;
   rating: number;
-  comment: string;
+  comment?: string | null;
+  reviewType: string;
 }) {
   try {
     const result = await db
       .insert(reviewsTable)
       .values({
-        employerId,
-        freelancerId,
+        reviewerId,
+        revieweeId,
         rating,
         comment,
+        reviewType,
       } as typeof reviewsTable.$inferInsert)
-      .returning({ id: reviewsTable.id }); // ✅ Ensure an ID is returned
+      .returning({ id: reviewsTable.id });
 
-    return { success: true, message: "Review submitted successfully." };
+    return {
+      success: true,
+      message: "Review submitted successfully.",
+      id: result[0].id,
+    };
   } catch (error) {
     return { success: false, message: (error as Error).message };
   }
 }
 
 // ✅ Get Review for a Specific Freelancer and Employer
-export async function getReview(freelancerId: number, employerId: number) {
+export async function getReview(
+  reviewerId: number,
+  revieweeId: number,
+  reviewType: string
+) {
+  // console.log("🔍 Fetching review for:", {
+  //   reviewerId,
+  //   revieweeId,
+  //   reviewType,
+  // });
+
   const result = await db
     .select()
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.freelancerId, freelancerId),
-        eq(reviewsTable.employerId, employerId)
+        eq(reviewsTable.revieweeId, revieweeId),
+        eq(reviewsTable.reviewerId, reviewerId),
+        eq(reviewsTable.reviewType, reviewType)
       )
     )
     .limit(1);
 
-  return result.length > 0 ? result[0] : null; // ✅ Ensure `null` is returned if no review exists
+  // console.log("✅ Review Fetch Result:", result);
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function updateReview({
-  employerId,
-  freelancerId,
+  reviewerId,
+  revieweeId,
   rating,
   comment,
+  reviewType,
 }: {
-  employerId: number;
-  freelancerId: number;
+  reviewerId: number;
+  revieweeId: number;
   rating: number;
   comment?: string | null;
+  reviewType: string;
 }) {
   const updateData: { rating: number; comment?: string | null } = { rating };
   if (comment !== undefined) {
@@ -507,24 +548,26 @@ export async function updateReview({
     .set(updateData)
     .where(
       and(
-        eq(reviewsTable.freelancerId, freelancerId),
-        eq(reviewsTable.employerId, employerId)
+        eq(reviewsTable.revieweeId, revieweeId),
+        eq(reviewsTable.reviewerId, reviewerId),
+        eq(reviewsTable.reviewType, reviewType)
       )
     );
 
   return result;
 }
 
-// used in the laoder for the review task
-// used in the laoder for the review task
-
 /** ✅ Get employerId by Job ID */
 export async function getEmployerIdByJobId(jobId: number) {
+  console.log("🔍 Fetching employerId for jobId:", jobId);
+
   const job = await db
     .select({ employerId: jobsTable.employerId })
     .from(jobsTable)
     .where(eq(jobsTable.id, jobId))
     .limit(1);
+
+  // console.log("✅ Query Result:", job);
 
   return job.length > 0 ? job[0].employerId : null;
 }
@@ -540,8 +583,24 @@ export async function getFreelancerIdbyAccountId(accountId: number) {
   return freelancer.length > 0 ? freelancer[0].id : null;
 }
 
-// used in the laoder for the review task
-// used in the laoder for the review task
+/** ✅ Get the Average Rating of a Freelancer */
+export async function getFreelancerAverageRating(freelancerId: number) {
+  const result = await db
+    .select({
+      avgRating: sql<number>`AVG(${reviewsTable.rating})`, // ✅ Calculate AVG rating
+    })
+    .from(reviewsTable)
+    .where(
+      and(
+        eq(reviewsTable.revieweeId, freelancerId), // ✅ Ensure it's the freelancer being reviewed
+        eq(reviewsTable.reviewType, "freelancer_review") // ✅ Only fetch "freelancer_review" types
+      )
+    );
+
+  return result.length > 0 && result[0].avgRating !== null
+    ? parseFloat(result[0].avgRating.toFixed(1)) // ✅ Format to 1 decimal place
+    : 0;
+}
 
 // 👇 is not with 👆 :D
 // export async function getJobApplicationStatus(jobId: number) {

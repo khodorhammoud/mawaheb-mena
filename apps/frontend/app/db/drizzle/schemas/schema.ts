@@ -429,17 +429,18 @@ export const jobApplicationsTable = pgTable("job_applications", {
  * @property comment - text field for review comments
  * @property created_at - timestamp when the review was submitted
  */
+
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
-  employerId: integer("employer_id")
-    .references(() => employersTable.id)
-    .notNull(),
-  freelancerId: integer("freelancer_id")
-    .references(() => freelancersTable.id)
-    .notNull(),
+
+  reviewerId: integer("reviewer_id").notNull(), // The user leaving the review
+  revieweeId: integer("reviewee_id").notNull(), // The user being reviewed
+
   rating: real("rating").notNull(),
   comment: text("comment").default(null), // ✅ Ensure nullable field
   createdAt: timestamp("created_at").default(sql`now()`),
+
+  reviewType: text("review_type").notNull(), // "freelancer_review" or "employer_review"
 });
 
 /**

@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign } from "react-icons/fa";
+import Heading from "../profileView/heading/Heading";
 
 type ApplicantSheetProps = {
   isOpen: boolean; // Whether the sheet is open
