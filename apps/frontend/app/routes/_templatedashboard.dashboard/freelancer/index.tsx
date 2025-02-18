@@ -32,20 +32,18 @@ export default function Dashboard() {
       >
         {/* Show Edit Title button only if the user can edit */}
         {canEdit && (
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-6 right-4">
             <button className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
               Add Title
             </button>
           </div>
         )}
-        <div className="xl:right-40 lg:right-32 md:right-24 sm:right-16 right-10">
+        <div className="xl:right-4 top-16 absolute">
           {/* Conditionally Render Star Rating */}
-          {!accountOnboarded && (
-            <div className="flex items-center justify-end mt-6 mr-1">
-              <AiFillStar className="text-yellow-500 h-5 w-5 mr-1" />
-              <span>0/5</span>
-            </div>
-          )}
+          <div className="flex items-center justify-end mt-6 mr-1">
+            <AiFillStar className="text-yellow-500 h-5 w-5 mr-1" />
+            <span>0/5</span>
+          </div>
         </div>
       </div>
 

@@ -52,12 +52,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const jobId = Number(formData.get("jobId"));
   const employerId = Number(formData.get("employerId"));
   const rating = Number(formData.get("rating"));
-  const comment = formData.get("comment") as string;
+  const comment = formData.get("comment")?.toString() || null; // ✅ Ensure string or null
 
-  if (!jobId || !employerId) {
+  if (!jobId || !employerId || isNaN(rating)) {
     return Response.json({
       success: false,
-      message: "Invalid job or employer ID.",
+      message: "Invalid job, employer ID, or rating.",
     });
   }
 
@@ -69,9 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  // ✅ Check if the freelancer has an accepted job application for this employer
   const hasApplication = await hasAcceptedApplication(freelancerId, employerId);
-
   if (!hasApplication) {
     return Response.json({
       success: false,
@@ -80,14 +78,33 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
+  // ✅ Determine reviewType based on who is reviewing
+  const reviewType = "freelancer_review"; // Adjust if employers can also review freelancers
+
   try {
     if (actionType === "review") {
-      const existingReview = await getReview(freelancerId, employerId);
+      const existingReview = await getReview(
+        freelancerId,
+        employerId,
+        reviewType
+      );
 
       if (existingReview) {
-        await updateReview({ employerId, freelancerId, rating, comment });
+        await updateReview({
+          reviewerId: freelancerId,
+          revieweeId: employerId,
+          rating,
+          comment,
+          reviewType,
+        });
       } else {
-        await saveReview({ employerId, freelancerId, rating, comment });
+        await saveReview({
+          reviewerId: freelancerId,
+          revieweeId: employerId,
+          rating,
+          comment,
+          reviewType,
+        });
       }
 
       return Response.json({ success: true });
@@ -108,18 +125,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
   const jobId = parseInt(url.searchParams.get("jobId") || "0", 10);
-  let employerId = parseInt(url.searchParams.get("employerId") || "0", 10);
+  let revieweeId = parseInt(url.searchParams.get("employerId") || "0", 10);
 
-  if (jobId > 0 && employerId === 0) {
-    employerId = (await getEmployerIdByJobId(jobId)) || 0;
+  if (!revieweeId && jobId > 0) {
+    revieweeId = (await getEmployerIdByJobId(jobId)) ?? 0;
   }
 
-  const freelancerId = await getFreelancerIdbyAccountId(accountId);
-  if (!freelancerId) {
+  if (!revieweeId) {
+    return Response.json({
+      success: false,
+      message: "Invalid revieweeId",
+      review: null,
+      canReview: false,
+    });
+  }
+
+  const reviewerId = await getFreelancerIdbyAccountId(accountId);
+  if (!reviewerId) {
     return Response.json({
       success: false,
       message: "Freelancer not found.",
-      jobSkills: [],
       review: null,
       canReview: false,
     });
@@ -127,25 +152,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
 
-  // ✅ Ensure `hasAcceptedApplication` checks by employerId, not jobId
-  const canReview =
-    employerId > 0
-      ? await hasAcceptedApplication(freelancerId, employerId)
-      : false;
+  // ✅ Fetch Review (Mapping to frontend expected structure)
+  const fetchedReview = await getReview(
+    reviewerId,
+    revieweeId,
+    "employer_review"
+  );
 
-  let existingReview = null;
-  if (employerId > 0) {
-    const fetchedReview = await getReview(freelancerId, employerId);
+  const review = fetchedReview
+    ? {
+        rating: fetchedReview.rating,
+        comment: fetchedReview.comment,
+        employerId: fetchedReview.revieweeId, // ✅ Ensure frontend gets `employerId`
+      }
+    : null;
 
-    if (fetchedReview) {
-      existingReview = {
-        ...fetchedReview,
-        employerId: employerId,
-      };
-    }
-  }
-
-  return Response.json({ jobSkills, review: existingReview, canReview });
+  return Response.json({
+    jobSkills,
+    review,
+    canReview: await hasAcceptedApplication(reviewerId, revieweeId),
+  });
 }
 
 export default function Layout() {

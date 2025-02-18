@@ -11,6 +11,11 @@ import {
   // getJobApplicationsByJobId,
   // getJobApplicationById,
   getJobApplicationOwnerByApplicationId,
+  getReview,
+  updateReview,
+  saveReview,
+  getJobApplicationsForFreelancer,
+  getFreelancerAverageRating,
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import {
@@ -51,7 +56,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       return Response.json({ error: "Job not found" }, { status: 404 });
     }
 
-    // Restrict access: Ensure the job belongs to the logged-in employer, if not, redirect to the all jobs page
+    // Restrict access: Ensure the job belongs to the logged-in employer
     if (job.employerId !== currentProfile.id) {
       return redirect(`/manage-jobs`);
     }
@@ -67,24 +72,39 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     let profile = null;
     let accountBio = null;
     let about = null;
+    let review = null;
+    let canReview = false;
+    let averageRating = 0;
 
     if (freelancers.length > 0) {
       try {
-        // Fetch the profile for the first freelancer (as an example)
         profile = await getProfileInfoByAccountId(freelancers[0].accountId);
         if (profile && profile.account) {
           accountBio = await getAccountBio(profile.account);
           about = await getFreelancerAbout(profile);
         }
+
+        // ✅ Fetch review for employer → freelancer (if exists)
+        review = await getReview(
+          freelancers[0].id,
+          currentProfile.id,
+          "freelancer_review"
+        );
+
+        // ✅ Fetch average rating for the freelancer
+        averageRating = await getFreelancerAverageRating(freelancers[0].id); // ✅ New function
+
+        // ✅ Allow reviewing only if the freelancer is linked to the employer
+        canReview = freelancers.some(
+          (freelancer) => freelancer.accountId === profile?.accountId
+        );
       } catch (error) {
         console.error("Error fetching profile or account bio:", error);
       }
     }
 
     const jobData: JobCardData = {
-      job: {
-        ...job,
-      },
+      job: { ...job },
       applications: jobApplications,
     };
 
@@ -94,6 +114,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       freelancers,
       about,
       applications: jobApplications,
+      review, // ✅ Sends back existing review if available
+      canReview, // ✅ Tells frontend whether employer can review
+      averageRating, // ✅ Send to frontend
     });
   } catch (error) {
     console.error("Failed to load job details:", error);
@@ -110,12 +133,61 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
   const currentProfile = await getCurrentProfileInfo(request);
   try {
     const formData = await request.formData();
+    const actionType = formData.get("_action");
 
-    // extract applicationId and status from the form data
-    const applicationId = parseInt(formData.get("applicationId") as string, 10); // convert the applicationId to a number
+    if (actionType === "review") {
+      const freelancerId = parseInt(formData.get("freelancerId") as string, 10);
+      const rating = parseInt(formData.get("rating") as string, 10);
+      const comment = formData.get("comment") as string;
+
+      if (!freelancerId || !rating) {
+        return Response.json({ success: false, message: "Invalid data" });
+      }
+
+      // ✅ Ensure employer owns this freelancer's job application
+      const jobApplications = await getJobApplicationsForFreelancer(
+        freelancerId,
+        currentProfile.id
+      );
+      if (!jobApplications.length) {
+        return Response.json({
+          success: false,
+          message: "Unauthorized to review this freelancer",
+        });
+      }
+
+      const existingReview = await getReview(
+        freelancerId,
+        currentProfile.id,
+        "freelancer_review"
+      );
+
+      if (existingReview) {
+        await updateReview({
+          reviewerId: currentProfile.id,
+          revieweeId: freelancerId,
+          rating,
+          comment,
+          reviewType: "freelancer_review",
+        });
+      } else {
+        await saveReview({
+          reviewerId: currentProfile.id,
+          revieweeId: freelancerId,
+          rating,
+          comment,
+          reviewType: "freelancer_review",
+        });
+      }
+
+      return Response.json({ success: true, message: "Review submitted" });
+    }
+
+    // ✅ Preserve existing job application status update logic
+    const applicationId = parseInt(formData.get("applicationId") as string, 10);
     const newStatus = formData.get(
       "status"
-    ) as keyof typeof JobApplicationStatus; // extracting status as a string
+    ) as keyof typeof JobApplicationStatus;
 
     if (!applicationId || !newStatus) {
       console.error("Invalid input:", { applicationId, newStatus });
@@ -125,7 +197,6 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
-    // check if the current user is the owner of the aplpication
     const ownerEmployerId =
       await getJobApplicationOwnerByApplicationId(applicationId);
     if (!ownerEmployerId || ownerEmployerId !== currentProfile.id) {
@@ -135,11 +206,9 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
-    // map the incoming status to the enum's key (e.g., "approved" -> "Approved") // NECCESSARY ❤️
     const enumKey = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
     const status = JobApplicationStatus[enumKey];
 
-    // ensure it matches a valid enum key
     if (!status) {
       console.error("Invalid status:", newStatus);
       return Response.json(
@@ -148,10 +217,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
-    // function that update the status
     const result = await updateJobApplicationStatus(applicationId, status);
-
-    // check if database update was successful
     if (result.success) {
       return Response.json({ success: true });
     } else {
