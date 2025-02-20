@@ -242,7 +242,7 @@ export const employersTable = pgTable("employers", {
  */
 export const languagesTable = pgTable("languages", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 25 }),
+  language: varchar("language", { length: 25 }),
 });
 
 /**

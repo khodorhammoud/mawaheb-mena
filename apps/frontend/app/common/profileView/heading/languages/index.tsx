@@ -15,7 +15,7 @@ import SearcheableTagSelector from "~/common/SearcheableTagSelector";
 import { Badge } from "~/components/ui/badge";
 
 interface LanguagesProps {
-  profile: { languages?: { id: number; name: string }[] };
+  profile: { languages?: { id: number; language: string }[] };
   canEdit?: boolean;
 }
 
@@ -32,7 +32,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
   }>();
 
   const [selectedLanguages, setSelectedLanguages] = useState<
-    { id: number; name: string }[]
+    { id: number; language: string }[]
   >(profile.languages || []);
 
   useEffect(() => {
@@ -109,11 +109,11 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                 </div>
               )}
 
-              <SearcheableTagSelector<{ id: number; name: string }>
+              <SearcheableTagSelector<{ id: number; language: string }>
                 dataType="language"
                 setSelectedItems={setSelectedLanguages}
                 selectedItems={selectedLanguages}
-                itemLabel={(item) => item.name}
+                itemLabel={(item) => item.language}
                 itemKey={(item) => item.id}
                 formName="freelancer-languages"
                 fieldName="freelancer-languages"
@@ -145,7 +145,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                 key={language.id}
                 className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
               >
-                {language.name}
+                {language.language}
               </Badge>
             ))}
 
@@ -172,7 +172,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                         key={language.id}
                         className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"
                       >
-                        {language.name}
+                        {language.language}
                       </Badge>
                     ))}
                   </div>
