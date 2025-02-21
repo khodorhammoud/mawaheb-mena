@@ -6,6 +6,7 @@ import {
   attachmentsTable,
   freelancerSkillsTable,
   skillsTable,
+  jobSkillsTable,
 } from "../db/drizzle/schemas/schema";
 import { eq, inArray } from "drizzle-orm";
 import {
@@ -907,52 +908,85 @@ export async function getFreelancerHourlyRate(
 
 export async function getFreelancerLanguages(
   freelancerId: number
-): Promise<{ id: number; name: string }[]> {
+): Promise<{ id: number; language: string }[]> {
   try {
     const languages = await db
-      .select({ id: languagesTable.id, name: languagesTable.name })
+      .select({ id: languagesTable.id, language: languagesTable.language })
       .from(freelancerLanguagesTable)
       .leftJoin(
         languagesTable,
         eq(freelancerLanguagesTable.languageId, languagesTable.id)
       )
       .where(eq(freelancerLanguagesTable.freelancerId, freelancerId));
+
+    // console.log(
+    //   "🔥 DATABASE: Fetched Languages for Freelancer",
+    //   freelancerId,
+    //   languages
+    // );
+
     if (!languages) {
       throw new Error("Failed to get freelancer languages");
     }
-    return languages;
+
+    return languages ?? []; // Ensure it always returns an array
   } catch (error) {
     console.error("Error getting freelancer languages", error);
     throw error;
   }
 }
 
-// fetch freelancer's skills
-export async function fetchFreelancerSkills(
-  freelancerId: number
-): Promise<FreelancerSkill[]> {
+export async function getFreelancerSkills(freelancerId: number) {
+  /**
+   * Fetches all skills associated with a freelancer
+   * @param freelancerId The id of the freelancer whose skills to fetch
+   * @returns An array of objects with `skillId` and `label` properties
+   */
+  // console.log(`🔥 DATABASE: Fetching skills for freelancerId: ${freelancerId}`);
+
   const skills = await db
-    .select()
+    .select({
+      skillId: freelancerSkillsTable.skillId,
+      label: skillsTable.label,
+    })
     .from(freelancerSkillsTable)
+    .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
     .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
 
-  // get skill labels from skills table
-  const skillLabels = await db
-    .select({ id: skillsTable.id, label: skillsTable.label })
-    .from(skillsTable)
-    .where(
-      inArray(
-        skillsTable.id,
-        skills.map((skill) => skill.skillId)
-      )
-    );
+  // console.log(
+  //   `🔥 DATABASE: Fetched skills for freelancerId ${freelancerId}:`,
+  //   skills
+  // );
 
-  // add skill labels to skills
-  const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
-    skillId: skill.skillId,
-    label: skillLabels.find((label) => label.id === skill.skillId)?.label,
-    yearsOfExperience: skill.yearsOfExperience,
-  }));
-
-  return freelancerSkills;
+  return skills;
 }
+
+// fetch freelancer's skills
+// export async function fetchFreelancerSkills(
+//   freelancerId: number
+// ): Promise<FreelancerSkill[]> {
+//   const skills = await db
+//     .select()
+//     .from(freelancerSkillsTable)
+//     .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+//   // get skill labels from skills table
+//   const skillLabels = await db
+//     .select({ id: skillsTable.id, label: skillsTable.label })
+//     .from(skillsTable)
+//     .where(
+//       inArray(
+//         skillsTable.id,
+//         skills.map((skill) => skill.skillId)
+//       )
+//     );
+
+//   // add skill labels to skills
+//   const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
+//     skillId: skill.skillId,
+//     label: skillLabels.find((label) => label.id === skill.skillId)?.label,
+//     yearsOfExperience: skill.yearsOfExperience,
+//   }));
+
+//   return freelancerSkills;
+// }
