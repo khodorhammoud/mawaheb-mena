@@ -908,10 +908,10 @@ export async function getFreelancerHourlyRate(
 
 export async function getFreelancerLanguages(
   freelancerId: number
-): Promise<{ id: number; name: string }[]> {
+): Promise<{ id: number; language: string }[]> {
   try {
     const languages = await db
-      .select({ id: languagesTable.id, name: languagesTable.name })
+      .select({ id: languagesTable.id, language: languagesTable.language })
       .from(freelancerLanguagesTable)
       .leftJoin(
         languagesTable,

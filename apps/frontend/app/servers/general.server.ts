@@ -87,7 +87,7 @@ export async function fetchLanguagesSearch(
     const languages = await db
       .select()
       .from(languagesTable)
-      .where(ilike(languagesTable.name, `%${searchTerm}%`))
+      .where(ilike(languagesTable.language, `%${searchTerm}%`))
       .limit(limit);
     return languages;
   } catch (error) {
