@@ -185,8 +185,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                             })),
                           ]}
                           defaultValue={
-                            profileData.country ||
-                            profileData.account.country ||
+                            profileData?.country ||
+                            profileData?.account?.country ||
                             ""
                           }
                         />
@@ -199,8 +199,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="Address"
                           className=""
                           defaultValue={
-                            profileData.address ||
-                            profileData.account.address ||
+                            profileData?.address ||
+                            profileData?.account?.address ||
                             ""
                           }
                         />
@@ -218,8 +218,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="Personal Website"
                           className="peer mt-1"
                           defaultValue={
-                            profileData.websiteURL ||
-                            profileData.account.websiteURL ||
+                            profileData?.websiteURL ||
+                            profileData?.account?.websiteURL ||
                             ""
                           } // comment that for the wierd error (cannot find ...)
                         />
@@ -233,8 +233,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="linkedin"
                           label="LinkedIn"
                           defaultValue={
-                            profileData.socialMediaLinks?.linkedin ||
-                            profileData.account.socialMediaLinks?.linkedin ||
+                            profileData?.socialMediaLinks?.linkedin ||
+                            profileData?.account?.socialMediaLinks?.linkedin ||
                             ""
                           } // comment that for the wierd error (cannot find ...)
                         />
@@ -248,8 +248,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="github"
                           label="GitHub"
                           defaultValue={
-                            profileData.socialMediaLinks?.github ||
-                            profileData.account.socialMediaLinks?.github ||
+                            profileData?.socialMediaLinks?.github ||
+                            profileData?.account?.socialMediaLinks?.github ||
                             ""
                           } // comment that for the wierd error (cannot find ...)
                         />
@@ -263,8 +263,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="gitlab"
                           label="GitLab"
                           defaultValue={
-                            profileData.socialMediaLinks?.gitlab ||
-                            profileData.account.socialMediaLinks?.gitlab ||
+                            profileData?.socialMediaLinks?.gitlab ||
+                            profileData?.account?.socialMediaLinks?.gitlab ||
                             ""
                           } // comment that for the wierd error (cannot find ...)
                         />
@@ -277,8 +277,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           id="dribbble"
                           name="dribbble"
                           defaultValue={
-                            profileData.socialMediaLinks?.dribbble ||
-                            profileData.account.socialMediaLinks?.dribbble ||
+                            profileData?.socialMediaLinks?.dribbble ||
+                            profileData?.account?.socialMediaLinks?.dribbble ||
                             ""
                           } // comment that for the wierd error (cannot find ...)
                           label="Dribbble"
@@ -293,8 +293,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="stackoverflow"
                           label="StackOverflow"
                           defaultValue={
-                            profileData.socialMediaLinks?.stackoverflow ||
-                            profileData.account.socialMediaLinks
+                            profileData?.socialMediaLinks?.stackoverflow ||
+                            profileData?.account?.socialMediaLinks
                               ?.stackoverflow ||
                             ""
                           } // comment that for the wierd error (cannot find ...)

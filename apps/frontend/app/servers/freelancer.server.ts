@@ -962,31 +962,31 @@ export async function getFreelancerSkills(freelancerId: number) {
 }
 
 // fetch freelancer's skills
-// export async function fetchFreelancerSkills(
-//   freelancerId: number
-// ): Promise<FreelancerSkill[]> {
-//   const skills = await db
-//     .select()
-//     .from(freelancerSkillsTable)
-//     .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+export async function fetchFreelancerSkills(
+  freelancerId: number
+): Promise<FreelancerSkill[]> {
+  const skills = await db
+    .select()
+    .from(freelancerSkillsTable)
+    .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
 
-//   // get skill labels from skills table
-//   const skillLabels = await db
-//     .select({ id: skillsTable.id, label: skillsTable.label })
-//     .from(skillsTable)
-//     .where(
-//       inArray(
-//         skillsTable.id,
-//         skills.map((skill) => skill.skillId)
-//       )
-//     );
+  // get skill labels from skills table
+  const skillLabels = await db
+    .select({ id: skillsTable.id, label: skillsTable.label })
+    .from(skillsTable)
+    .where(
+      inArray(
+        skillsTable.id,
+        skills.map((skill) => skill.skillId)
+      )
+    );
 
-//   // add skill labels to skills
-//   const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
-//     skillId: skill.skillId,
-//     label: skillLabels.find((label) => label.id === skill.skillId)?.label,
-//     yearsOfExperience: skill.yearsOfExperience,
-//   }));
+  // add skill labels to skills
+  const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
+    skillId: skill.skillId,
+    label: skillLabels.find((label) => label.id === skill.skillId)?.label,
+    yearsOfExperience: skill.yearsOfExperience,
+  }));
 
-//   return freelancerSkills;
-// }
+  return freelancerSkills;
+}

@@ -19,6 +19,7 @@ export interface User {
   isVerified?: boolean;
   isOnboarded?: boolean;
   provider?: Provider;
+  role?: "admin" | "user";
 }
 
 export interface PreferredWorkingTimes {
