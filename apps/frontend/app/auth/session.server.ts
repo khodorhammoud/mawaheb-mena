@@ -1,5 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { getUserAccountInfo } from "~/servers/user.server";
+import { getUser, getUserAccountInfo } from "~/servers/user.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -23,6 +23,12 @@ export async function createUserSession(
 ) {
   const session = await getSession(request.headers.get("cookie"));
   session.set("user", userId);
+
+  const user = await getUser({ userId });
+  if (user?.role === "admin") {
+    const headers = new Headers({ "Set-Cookie": await commitSession(session) });
+    return redirect("/admin-dashboard", { headers });
+  }
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
   const userAccount = await getUserAccountInfo({ userId });
   if (userAccount.user.isOnboarded) return redirect(redirectTo, { headers });

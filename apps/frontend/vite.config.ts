@@ -13,6 +13,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ["dompurify"],
   },
+  build: {
+    sourcemap: true, // Enable source maps in production builds
+  },
   plugins: [
     remix({
       future: {
