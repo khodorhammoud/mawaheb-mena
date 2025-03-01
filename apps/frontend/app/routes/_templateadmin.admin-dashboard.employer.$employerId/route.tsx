@@ -16,6 +16,7 @@ import {
   jobApplicationsTable,
 } from "~/db/drizzle/schemas/schema";
 import { AccountStatus, JobStatus } from "~/types/enums";
+import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
 
 type ActionResponse = {
   success: boolean;
@@ -526,74 +527,18 @@ export default function EmployerDetails() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Job Title
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Applications
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Posted Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {jobs.map((job) => (
-                    <tr key={job.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {job.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status as JobStatus)}`}
-                        >
-                          {job.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {job.applicationCount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(job.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Link
-                          to={`/admin-dashboard/employer/${employer.employer.id}/jobs/${job.id}/applications`}
-                          className="text-primaryColor hover:text-primaryColor/80"
-                        >
-                          View Applications
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <JobsTable
+              jobs={jobs.map((job) => ({
+                id: job.id,
+                title: job.title,
+                status: job.status,
+                applicationCount: job.applicationCount,
+              }))}
+              showEmployer={false}
+              showBudget={false}
+              showWorkingHours={false}
+              showCategory={false}
+            />
           )}
         </div>
       </div>

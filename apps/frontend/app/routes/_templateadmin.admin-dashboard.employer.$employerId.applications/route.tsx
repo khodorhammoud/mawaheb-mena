@@ -12,6 +12,7 @@ import {
 } from "~/db/drizzle/schemas/schema";
 import { JobApplicationStatus, AccountStatus } from "~/types/enums";
 import type { InferSelectModel } from "drizzle-orm";
+import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
 
 type User = InferSelectModel<typeof UsersTable>;
 type Account = InferSelectModel<typeof accountsTable>;
@@ -183,101 +184,47 @@ export default function AllJobApplications() {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">
+          Applications for {employer.user.firstName} {employer.user.lastName}
+        </h1>
+      </div>
+
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">All Applications</h1>
-            <Link
-              to={`/admin-dashboard/employer/${employer.employer.id}`}
-              className="text-primaryColor hover:text-primaryColor/80"
-            >
-              ← Back to Employer
-            </Link>
-          </div>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            All Applications
+          </h3>
         </div>
 
-        <div className="divide-y divide-gray-200">
-          {Object.entries(groupedApplications).map(
+        {Object.keys(groupedApplications).length > 0 ? (
+          Object.entries(groupedApplications).map(
             ([jobId, { jobTitle, applications: jobApplications }]) => (
-              <div key={jobId} className="px-6 py-5">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  {jobTitle}
-                </h2>
-                {jobApplications.length === 0 ? (
-                  <p className="text-sm text-gray-500">
-                    No applications received yet.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Applicant
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Email
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Applied Date
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {jobApplications.map((application) => (
-                          <tr key={application.application.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {application.freelancer.user.firstName}{" "}
-                              {application.freelancer.user.lastName}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {application.freelancer.user.email}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                                  application.application.status
-                                )}`}
-                              >
-                                {application.application.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(
-                                application.application.createdAt
-                              ).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <Link
-                                to={`/admin-dashboard/application/${application.application.id}`}
-                                className="text-primaryColor hover:text-primaryColor/80"
-                              >
-                                View Details
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div
+                key={jobId}
+                className="border-b border-gray-200 last:border-b-0"
+              >
+                <div className="px-6 py-4 bg-gray-50">
+                  <h4 className="text-md font-medium text-gray-900">
+                    {jobTitle}
+                  </h4>
+                </div>
+                <div className="px-6 py-2">
+                  <ApplicationsTable
+                    applications={jobApplications}
+                    showJob={false}
+                  />
+                </div>
               </div>
             )
-          )}
-          {Object.keys(groupedApplications).length === 0 && (
-            <div className="px-6 py-5">
-              <p className="text-sm text-gray-500">
-                No applications received yet for any job.
-              </p>
-            </div>
-          )}
-        </div>
+          )
+        ) : (
+          <div className="px-6 py-5">
+            <p className="text-sm text-gray-500">
+              No applications received yet for any job.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

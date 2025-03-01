@@ -10,6 +10,7 @@ import {
 } from "~/db/drizzle/schemas/schema";
 import { AccountType, AccountStatus } from "~/types/enums";
 import { Freelancer, Employer } from "~/types/User";
+import { AccountsTable } from "~/common/admin-pages/tables/AccountsTable";
 
 type LoaderData = {
   freelancers: Freelancer[];
@@ -66,7 +67,7 @@ interface AccountTableProps {
   type: "Freelancer" | "Employer";
 }
 
-function AccountTable({ accounts, type }: AccountTableProps) {
+/* function AccountTable({ accounts, type }: AccountTableProps) {
   return (
     <div className="mt-8 flow-root">
       <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -136,7 +137,7 @@ function AccountTable({ accounts, type }: AccountTableProps) {
       </div>
     </div>
   );
-}
+} */
 
 export default function AdminDashboard() {
   const { freelancers, employers } = useLoaderData<typeof loader>();
@@ -145,12 +146,12 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <section>
         <h2 className="text-2xl font-bold mb-4">Freelancer Accounts</h2>
-        <AccountTable accounts={freelancers} type="Freelancer" />
+        <AccountsTable accounts={freelancers} type="Freelancer" />
       </section>
 
       <section>
         <h2 className="text-2xl font-bold mb-4">Employer Accounts</h2>
-        <AccountTable accounts={employers} type="Employer" />
+        <AccountsTable accounts={employers} type="Employer" />
       </section>
     </div>
   );

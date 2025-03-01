@@ -13,6 +13,7 @@ import {
 import { JobApplicationStatus } from "~/types/enums";
 import { Job } from "~/types/Job";
 import { User, Account } from "~/types/User";
+import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
 
 interface JobApplication {
   application: typeof jobApplicationsTable.$inferSelect;
@@ -44,7 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const employerUser = aliasedTable(UsersTable, "employerUser");
   const employerAccount = aliasedTable(accountsTable, "employerAccount");
 
-  const query = await db
+  const query = db
     .select({
       application: {
         id: jobApplicationsTable.id,
@@ -159,7 +160,7 @@ export default function AdminApplications() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      {/* <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -234,6 +235,12 @@ export default function AdminApplications() {
             ))}
           </tbody>
         </table>
+      </div> */}
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <ApplicationsTable
+          applications={applications}
+          emptyMessage="No applications found. Try adjusting your filters."
+        />
       </div>
     </div>
   );
