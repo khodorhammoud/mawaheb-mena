@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 import { AccountStatus } from "~/types/enums";
 import { DataTable } from "./DataTable";
 
-interface Account {
+export interface Account {
   id: number;
   account: {
     user: {
