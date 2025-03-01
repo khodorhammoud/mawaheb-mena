@@ -1,19 +1,21 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { Link, useLoaderData, Outlet } from "@remix-run/react";
-import { eq, sql } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
-import {
-  jobsTable,
-  employersTable,
-  jobCategoriesTable,
-  jobApplicationsTable,
-  accountsTable,
-  UsersTable,
-  freelancersTable,
-} from "~/db/drizzle/schemas/schema";
-import { ChevronRightIcon } from "@heroicons/react/24/solid";
+// import { eq, sql } from "drizzle-orm";
+// import { db } from "~/db/drizzle/connector";
+// import {
+//   jobsTable,
+//   employersTable,
+//   jobCategoriesTable,
+//   jobApplicationsTable,
+//   accountsTable,
+//   UsersTable,
+//   freelancersTable,
+// } from "~/db/drizzle/schemas/schema";
+// import { ChevronRightIcon } from "@heroicons/react/24/solid";
 import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
 import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
+import { JobStatus, JobApplicationStatus } from "~/types/enums";
+import { getBasicJobs, getAllApplications } from "~/routes/admin.server";
 
 /* function ApplicationsTable({ applications }: { applications: any[] }) {
   if (applications.length === 0) return null;
@@ -79,69 +81,11 @@ import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable
  */
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // First get jobs with their basic info
-  const jobs = await db
-    .select({
-      jobId: jobsTable.id,
-      jobTitle: jobsTable.title,
-      jobBudget: jobsTable.budget,
-      jobStatus: jobsTable.status,
-      jobCreatedAt: jobsTable.createdAt,
-      jobWorkingHours: jobsTable.workingHoursPerWeek,
-      jobLocation: jobsTable.locationPreference,
-      employerId: employersTable.id,
-      employerFirstName: UsersTable.firstName,
-      employerLastName: UsersTable.lastName,
-      categoryId: jobCategoriesTable.id,
-      categoryLabel: jobCategoriesTable.label,
-      applicationCount: sql<number>`count(${jobApplicationsTable.id})::int`,
-    })
-    .from(jobsTable)
-    .leftJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
-    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .leftJoin(
-      jobCategoriesTable,
-      eq(jobsTable.jobCategoryId, jobCategoriesTable.id)
-    )
-    .leftJoin(
-      jobApplicationsTable,
-      eq(jobsTable.id, jobApplicationsTable.jobId)
-    )
-    .groupBy(
-      jobsTable.id,
-      jobsTable.title,
-      jobsTable.budget,
-      jobsTable.status,
-      jobsTable.createdAt,
-      jobsTable.workingHoursPerWeek,
-      jobsTable.locationPreference,
-      employersTable.id,
-      UsersTable.firstName,
-      UsersTable.lastName,
-      jobCategoriesTable.id,
-      jobCategoriesTable.label
-    )
-    .orderBy(jobsTable.createdAt);
+  // First get jobs with their basic info (moved to admin.server.ts)
+  const jobs = await getBasicJobs();
 
-  // Then get all applications with freelancer info
-  const applications = await db
-    .select({
-      id: jobApplicationsTable.id,
-      status: jobApplicationsTable.status,
-      createdAt: jobApplicationsTable.createdAt,
-      jobId: jobApplicationsTable.jobId,
-      freelancerId: freelancersTable.id,
-      freelancerFirstName: UsersTable.firstName,
-      freelancerLastName: UsersTable.lastName,
-    })
-    .from(jobApplicationsTable)
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
-    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
+  // Then get all applications with freelancer info (also in admin.server.ts)
+  const applications = await getAllApplications();
 
   // Format jobs and include their applications
   const formattedJobs = jobs.map((job) => ({
@@ -208,15 +152,15 @@ export default function JobsList() {
               {
                 id: job.job.id,
                 title: job.job.title,
-                status: job.job.status,
+                status: job.job.status as JobStatus,
                 budget: job.job.budget,
-                workingHoursPerWeek: job.job.workingHours,
-                applicationCount: job.job.applicationCount,
+                workingHoursPerWeek: job.job.workingHoursPerWeek,
+                applicationCount: job.applicationCount,
                 employer: job.employer
                   ? {
                       id: job.employer.id,
-                      firstName: job.employer.firstName,
-                      lastName: job.employer.lastName,
+                      firstName: job.employer.user.firstName,
+                      lastName: job.employer.user.lastName,
                     }
                   : undefined,
                 category: job.category
@@ -238,7 +182,7 @@ export default function JobsList() {
                 applications={job.applications.map((app) => ({
                   application: {
                     id: app.id,
-                    status: app.status,
+                    status: app.status as JobApplicationStatus,
                     createdAt: app.createdAt,
                   },
                   freelancer: {
@@ -260,7 +204,8 @@ export default function JobsList() {
   );
 }
 
-/* function getStatusColor(status: string) {
+/* 
+function getStatusColor(status: string) {
   switch (status) {
     case "OPEN":
       return "bg-green-100 text-green-800";
@@ -289,4 +234,4 @@ function getApplicationStatusColor(status: string) {
       return "bg-gray-100 text-gray-800";
   }
 }
- */
+*/
