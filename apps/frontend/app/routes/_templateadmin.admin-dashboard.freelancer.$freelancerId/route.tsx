@@ -21,6 +21,8 @@ import {
   JobApplicationStatus,
 } from "~/types/enums";
 
+import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
+
 type ActionResponse = {
   success: boolean;
   error?: string;
@@ -183,12 +185,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
   };
 
   const jobApplications = applications.map((app) => ({
-    id: app.id,
-    jobId: app.jobId,
-    jobTitle: app.jobTitle,
-    status: app.status as JobApplicationStatus,
-    createdAt: app.createdAt.toISOString(),
-    freelancerId: app.freelancerId,
+    id: app?.id,
+    jobId: app?.jobId,
+    jobTitle: app?.jobTitle,
+    status: app?.status as JobApplicationStatus,
+    createdAt: app?.createdAt.toISOString(),
+    freelancerId: app?.freelancerId,
   }));
 
   return {
@@ -221,7 +223,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const freelancerId = params.freelancerId;
 
   if (!freelancerId || !status) {
-    return json<ActionResponse>({
+    return Response.json({
       success: false,
       error: "Missing required fields",
     });
@@ -235,7 +237,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       .where(eq(freelancersTable.id, parseInt(freelancerId)));
 
     if (freelancer.length === 0) {
-      return json<ActionResponse>({
+      return Response.json({
         success: false,
         error: "Freelancer not found",
       });
@@ -247,17 +249,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
       .set({ accountStatus: status })
       .where(eq(accountsTable.id, freelancer[0].accountId));
 
-    return json<ActionResponse>({ success: true });
+    return Response.json({ success: true });
   } catch (error) {
     console.error("Error updating account status:", error);
-    return json<ActionResponse>({
+    return Response.json({
       success: false,
       error: "Failed to update account status",
     });
   }
 }
 
-function getStatusColor(status: JobApplicationStatus) {
+/* function getStatusColor(status: JobApplicationStatus) {
   switch (status) {
     case JobApplicationStatus.Pending:
       return "bg-yellow-100 text-yellow-800";
@@ -270,14 +272,14 @@ function getStatusColor(status: JobApplicationStatus) {
     default:
       return "bg-gray-100 text-gray-800";
   }
-}
+} */
 
 export default function FreelancerDetails() {
   const { freelancer, applications, applicationCount } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const accountStatusValues = Object.values(AccountStatus) as AccountStatus[];
-
+  console.log("applications", applications);
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -852,60 +854,25 @@ export default function FreelancerDetails() {
       {/* Applications Section */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-6 py-5">
-          {applications.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              No applications submitted yet.
-            </p>
+          {applications.length > 0 ? (
+            <ApplicationsTable
+              applications={applications.map((app) => ({
+                application: {
+                  id: app.id,
+                  status: app.status,
+                  createdAt: app.createdAt,
+                },
+                job: {
+                  id: app.jobId,
+                  title: app.jobTitle,
+                },
+              }))}
+              showFreelancer={false}
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Job Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Applied Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {applications.map((application) => (
-                    <tr key={application.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {application.jobTitle}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                            application.status
-                          )}`}
-                        >
-                          {application.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(application.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Link
-                          to={`/admin-dashboard/application/${application.id}`}
-                          className="text-primaryColor hover:text-primaryColor/80"
-                        >
-                          View Details
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <p className="text-sm text-gray-500">
+              This freelancer hasn&apos;t applied to any jobs yet.
+            </p>
           )}
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
   UsersTable,
   freelancersTable,
 } from "~/db/drizzle/schemas/schema";
+import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
 
 type JobApplication = {
   application: {
@@ -359,110 +360,31 @@ export default function JobDetails() {
 
       {/* Applications Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Applications ({applications.length})
+          </h3>
+        </div>
         <div className="px-6 py-5">
           {applications.length > 0 ? (
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-                    >
-                      Freelancer
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Location
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Experience
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Rate
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Applied Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {applications.map((application) => (
-                    <tr key={application.application.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                        <Link
-                          to={`/admin-dashboard/freelancer/${application.freelancer.id}`}
-                          className="text-primaryColor hover:text-primaryColor/90 font-medium"
-                        >
-                          {application.user.firstName}{" "}
-                          {application.user.lastName}
-                        </Link>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {application.account.country || "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {application.freelancer.yearsOfExperience
-                          ? `${application.freelancer.yearsOfExperience} years`
-                          : "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {application.freelancer.hourlyRate
-                          ? `$${application.freelancer.hourlyRate}/hr`
-                          : "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getApplicationStatusColor(
-                            application.application.status
-                          )}`}
-                        >
-                          {application.application.status}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {application.application.createdAt
-                          ? new Date(
-                              application.application.createdAt
-                            ).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <Link
-                          to={`/admin-dashboard/application/${application.application.id}`}
-                          className="text-primaryColor hover:text-primaryColor/90 font-medium"
-                        >
-                          Manage
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ApplicationsTable
+              applications={applications.map((app) => ({
+                application: {
+                  id: app.application.id,
+                  status: app.application.status,
+                  createdAt: app.application.createdAt,
+                },
+                freelancer: {
+                  id: app.freelancer.id,
+                  user: {
+                    firstName: app.user.firstName,
+                    lastName: app.user.lastName,
+                    email: app.user.email,
+                  },
+                },
+              }))}
+              showJob={false}
+            />
           ) : (
             <p className="text-sm text-gray-500">No applications yet</p>
           )}
