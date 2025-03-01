@@ -9,7 +9,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const userId = await authenticator.authenticate("login", request, {
       throwOnError: true,
     });
-    return await createUserSession(request, userId, "/admin/dashboard");
+    return await createUserSession(
+      request,
+      userId,
+      "/admin-dashboard/accounts"
+    );
   } catch (error) {
     console.log(error);
     if (error instanceof AuthorizationError) {

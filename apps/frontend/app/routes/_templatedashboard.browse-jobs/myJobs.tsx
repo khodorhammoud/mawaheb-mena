@@ -112,7 +112,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
         filters={filters}
         setFilters={setFilters}
       />
-
+      {/* 5 Jobs Found */}
       <p className="text-black text-sm mt-2 ml-4 mb-10">
         {filteredJobs.length} Job{filteredJobs.length === 1 ? "" : "s"} Found
       </p>

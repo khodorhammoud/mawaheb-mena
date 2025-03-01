@@ -27,7 +27,7 @@ export async function createUserSession(
   const user = await getUser({ userId });
   if (user?.role === "admin") {
     const headers = new Headers({ "Set-Cookie": await commitSession(session) });
-    return redirect("/admin-dashboard", { headers });
+    return redirect(redirectTo, { headers });
   }
   const headers = new Headers({ "Set-Cookie": await commitSession(session) });
   const userAccount = await getUserAccountInfo({ userId });
