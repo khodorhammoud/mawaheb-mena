@@ -27,6 +27,16 @@ export default function AdminLayout() {
                 Accounts
               </Link>
               <Link
+                to="/admin-dashboard/jobs"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === "/admin-dashboard/jobs"
+                    ? "border-primaryColor text-gray-900"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Jobs
+              </Link>
+              <Link
                 to="/admin-dashboard/applications"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                   location.pathname === "/admin-dashboard/applications"

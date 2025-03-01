@@ -6,15 +6,30 @@ import {
   Form,
   Outlet,
 } from "@remix-run/react";
-import { eq, count } from "drizzle-orm";
+import { eq, count, aliasedTable } from "drizzle-orm";
 import { db } from "~/db/drizzle/connector";
 import {
   employersTable,
   accountsTable,
   UsersTable,
   jobsTable,
+  jobApplicationsTable,
 } from "~/db/drizzle/schemas/schema";
-import { AccountStatus } from "~/types/enums";
+import { AccountStatus, JobStatus } from "~/types/enums";
+
+type ActionResponse = {
+  success: boolean;
+  error?: string;
+};
+
+interface Job {
+  id: number;
+  title: string;
+  status: JobStatus;
+  createdAt: Date;
+  employerId: number;
+  applicationCount: number;
+}
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const employerId = params.employerId;
@@ -38,15 +53,36 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Employer not found", { status: 404 });
   }
 
-  // Count jobs
-  const jobCount = await db
-    .select({ count: count() })
+  // Get all jobs
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      status: jobsTable.status,
+      createdAt: jobsTable.createdAt,
+      employerId: jobsTable.employerId,
+    })
     .from(jobsTable)
     .where(eq(jobsTable.employerId, parseInt(employerId)));
 
+  // Get application counts for each job
+  const applicationCounts = await Promise.all(
+    jobs.map(async (job) => {
+      const result = await db
+        .select({ count: count() })
+        .from(jobApplicationsTable)
+        .where(eq(jobApplicationsTable.jobId, job.id));
+      return {
+        ...job,
+        applicationCount: Number(result[0].count) || 0,
+      };
+    })
+  );
+
   return {
     employer: employerDetails[0],
-    jobCount: jobCount[0].count || 0,
+    jobs: applicationCounts,
+    jobCount: jobs.length,
   };
 }
 
@@ -56,7 +92,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const employerId = params.employerId;
 
   if (!employerId || !status) {
-    return json({ success: false, error: "Missing required fields" });
+    return json<ActionResponse>({
+      success: false,
+      error: "Missing required fields",
+    });
   }
 
   try {
@@ -67,7 +106,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       .where(eq(employersTable.id, parseInt(employerId)));
 
     if (employer.length === 0) {
-      return json({ success: false, error: "Employer not found" });
+      return json<ActionResponse>({
+        success: false,
+        error: "Employer not found",
+      });
     }
 
     // Update the account status
@@ -76,27 +118,38 @@ export async function action({ request, params }: ActionFunctionArgs) {
       .set({ accountStatus: status })
       .where(eq(accountsTable.id, employer[0].accountId));
 
-    return json({ success: true });
+    return json<ActionResponse>({ success: true });
   } catch (error) {
     console.error("Error updating account status:", error);
-    return json({ success: false, error: "Failed to update account status" });
+    return json<ActionResponse>({
+      success: false,
+      error: "Failed to update account status",
+    });
+  }
+}
+
+function getStatusColor(status: JobStatus) {
+  switch (status) {
+    case JobStatus.Draft:
+      return "bg-gray-100 text-gray-800";
+    case JobStatus.Active:
+      return "bg-green-100 text-green-800";
+    case JobStatus.Closed:
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 }
 
 export default function EmployerDetails() {
-  const { employer, jobCount } = useLoaderData<typeof loader>();
+  const { employer, jobs, jobCount } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Employer Details</h1>
-        <Link
-          to={`/admin-dashboard/employer/${employer.employer.id}/jobs`}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primaryColor hover:bg-primaryColor/90"
-        >
-          View Jobs ({jobCount})
-        </Link>
+        <span className="text-sm text-gray-500">Total Jobs: {jobCount}</span>
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -107,17 +160,56 @@ export default function EmployerDetails() {
         </div>
 
         <div className="px-6 py-5 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* User Information (from Users table) */}
+          <div className="col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              User Information
+            </h3>
+          </div>
+
           <div>
-            <h4 className="text-sm font-medium text-gray-500">Company Name</h4>
+            <h4 className="text-sm font-medium text-gray-500">Full Name</h4>
             <p className="mt-1 text-sm text-gray-900">
-              {employer.employer.companyName ||
-                `${employer.user.firstName} ${employer.user.lastName}'s Company`}
+              {employer.user.firstName} {employer.user.lastName}
             </p>
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-500">Contact Email</h4>
+            <h4 className="text-sm font-medium text-gray-500">Email</h4>
             <p className="mt-1 text-sm text-gray-900">{employer.user.email}</p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Role</h4>
+            <p className="mt-1 text-sm text-gray-900">{employer.user.role}</p>
+          </div>
+
+          {/* Account Information (from Accounts table) */}
+          <div className="col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Account Information
+            </h3>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Country</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.account.country || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Address</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.account.address || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Region</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.account.region || "Not provided"}
+            </p>
           </div>
 
           <div>
@@ -128,29 +220,46 @@ export default function EmployerDetails() {
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-500">Location</h4>
-            <p className="mt-1 text-sm text-gray-900">
-              {employer.account.address}, {employer.account.region},{" "}
-              {employer.account.country}
-            </p>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Website</h4>
-            <p className="mt-1 text-sm text-gray-900">
-              {employer.account.websiteURL ? (
-                <a
-                  href={employer.account.websiteURL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primaryColor hover:text-primaryColor/80"
-                >
-                  {employer.account.websiteURL}
-                </a>
-              ) : (
-                "Not provided"
+            <h4 className="text-sm font-medium text-gray-500">
+              Online Presence
+            </h4>
+            <div className="mt-1 text-sm text-gray-900 flex flex-wrap gap-2 items-center">
+              {employer.account.websiteURL && (
+                <>
+                  <a
+                    href={employer.account.websiteURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primaryColor hover:text-primaryColor/80"
+                  >
+                    Website
+                  </a>
+                </>
               )}
-            </p>
+              {employer.account.socialMediaLinks &&
+                Object.entries(employer.account.socialMediaLinks).map(
+                  ([platform, url], index) => (
+                    <>
+                      {(index > 0 || employer.account.websiteURL) && (
+                        <span className="text-gray-400">-</span>
+                      )}
+                      <a
+                        key={platform}
+                        href={url as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primaryColor hover:text-primaryColor/80"
+                      >
+                        {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      </a>
+                    </>
+                  )
+                )}
+              {!employer.account.websiteURL &&
+                (!employer.account.socialMediaLinks ||
+                  Object.keys(employer.account.socialMediaLinks).length ===
+                    0) && <p>No online presence provided</p>}
+            </div>
           </div>
 
           <div>
@@ -167,6 +276,187 @@ export default function EmployerDetails() {
               >
                 {employer.account.accountStatus}
               </span>
+            </p>
+          </div>
+
+          {/* Employer Information (from Employers table) */}
+          <div className="col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Company Information
+            </h3>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Years in Business
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.yearsInBusiness || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Budget</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.budget
+                ? `$${employer.employer.budget}`
+                : "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Company Name</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyName || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Industry Sector
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.industrySector || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Company Email</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyEmail || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Account Type</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.employerAccountType || "Not provided"}
+            </p>
+          </div>
+
+          <div className="col-span-2">
+            <h4 className="text-sm font-medium text-gray-500">
+              About the Company
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.about || "No description provided"}
+            </p>
+          </div>
+
+          {/* Company Representative Information */}
+          <div className="col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Company Representative
+            </h3>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Representative Name
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyRepName || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Representative Position
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyRepPosition || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Representative Email
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyRepEmail || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Representative Phone
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.companyRepPhone || "Not provided"}
+            </p>
+          </div>
+
+          {/* Company Documents */}
+          <div className="col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Company Documents
+            </h3>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Tax ID Number</h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.taxIdNumber || "Not provided"}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Tax ID Document
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.taxIdDocumentLink ? (
+                <a
+                  href={employer.employer.taxIdDocumentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primaryColor hover:text-primaryColor/80"
+                >
+                  View Document
+                </a>
+              ) : (
+                "Not provided"
+              )}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Business License
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.businessLicenseLink ? (
+                <a
+                  href={employer.employer.businessLicenseLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primaryColor hover:text-primaryColor/80"
+                >
+                  View License
+                </a>
+              ) : (
+                "Not provided"
+              )}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">
+              Certificate of Incorporation
+            </h4>
+            <p className="mt-1 text-sm text-gray-900">
+              {employer.employer.certificationOfIncorporationLink ? (
+                <a
+                  href={employer.employer.certificationOfIncorporationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primaryColor hover:text-primaryColor/80"
+                >
+                  View Certificate
+                </a>
+              ) : (
+                "Not provided"
+              )}
             </p>
           </div>
         </div>
@@ -213,6 +503,98 @@ export default function EmployerDetails() {
               </button>
             </div>
           </Form>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Employer Jobs Posted</h1>
+      </div>
+
+      {/* Jobs Section */}
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Jobs Posted
+          </h3>
+        </div>
+
+        <div className="px-6 py-5">
+          {jobs.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-500">
+                This employer hasn&apos;t posted any jobs yet.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Job Title
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Applications
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Posted Date
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {jobs.map((job) => (
+                    <tr key={job.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {job.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status as JobStatus)}`}
+                        >
+                          {job.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {job.applicationCount}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(job.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <Link
+                          to={`/admin-dashboard/employer/${employer.employer.id}/jobs/${job.id}/applications`}
+                          className="text-primaryColor hover:text-primaryColor/80"
+                        >
+                          View Applications
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
