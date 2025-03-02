@@ -1,5 +1,5 @@
 {
-  "id": "ecd34160-6c83-4349-abcc-cdcb0187bf1b",
+  "id": "2ae038b2-5233-43fb-9d37-678c756a97cf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -113,6 +113,14 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'user'"
         }
       },
       "indexes": {},
@@ -1116,8 +1124,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "language": {
+          "name": "language",
           "type": "varchar(25)",
           "primaryKey": false,
           "notNull": false
@@ -1611,7 +1619,188 @@
       "uniqueConstraints": {}
     }
   },
-  "enums": {},
+  "enums": {
+    "public.account_status": {
+      "name": "account_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "pending",
+        "published",
+        "closed",
+        "suspended"
+      ]
+    },
+    "public.account_type": {
+      "name": "account_type",
+      "schema": "public",
+      "values": [
+        "freelancer",
+        "employer"
+      ]
+    },
+    "public.belongs_to": {
+      "name": "belongs_to",
+      "schema": "public",
+      "values": [
+        "portfolio",
+        "certificate"
+      ]
+    },
+    "public.compensation_type": {
+      "name": "compensation_type",
+      "schema": "public",
+      "values": [
+        "project-based-rate",
+        "hourly-rate"
+      ]
+    },
+    "public.country": {
+      "name": "country",
+      "schema": "public",
+      "values": [
+        "Albania",
+        "Algeria",
+        "Bahrain",
+        "Egypt",
+        "Iran",
+        "Iraq",
+        "Jordan",
+        "Kuwait",
+        "Lebanon",
+        "Libya",
+        "Morocco",
+        "Oman",
+        "Palestine",
+        "Qatar",
+        "Saudi_Arabia",
+        "Syria",
+        "Tunisia",
+        "Turkey",
+        "United_Arab_Emirates",
+        "Yemen"
+      ]
+    },
+    "public.day_of_week": {
+      "name": "day_of_week",
+      "schema": "public",
+      "values": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ]
+    },
+    "public.eployer_account_type": {
+      "name": "eployer_account_type",
+      "schema": "public",
+      "values": [
+        "personal",
+        "company"
+      ]
+    },
+    "public.experience_level": {
+      "name": "experience_level",
+      "schema": "public",
+      "values": [
+        "entry_level",
+        "mid_level",
+        "senior_level"
+      ]
+    },
+    "public.job_application_status": {
+      "name": "job_application_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "shortlisted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.job_status": {
+      "name": "job_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "active",
+        "closed",
+        "paused",
+        "deleted"
+      ]
+    },
+    "public.jobs_open_to": {
+      "name": "jobs_open_to",
+      "schema": "public",
+      "values": [
+        "full-time-roles",
+        "part-time-roles",
+        "employee-roles"
+      ]
+    },
+    "public.language": {
+      "name": "language",
+      "schema": "public",
+      "values": [
+        "Spanish",
+        "English",
+        "Italian",
+        "Arabic",
+        "French",
+        "Turkish",
+        "German",
+        "Portuguese",
+        "Russian"
+      ]
+    },
+    "public.location_preference_type": {
+      "name": "location_preference_type",
+      "schema": "public",
+      "values": [
+        "remote",
+        "onsite",
+        "mixed"
+      ]
+    },
+    "public.project_type": {
+      "name": "project_type",
+      "schema": "public",
+      "values": [
+        "short-term",
+        "long-term",
+        "per-project-basis"
+      ]
+    },
+    "public.provider": {
+      "name": "provider",
+      "schema": "public",
+      "values": [
+        "credentials",
+        "social_account"
+      ]
+    },
+    "public.timesheet_status": {
+      "name": "timesheet_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "user"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "_meta": {
