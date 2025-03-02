@@ -100,3 +100,5 @@ export const belongsToEnum = pgEnum(
   Object.values(JobApplicationStatus) as [string, ...string[]]
 );
  */
+
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
