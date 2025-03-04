@@ -10,14 +10,16 @@ import {
   languagesTable,
   accountLanguagesTable,
   industriesTable,
+  skillsTable,
 } from "../drizzle/schemas/schema"; // adjust the import path accordingly
 import { faker } from "@faker-js/faker";
 
 import * as dotenv from "dotenv";
-import { AccountType } from "~/types/enums";
+import { AccountType, Provider } from "~/types/enums";
 dotenv.config({
   path: ".env",
 });
+import { hash } from "bcrypt-ts";
 
 // dotenv.config();
 
@@ -201,6 +203,21 @@ async function seed() {
         });
       }
 
+      // seed admin account
+      const adminPassword = "123"; // Change this in production
+      const hashedPassword = await hash(adminPassword, 10);
+
+      await tx.insert(UsersTable).values({
+        firstName: "Admin",
+        lastName: "User",
+        email: "admin@mawaheb.com",
+        passHash: hashedPassword,
+        isVerified: true,
+        isOnboarded: true,
+        role: "admin",
+        provider: Provider.Credentials,
+      });
+
       // Seed Account Languages
       /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
         await tx.insert(accountLanguagesTable).values({
@@ -348,6 +365,106 @@ async function seed() {
           ],
         },
       ];
+
+      // create skills
+      const skills = [
+        {
+          label: "Web Development",
+          metaData: [
+            "web development",
+            "web design",
+            "web programming",
+            "web development",
+          ],
+          isHot: true,
+        },
+        {
+          label: "Graphic Design",
+          metaData: [
+            "graphic design",
+            "art",
+            "design",
+            "illustration",
+            "photography",
+            "digital art",
+            "animation",
+            "video editing",
+            "graphic design",
+            "photoshop",
+            "illustrator",
+            "adobe",
+            "canva",
+            "figma",
+            "photoshop",
+          ],
+        },
+        {
+          label: "Content Writing",
+          metaData: [
+            "content writing",
+            "copywriting",
+            "blog writing",
+            "article writing",
+          ],
+        },
+        {
+          label: "Digital Marketing",
+          metaData: [
+            "digital marketing",
+            "social media marketing",
+            "content marketing",
+            "email marketing",
+          ],
+          isHot: true,
+        },
+        {
+          label: "Project Management",
+          metaData: [
+            "project management",
+            "project planning",
+            "project execution",
+            "project monitoring",
+            "project evaluation",
+            "project control",
+            "project risk management",
+            "project communication",
+            "project documentation",
+          ],
+        },
+        {
+          label: "Data Analysis",
+          metaData: [
+            "data analysis",
+            "python",
+            "sql",
+            "data visualization",
+            "data modeling",
+            "data warehousing",
+            "data mining",
+            "data analytics",
+            "data management",
+            "data quality",
+          ],
+        },
+        {
+          label: "Data Engineering",
+          metaData: [
+            "data engineering",
+            "data science",
+            "data analysis",
+            "data visualization",
+            "data warehousing",
+          ],
+          isHot: true,
+        },
+      ];
+
+      for (const skill of skills) {
+        await tx.insert(skillsTable).values({
+          label: skill.label,
+          metaData: JSON.stringify(skill.metaData),
+        });
+      }
 
       for (const industry of industries) {
         await tx.insert(industriesTable).values({

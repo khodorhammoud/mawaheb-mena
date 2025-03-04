@@ -38,3 +38,16 @@ export type FreelancerOnboardingData = {
   educations: EducationFormFieldType[];
   workHistory: WorkHistoryFormFieldType[];
 };
+
+export interface Skill {
+  id: number;
+  label: string;
+  metaData: Record<string, string>;
+  isHot: boolean;
+}
+
+export interface FreelancerSkill {
+  skillId: number;
+  label?: string;
+  yearsOfExperience: number;
+}

@@ -1,5 +1,5 @@
 {
-  "id": "435f61b6-4f17-4278-8032-ab5c7b6b31c7",
+  "id": "2ae038b2-5233-43fb-9d37-678c756a97cf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -113,6 +113,14 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'user'"
         }
       },
       "indexes": {},
@@ -212,16 +220,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "location": {
-          "name": "location",
-          "type": "varchar(150)",
+        "country": {
+          "name": "country",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },
-        "country": {
-          "name": "country",
-          "type": "country",
-          "typeSchema": "public",
+        "address": {
+          "name": "address",
+          "type": "varchar(150)",
           "primaryKey": false,
           "notNull": false
         },
@@ -291,6 +298,42 @@
           ]
         }
       }
+    },
+    "public.attachments": {
+      "name": "attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.employer_industries": {
       "name": "employer_industries",
@@ -538,6 +581,67 @@
           "tableTo": "languages",
           "columnsFrom": [
             "language_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.freelancer_skills": {
+      "name": "freelancer_skills",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "years_of_experience": {
+          "name": "years_of_experience",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "freelancer_skills_freelancer_id_freelancers_id_fk": {
+          "name": "freelancer_skills_freelancer_id_freelancers_id_fk",
+          "tableFrom": "freelancer_skills",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "freelancer_skills_skill_id_skills_id_fk": {
+          "name": "freelancer_skills_skill_id_skills_id_fk",
+          "tableFrom": "freelancer_skills",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
           ],
           "columnsTo": [
             "id"
@@ -938,13 +1042,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "required_skills": {
-          "name": "required_skills",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
         "project_type": {
           "name": "project_type",
           "type": "project_type",
@@ -960,7 +1057,8 @@
         },
         "experience_level": {
           "name": "experience_level",
-          "type": "text",
+          "type": "experience_level",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -1028,8 +1126,7 @@
         },
         "language": {
           "name": "language",
-          "type": "language",
-          "typeSchema": "public",
+          "type": "varchar(25)",
           "primaryKey": false,
           "notNull": false
         }
@@ -1094,6 +1191,81 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.reviews": {
+      "name": "reviews",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "employer_id": {
+          "name": "employer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating": {
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "reviews_employer_id_employers_id_fk": {
+          "name": "reviews_employer_id_employers_id_fk",
+          "tableFrom": "reviews",
+          "tableTo": "employers",
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reviews_freelancer_id_freelancers_id_fk": {
+          "name": "reviews_freelancer_id_freelancers_id_fk",
+          "tableFrom": "reviews",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.skills": {
       "name": "skills",
       "schema": "",
@@ -1104,18 +1276,32 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "label": {
+          "name": "label",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "meta_data": {
           "name": "meta_data",
-          "type": "jsonb",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "default": "'{}'::jsonb"
+          "default": "'[]'"
+        },
+        "is_hot": {
+          "name": "is_hot",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -1433,7 +1619,188 @@
       "uniqueConstraints": {}
     }
   },
-  "enums": {},
+  "enums": {
+    "public.account_status": {
+      "name": "account_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "pending",
+        "published",
+        "closed",
+        "suspended"
+      ]
+    },
+    "public.account_type": {
+      "name": "account_type",
+      "schema": "public",
+      "values": [
+        "freelancer",
+        "employer"
+      ]
+    },
+    "public.belongs_to": {
+      "name": "belongs_to",
+      "schema": "public",
+      "values": [
+        "portfolio",
+        "certificate"
+      ]
+    },
+    "public.compensation_type": {
+      "name": "compensation_type",
+      "schema": "public",
+      "values": [
+        "project-based-rate",
+        "hourly-rate"
+      ]
+    },
+    "public.country": {
+      "name": "country",
+      "schema": "public",
+      "values": [
+        "Albania",
+        "Algeria",
+        "Bahrain",
+        "Egypt",
+        "Iran",
+        "Iraq",
+        "Jordan",
+        "Kuwait",
+        "Lebanon",
+        "Libya",
+        "Morocco",
+        "Oman",
+        "Palestine",
+        "Qatar",
+        "Saudi_Arabia",
+        "Syria",
+        "Tunisia",
+        "Turkey",
+        "United_Arab_Emirates",
+        "Yemen"
+      ]
+    },
+    "public.day_of_week": {
+      "name": "day_of_week",
+      "schema": "public",
+      "values": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ]
+    },
+    "public.eployer_account_type": {
+      "name": "eployer_account_type",
+      "schema": "public",
+      "values": [
+        "personal",
+        "company"
+      ]
+    },
+    "public.experience_level": {
+      "name": "experience_level",
+      "schema": "public",
+      "values": [
+        "entry_level",
+        "mid_level",
+        "senior_level"
+      ]
+    },
+    "public.job_application_status": {
+      "name": "job_application_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "shortlisted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.job_status": {
+      "name": "job_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "active",
+        "closed",
+        "paused",
+        "deleted"
+      ]
+    },
+    "public.jobs_open_to": {
+      "name": "jobs_open_to",
+      "schema": "public",
+      "values": [
+        "full-time-roles",
+        "part-time-roles",
+        "employee-roles"
+      ]
+    },
+    "public.language": {
+      "name": "language",
+      "schema": "public",
+      "values": [
+        "Spanish",
+        "English",
+        "Italian",
+        "Arabic",
+        "French",
+        "Turkish",
+        "German",
+        "Portuguese",
+        "Russian"
+      ]
+    },
+    "public.location_preference_type": {
+      "name": "location_preference_type",
+      "schema": "public",
+      "values": [
+        "remote",
+        "onsite",
+        "mixed"
+      ]
+    },
+    "public.project_type": {
+      "name": "project_type",
+      "schema": "public",
+      "values": [
+        "short-term",
+        "long-term",
+        "per-project-basis"
+      ]
+    },
+    "public.provider": {
+      "name": "provider",
+      "schema": "public",
+      "values": [
+        "credentials",
+        "social_account"
+      ]
+    },
+    "public.timesheet_status": {
+      "name": "timesheet_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "user"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "_meta": {

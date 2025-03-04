@@ -6,6 +6,9 @@ import { Badge } from "~/components/ui/badge";
 import RequiredSkills from "~/routes/_templatedashboard.new-job/required-skills";
 import { JobCategory } from "~/types/User";
 import { Skill } from "~/types/Skill";
+import RichTextEditor from "~/components/ui/richTextEditor";
+import { getWordCount } from "~/lib/utils";
+import { ExperienceLevel } from "~/types/enums";
 
 interface JobFormProps {
   job?: {
@@ -17,7 +20,8 @@ interface JobFormProps {
     requiredSkills: Skill[];
     projectType: string;
     budget: number;
-    experienceLevel: string;
+    experienceLevel: ExperienceLevel;
+    // experienceLevel: string;
     jobCategoryId: number | null;
   };
   jobCategories: JobCategory[];
@@ -33,6 +37,7 @@ export default function JobForm({
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
     Array.isArray(job?.requiredSkills)
       ? job.requiredSkills.map((skill: any) => ({
+          id: skill.id || 0,
           name: skill.name || "",
           isStarred: skill.isStarred || false,
         }))
@@ -42,16 +47,13 @@ export default function JobForm({
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     job?.jobCategoryId || null
   );
-
   const [selectedExperience, setSelectedExperience] = useState(
     job?.experienceLevel || ""
   );
+  const [jobDescription, setJobDescription] = useState(job?.description || "");
 
-  // Handlers
-  const handleSkillsChange = (skills: Skill[]) => setRequiredSkills(skills);
-  const handleCategoryClick = (categoryId: number) =>
-    setSelectedCategory(categoryId);
-  const handleExperienceClick = (level: string) => setSelectedExperience(level);
+  const handleDescriptionChange = (content: string) =>
+    setJobDescription(content);
 
   return (
     <div className="font-['Switzer-Regular'] mt-10 w-full">
@@ -75,8 +77,8 @@ export default function JobForm({
             <input type="hidden" name="jobCategory" value={selectedCategory} />
             <input
               type="hidden"
-              name="requiredSkills"
-              value={requiredSkills.map((skill) => skill.name).join(",")}
+              name="jobSkills"
+              value={JSON.stringify(requiredSkills)}
             />
 
             {/* Job Title */}
@@ -100,15 +102,30 @@ export default function JobForm({
             />
 
             {/* Job Description */}
-            <AppFormField
-              type="textarea"
-              id="jobDescription"
-              name="jobDescription"
-              label="Job Description"
-              defaultValue={job?.description || ""}
-              className="w-full"
-              col={10}
-            />
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="jobDescription"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Description
+              </label>
+              <input
+                type="hidden"
+                name="jobDescription"
+                value={jobDescription}
+              />
+              {/* the hidden input is needed for the description as a richTextEditor to be saved :) */}
+              <RichTextEditor
+                value={jobDescription}
+                onChange={handleDescriptionChange}
+                placeholder="Enter the job description"
+                className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
+                style={{ wordBreak: "break-word", hyphens: "auto" }}
+              />
+              <div className="ml-6 text-xs text-gray-500">
+                {getWordCount(jobDescription)} / 2000 characters
+              </div>
+            </div>
 
             <div className="flex flex-col gap-6">
               {/* Location */}
@@ -122,9 +139,10 @@ export default function JobForm({
               />
 
               {/* Skills */}
+
               <RequiredSkills
                 selectedSkills={requiredSkills}
-                onChange={handleSkillsChange}
+                onChange={setRequiredSkills}
               />
 
               {/* Project Type */}
@@ -170,12 +188,8 @@ export default function JobForm({
                 {jobCategories.map((category) => (
                   <Badge
                     key={category.id}
-                    onClick={() => handleCategoryClick(category.id)}
-                    className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
-                      selectedCategory === category.id
-                        ? "bg-blue-100 text-blue-600 border-blue-600"
-                        : "text-gray-600 border-gray-300"
-                    }`}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${selectedCategory === category.id ? "bg-blue-100 text-blue-600 border-blue-600" : "text-gray-600 border-gray-300"}`}
                   >
                     {category.label}
                   </Badge>
@@ -189,10 +203,10 @@ export default function JobForm({
                 Experience Level
               </h3>
               <div className="flex flex-wrap gap-2">
-                {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
+                {Object.values(ExperienceLevel).map((level) => (
                   <Badge
                     key={level}
-                    onClick={() => handleExperienceClick(level)}
+                    onClick={() => setSelectedExperience(level)}
                     className={`cursor-pointer px-4 py-2 rounded-full border hover:bg-blue-100 ${
                       selectedExperience === level
                         ? "bg-blue-100 text-blue-600 border-blue-600"
@@ -205,19 +219,18 @@ export default function JobForm({
               </div>
             </div>
 
-            {/* Buttons */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
               <Button
                 type="submit"
                 name="target"
                 value="save-draft"
-                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor"
+                className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor bg-white not-active-gradient"
               >
                 {isEdit ? "Cancel" : "Save as Draft"}
               </Button>
               <Button
                 type="submit"
-                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor"
+                className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor not-active-gradient"
               >
                 {isEdit ? "Update Job" : "Post Job"}
               </Button>

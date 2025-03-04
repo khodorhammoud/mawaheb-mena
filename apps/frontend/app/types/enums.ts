@@ -93,6 +93,7 @@ export enum JobStatus {
   Draft = "draft",
   Active = "active",
   Closed = "closed",
+  Completed = "completed",
   Paused = "paused",
   Deleted = "deleted",
 }
@@ -115,4 +116,9 @@ export enum JobsOpenTo {
   FullTimeRoles = "full-time-roles",
   PartTimeRoles = "part-time-roles",
   EmployeeRoles = "employee-roles",
+}
+
+export enum AttachmentBelongsTo {
+  Portfolio = "portfolio",
+  Certificate = "certificate",
 }

@@ -3,22 +3,33 @@ import {
   freelancersTable,
   languagesTable,
   freelancerLanguagesTable,
+  attachmentsTable,
+  freelancerSkillsTable,
+  skillsTable,
+  jobSkillsTable,
 } from "../db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import {
   Freelancer,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   CertificateFormFieldType,
   EducationFormFieldType,
+  AttachmentsType,
 } from "../types/User";
 import { SuccessVerificationLoaderStatus } from "~/types/misc";
-import { uploadFileToBucket } from "./cloudStorage.server";
 import DOMPurify from "isomorphic-dompurify";
 import { redirect } from "@remix-run/react";
 import { updateAccountBio } from "./employer.server";
 import { checkUserExists, updateOnboardingStatus } from "./user.server";
 import { genParseCV } from "./cvParser.server";
+import {
+  deleteFileFromS3,
+  uploadFile,
+  // generatePresignedUrl,
+  // uploadFileToBucket,
+} from "./cloudStorage.server";
+import { FreelancerSkill } from "~/routes/_templatedashboard.onboarding/types";
 
 /***************************************************
  ************Insert/update freelancer info************
@@ -92,15 +103,12 @@ export async function handleFreelancerOnboardingAction(
     }
   }
 
-  async function handleFreelancerBio(
-    formData: FormData,
-    userId: number,
-    freelancer: Freelancer
-  ) {
+  async function handleFreelancerBio(formData: FormData, userId: number) {
     const bio = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
-      location: formData.get("location") as string,
+      address: formData.get("address") as string,
+      country: formData.get("country") as string,
       websiteURL: formData.get("website") as string,
       socialMediaLinks: {
         linkedin: formData.get("linkedin") as string,
@@ -169,23 +177,39 @@ export async function handleFreelancerOnboardingAction(
     const portfolio = formData.get("portfolio") as string;
 
     try {
+      if (!portfolio) {
+        throw new Error("Portfolio data is missing or invalid.");
+      }
+
+      // Parse the portfolio JSON from the form
       const portfolioParsed = JSON.parse(portfolio) as PortfolioFormFieldType[];
 
       const portfolioImages: File[] = [];
-      // iterate over indexes of portfolioParsed and get the file type from the form
+
+      // Iterate over the portfolio entries to gather files from the form data
       for (let index = 0; index < portfolioParsed.length; index++) {
         const portfolioImage = formData.get(
           `portfolio-attachment[${index}]`
         ) as unknown as File;
-        portfolioImages.push(portfolioImage ?? new File([], ""));
+
+        if (portfolioImage && portfolioImage.size > 0) {
+          portfolioImages.push(portfolioImage);
+        } else {
+          portfolioImages.push(null); // No image for this portfolio entry
+        }
       }
+
+      // Update freelancer portfolio and process attachments
       const portfolioStatus = await updateFreelancerPortfolio(
         freelancer,
         portfolioParsed,
         portfolioImages
       );
+
       return Response.json({ success: portfolioStatus.success });
     } catch (error) {
+      console.error("Error processing freelancer portfolio:", error);
+
       return Response.json({
         success: false,
         error: { message: "Invalid portfolio data." },
@@ -340,6 +364,46 @@ export async function handleFreelancerOnboardingAction(
         );
   }
 
+  async function handleFreelancerLanguages(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const languages = formData.get("languages") as string;
+    // languages are a string of ids separated by commas
+    try {
+      const languagesParsed = JSON.parse(languages) as { id: number }[];
+      const languagesStatus = await updateFreelancerLanguages(
+        freelancer.id,
+        languagesParsed.map((language) => language.id)
+      );
+      return Response.json({ success: languagesStatus.success });
+    } catch (error) {
+      console.error("Error parsing languages", error);
+      return Response.json(
+        { success: false, error: { message: "Invalid languages data." } },
+        { status: 400 }
+      );
+    }
+  }
+
+  async function handleFreelancerSkills(
+    formData: FormData,
+    freelancer: Freelancer
+  ) {
+    const skills = formData.get("skills");
+    try {
+      const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
+      const skillsStatus = await updateFreelancerSkills(
+        freelancer.id,
+        skillsParsed
+      );
+      return Response.json({ success: skillsStatus.success });
+    } catch (error) {
+      console.error("Error parsing skills", error);
+    }
+    return Response.json({ success: true });
+  }
+
   async function handleFreelancerOnboard(userId: number) {
     const userExists = await checkUserExists(userId);
     if (!userExists.length)
@@ -364,7 +428,7 @@ export async function handleFreelancerOnboardingAction(
     case "freelancer-cv":
       return handleFreelancerCV(formData, freelancer);
     case "freelancer-bio":
-      return handleFreelancerBio(formData, userId, freelancer);
+      return handleFreelancerBio(formData, userId);
     case "freelancer-hourly-rate":
       return handleFreelancerHourlyRate(formData, freelancer);
     case "freelancer-years-of-experience":
@@ -385,11 +449,27 @@ export async function handleFreelancerOnboardingAction(
       return handleFreelancerAvailability(formData, freelancer);
     case "freelancer-is-available-for-work":
       return handleFreelancerIsAvailableForWork(formData, freelancer);
+    case "freelancer-skills":
+      return handleFreelancerSkills(formData, freelancer);
+    case "freelancer-languages":
+      return handleFreelancerLanguages(formData, freelancer);
     case "freelancer-onboard":
       return handleFreelancerOnboard(userId);
     default:
       throw new Error("Unknown target update");
   }
+}
+
+export async function getFreelancerIdByAccountId(
+  accountId: number
+): Promise<number | null> {
+  const freelancer = await db
+    .select({ id: freelancersTable.id })
+    .from(freelancersTable)
+    .where(eq(freelancersTable.accountId, accountId))
+    .limit(1);
+
+  return freelancer.length > 0 ? freelancer[0].id : null;
 }
 
 export async function updateFreelancerPortfolio(
@@ -398,36 +478,82 @@ export async function updateFreelancerPortfolio(
   portfolioImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    // upload portfolio Images
     for (let i = 0; i < portfolioImages.length; i++) {
       const file = portfolioImages[i];
+
       if (file && file.size > 0) {
-        portfolio[i].projectImageUrl = (
-          await uploadFileToBucket("portfolio", file)
-        ).fileName;
+        // Check if an attachment already exists
+        if (portfolio[i].attachmentId) {
+          const existingAttachment = await db
+            .select()
+            .from(attachmentsTable)
+            .where(eq(attachmentsTable.id, portfolio[i].attachmentId))
+            .limit(1);
+
+          if (existingAttachment.length > 0) {
+            // Delete the old file from S3
+            await deleteFileFromS3(
+              process.env.S3_PRIVATE_BUCKET_NAME!,
+              existingAttachment[0].key
+            );
+          }
+
+          // Delete the old attachment record from the database
+          await db
+            .delete(attachmentsTable)
+            .where(eq(attachmentsTable.id, portfolio[i].attachmentId));
+        }
+
+        // Upload the new file to S3
+        const uploadResult = await uploadFile("portfolio", file);
+
+        // Save the new file reference into the attachments table
+        const [attachmentRes] = await db
+          .insert(attachmentsTable)
+          .values({
+            key: uploadResult.key,
+            metadata: {
+              fileSize: file.size,
+              contentType: file.type,
+            },
+          } as AttachmentsType)
+          .returning({ id: attachmentsTable.id });
+
+        if (!attachmentRes) {
+          throw new Error("Failed to save attachment in the database.");
+        }
+
+        // Save the attachment ID and generate the pre-signed URL
+        portfolio[i].attachmentId = attachmentRes.id;
+        portfolio[i].projectImageName = uploadResult.key;
       } else {
-        portfolio[i].projectImageUrl = "";
+        // Handle cases where no file was uploaded
+        portfolio[i].attachmentId = null;
+        portfolio[i].projectImageName = null;
       }
+
+      // Sanitize the project description
       portfolio[i].projectDescription = DOMPurify.sanitize(
-        portfolio[i].projectDescription
+        portfolio[i].projectDescription || ""
       );
     }
 
+    // Update the freelancer's portfolio in the database
     const res = await db
       .update(freelancersTable)
       .set({
-        portfolio: JSON.stringify(portfolio),
+        portfolio: JSON.stringify(portfolio), // Save the updated portfolio
       })
       .where(eq(freelancersTable.id, freelancer.id))
       .returning({ id: freelancersTable.id });
 
     if (!res.length) {
-      throw new Error("Failed to update freelancer portfolio");
+      throw new Error("Failed to update freelancer portfolio.");
     }
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating freelancer portfolio", error);
+    console.error("Error updating freelancer portfolio:", error);
     throw error;
   }
 }
@@ -438,30 +564,85 @@ export async function updateFreelancerCertificates(
   certificatesImages: File[]
 ): Promise<SuccessVerificationLoaderStatus> {
   try {
-    // upload certificates Images
     for (let i = 0; i < certificatesImages.length; i++) {
       const file = certificatesImages[i];
+
       if (file && file.size > 0) {
-        certificates[i].attachmentUrl = (
-          await uploadFileToBucket("certificates", file)
-        ).fileName;
+        // Check if an attachment already exists
+        if (certificates[i].attachmentId) {
+          const existingAttachment = await db
+            .select()
+            .from(attachmentsTable)
+            .where(eq(attachmentsTable.id, certificates[i].attachmentId))
+            .limit(1);
+
+          if (existingAttachment.length > 0) {
+            // Delete the old file from S3
+            await deleteFileFromS3(
+              process.env.S3_PRIVATE_BUCKET_NAME!,
+              existingAttachment[0].key
+            );
+          }
+
+          // Delete the old attachment record from the database
+          await db
+            .delete(attachmentsTable)
+            .where(eq(attachmentsTable.id, certificates[i].attachmentId));
+        }
+
+        // Upload the new file to S3
+        const uploadResult = await uploadFile("certificates", file);
+
+        // Save the new file reference into the attachments table
+        const [attachmentRes] = await db
+          .insert(attachmentsTable)
+          .values({
+            key: uploadResult.key,
+            metadata: {
+              fileSize: file.size,
+              contentType: file.type,
+            },
+          } as AttachmentsType)
+          .returning({ id: attachmentsTable.id });
+
+        if (!attachmentRes) {
+          throw new Error("Failed to save attachment in the database.");
+        }
+
+        // Save the attachment ID (but not the signed URL) in the certificates array
+        certificates[i].attachmentId = attachmentRes.id;
+        certificates[i].attachmentName = uploadResult.key; // Save the file name for future use
       } else {
-        certificates[i].attachmentUrl = "";
+        // Handle cases where no file was uploaded
+        certificates[i].attachmentId = null;
+        certificates[i].attachmentName = null;
       }
+
+      // Sanitize the certificate name and issuer
+      certificates[i].certificateName = DOMPurify.sanitize(
+        certificates[i].certificateName || ""
+      );
+      certificates[i].issuedBy = DOMPurify.sanitize(
+        certificates[i].issuedBy || ""
+      );
     }
 
+    // Update the freelancer's certificates in the database
     const res = await db
       .update(freelancersTable)
-      .set({ certificates: JSON.stringify(certificates) })
+      .set({
+        certificates: JSON.stringify(certificates), // Save the updated certificates
+      })
       .where(eq(freelancersTable.id, freelancer.id))
       .returning({ id: freelancersTable.id });
 
     if (!res.length) {
-      throw new Error("Failed to update freelancer certificates");
+      throw new Error("Failed to update freelancer certificates.");
     }
+
     return { success: true };
   } catch (error) {
-    console.error("Error updating freelancer certificates", error);
+    console.error("Error updating freelancer certificates:", error);
     throw error;
   }
 }
@@ -513,7 +694,6 @@ export async function updateFreelancerEducation(
   }
 }
 
-// Function to update freelancer's selected languages
 export async function updateFreelancerLanguages(
   freelancerId: number,
   languages: number[]
@@ -541,7 +721,34 @@ export async function updateFreelancerLanguages(
   return { success: true };
 }
 
-// Function to update the "About" section for a freelancer
+export async function updateFreelancerSkills(
+  freelancerId: number,
+  skillsData: FreelancerSkill[]
+): Promise<SuccessVerificationLoaderStatus> {
+  try {
+    // delete existing skills
+    await db
+      .delete(freelancerSkillsTable)
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // insert new skills
+    await db.insert(freelancerSkillsTable).values(
+      skillsData.map(
+        (skill: { skillId: number; yearsOfExperience: number }) => ({
+          freelancerId,
+          skillId: skill.skillId,
+          yearsOfExperience: skill.yearsOfExperience,
+        })
+      )
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating freelancer skills", error);
+    throw error;
+  }
+}
+
 export async function updateFreelancerAbout(
   freelancer: Freelancer,
   aboutContent: string
@@ -693,7 +900,6 @@ export async function updateFreelancerAvailabilityStatus(
  ***************fetch freelancer info***************
  *************************************************** */
 
-// Function to get availability details from the database
 export async function getFreelancerAvailability(accountId: number) {
   const result = await db
     .select({
@@ -720,7 +926,6 @@ export async function getFreelancerAvailability(accountId: number) {
   return result[0] || null;
 }
 
-// Function to fetch the "About" section content for a freelancer
 export async function getFreelancerAbout(
   freelancer: Freelancer
 ): Promise<string> {
@@ -765,25 +970,87 @@ export async function getFreelancerHourlyRate(
   }
 }
 
-// Function to get freelancer's selected languages
 export async function getFreelancerLanguages(
   freelancerId: number
-): Promise<{ id: number; name: string }[]> {
+): Promise<{ id: number; language: string }[]> {
   try {
     const languages = await db
-      .select({ id: languagesTable.id, name: languagesTable.name })
+      .select({ id: languagesTable.id, language: languagesTable.language })
       .from(freelancerLanguagesTable)
       .leftJoin(
         languagesTable,
         eq(freelancerLanguagesTable.languageId, languagesTable.id)
       )
       .where(eq(freelancerLanguagesTable.freelancerId, freelancerId));
+
+    // console.log(
+    //   "🔥 DATABASE: Fetched Languages for Freelancer",
+    //   freelancerId,
+    //   languages
+    // );
+
     if (!languages) {
       throw new Error("Failed to get freelancer languages");
     }
-    return languages;
+
+    return languages ?? []; // Ensure it always returns an array
   } catch (error) {
     console.error("Error getting freelancer languages", error);
     throw error;
   }
+}
+
+export async function getFreelancerSkills(freelancerId: number) {
+  /**
+   * Fetches all skills associated with a freelancer
+   * @param freelancerId The id of the freelancer whose skills to fetch
+   * @returns An array of objects with `skillId` and `label` properties
+   */
+  // console.log(`🔥 DATABASE: Fetching skills for freelancerId: ${freelancerId}`);
+
+  const skills = await db
+    .select({
+      skillId: freelancerSkillsTable.skillId,
+      label: skillsTable.label,
+    })
+    .from(freelancerSkillsTable)
+    .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
+    .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+  // console.log(
+  //   `🔥 DATABASE: Fetched skills for freelancerId ${freelancerId}:`,
+  //   skills
+  // );
+
+  return skills;
+}
+
+// fetch freelancer's skills
+export async function fetchFreelancerSkills(
+  freelancerId: number
+): Promise<FreelancerSkill[]> {
+  const skills = await db
+    .select()
+    .from(freelancerSkillsTable)
+    .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+  // get skill labels from skills table
+  const skillLabels = await db
+    .select({ id: skillsTable.id, label: skillsTable.label })
+    .from(skillsTable)
+    .where(
+      inArray(
+        skillsTable.id,
+        skills.map((skill) => skill.skillId)
+      )
+    );
+
+  // add skill labels to skills
+  const freelancerSkills: FreelancerSkill[] = skills.map((skill) => ({
+    skillId: skill.skillId,
+    label: skillLabels.find((label) => label.id === skill.skillId)?.label,
+    yearsOfExperience: skill.yearsOfExperience,
+  }));
+
+  return freelancerSkills;
 }

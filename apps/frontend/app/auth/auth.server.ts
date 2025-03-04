@@ -4,7 +4,7 @@
 import { sessionStorage, getSession } from "./session.server";
 import { Authenticator } from "remix-auth";
 import { registerationStrategy, loginStrategy } from "./strategies";
-import { checkUserStatuses } from "~/servers/user.server";
+import { checkUserStatuses, getUser } from "~/servers/user.server";
 import { AccountStatus, AccountType } from "~/types/enums";
 import { redirect } from "@remix-run/node";
 
@@ -123,6 +123,17 @@ export async function requireUserIsEmployerPublished(request: Request) {
     console.warn("Unauthorized, user is not a published employer");
     throw redirect("/dashboard");
   }
+  return userId;
+}
+
+export async function requireAdmin(request: Request) {
+  const userId = await requireUserSession(request);
+  const user = await getUser({ userId });
+
+  if (!user || user.role !== "admin") {
+    throw redirect("/login-admin");
+  }
+
   return userId;
 }
 

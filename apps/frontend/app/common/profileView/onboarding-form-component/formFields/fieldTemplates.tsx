@@ -1,16 +1,9 @@
 import React from "react";
 import { RepeatableInputType } from "../types";
-import { useLoaderData } from "@remix-run/react";
 import type { FieldTemplateState, FormStateType } from "../types";
-import { IoLinkSharp, IoBriefcaseSharp } from "react-icons/io5";
+import { IoBriefcaseSharp } from "react-icons/io5";
 import { RiAwardFill } from "react-icons/ri";
 import { FaTimes, FaGraduationCap } from "react-icons/fa";
-import {
-  PortfolioFormFieldType,
-  WorkHistoryFormFieldType,
-  CertificateFormFieldType,
-  EducationFormFieldType,
-} from "~/types/User";
 import { parseHtmlContent } from "~/utils/api-helpers";
 
 interface FieldTemplateProps {
@@ -26,8 +19,10 @@ export const TextFieldTemplate: FieldTemplateState = {
 
     return (
       <div className="flex flex-col ">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <div className="text-sm font-medium mt-4 text-gray-400">
+        <span className="lg:text-lg text-base font-medium text-left">
+          {cardTitle}
+        </span>
+        <div className="text-sm font-medium mt-4 text-gray-400 text-left">
           {isHtml ? (
             <div
               dangerouslySetInnerHTML={{
@@ -52,10 +47,17 @@ export const TextFieldTemplate: FieldTemplateState = {
 export const TextAreaFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-8 pl-5 pr-8">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-sm font-medium mt-4 text-gray-400">
-        {value as string}
+      <span className="lg:text-lg text-base font-medium text-left">
+        {cardTitle}
       </span>
+      {value ? (
+        <div
+          className="text-sm font-medium mt-4 text-gray-600 text-left"
+          dangerouslySetInnerHTML={{ __html: value as string }}
+        />
+      ) : (
+        <span className="text-base text-gray-400 italic">Not filled</span>
+      )}
     </div>
   ),
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
@@ -68,10 +70,10 @@ export const TextAreaFieldTemplate: FieldTemplateState = {
 
 export const NumberFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center justify-between pl-5 pr-8">
       <div className="flex flex-col gap-1">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <span className="text-2xl mt-4">{value as number} $</span>
+        <span className="lg:text-lg text-base font-medium">{cardTitle}</span>
+        <span className="lg:text-xl text-lg mt-4">{value as number} $</span>
       </div>
     </div>
   ),
@@ -84,100 +86,62 @@ export const NumberFieldTemplate: FieldTemplateState = {
 };
 
 const Project_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      portfolio: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const portfolio = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse portfolio data
-    let portfolio: PortfolioFormFieldType[] = [];
-    try {
-      portfolio = JSON.parse(data.portfolio);
-    } catch (error) {
-      console.error("Failed to parse portfolio data:", error);
-    }
-
-    // Handle empty portfolio
-    if (!Array.isArray(portfolio) || portfolio.length === 0) {
+    if (portfolio.length === 0) {
       return (
-        <div className="flex flex-col py-4 pl-5 pr-8">
+        <div className="flex flex-col">
           <span className="text-lg font-medium">Portfolio</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render portfolio items
     return (
       <>
-        <span className="text-lg font-medium">Projects</span>
-        {portfolio.map((item, index) => {
-          const { isHtml, content: parsedDescription } = parseHtmlContent(
-            item.projectDescription || ""
-          );
-          return (
-            <div key={index} className="flex flex-col">
-              <div className="flex w-full h-auto rounded-xl mt-4 bg-white">
-                {/* Image Section */}
-                <div className="w-1/4 h-auto overflow-hidden rounded-l-xl">
-                  <img
-                    className="w-full h-full object-cover"
-                    src={
-                      item.projectImageUrl ||
-                      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
-                    }
-                    alt={item.projectName || "Portfolio Item"}
+        <span className="lg:text-lg text-base font-medium text-left">
+          Projects
+        </span>
+        {portfolio.map((item, index) => (
+          <div key={index} className="flex flex-col text-left">
+            <div className="flex w-full rounded-xl mt-4 bg-white">
+              <img
+                className="w-1/4 object-cover rounded-l-xl"
+                src={
+                  item.projectImageUrl ||
+                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                }
+                alt={item.projectName || "Portfolio Image"}
+              />
+              <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4">
+                  {item.projectName || "Unnamed Project"}
+                  {item.projectLink && (
+                    <a
+                      href={item.projectLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      View Project
+                    </a>
+                  )}
+                </h1>
+                {item.projectDescription && (
+                  <div
+                    className="text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: item.projectDescription,
+                    }}
                   />
-                </div>
-
-                {/* Content Section */}
-                <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                  <h1 className="flex items-center text-xl mb-4 gap-4">
-                    {item.projectName}
-                    {item.projectLink && (
-                      <a
-                        href={item.projectLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center"
-                        aria-label="Link"
-                      >
-                        <IoLinkSharp className="h-9 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                      </a>
-                    )}
-                  </h1>
-                  <div className="mb-2 text-sm">
-                    {
-                      <div>
-                        {isHtml ? (
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: parsedDescription,
-                            }}
-                          />
-                        ) : (
-                          <div>{parsedDescription}</div>
-                        )}
-                      </div>
-                    }
-                  </div>
-                  {/* <ul className="list-disc text-sm pl-8">
-                  <li className="leading-relaxed text-indent-0">
-                    Conducted comprehensive research to identify improvement
-                    areas.
-                  </li>
-                  <li className="leading-relaxed">
-                    Developed detailed wireframes and high-fidelity mockups.
-                  </li>
-                  <li className="leading-relaxed">
-                    Improved overall user experience and usability.
-                  </li>
-                </ul> */}
-                </div>
+                )}
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </>
     );
   },
@@ -190,82 +154,60 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      workHistory: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const workHistory = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse work history data
-    let workHistory: WorkHistoryFormFieldType[] = [];
-    try {
-      workHistory = JSON.parse(data.workHistory);
-    } catch (error) {
-      console.error("Failed to parse work history data:", error);
-    }
-
-    // Handle empty work history
-    if (!Array.isArray(workHistory) || workHistory.length === 0) {
+    if (workHistory.length === 0) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Work History</span>
+          <span className="text-lg font-medium">{cardTitle}</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render work history items
     return (
       <>
-        <span className="text-lg font-medium">Work History</span>
-        {workHistory.map((item, index) => {
-          const { isHtml, content: parsedDescription } = parseHtmlContent(
-            item.jobDescription || "No description provided."
-          );
-          return (
-            <div key={index} className="flex flex-col">
-              <div className="flex flex-col w-full h-auto rounded-xl mt-4 bg-white pl-7 pr-14 pt-7 pb-7 gap-3">
-                <h1 className="flex items-center text-xl mb-4 gap-2">
-                  <button
-                    className="flex items-center justify-center"
-                    aria-label="Link"
-                  >
-                    <IoBriefcaseSharp className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                  </button>
-                  {item.title || "Job Title"}
-                </h1>
-                <div className="flex gap-3 items-center">
-                  <p className="">{item.company || "Company Name"}</p>
-                  <span className="text-2xl text-gray-200 font-extralight">
-                    |
-                  </span>
-                  <p className="text-sm">
-                    {new Date(item.startDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      year: "numeric",
-                    })}{" "}
-                    -{" "}
-                    {item.currentlyWorkingThere
-                      ? "Present" // Display "Present" if I currently work here is checked ❤️
-                      : new Date(item.endDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        })}
-                  </p>
-                </div>
-                {isHtml ? (
-                  <div
-                    className="text-sm leading-6"
-                    dangerouslySetInnerHTML={{
-                      __html: parsedDescription,
-                    }}
-                  />
-                ) : (
-                  <div>{parsedDescription}</div>
-                )}
+        <span className="lg:text-lg text-base font-medium text-left">
+          Work History
+        </span>
+        {workHistory.map((item, index) => (
+          <div key={index} className="flex flex-col text-left">
+            <div className="flex flex-col w-full rounded-xl md:mt-4 mt-2 bg-white lg:p-6 p-4 md:gap-3 gap-1">
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 md:gap-2 gap-1">
+                <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
+                {item.title || "Job Title"}
+              </h1>
+              <div className="flex gap-3 items-center">
+                <p>{item.company || "Company Name"}</p>
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
+                  |
+                </span>
+                <p className="md:text-sm text-xs">
+                  {new Date(item.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  -{" "}
+                  {item.currentlyWorkingThere
+                    ? "Present"
+                    : new Date(item.endDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                </p>
               </div>
+              {item.jobDescription && (
+                <div
+                  className="md:text-sm text-xs leading-6"
+                  dangerouslySetInnerHTML={{ __html: item.jobDescription }}
+                />
+              )}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </>
     );
   },
@@ -278,54 +220,43 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      certificates: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const certificates = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse certificates data
-    let certificates: CertificateFormFieldType[] = [];
-    try {
-      certificates = JSON.parse(data.certificates);
-    } catch (error) {
-      console.error("Failed to parse certificates data:", error);
-    }
-
-    // Handle empty certificates
-    if (!Array.isArray(certificates) || certificates.length === 0) {
+    if (certificates.length === 0) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Certificates</span>
+          <span className="xl:text-lg text-base font-medium">Certificates</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render certificates items
     return (
       <>
-        <span className="text-lg font-medium">Certificates</span>
-        <div className="grid grid-cols-2 gap-4">
+        <span className="xl:text-lg text-base font-medium text-left">
+          Certificates
+        </span>
+        <div className="grid grid-cols-2 xl:gap-4 gap-2 text-left">
           {certificates.map((item, index) => (
             <div
               key={index}
-              className="flex flex-col w-full h-auto rounded-xl bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-1"
             >
-              <h1 className="flex text-xl mb-4 gap-1">
-                <button
-                  className="flex items-center justify-center self-start mb-2"
-                  aria-label="Certificate"
-                >
-                  <RiAwardFill className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                </button>
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
+                <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
                 {item.certificateName || "Certificate Name"}
               </h1>
-              <div className="flex gap-3 items-center">
-                <p className="">{item.issuedBy || "Issuer Name"}</p>
-                <span className="text-2xl text-gray-200 font-extralight">
+              <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
+                <p>{item.issuedBy || "Issuer Name"}</p>
+                <span className="xl:text-2xl lg:text-xl text-lg text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">{item.yearIssued || "Year"}</p>
+                <p className="md:text-sm text-xs">
+                  {item.yearIssued || "Year"}
+                </p>
               </div>
             </div>
           ))}
@@ -342,60 +273,47 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 };
 
 const Education_RepeatableFieldTemplate: FieldTemplateState = {
-  FilledState: () => {
-    const data = useLoaderData<{
-      educations: string;
-    }>();
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    const educations = Array.isArray(value)
+      ? (value as RepeatableInputType[])
+      : [];
 
-    // Parse education data
-    let educations: EducationFormFieldType[] = [];
-    try {
-      educations = JSON.parse(data.educations);
-    } catch (error) {
-      console.error("Failed to parse education data:", error);
-    }
-
-    // Handle empty education data
-    if (!Array.isArray(educations) || educations.length === 0) {
+    if (!educations.length) {
       return (
         <div className="flex flex-col pb-4">
-          <span className="text-lg font-medium">Education</span>
+          <span className="text-lg font-medium">{cardTitle}</span>
           <span className="text-base text-gray-400 italic">No items added</span>
         </div>
       );
     }
 
-    // Render education items
     return (
-      <div className="flex flex-col">
-        <span className="text-lg font-medium mb-2">Education</span>
-        <div className="grid grid-cols-2 gap-4">
-          {educations.map((item, index) => (
+      <>
+        <span className="xl:text-lg text-base font-medium text-left">
+          Education
+        </span>
+        <div className="grid grid-cols-2 gap-4 text-left">
+          {educations.map(({ degree, institution, graduationYear }, index) => (
             <div
               key={index}
-              className="flex flex-col w-full h-auto rounded-xl bg-white pl-8 pr-10 pt-8 pb-8 gap-3"
+              className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-2"
             >
-              <h1 className="flex text-xl mb-4 gap-1">
-                <button
-                  className="flex items-center justify-center self-start"
-                  aria-label="Education"
-                >
-                  <FaGraduationCap className="h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor" />
-                </button>
-                {item.degree || "Degree Name"}
-                {item.institution && `, ${item.institution}`}
+              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
+                <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
+                {degree ?? "Degree Name"}
+                {institution && `, ${institution}`}
               </h1>
-              <div className="flex gap-3 items-center">
-                <p className="">{item.institution || "Institution Name"}</p>
-                <span className="text-2xl text-gray-200 font-extralight">
+              <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
+                <p>{institution ?? "Institution Name"}</p>
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="text-sm">{item.graduationYear || "Year"}</p>
+                <p className="md:text-sm text-xs">{graduationYear ?? "Year"}</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </>
     );
   },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
@@ -406,12 +324,13 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
   ),
 };
 
+// 2
 export const IncrementFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center">
       <div className="flex flex-col gap-1">
-        <span className="text-lg">{cardTitle}</span>
-        <span className="text-2xl mt-4">
+        <span className="lg:text-lg test-base">{cardTitle}</span>
+        <span className="lg:text-xl text-lg mt-4">
           {value as number} year
           {(value as number) > 1 || (value as number) == 0 ? "s" : ""}
         </span>
@@ -614,10 +533,10 @@ export const FileFieldTemplate: FieldTemplateState = {
 
 export const RangeFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex items-center justify-between py-4 pl-5 pr-8">
+    <div className="flex items-center">
       <div className="flex flex-col gap-1">
-        <span className="text-lg font-medium">{cardTitle}</span>
-        <span className="text-2xl font-medium mt-4">
+        <span className="lg:text-lg text-base font-medium">{cardTitle}</span>
+        <span className="lg:text-xl text-lg font-medium mt-4">
           ${value as number}.00 / hour
         </span>
       </div>
@@ -633,7 +552,7 @@ export const RangeFieldTemplate: FieldTemplateState = {
 
 export const CustomFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col py-4 pl-5 pr-8">
+    <div className="flex flex-col pl-5 pr-8">
       <span className="text-lg font-medium">{cardTitle}</span>
       <span className="text-base font-medium">{value as string}</span>
     </div>
