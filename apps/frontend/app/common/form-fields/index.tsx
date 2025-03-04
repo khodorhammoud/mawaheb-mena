@@ -6,21 +6,21 @@ const AppFormField = ({
   type = "text",
   id,
   name,
-  label,
+  label = "",
   placeholder = "",
   options = [],
   className = "",
   showPasswordHint = true,
   col = 4,
-  defaultValue = "",
+  defaultValue,
   onChange,
+  min,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   useEffect(() => {
-    // Sync selectedValue with defaultValue on prop update
     setSelectedValue(defaultValue);
   }, [defaultValue]);
 
@@ -30,9 +30,24 @@ const AppFormField = ({
 
   const handleNumberChange = (event) => {
     const { value } = event.target;
-    const numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+    let numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+
+    if (min !== undefined && Number(numericValue) < min) {
+      numericValue = min.toString(); // ✅ Enforce min value
+    }
+
+    setSelectedValue(numericValue); // Update state
+
     if (onChange) {
       onChange({ target: { id, name, value: numericValue } });
+    }
+  };
+
+  const handleIncrement = (increment: number) => {
+    if (onChange) {
+      onChange({
+        target: { id, name, value: (selectedValue as number) + increment },
+      });
     }
   };
 
@@ -47,7 +62,7 @@ const AppFormField = ({
         <PhoneNumberField
           id={id}
           name={name}
-          defaultValue={defaultValue}
+          defaultValue={defaultValue.toString()}
           placeholder={placeholder}
           onChange={onChange}
         />
@@ -85,7 +100,37 @@ const AppFormField = ({
               spellCheck="false"
               defaultValue={defaultValue}
               onChange={handleNumberChange} // Custom handler for numeric validation
+              min={min} // ✅ Apply the min prop
             />
+          ) : type === "increment" ? (
+            <div className="flex flex-col items-center space-y-4 w-full">
+              <div className="flex items-center border border-gray-300 rounded-xl w-full">
+                {/* - Button */}
+                <button
+                  type="button"
+                  className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
+                  style={{ borderRight: "none" }} // Remove the right border of the - button
+                  onClick={() => handleIncrement(-1)}
+                >
+                  <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
+                </button>
+
+                {/* Input Display */}
+                <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
+                  {selectedValue}
+                </div>
+
+                {/* + Button */}
+                <button
+                  type="button"
+                  className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
+                  style={{ borderLeft: "none" }} // Remove the left border of the + button
+                  onClick={() => handleIncrement(1)}
+                >
+                  <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
+                </button>
+              </div>
+            </div>
           ) : type === "textarea" ? (
             // textarea input
             <textarea
@@ -105,7 +150,7 @@ const AppFormField = ({
               id={id}
               name={name}
               placeholder={placeholder}
-              className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
+              className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
               defaultValue={selectedValue}
@@ -146,7 +191,7 @@ const AppFormField = ({
         // else labels
         <label
           htmlFor={id}
-          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
@@ -186,7 +231,7 @@ AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  label: PropTypes.node.isRequired,
+  label: PropTypes.node,
   placeholder: PropTypes.string,
   showPasswordHint: PropTypes.bool,
   options: PropTypes.arrayOf(
@@ -198,9 +243,10 @@ AppFormField.propTypes = {
   className: PropTypes.string,
   col: PropTypes.number,
   placeholderTextSize: PropTypes.string,
-  defaultValue: PropTypes.string,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,
   useRichText: PropTypes.bool,
+  min: PropTypes.number, // ✅ Add min to prop types
 };
 
 export default AppFormField;

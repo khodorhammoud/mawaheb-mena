@@ -15,7 +15,21 @@ export const loginStrategy = new FormStrategy(
     const password = form.get("password") as string;
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
+    console.log(email, password, accountType);
     const user = await getUser({ userEmail: email }, true);
+    console.log(user);
+
+    if (accountType === "admin") {
+      if (
+        !user ||
+        user.role !== "admin" ||
+        !(await compare(password, user.passHash!))
+      ) {
+        throw new Error("Invalid admin credentials");
+      }
+      return user.id;
+    }
+
     if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }

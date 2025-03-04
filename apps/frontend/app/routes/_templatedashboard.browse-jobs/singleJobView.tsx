@@ -1,112 +1,266 @@
-import { useFetcher } from "@remix-run/react";
-import { useEffect } from "react";
+import { useFetcher, Form } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import { Button } from "~/components/ui/button";
+import { Skill } from "~/types/Skill";
+import SkillBadgeList from "~/common/skill/SkillBadge";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import AppFormField from "~/common/form-fields";
+import { FaStar } from "react-icons/fa";
 
 interface JobCardProps {
-  job: Job;
+  job: Job & { applicationStatus?: string };
+  jobSkills: Skill[];
+  review?: { rating: number; comment: string; employerId: number } | null;
+  canReview: boolean; // ✅ Ensure this is included
 }
 
-export default function SingleJobView({ job }: JobCardProps) {
-  const fetcher = useFetcher<{ jobs: Job[]; success?: boolean }>();
+export default function SingleJobView({
+  job,
+  jobSkills,
+  review,
+  canReview,
+}: JobCardProps) {
+  const fetcher = useFetcher<{
+    jobs: Job[];
+    success?: boolean;
+    error?: { message: string };
+  }>();
   const relatedJobs = fetcher.data?.jobs || [];
 
-  useEffect(() => {
-    const params = new URLSearchParams({
-      jobType: "by-employer",
-      employerId: job.employerId.toString(),
-    });
+  const requiredSkills = jobSkills.map((skill) => ({
+    name: skill.name,
+    isStarred: skill.isStarred || false,
+  }));
 
-    // :(
-    // send get request with query params: jobType: by-employer, employerId: job.employerId
-    fetcher.submit(null, {
-      method: "get",
-      action: `/api/jobs-related?${params.toString()}`,
-    });
-  }, []);
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  // ✅ Ensure correct employer review is loaded
+  const isCorrectReview = review && review.employerId === job.employerId;
+  const hasReview =
+    isCorrectReview &&
+    review.rating !== undefined &&
+    review.comment !== undefined;
+
+  const handleOpenReview = () => {
+    if (!canReview) {
+      alert(
+        "You must have an accepted job application to review this employer."
+      );
+      return;
+    }
+    setOpen(true);
+  };
+
+  // ✅ Set review data when opening the modal
+  useEffect(() => {
+    if (isCorrectReview) {
+      setRating(review.rating);
+      setComment(review.comment);
+    } else {
+      setRating(0);
+      setComment("");
+    }
+  }, [review, job.employerId]);
+
+  // ✅ Fetch related jobs when employerId changes
+  useEffect(() => {
+    if (job.employerId) {
+      const params = new URLSearchParams({
+        jobType: "by-employer",
+        employerId: job.employerId.toString(),
+      });
+
+      fetcher.submit(null, {
+        method: "get",
+        action: `/api/jobs-related?${params.toString()}`,
+      });
+    }
+  }, [job.employerId]);
 
   return (
-    <div className="rounded-lg p-6 mx-auto">
-      {/* Job Title */}
-      <h2 className="text-lg font-bold mb-2">{job.title}</h2>
-      <p className="text-gray-500 text-sm mb-4">
-        {job.budget} - {job.createdAt || "recently"}
-      </p>
-
-      {/* Description */}
-      <p className="text-gray-700 mb-6">{job.description}</p>
-
-      {/* Budget, Experience Level, and Project Type */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">${job.budget}</span>
-          <span className="text-sm text-gray-500">Fixed price</span>
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">
-            {job.experienceLevel}
-          </span>
-          <span className="text-sm text-gray-500">Experience level</span>
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="font-semibold text-gray-900">{job.projectType}</span>
-          <span className="text-sm text-gray-500">Project type</span>
-        </div>
+    <div className="rounded-lg mx-auto text-black pr-10">
+      <div className="pt-6 px-6">
+        <h2 className="lg:text-3xl md:text-2xl text-xl mb-3">{job.title}</h2>
+        <p className="text-sm mb-8 text-gray-400">
+          Fixed price -{" "}
+          {job.createdAt ? formatTimeAgo(job.createdAt) : "recently"}
+        </p>
       </div>
 
-      {/* Skills */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Skills</h3>
-        <div className="flex flex-wrap gap-2">
-          {job.requiredSkills.map((skill) => (
-            <span
-              key={skill.name}
-              className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+      <div className="grid grid-cols-[60%,40%] mb-8">
+        <div className="px-6 py-4 border-r border-gray-200">
+          <div
+            className="mb-12"
+            dangerouslySetInnerHTML={{ __html: job.description }}
+          />
+          <div className="flex justify-between items-center mb-12">
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">${job.budget}</span>
+              <span className="text-sm text-gray-500">Fixed price</span>
+            </div>
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">{job.experienceLevel}</span>
+              <span className="text-sm text-gray-500">Experience level</span>
+            </div>
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-base">{job.projectType}</span>
+              <span className="text-sm text-gray-500">Project type</span>
+            </div>
+          </div>
+
+          {/* Skills Section */}
+          <div className="mb-12">
+            <p className="text-base mb-2">Skills</p>
+            <div className="mt-2 text-base">
+              {requiredSkills.length > 0 ? (
+                <SkillBadgeList skills={requiredSkills} />
+              ) : (
+                <p>No skills provided.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Activity Section */}
+          <div className="mb-6">
+            <p className="text-base font-medium text-gray-900 mb-2">
+              Activity on this job
+            </p>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>Interested: 3</li>
+              <li>Interviewed: 1</li>
+              <li>Invites sent: 0</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* ✅ Interested / Review Employer / Edit Review Button */}
+        <div className="pl-6 pr-6 pt-4">
+          {job.applicationStatus ? (
+            <Button
+              className="w-full mb-4 bg-primaryColor text-white py-2 rounded-xl font-semibold not-active-gradient"
+              onClick={() => {
+                setOpen(true), handleOpenReview;
+              }}
+              disabled={!canReview}
             >
-              {skill.name}
-            </span>
-          ))}
+              {hasReview ? "Edit Review" : "Review Employer"}
+            </Button>
+          ) : (
+            <Button
+              disabled={
+                fetcher.data?.success === true || fetcher.state === "submitting"
+              }
+              onClick={() => {
+                if (!fetcher.data?.success) {
+                  fetcher.submit(null, {
+                    method: "post",
+                    action: `/api/jobs/${job.id}/interested`,
+                  });
+                }
+              }}
+              className={`w-full mb-4 not-active-gradient ${
+                fetcher.data?.success
+                  ? "bg-slate-600 cursor-not-allowed"
+                  : "bg-primaryColor"
+              } text-white py-2 rounded-xl font-semibold`}
+            >
+              {fetcher.data?.success ? "Applied" : "Interested"}
+            </Button>
+          )}
+          <div className="flex items-start text-gray-500 text-sm">
+            <InformationCircleIcon className="w-8 h-8 text-gray-600 mr-2" />
+            <p className="mt-1">
+              Clicking &quot;Interested&quot; notifies the job poster, who can
+              then interview you.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Activity Section */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Activity on this job</h3>
-        <ul className="text-sm text-gray-700 space-y-1">
-          <li>Interested: 3</li>
-          <li>Interviewed: 1</li>
-          <li>Invites sent: 0</li>
-        </ul>
-      </div>
+      {/* ✅ Review Employer Modal (Closes when clicking outside) */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="p-6 bg-white rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              {hasReview ? "Edit your review" : "Leave a review"}
+            </DialogTitle>
+          </DialogHeader>
 
-      {/* Interested Button clicking on it should send a post request to /api/jobs/:jobId/interested */}
-      <Button
-        disabled={fetcher.data?.success || fetcher.state === "submitting"}
-        onClick={() => {
-          if (!fetcher.data?.success) {
-            fetcher.submit(null, {
-              method: "post",
-              action: `/api/jobs/${job.id}/interested`,
-            });
-          }
-        }}
-        className={`w-full ${
-          fetcher.data?.success
-            ? "bg-slate-600 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-        } text-white py-2 rounded-md font-semibold`}
-      >
-        {fetcher.data?.success ? "Applied" : "Interested"}
-      </Button>
+          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`text-3xl ${
+                  star <= rating ? "text-yellow-400" : "text-gray-300"
+                }`}
+              >
+                <FaStar className="w-6 h-6" />
+              </button>
+            ))}
+          </div>
 
-      {/* Related Jobs */}
-      <div className="mb-6">
-        <h3 className="font-medium text-gray-900 mb-2">Related Jobs</h3>
-        {relatedJobs.map((job) => (
-          <JobCard key={job.id} job={job} onSelect={() => {}} />
-        ))}
-      </div>
+          <Form method="post" action="/browse-jobs">
+            <input type="hidden" name="_action" value="review" />
+            <input type="hidden" name="jobId" value={job.id || ""} />
+            <input type="hidden" name="employerId" value={job.employerId} />
+            <input type="hidden" name="rating" value={rating} />
+
+            <AppFormField
+              id="reviewComment"
+              name="comment"
+              type="textarea"
+              label="Comments"
+              placeholder="Write your feedback..."
+              defaultValue={comment}
+              col={6}
+              onChange={(e) => setComment(e.target.value)}
+            />
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="mt-2 w-fit bg-primaryColor text-white rounded-xl px-10"
+              >
+                {hasReview ? "Update Review" : "Submit"}
+              </Button>
+            </div>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      {/* Related Jobs Section */}
+      {relatedJobs.length > 0 && (
+        <div className="grid grid-cols-[60%,40%] mb-10">
+          <div className="pl-6 py-10 pr-2">
+            <p className="text-lg mb-6">
+              Employer&apos;s recent jobs ({relatedJobs.length})
+            </p>
+            {relatedJobs.length > 0 ? (
+              relatedJobs.map((relatedJob) => (
+                <JobCard
+                  key={relatedJob.id}
+                  job={relatedJob}
+                  onSelect={() => {}}
+                />
+              ))
+            ) : (
+              <p className="text-gray-500">No related jobs found.</p>
+            )}
+          </div>
+          <div className=""></div>
+        </div>
+      )}
     </div>
   );
 }

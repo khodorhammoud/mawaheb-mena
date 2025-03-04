@@ -115,18 +115,12 @@ export default function RegistrationSlider(props: {
             ))}
           </div>
           {/* Navigation Icons ⬅️➡️ */}
-          <div className="flex space-x-4 mt-8">
-            <button
-              onClick={prevSlide}
-              className="text-white p-2 border-2 rounded-full"
-            >
-              <FaArrowLeft size={24} />
+          <div className="text-gray-300 flex space-x-4 mt-8">
+            <button onClick={prevSlide} className="p-2 border-2 rounded-full">
+              <FaArrowLeft size={20} />
             </button>
-            <button
-              onClick={nextSlide}
-              className="text-white p-2 border-2 rounded-full"
-            >
-              <FaArrowRight size={24} />
+            <button onClick={nextSlide} className="p-2 border-2 rounded-full">
+              <FaArrowRight size={20} />
             </button>
           </div>
         </div>

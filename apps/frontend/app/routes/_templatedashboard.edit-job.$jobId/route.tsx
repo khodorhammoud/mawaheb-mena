@@ -10,6 +10,8 @@ import {
   getCurrentUserAccountInfo,
   getProfileInfo,
 } from "~/servers/user.server";
+import { getAllSkills } from "~/servers/skill.server";
+import { Job } from "~/types/Job";
 
 export async function loader({
   params,
@@ -20,33 +22,28 @@ export async function loader({
 }) {
   const { jobId } = params;
 
-  // Step 1: Ensure the user is logged in and an employer
   await requireUserIsEmployerPublished(request);
 
   const currentAccount = await getCurrentUserAccountInfo(request);
-
   const profile = await getProfileInfo({ accountId: currentAccount.id });
-
   const employerId = profile.id;
 
-  // Step 2: Fetch the job and check if the logged-in employer owns it
   const job = await getJobById(jobId);
   if (!job) {
     throw new Response("Job not found", { status: 404 });
   }
 
   if (job.employerId !== employerId) {
-    const referrer = "/manage-jobs";
-    return redirect(referrer);
+    return redirect("/manage-jobs");
   }
 
-  // Step 3: Fetch job categories
   const jobCategories = await getAllJobCategories();
+  const allSkills = await getAllSkills();
 
-  // Step 4: Return the job and categories if all checks pass
   return Response.json({
     job,
     jobCategories: jobCategories || [],
+    skills: allSkills || [],
   });
 }
 
@@ -54,23 +51,11 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await requireUserIsEmployerPublished(request);
 
-    // step 1 to get the employerId of the current login user
+    const formData = await request.formData();
     const currentAccount = await getCurrentUserAccountInfo(request);
-
-    // step 2 to get the employerId of the current login user
     const profile = await getProfileInfo({ accountId: currentAccount.id });
 
-    // last step to get the employerId of the current login user
-    const employerId = profile.id;
-
-    const formData = await request.formData();
-
-    const target = formData.get("target") as string;
-    if (target === "save-draft") {
-      return redirect("/manage-jobs");
-    }
-
-    const jobId = parseInt(formData.get("jobId") as string);
+    const jobId = parseInt(formData.get("jobId") as string, 10);
     if (!jobId) {
       return Response.json(
         { success: false, error: { message: "Job ID is required" } },
@@ -78,57 +63,38 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    // take the job to take its employerId
-    const job = await getJobById(jobId);
-    if (!job) {
-      return Response.json(
-        { success: false, error: { message: "Access denied" } },
-        { status: 403 }
-      );
+    // ✅ Extract skills correctly
+    const skillsRaw = formData.get("jobSkills") as string;
+    let requiredSkills = [];
+    if (skillsRaw) {
+      try {
+        requiredSkills = JSON.parse(skillsRaw).map((skill: any) => ({
+          id: skill.id || null,
+          name: skill.name.trim(),
+          isStarred: skill.isStarred || false,
+        }));
+      } catch (error) {
+        console.error("❌ Error parsing jobSkills JSON:", error);
+      }
     }
 
-    // compare the employerId of the job with the logged-in employerId
-    if (job.employerId !== employerId) {
-      return Response.json(
-        {
-          success: false,
-          error: {
-            message: "Access denied.",
-          },
-        },
-        { status: 403 }
-      );
-    }
-
-    if (!jobId) {
-      return Response.json(
-        { success: false, error: { message: "Job ID is required" } },
-        { status: 400 }
-      );
-    }
-
-    const jobData = {
-      employerId, // Use the employer ID as part of the job data
+    // ✅ Structure job data properly
+    const jobData: Partial<Job> = {
+      employerId: profile.id,
       title: formData.get("jobTitle") as string,
       description: formData.get("jobDescription") as string,
       locationPreference: formData.get("location") as string,
       workingHoursPerWeek:
         parseInt(formData.get("workingHours") as string, 10) || undefined,
-      requiredSkills: (formData.getAll("requiredSkills") as string[]).map(
-        (skill) => ({
-          name: skill.trim(),
-          isStarred: false,
-        })
-      ),
+      requiredSkills, // Pass correctly parsed skills
       projectType: formData.get("projectType") as string,
       budget: parseInt(formData.get("budget") as string, 10) || undefined,
       experienceLevel: formData.get("experienceLevel") as string,
-      status: job.status,
+      status: formData.get("status") as string,
       jobCategoryId:
         parseInt(formData.get("jobCategory") as string, 10) || null,
     };
 
-    // Use the updateJob now :)
     const updatingJob = await updateJob(jobId, jobData);
 
     if (updatingJob.success) {
@@ -140,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
   } catch (error) {
-    console.error("Error while updating a job:", error);
+    console.error("❌ Error while updating a job:", error);
     return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }

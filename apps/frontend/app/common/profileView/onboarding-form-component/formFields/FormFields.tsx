@@ -8,15 +8,7 @@ import Or from "~/common/or/Or";
 import RichTextEditor from "~/components/ui/richTextEditor";
 import DOMPurify from "dompurify";
 import FileUpload from "~/common/upload/fileUpload";
-
-const handleVideoUpload = (file: File | null) => {
-  console.log("Video uploaded:", file);
-};
-
-const getWordCount = (html: string) => {
-  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
-  return plainText.length || 0; // Return 0 for empty or invalid input
-};
+import { getWordCount } from "~/lib/utils";
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (

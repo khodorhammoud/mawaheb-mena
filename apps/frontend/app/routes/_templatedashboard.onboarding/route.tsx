@@ -20,13 +20,15 @@ import {
   getAllLanguages,
   handleEmployerOnboardingAction,
 } from "~/servers/employer.server";
-
 import {
   getFreelancerAbout,
   getFreelancerLanguages,
   getFreelancerAvailability,
   handleFreelancerOnboardingAction,
+  fetchFreelancerSkills,
 } from "~/servers/freelancer.server";
+import { getAttachmentSignedURL } from "~/servers/cloudStorage.server";
+import { fetchSkills } from "~/servers/general.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -42,6 +44,8 @@ export async function action({ request }: ActionFunctionArgs) {
     if (accountType == AccountType.Employer) {
       return handleEmployerOnboardingAction(formData, userProfile as Employer);
     }
+
+    // FREELANCER
     if (accountType == AccountType.Freelancer) {
       return handleFreelancerOnboardingAction(
         formData,
@@ -80,10 +84,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (accountType === AccountType.Employer) {
-    console.log("Employer account detected");
     profile = profile as Employer;
 
-    // Fetch data for the employer
     const bioInfo = await getAccountBio(profile.account);
     const employerIndustries = await getEmployerIndustries(profile);
     const allIndustries = await getAllIndustries();
@@ -112,12 +114,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } else if (accountType === AccountType.Freelancer) {
     profile = profile as Freelancer;
 
-    // Fetch data for the freelancer
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
-    const portfolio = profile.portfolio;
-    const certificates = profile.certificates;
+
+    // Process portfolio
+    const portfolio = Array.isArray(profile.portfolio)
+      ? profile.portfolio
+      : JSON.parse(profile.portfolio || "[]");
+
+    const processedPortfolio = await Promise.all(
+      portfolio.map(async (item) => {
+        if (item.projectImageName) {
+          item.projectImageUrl = await getAttachmentSignedURL(
+            item.projectImageName
+          );
+        }
+        return item;
+      })
+    );
+
+    // Process certificates
+    const certificates = Array.isArray(profile.certificates)
+      ? profile.certificates
+      : JSON.parse(profile.certificates || "[]");
+
+    const processedCertificates = await Promise.all(
+      certificates.map(async (item) => {
+        if (item.attachmentName) {
+          item.attachmentUrl = await getAttachmentSignedURL(
+            item.attachmentName
+          );
+        }
+        return item;
+      })
+    );
+
     const educations = profile.educations;
     const workHistory = profile.workHistory;
 
@@ -136,11 +168,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       availableFrom: freelancerAvailability?.availableFrom
         ? new Date(freelancerAvailability.availableFrom)
             .toISOString()
-            .split("T")[0] // Convert to yyyy-MM-dd
-        : "", // Fallback to empty string
+            .split("T")[0]
+        : "",
       hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
       hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
     };
+
+    const initialSkills = await fetchSkills(true, 10);
+    const freelancerSkills = await fetchFreelancerSkills(profile.id);
 
     return Response.json({
       accountType,
@@ -151,13 +186,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      portfolio,
-      certificates,
+      portfolio: JSON.stringify(processedPortfolio),
+      certificates: JSON.stringify(processedCertificates),
       educations,
       workHistory,
       freelancerAvailability: availabilityData,
       freelancerLanguages,
       allLanguages,
+      initialSkills,
+      freelancerSkills,
     });
   }
 

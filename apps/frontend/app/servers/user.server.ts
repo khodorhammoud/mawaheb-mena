@@ -249,6 +249,11 @@ export async function getProfileInfoByAccountId(accountId: number) {
 export async function getUserAccountType(
   userId: number
 ): Promise<AccountType | null> {
+  const user = await getUser({ userId });
+  if (user?.role === "admin") {
+    return AccountType.Admin;
+  }
+
   const accounts = await db
     .select({ accountType: accountsTable.accountType })
     .from(accountsTable)
@@ -824,4 +829,64 @@ export async function updateOnboardingStatus(userId: number) {
     .returning();
 
   return result;
+}
+
+export async function getUserSettings(userId: number) {
+  const result = await db
+    .select({
+      firstName: UsersTable.firstName,
+      lastName: UsersTable.lastName,
+      email: UsersTable.email,
+      country: accountsTable.country,
+      address: accountsTable.address,
+      region: accountsTable.region,
+      phone: accountsTable.phone,
+      websiteURL: accountsTable.websiteURL,
+      socialMediaLinks: accountsTable.socialMediaLinks,
+    })
+    .from(UsersTable)
+    .leftJoin(accountsTable, eq(UsersTable.id, accountsTable.userId))
+    .where(eq(UsersTable.id, userId))
+    .limit(1); // Fix: Use limit instead of first()
+
+  return result.length > 0 ? result[0] : null; // Fix: Return the first row safely
+}
+
+export async function updateUserSettings(userId: number, updatedSettings: any) {
+  const userUpdateResult = await db
+    .update(UsersTable)
+    .set({
+      firstName: updatedSettings.firstName,
+      lastName: updatedSettings.lastName,
+      email: updatedSettings.email,
+    } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  const accountUpdateResult = await db
+    .update(accountsTable)
+    .set({
+      country: updatedSettings.country,
+      address: updatedSettings.address,
+      region: updatedSettings.region,
+      phone: updatedSettings.phone, // ✅ Saves "{countryCode}||{phoneNumber}"
+      websiteURL: updatedSettings.websiteURL,
+      socialMediaLinks: updatedSettings.socialMediaLinks,
+    })
+    .where(eq(accountsTable.userId, userId))
+    .returning();
+
+  return { userUpdateResult, accountUpdateResult };
+}
+
+export async function updateUserPassword(
+  userId: number,
+  hashedPassword: string
+) {
+  const result = await db
+    .update(UsersTable)
+    .set({ passHash: hashedPassword } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+  return result.length > 0;
 }
