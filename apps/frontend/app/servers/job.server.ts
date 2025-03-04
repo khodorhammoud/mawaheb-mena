@@ -433,7 +433,7 @@ export async function hasAcceptedApplication(
       and(
         eq(jobApplicationsTable.freelancerId, freelancerId),
         eq(jobsTable.employerId, employerId), // ✅ Check for employer, not just jobId
-        eq(jobApplicationsTable.status, "accepted") // ✅ Ensure status is "accepted"
+        eq(jobApplicationsTable.status, "approved") // ✅ Ensure status is "approved"
       )
     )
     .limit(1);
