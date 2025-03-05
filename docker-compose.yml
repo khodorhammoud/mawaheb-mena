@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    # No command override - use the CMD from Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - CMS_BASE_URL=http://cms:3000
+    depends_on:
+      - cms
+    networks:
+      - mawaheb-network
+    restart: unless-stopped
+
+  cms:
+    build:
+      context: .
+      dockerfile: cms.Dockerfile
+    # No command override - use the CMD from Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_for_development}
+    volumes:
+      - cms_data:/app/apps/cms/.keystone
+    networks:
+      - mawaheb-network
+    restart: unless-stopped
+
+networks:
+  mawaheb-network:
+    driver: bridge
+
+volumes:
+  cms_data:
