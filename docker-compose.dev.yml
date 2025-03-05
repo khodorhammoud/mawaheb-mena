@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+      target: builder
+    # Use the correct Remix command for development
+    command: >
+      sh -c "
+        cd /app/apps/frontend &&
+        npx remix vite:dev --host 0.0.0.0
+      "
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - CMS_BASE_URL=http://cms-dev:3000
+    networks:
+      - mawaheb-dev-network
+    depends_on:
+      - cms-dev
+
+  cms-dev:
+    build:
+      context: .
+      dockerfile: cms.Dockerfile
+      target: builder
+    # Use the correct Keystone command for development with explicit session secret
+    command: >
+      sh -c "
+        cd /app/apps/cms &&
+        export SESSION_SECRET='thisisthesessionsecretthatislongerthan32charactersandisveryniceee' &&
+        npx keystone dev
+      "
+    ports:
+      - "3000:3000"
+    volumes:
+      - cms_dev_data:/app/apps/cms/.keystone
+    environment:
+      - NODE_ENV=development
+      # Set the session secret with proper quoting
+      - SESSION_SECRET=thisisthesessionsecretthatislongerthan32charactersandisveryniceee
+    networks:
+      - mawaheb-dev-network
+
+networks:
+  mawaheb-dev-network:
+    driver: bridge
+
+volumes:
+  cms_dev_data:
