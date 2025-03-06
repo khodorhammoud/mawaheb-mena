@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { JobApplicationStatus } from "~/types/enums";
 import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
-import { getApplications } from "../admin.server";
+import { getApplications } from "~/servers/admin.server";
 
 interface Application {
   application: {
