@@ -136,7 +136,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let existingReview = null;
   if (employerId > 0) {
     const fetchedReview = await getReview(freelancerId, employerId);
-
     if (fetchedReview) {
       existingReview = {
         ...fetchedReview,
@@ -144,7 +143,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       };
     }
   }
-
   return Response.json({ jobSkills, review: existingReview, canReview });
 }
 
