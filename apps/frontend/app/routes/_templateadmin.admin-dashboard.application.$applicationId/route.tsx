@@ -7,21 +7,7 @@ import { FreelancerProfile } from "~/components/application/FreelancerProfile";
 import {
   getApplicationDetails,
   updateApplicationStatus,
-} from "../application.server";
-
-// Helper function to safely parse JSON
-function safeParseJSON<T>(
-  jsonString: string | null | undefined,
-  defaultValue: T
-): T {
-  if (!jsonString) return defaultValue;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (error) {
-    console.error("Error parsing JSON:", error);
-    return defaultValue;
-  }
-}
+} from "~/servers/application.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const applicationId = params.applicationId;
