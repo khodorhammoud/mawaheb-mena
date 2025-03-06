@@ -37,6 +37,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "inlineSources": true,
     "outDir": "./dist",
     "incremental": true,
     "strictNullChecks": false,

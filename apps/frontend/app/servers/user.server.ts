@@ -249,6 +249,11 @@ export async function getProfileInfoByAccountId(accountId: number) {
 export async function getUserAccountType(
   userId: number
 ): Promise<AccountType | null> {
+  const user = await getUser({ userId });
+  if (user?.role === "admin") {
+    return AccountType.Admin;
+  }
+
   const accounts = await db
     .select({ accountType: accountsTable.accountType })
     .from(accountsTable)

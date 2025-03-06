@@ -1,0 +1,35 @@
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { db } from "~/db/drizzle/connector";
+import { reviewsTable } from "~/db/drizzle/schemas/schema";
+import { and, eq } from "drizzle-orm";
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const freelancerId = Number(params.freelancerId);
+  if (!freelancerId) {
+    return json({ error: "Freelancer ID is required" }, { status: 400 });
+  }
+
+  // Fetch all employer reviews for this freelancer
+  const reviews = await db
+    .select()
+    .from(reviewsTable)
+    .where(
+      and(
+        eq(reviewsTable.revieweeId, freelancerId),
+        eq(reviewsTable.reviewType, "employer_review")
+      )
+    );
+
+  // Calculate overall rating from employer reviews only
+  const overallRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : 0;
+
+  return json({
+    overallRating: overallRating.toFixed(1),
+    totalReviews: reviews.length,
+    reviews,
+  });
+}

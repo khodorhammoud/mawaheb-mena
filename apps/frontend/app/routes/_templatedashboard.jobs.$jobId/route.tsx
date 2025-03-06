@@ -16,6 +16,7 @@ import {
   saveReview,
   getJobApplicationsForFreelancer,
   getFreelancerAverageRating,
+  hasAcceptedApplication,
 } from "~/servers/job.server";
 import { requireUserIsEmployerPublished } from "~/auth/auth.server";
 import {
@@ -23,7 +24,11 @@ import {
   getCurrentProfileInfo,
 } from "~/servers/user.server";
 import { getAccountBio } from "~/servers/employer.server";
-import { getFreelancerAbout } from "~/servers/freelancer.server";
+import {
+  getFreelancerAbout,
+  getFreelancerSkills,
+  getFreelancerLanguages,
+} from "~/servers/freelancer.server";
 import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
 import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
 import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
@@ -36,6 +41,8 @@ export type LoaderData = {
   freelancers: Freelancer[];
   accountBio;
   about;
+  review?: { rating: number; comment: string } | null;
+  canReview: boolean;
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -62,8 +69,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
-
-    // Fetch freelancers
     const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
     // Fetch applicants
@@ -74,30 +79,26 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     let about = null;
     let review = null;
     let canReview = false;
-    let averageRating = 0;
 
     if (freelancers.length > 0) {
       try {
         profile = await getProfileInfoByAccountId(freelancers[0].accountId);
+
         if (profile && profile.account) {
           accountBio = await getAccountBio(profile.account);
-          about = await getFreelancerAbout(profile);
+          about = await getFreelancerAbout(profile.account);
         }
 
-        // ✅ Fetch review for employer → freelancer (if exists)
-        review = await getReview(
-          freelancers[0].id,
-          currentProfile.id,
-          "freelancer_review"
-        );
-
-        // ✅ Fetch average rating for the freelancer
-        averageRating = await getFreelancerAverageRating(freelancers[0].id); // ✅ New function
-
-        // ✅ Allow reviewing only if the freelancer is linked to the employer
-        canReview = freelancers.some(
-          (freelancer) => freelancer.accountId === profile?.accountId
-        );
+        // Get existing review if any
+        if (freelancers[0].id && currentProfile.id) {
+          review = await getReview({
+            reviewerId: currentProfile.id,
+            revieweeId: freelancers[0].id,
+            reviewType: "employer_review",
+          });
+          // Check if employer can review (has an application from this freelancer)
+          canReview = true; // Employers can always review freelancers who have applied
+        }
       } catch (error) {
         console.error("Error fetching profile or account bio:", error);
       }
@@ -113,10 +114,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       accountBio,
       freelancers,
       about,
-      applications: jobApplications,
-      review, // ✅ Sends back existing review if available
-      canReview, // ✅ Tells frontend whether employer can review
-      averageRating, // ✅ Send to frontend
+      review,
+      canReview,
     });
   } catch (error) {
     console.error("Failed to load job details:", error);
@@ -128,9 +127,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
+  // Ensure the user is a published employer
   await requireUserIsEmployerPublished(request);
-
   const currentProfile = await getCurrentProfileInfo(request);
+
   try {
     const formData = await request.formData();
     const actionType = formData.get("_action");
@@ -140,99 +140,63 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       const rating = parseInt(formData.get("rating") as string, 10);
       const comment = formData.get("comment") as string;
 
-      if (!freelancerId || !rating) {
-        return Response.json({ success: false, message: "Invalid data" });
-      }
-
-      // ✅ Ensure employer owns this freelancer's job application
-      const jobApplications = await getJobApplicationsForFreelancer(
-        freelancerId,
-        currentProfile.id
-      );
-      if (!jobApplications.length) {
+      if (!freelancerId || !rating || !currentProfile.id) {
         return Response.json({
           success: false,
-          message: "Unauthorized to review this freelancer",
+          message: "Missing required review data",
         });
       }
 
-      const existingReview = await getReview(
-        freelancerId,
-        currentProfile.id,
-        "freelancer_review"
-      );
+      // Check if there's an existing review
+      const existingReview = await getReview({
+        reviewerId: currentProfile.id,
+        revieweeId: freelancerId,
+        reviewType: "employer_review",
+      });
 
-      if (existingReview) {
-        await updateReview({
-          reviewerId: currentProfile.id,
-          revieweeId: freelancerId,
-          rating,
-          comment,
-          reviewType: "freelancer_review",
+      try {
+        if (existingReview) {
+          // Update existing review
+          await updateReview({
+            reviewerId: currentProfile.id,
+            revieweeId: freelancerId,
+            rating,
+            comment,
+            reviewType: "employer_review",
+          });
+        } else {
+          // Create new review
+          await saveReview({
+            reviewerId: currentProfile.id,
+            revieweeId: freelancerId,
+            rating,
+            comment,
+            reviewType: "employer_review",
+          });
+        }
+
+        return Response.json({
+          success: true,
+          message: existingReview
+            ? "Review updated successfully"
+            : "Review submitted successfully",
         });
-      } else {
-        await saveReview({
-          reviewerId: currentProfile.id,
-          revieweeId: freelancerId,
-          rating,
-          comment,
-          reviewType: "freelancer_review",
+      } catch (error) {
+        console.error("Error saving review:", error);
+        return Response.json({
+          success: false,
+          message: "Failed to save review",
         });
       }
-
-      return Response.json({ success: true, message: "Review submitted" });
     }
 
-    // ✅ Preserve existing job application status update logic
-    const applicationId = parseInt(formData.get("applicationId") as string, 10);
-    const newStatus = formData.get(
-      "status"
-    ) as keyof typeof JobApplicationStatus;
-
-    if (!applicationId || !newStatus) {
-      console.error("Invalid input:", { applicationId, newStatus });
-      return Response.json(
-        { success: false, error: "Invalid input" },
-        { status: 400 }
-      );
-    }
-
-    const ownerEmployerId =
-      await getJobApplicationOwnerByApplicationId(applicationId);
-    if (!ownerEmployerId || ownerEmployerId !== currentProfile.id) {
-      return Response.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const enumKey = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-    const status = JobApplicationStatus[enumKey];
-
-    if (!status) {
-      console.error("Invalid status:", newStatus);
-      return Response.json(
-        { success: false, error: "Invalid status" },
-        { status: 400 }
-      );
-    }
-
-    const result = await updateJobApplicationStatus(applicationId, status);
-    if (result.success) {
-      return Response.json({ success: true });
-    } else {
-      console.error("Database update error:", result.error);
-      return Response.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
-    }
+    return Response.json({ success: false, message: "Invalid action type" });
   } catch (error) {
-    console.error("Failed to update job application status:", error);
-    return Response.json(
-      { success: false, error: "Failed to update job application status" },
-      { status: 500 }
-    );
+    console.error("Action error:", error);
+    return Response.json({
+      success: false,
+      message: "An error occurred while processing your request",
+    });
   }
 };
 
@@ -276,7 +240,6 @@ const Layout = () => {
         <JobApplicants
           freelancers={freelancers}
           accountBio={accountBio}
-          about={about}
           status={JobApplicationStatus.Pending}
         />
       ) : (
