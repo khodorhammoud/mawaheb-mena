@@ -1,5 +1,5 @@
 {
-  "id": "2ae038b2-5233-43fb-9d37-678c756a97cf",
+  "id": "8358201e-e7a9-4911-8c2e-30d93d06f285",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1728,6 +1728,7 @@
         "draft",
         "active",
         "closed",
+        "completed",
         "paused",
         "deleted"
       ]

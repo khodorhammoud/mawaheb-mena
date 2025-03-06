@@ -53,7 +53,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'paused', 'deleted');
+ CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'completed', 'paused', 'deleted');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
