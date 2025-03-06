@@ -8,14 +8,15 @@ import {
   time,
   timestamp,
   jsonb,
-  json,
+  // json,
   real,
   date,
   numeric,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
-import {
+/* import {
   projectTypeEnum,
   accountStatusEnum,
   accountTypeEnum,
@@ -27,16 +28,123 @@ import {
   jobsOpenToEnum,
   // timesheetStatusEnum,
   timesheetStatusEnum,
-  /*  jobStatusEnum,
-  locationPreferenceTypeEnum, */
+  jobStatusEnum,
+  locationPreferenceTypeEnum,
   jobApplicationStatusEnum,
   providerEnum,
   // belongsToEnum,
   experienceLevelEnum,
-} from "./schemaTypes";
+  userRoleEnum,
+} from "./schemaTypes"; */
 
 import { sql } from "drizzle-orm";
-import { TimesheetStatus } from "~/types/enums";
+// import { TimesheetStatus } from "~/types/enums";
+
+/* enums definitions */
+
+import {
+  AccountStatus,
+  EmployerAccountType,
+  ProjectType,
+  CompensationType,
+  Language,
+  Country,
+  DayOfWeek,
+  AccountType,
+  LocationPreferenceType,
+  ExperienceLevel,
+  JobStatus,
+  // JobApplicationStatus,
+  TimesheetStatus,
+  JobApplicationStatus,
+  JobsOpenTo,
+  Provider,
+  AttachmentBelongsTo,
+} from "~/types/enums";
+
+export const providerEnum = pgEnum(
+  "provider",
+  Object.values(Provider) as [string, ...string[]]
+);
+
+export const accountStatusEnum = pgEnum(
+  "account_status",
+  Object.values(AccountStatus) as [string, ...string[]]
+);
+
+export const employerAccountTypeEnum = pgEnum(
+  "eployer_account_type",
+  Object.values(EmployerAccountType) as [string, ...string[]]
+);
+export const accountTypeEnum = pgEnum(
+  "account_type",
+  Object.values(AccountType) as [string, ...string[]]
+);
+
+export const timesheetStatusEnum = pgEnum(
+  "timesheet_status",
+  Object.values(TimesheetStatus) as [string, ...string[]]
+);
+
+export const languageEnum = pgEnum(
+  "language",
+  Object.values(Language) as [string, ...string[]]
+);
+
+export const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+
+export const countryEnum = pgEnum(
+  // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
+  "country", // this name is not depending on any other name for now !
+  Object.values(Country) as [string, ...string[]] // List of all valid country values from the Country enum
+);
+export const dayOfWeekEnum = pgEnum(
+  "day_of_week",
+  Object.values(DayOfWeek) as [string, ...string[]]
+);
+export const projectTypeEnum = pgEnum(
+  "project_type",
+  Object.values(ProjectType) as [string, ...string[]]
+);
+export const compensationTypeEnum = pgEnum(
+  "compensation_type",
+  Object.values(CompensationType) as [string, ...string[]]
+);
+
+export const locationPreferenceTypeEnum = pgEnum(
+  "location_preference_type",
+  Object.values(LocationPreferenceType) as [string, ...string[]]
+);
+
+export const experienceLevelEnum = pgEnum(
+  "experience_level",
+  Object.values(ExperienceLevel) as [string, ...string[]]
+);
+
+export const jobStatusEnum = pgEnum(
+  "job_status",
+  Object.values(JobStatus) as [string, ...string[]]
+);
+
+export const jobsOpenToEnum = pgEnum(
+  "jobs_open_to",
+  Object.values(JobsOpenTo) as [string, ...string[]]
+);
+
+export const belongsToEnum = pgEnum(
+  "belongs_to",
+  Object.values(AttachmentBelongsTo) as [string, ...string[]]
+);
+/* const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+ */
+
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 
 /**
  * Definition of the Users table.
@@ -62,6 +170,7 @@ export const UsersTable = pgTable("users", {
   isVerified: boolean("is_verified").default(false),
   isOnboarded: boolean("is_onboarded").default(false),
   provider: providerEnum("provider"),
+  role: userRoleEnum("role").default("user"),
 });
 
 /**
@@ -242,7 +351,7 @@ export const employersTable = pgTable("employers", {
  */
 export const languagesTable = pgTable("languages", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 25 }),
+  language: varchar("language", { length: 25 }),
 });
 
 /**
@@ -429,18 +538,14 @@ export const jobApplicationsTable = pgTable("job_applications", {
  * @property comment - text field for review comments
  * @property created_at - timestamp when the review was submitted
  */
-
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
-
-  reviewerId: integer("reviewer_id").notNull(), // The user leaving the review
-  revieweeId: integer("reviewee_id").notNull(), // The user being reviewed
-
+  reviewerId: integer("reviewer_id").notNull(),
+  revieweeId: integer("reviewee_id").notNull(),
   rating: real("rating").notNull(),
-  comment: text("comment").default(null), // ✅ Ensure nullable field
+  comment: text("comment").default(null),
   createdAt: timestamp("created_at").default(sql`now()`),
-
-  reviewType: text("review_type").notNull(), // "freelancer_review" or "employer_review"
+  reviewType: text("review_type").notNull(),
 });
 
 /**

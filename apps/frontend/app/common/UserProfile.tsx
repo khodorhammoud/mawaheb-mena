@@ -1,9 +1,10 @@
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 import Heading from "~/common/profileView/heading/Heading";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { AiFillStar } from "react-icons/ai";
-import { useEffect, useState } from "react";
-import { Button } from "~/components/ui/button";
+import { FaDollarSign, FaStar } from "react-icons/fa";
+import { SlBadge } from "react-icons/sl";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,181 +12,226 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import AppFormField from "~/common/form-fields";
-import { FaStar } from "react-icons/fa";
+import { Button } from "~/components/ui/button";
 
 interface UserProfileProps {
   canEdit: boolean;
-  accountOnboarded: boolean;
   profile?: any;
-  canReview?: boolean;
-  review?: { rating: number; comment: string; freelancerId: number } | null;
-  averageRating?: number; // ✅ New prop from loader
-  sections: {
-    formType:
-      | "number"
-      | "text"
-      | "range"
-      | "textArea"
-      | "increment"
-      | "video"
-      | "file"
-      | "repeatable"
-      | "custom";
-    cardTitle: string;
-    popupTitle: string;
-    triggerLabel: string;
-    formName: string;
-    fieldName: string;
-    repeatableFieldName?: string;
-    triggerIcon?: JSX.Element;
-    minVal?: number;
-    maxVal?: number;
-    useRichText?: boolean;
-    width?: string;
-    value?: any;
-  }[][];
 }
 
 export default function UserProfile({
   canEdit,
-  accountOnboarded,
   profile = {},
-  canReview,
-  review,
-  averageRating = 0, // ✅ Default value if not provided
-  sections,
 }: UserProfileProps) {
   const fetcher = useFetcher();
+  const reviewFetcher = useFetcher<{
+    overallRating?: number;
+    reviews?: { id: number; rating: number; comment: string }[];
+  }>();
+
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  // ✅ Load review data if it exists
+  // Check if there's an existing review
+  const hasReview = profile.review && profile.review.rating !== undefined;
+
   useEffect(() => {
-    if (review) {
-      setRating(review.rating);
-      setComment(review.comment);
+    if (hasReview) {
+      setRating(profile.review.rating);
+      setComment(profile.review.comment);
+    } else {
+      setRating(0);
+      setComment("");
     }
-  }, [review]);
+  }, [profile.review]);
+
+  // ✅ Fetch overall review rating & all reviews when profile updates
+  useEffect(() => {
+    if (profile.id) {
+      reviewFetcher.load(`/api/freelancers/${profile.id}/reviews`);
+    }
+  }, [profile.id]);
+
+  // ✅ Overall Rating Data
+  const overallRating = Number(reviewFetcher.data?.overallRating) || 0;
+
+  const allReviews = reviewFetcher.data?.reviews || [];
+
+  const handleStarClick = () => {
+    if (!canEdit) {
+      setOpen(true);
+    }
+  };
+
+  const sections = [
+    [
+      {
+        formType: "range",
+        cardTitle: "Hourly Rate",
+        popupTitle: "Hourly Rate",
+        triggerLabel: "Add Hourly Rate",
+        formName: "freelancer-hourly-rate",
+        fieldName: "hourlyRate",
+        triggerIcon: <FaDollarSign />,
+        value: profile.hourlyRate || 0,
+        minVal: 10,
+        maxVal: 100,
+        width: "w-full md:w-[48%]",
+      },
+      {
+        formType: "increment",
+        cardTitle: "Experience",
+        popupTitle: "Years of experience",
+        triggerLabel: "Add Years of Experience",
+        formName: "freelancer-years-of-experience",
+        fieldName: "yearsOfExperience",
+        triggerIcon: <SlBadge />,
+        value: profile.yearsOfExperience || 0,
+        width: "w-full md:w-[48%]",
+      },
+    ],
+    [
+      {
+        formType: "video",
+        cardTitle: "Introductory Video",
+        popupTitle: "Introductory Video",
+        triggerLabel: "Add Video",
+        formName: "freelancer-video",
+        fieldName: "videoLink",
+        value: profile.videoLink || "",
+        width: "w-full md:w-[48%]",
+      },
+      {
+        formType: "textArea",
+        cardTitle: "About",
+        popupTitle: "Introduce Yourself",
+        triggerLabel: "Add Bio",
+        formName: "freelancer-about",
+        fieldName: "about",
+        value: profile.about || "",
+        useRichText: true,
+        width: "w-full md:w-[48%]",
+      },
+    ],
+    [
+      {
+        formType: "repeatable",
+        cardTitle: "Portfolio",
+        popupTitle: "Add a Project",
+        triggerLabel: "Add Projects",
+        formName: "freelancer-portfolio",
+        fieldName: "portfolio",
+        value: profile.portfolio || [],
+        repeatableFieldName: "portfolio",
+        width: "w-full",
+      },
+    ],
+    [
+      {
+        formType: "repeatable",
+        cardTitle: "Work History",
+        popupTitle: "Add Work History",
+        triggerLabel: "Add Work History",
+        formName: "freelancer-work-history",
+        fieldName: "workHistory",
+        value: profile.workHistory || [],
+        repeatableFieldName: "workHistory",
+        width: "w-full",
+      },
+    ],
+    [
+      {
+        formType: "repeatable",
+        cardTitle: "Certificates",
+        popupTitle: "Add Certificates",
+        triggerLabel: "Add Certificates",
+        formName: "freelancer-certificates",
+        fieldName: "certificates",
+        value: profile.certificates || [],
+        repeatableFieldName: "certificates",
+        width: "w-full",
+      },
+    ],
+    [
+      {
+        formType: "repeatable",
+        cardTitle: "Education",
+        popupTitle: "Add Education",
+        triggerLabel: "Add Education",
+        formName: "freelancer-educations",
+        fieldName: "educations",
+        value: profile.educations || [],
+        repeatableFieldName: "educations",
+        width: "w-full",
+      },
+    ],
+  ];
+
+  console.log("profile.review", profile.review);
 
   return (
-    <div className="relative">
+    <div className="relative w-full max-w-7xl mx-auto pr-10">
       {/* Profile Header */}
       <div
-        className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 mb-2 rounded-xl border-2 relative"
+        className="h-32 sm:h-36 md:h-40 w-full my-4 rounded-xl border-2 relative"
         style={{
           background: "linear-gradient(to right, #27638a 0%, white 75%)",
         }}
       >
         {canEdit && (
           <div className="absolute top-4 right-4">
-            <button className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold hover:text-white w-fit">
+            <button className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold hover:bg-primaryColor hover:text-white transition-all">
               Add Title
             </button>
           </div>
         )}
 
-        {/* Star Rating + Review Text */}
-        <div className="xl:right-4 top-12 absolute">
-          <div className="flex flex-col items-end">
-            {/* ✅ Your Review */}
-            {review ? (
-              <p className="text-sm font-semibold text-gray-700">
-                Your Review: {review.rating}/5
-              </p>
-            ) : (
-              <p className="text-sm text-gray-500">No review yet</p>
-            )}
-
-            {/* ⭐ Star Display */}
-            <div className="flex items-center">
-              <AiFillStar className="text-yellow-500 h-5 w-5 mr-1" />
-              <span>{review ? review.rating : "0"}/5</span>
+        {/* ⭐ Review Section */}
+        <div className="absolute sm:top-20 top-14 right-4 flex flex-col sm:flex-row items-start sm:items-center cursor-pointer gap-2 sm:gap-2">
+          {/* Current Employer's Review */}
+          {!canEdit && (
+            <div
+              className="flex items-center xl:text-xl lg:text-lg text-sm"
+              onClick={handleStarClick}
+            >
+              <AiFillStar className="text-yellow-500 xl:h-6 xl:w-6 lg:h-5 lg:w-5 h-4 w-4 mr-1" />
+              <span className="font-semibold">
+                {profile.review?.rating || "0"}/5
+              </span>
+              <span className="text-gray-500 xl:text-base md:text-sm text-xs ml-2">
+                (Your Review)
+              </span>
             </div>
+          )}
 
-            {/* ✅ Average Review */}
-            <p className="text-sm font-semibold text-gray-700 mt-1">
-              Average Reviews: {averageRating}/5
-            </p>
+          {!canEdit && <span className="text-gray-400 hidden sm:block">|</span>}
 
-            {/* Review Button */}
-            {canReview && (
-              <Button
-                className="mt-2 bg-primaryColor text-white py-1 px-3 rounded-lg"
-                onClick={() => setOpen(true)}
-              >
-                {review ? "Edit Review" : "Review Freelancer"}
-              </Button>
-            )}
+          {/* Overall Employer Reviews */}
+          <div className="flex items-center xl:text-xl lg:text-lg text-sm">
+            <AiFillStar className="text-yellow-500 xl:h-6 xl:w-6 lg:h-5 lg:w-5 h-4 w-4 mr-1" />
+            <span className="font-semibold">{overallRating}/5</span>
+            <span className="text-gray-500 xl:text-base md:text-sm text-xs ml-2">
+              ({allReviews.length} employer reviews)
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Review Modal */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="p-6 bg-white rounded-lg">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              {review ? "Edit your review" : "Leave a review"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => setRating(star)}
-                className={`text-3xl ${
-                  star <= rating ? "text-yellow-400" : "text-gray-300"
-                }`}
-              >
-                <FaStar className="w-6 h-6" />
-              </button>
-            ))}
-          </div>
-
-          <fetcher.Form method="post" action="/profile">
-            <input type="hidden" name="_action" value="review" />
-            <input type="hidden" name="freelancerId" value={profile.id || ""} />
-            <input type="hidden" name="rating" value={rating} />
-
-            <AppFormField
-              id="reviewComment"
-              name="comment"
-              type="textarea"
-              label="Comments"
-              placeholder="Write your feedback..."
-              defaultValue={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="mt-2 bg-primaryColor text-white rounded-xl px-6"
-              >
-                {review ? "Update Review" : "Submit"}
-              </Button>
-            </div>
-          </fetcher.Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Profile Details */}
+      {/* Profile Heading */}
       <div className="mb-10">
         <Heading profile={profile} canEdit={canEdit} />
       </div>
 
-      {/* Sections Grid */}
+      {/* Grid Layout for Sections */}
       <div className="flex flex-col items-center gap-6">
         {sections.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex flex-wrap gap-6 w-full">
+          <div
+            key={rowIndex}
+            className="flex flex-wrap gap-6 w-full justify-between"
+          >
             {row.map((section, index) => (
-              <div
-                key={index}
-                style={{ width: section.width || "80%" }}
-                className="max-w-full flex-shrink-0"
-              >
+              <div key={index} className={`${section.width} flex-shrink-0`}>
                 <GeneralizableFormCard
                   formType={section.formType}
                   cardTitle={section.cardTitle}
@@ -207,6 +253,64 @@ export default function UserProfile({
           </div>
         ))}
       </div>
+
+      {/* Review Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="p-6 bg-white rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              {hasReview ? "Edit your review" : "Leave a review"}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* ⭐ Star Rating */}
+          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`text-3xl ${
+                  star <= rating ? "text-yellow-400" : "text-gray-300"
+                }`}
+              >
+                <FaStar className="w-6 h-6" />
+              </button>
+            ))}
+          </div>
+
+          {/* Review Form */}
+          <fetcher.Form method="post">
+            <input type="hidden" name="_action" value="review" />
+            <input type="hidden" name="rating" value={rating} />
+            <input type="hidden" name="freelancerId" value={profile.id} />
+
+            <AppFormField
+              id="reviewComment"
+              name="comment"
+              type="textarea"
+              label="Comments"
+              placeholder="Write your feedback..."
+              defaultValue={comment}
+              col={6}
+              onChange={(e) => setComment(e.target.value)}
+            />
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="mt-2 w-fit bg-primaryColor text-white rounded-xl px-10"
+                disabled={rating === 0 || fetcher.state === "submitting"}
+              >
+                {fetcher.state === "submitting"
+                  ? "Submitting..."
+                  : hasReview
+                    ? "Update Review"
+                    : "Submit Review"}
+              </Button>
+            </div>
+          </fetcher.Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

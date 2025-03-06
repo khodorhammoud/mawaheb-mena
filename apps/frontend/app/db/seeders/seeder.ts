@@ -15,10 +15,11 @@ import {
 import { faker } from "@faker-js/faker";
 
 import * as dotenv from "dotenv";
-import { AccountType } from "~/types/enums";
+import { AccountType, Provider } from "~/types/enums";
 dotenv.config({
   path: ".env",
 });
+import { hash } from "bcrypt-ts";
 
 // dotenv.config();
 
@@ -201,6 +202,21 @@ async function seed() {
           name: language,
         });
       }
+
+      // seed admin account
+      const adminPassword = "123"; // Change this in production
+      const hashedPassword = await hash(adminPassword, 10);
+
+      await tx.insert(UsersTable).values({
+        firstName: "Admin",
+        lastName: "User",
+        email: "admin@mawaheb.com",
+        passHash: hashedPassword,
+        isVerified: true,
+        isOnboarded: true,
+        role: "admin",
+        provider: Provider.Credentials,
+      });
 
       // Seed Account Languages
       /* for (let i = lastAccountID; i < lastAccountID + 10; i++) {
