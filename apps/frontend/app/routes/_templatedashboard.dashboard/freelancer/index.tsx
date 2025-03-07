@@ -44,11 +44,7 @@ export default function Dashboard() {
 
   return (
     <div className="-mx-8">
-      <UserProfile
-        canEdit={canEdit}
-        accountOnboarded={accountOnboarded}
-        profile={normalizedProfile}
-      />
+      <UserProfile canEdit={canEdit} profile={normalizedProfile} />
     </div>
   );
 }

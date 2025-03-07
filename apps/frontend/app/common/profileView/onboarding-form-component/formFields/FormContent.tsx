@@ -117,7 +117,6 @@ const FormContent = ({
   };
 
   // console.log("repeatableInputFiles in current state:", repeatableInputFiles);
-
   return (
     <div className="">
       <fetcher.Form

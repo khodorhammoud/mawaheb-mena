@@ -7,6 +7,7 @@ import {
   freelancerSkillsTable,
   skillsTable,
   jobSkillsTable,
+  accountsTable,
 } from "../db/drizzle/schemas/schema";
 import { eq, inArray } from "drizzle-orm";
 import {
@@ -396,16 +397,36 @@ export async function handleFreelancerOnboardingAction(
   }
 }
 
-export async function getFreelancerIdByAccountId(
-  accountId: number
-): Promise<number | null> {
-  const freelancer = await db
-    .select({ id: freelancersTable.id })
+export async function getFreelancerIdByUserId(userId: number) {
+  // console.log("🔍 Looking for freelancerId using userId:", userId);
+
+  const result = await db
+    .select({
+      freelancerId: freelancersTable.id,
+      accountId: accountsTable.id,
+      userId: accountsTable.userId,
+    })
     .from(freelancersTable)
-    .where(eq(freelancersTable.accountId, accountId))
+    .innerJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .where(eq(accountsTable.userId, userId))
     .limit(1);
 
-  return freelancer.length > 0 ? freelancer[0].id : null;
+  // console.log("📌 Query result in `getFreelancerIdByUserId`:", result);
+
+  if (result.length === 0) {
+    console.error(`❌ No freelancer found for userId: ${userId}`);
+    return null;
+  }
+
+  // console.log(
+  //   "✅ Found freelancerId:",
+  //   result[0].freelancerId,
+  //   "for userId:",
+  //   result[0].userId,
+  //   "and accountId:",
+  //   result[0].accountId
+  // );
+  return result[0].freelancerId;
 }
 
 export async function updateFreelancerPortfolio(
@@ -875,6 +896,8 @@ export async function getFreelancerAbout(
       .from(freelancersTable)
       .where(eq(freelancersTable.accountId, accountId))
       .limit(1); // Limit to 1 row since we're expecting one result
+
+    // console.log("📡 [getFreelancerAbout] Query Result:", result);
 
     // Return the fetched about content or default to an empty string if no result
     return result[0]?.about ? String(result[0].about) : "";

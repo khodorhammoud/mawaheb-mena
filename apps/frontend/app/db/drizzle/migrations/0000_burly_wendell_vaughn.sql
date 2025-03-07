@@ -53,7 +53,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'paused', 'deleted');
+ CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'completed', 'paused', 'deleted');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -271,11 +271,12 @@ CREATE TABLE IF NOT EXISTS "preferred_working_times" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "reviews" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"employer_id" integer NOT NULL,
-	"freelancer_id" integer NOT NULL,
+	"reviewer_id" integer NOT NULL,
+	"reviewee_id" integer NOT NULL,
 	"rating" real NOT NULL,
 	"comment" text DEFAULT null,
-	"created_at" timestamp DEFAULT now()
+	"created_at" timestamp DEFAULT now(),
+	"review_type" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "skills" (
@@ -444,18 +445,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "preferred_working_times" ADD CONSTRAINT "preferred_working_times_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "reviews" ADD CONSTRAINT "reviews_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "reviews" ADD CONSTRAINT "reviews_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

@@ -13,9 +13,30 @@ interface FieldTemplateProps {
 
 export const TextFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    const { isHtml, content: sanitizedContent } = parseHtmlContent(
-      value as string
-    );
+    // console.log("🔍 Received Value in Template:", value); // Debugging
+
+    if (typeof value !== "string") {
+      console.warn("⚠️ Expected string but got:", typeof value, value);
+      value = JSON.stringify(value); // Ensure string type
+    }
+
+    // console.log("🛠️ [FieldTemplates] Received Value in Template:", {
+    //   value,
+    //   type: typeof value,
+    //   isArray: Array.isArray(value),
+    // });
+
+    // console.log("🔍 [FieldTemplates] Before Parsing:", {
+    //   rawValue: value,
+    //   parsedValue: typeof value === "string" ? value : JSON.stringify(value),
+    // });
+
+    const { isHtml, content: sanitizedContent } = parseHtmlContent(value);
+
+    const parsed = parseHtmlContent(value as string);
+    // console.log("✅ [FieldTemplates] Parsed Content:", parsed);
+
+    // console.log("✅ Parsed Content:", sanitizedContent); // Debugging line
 
     return (
       <div className="flex flex-col ">
