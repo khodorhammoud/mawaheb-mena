@@ -1,7 +1,7 @@
-// this is the code that is targeted using the fetcher inside recommended jobs
+// this is the code that is targeted using the fetcher inside all jobs
 
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getRecommendedJobs } from "../servers/job.server";
+import { getAllJobs } from "../servers/job.server";
 import { getCurrentProfileInfo } from "~/servers/user.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -9,6 +9,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // TODO: check user is published, and whether it's important for the user to be a freelancer or employer
 
-  const recommendedJobs = await getRecommendedJobs(user.id);
-  return Response.json({ jobs: recommendedJobs });
+  const allJobs = await getAllJobs();
+  return Response.json({ jobs: allJobs });
 }

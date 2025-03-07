@@ -7,15 +7,8 @@ import VideoUpload from "~/common/upload/videoUpload";
 import Or from "~/common/or/Or";
 import RichTextEditor from "~/components/ui/richTextEditor";
 import DOMPurify from "dompurify";
-
-const handleVideoUpload = (file: File | null) => {
-  console.log("Video uploaded:", file);
-};
-
-const getWordCount = (html: string) => {
-  const plainText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
-  return plainText.length || 0; // Return 0 for empty or invalid input
-};
+import FileUpload from "~/common/upload/fileUpload";
+import { getWordCount } from "~/lib/utils";
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -30,13 +23,15 @@ export const FormFields = {
   ),
 
   number: ({ value, onChange, name }: FormFieldProps) => (
-    <Input
+    <AppFormField
       type="number"
-      placeholder="Enter a number"
-      value={value as number}
-      onChange={onChange}
+      id="number-input"
       name={name}
-      className="w-full p-3 border border-gray-300 rounded-md"
+      label="Enter a number"
+      placeholder="Enter a number"
+      onChange={onChange}
+      className="no-spinner"
+      defaultValue={value ? value.toString() : ""}
     />
   ),
 
@@ -178,12 +173,15 @@ export const FormFields = {
     );
   },
 
-  file: ({ value, onChange, name, props }: FormFieldProps) => (
-    <Input
-      type="file"
-      name={props.fieldName}
-      onChange={onChange}
-      className="w-full p-3 border border-gray-300 rounded-md"
-    />
-  ),
+  file: ({ value, onChange, name, props }: FormFieldProps) => {
+    return (
+      <Input
+        type="file"
+        name={name}
+        accept={props.acceptedFileTypes}
+        onChange={onChange}
+        className="w-full p-3 border border-gray-300 rounded-md"
+      />
+    );
+  },
 };

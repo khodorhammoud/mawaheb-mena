@@ -1,4 +1,3 @@
-// components/Container.jsx
 import { ReactNode } from "react";
 
 interface ContainerProps {
@@ -6,7 +5,7 @@ interface ContainerProps {
 }
 // <LayoutContainer>
 const LayoutContainer = ({ children }: ContainerProps) => {
-  return <div className="mx-auto px-4">{children}</div>;
+  return <div className="">{children}</div>;
 };
 
 export default LayoutContainer;

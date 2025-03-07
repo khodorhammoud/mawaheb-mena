@@ -101,6 +101,10 @@
   overflow: hidden;
   position: relative;
   cursor: pointer;
+
+  /* Ensure full width */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 
 .circle-grid {
@@ -417,4 +421,14 @@
 .custom-quill .ql-toolbar button.ql-active {
   border-radius: 10px;
   background-color: #f4f4f4;
+}
+
+/* want-to-join-us */
+/* want-to-join-us */
+/* want-to-join-us */
+
+.fullBG {
+  /* Ensure full width */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }

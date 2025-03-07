@@ -1,14 +1,35 @@
 import { db } from "../db/drizzle/connector";
-import { and, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
   jobCategoriesTable,
   jobsTable,
   freelancersTable,
+  jobSkillsTable,
+  skillsTable,
+  reviewsTable,
+  employersTable,
+  accountsTable,
+  UsersTable,
+  freelancerSkillsTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
-import { JobApplicationStatus, JobStatus } from "~/types/enums";
+import {
+  JobApplicationStatus,
+  JobStatus,
+  ExperienceLevel,
+} from "~/types/enums";
 import { getUser, getUserIdFromFreelancerId } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
@@ -26,9 +47,11 @@ export async function getAllJobCategories(): Promise<JobCategory[]> {
 
 // Create a job posting
 export async function createJobPosting(
-  jobData: Job
+  jobData: Job,
+  skills: { name: string; isStarred: boolean }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // ✅ Step 1: Insert the Job First
     const [job] = await db
       .insert(jobsTable)
       .values({
@@ -43,20 +66,54 @@ export async function createJobPosting(
         experienceLevel: jobData.experienceLevel,
         status: jobData.status,
       })
-      .returning();
+      .returning({ id: jobsTable.id });
 
     if (!job) {
-      console.error("Job insertion failed: No rows returned after insertion.");
-      throw new Error("Job insertion failed, no rows returned.");
+      console.error("❌ Job insertion failed: No rows returned.");
+      throw new Error("Job insertion failed.");
     }
+
+    // console.log("✅ New Job Created:", job.id);
+
+    // ✅ Step 2: Process Each Skill Separately
+    for (const skill of skills) {
+      // 🔹 SPLIT skills if they come in as a comma-separated string
+      const skillNames = skill.name.split(",").map((s) => s.trim());
+
+      for (const skillName of skillNames) {
+        let [existingSkill] = await db
+          .select({ id: skillsTable.id })
+          .from(skillsTable)
+          .where(eq(skillsTable.label, skillName));
+
+        // ✅ Only insert new skills if they don't exist
+        if (!existingSkill) {
+          [existingSkill] = await db
+            .insert(skillsTable)
+            .values({ label: skillName }) // Insert skill separately
+            .returning({ id: skillsTable.id });
+
+          // console.log("🆕 Inserted new skill:", existingSkill.id, skillName);
+        }
+
+        // ✅ Insert into `jobSkillsTable` (Link Job & Skill)
+        await db.insert(jobSkillsTable).values({
+          jobId: job.id,
+          skillId: existingSkill.id,
+          isStarred: skill.isStarred,
+        });
+
+        // console.log(
+        //   `🔗 Linked Skill ID ${existingSkill.id} (${skillName}) to Job ID ${job.id}`
+        // );
+      }
+    }
+
     return { success: true };
   } catch (error) {
-    console.error("Detailed error during job creation:");
+    console.error("Detailed error during job creation:", error);
   }
-  // Return a more specific error message if possible
-  return {
-    success: false,
-  };
+  return { success: false };
 }
 
 /**
@@ -66,105 +123,203 @@ export async function createJobPosting(
  * @param jobData the data i'll update in the job
  * @returns success or failure :)
  */
-export async function updateJob(
-  jobId: number,
-  jobData: Partial<Job>
-): Promise<{ success: boolean; error?: string }> {
+export async function updateJob(jobId: number, jobData: Partial<Job>) {
   try {
-    // validating and cleaning data before passing them to drizzle update or insert script 🍔
     const requiredSkills = Array.isArray(jobData.requiredSkills)
       ? jobData.requiredSkills.map((skill) => ({
+          id: skill.id,
           name: skill.name.trim(),
-          isStarred: !!skill.isStarred,
+          isStarred: skill.isStarred || false,
         }))
       : [];
 
-    const validatedJobData = {
-      title: jobData.title?.trim(),
-      description: jobData.description?.trim(),
-      jobCategoryId: jobData.jobCategoryId || null,
-      workingHoursPerWeek: jobData.workingHoursPerWeek || null,
-      locationPreference: jobData.locationPreference?.trim(),
-      requiredSkills:
-        requiredSkills.length > 0
-          ? {
-              set: [], // Clear existing skills
-              create: requiredSkills,
-            }
-          : undefined,
-      projectType: jobData.projectType?.trim(),
-      budget: jobData.budget || null,
-      experienceLevel: jobData.experienceLevel?.trim(),
-      status: jobData.status || null,
-    };
+    await db.transaction(async (tx) => {
+      // 🗑 1️⃣ Delete old skills to avoid duplicates
+      await tx.delete(jobSkillsTable).where(eq(jobSkillsTable.jobId, jobId));
 
-    // Step 2: Perform the update using validated data
-    const updatedJob = await db
-      .update(jobsTable)
-      .set(validatedJobData)
-      .where(eq(jobsTable.id, jobId))
-      .returning();
+      // ✅ 2️⃣ Re-insert updated skills into `job_skills`
+      if (requiredSkills.length > 0) {
+        await tx.insert(jobSkillsTable).values(
+          requiredSkills.map((skill) => ({
+            jobId,
+            skillId: skill.id, // Skill ID must be valid
+            isStarred: skill.isStarred, // ✅ Ensure this is inserted
+          }))
+        );
+      }
 
-    // Step 3: Check if the update was successful
-    if (!updatedJob || updatedJob.length === 0) {
-      throw new Error("Job update failed: No rows returned.");
-    }
+      // 🔄 3️⃣ Update the main job details
+      const updatedJob = await tx
+        .update(jobsTable)
+        .set({
+          title: jobData.title?.trim(),
+          description: jobData.description?.trim(),
+          jobCategoryId: jobData.jobCategoryId || null,
+          workingHoursPerWeek: jobData.workingHoursPerWeek || null,
+          locationPreference: jobData.locationPreference?.trim(),
+          projectType: jobData.projectType?.trim(),
+          budget: jobData.budget || null,
+          experienceLevel: jobData.experienceLevel?.trim(),
+          status: jobData.status || "draft", // ✅ Default to "draft" if null
+        })
+        .where(eq(jobsTable.id, jobId))
+        .returning();
+
+      if (!updatedJob || updatedJob.length === 0) {
+        throw new Error("Job update failed: No rows returned.");
+      }
+    });
 
     return { success: true };
   } catch (error) {
-    console.error("Error during job update:", error);
-    return {
-      success: false,
-      error: "Failed to update job posting.",
-    };
+    console.error("❌ Error during job update:", error);
+    return { success: false, error: "Failed to update job posting." };
   }
 }
 
+// MANAGE JOBS
 export async function getEmployerJobs(
-  employerId: number,
-  jobStatus?: JobStatus[]
+  employerId: number
+  // jobStatus?: JobStatus[]
 ): Promise<Job[]> {
-  // Fetch all jobs from the database that relate to current user
-  let jobs = null;
-  if (jobStatus) {
-    jobs = await db
-      .select()
-      .from(jobsTable)
-      .where(
-        and(
-          eq(jobsTable.employerId, employerId),
-          inArray(jobsTable.status, jobStatus)
-        )
-      );
-  } else {
-    jobs = await db
-      .select()
-      .from(jobsTable)
-      .where(eq(jobsTable.employerId, employerId));
+  // Retrieves all jobs for a given employer
+  // Joins the jobSkillsTable to get the skills linked to each job
+  // Joins the skillsTable to get the skill names
+  // Filters the jobs based on employerId to get only the relevant jobs
+  const jobsQuery = db
+    .select({
+      id: jobsTable.id,
+      employerId: jobsTable.employerId,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      status: jobsTable.status,
+      createdAt: jobsTable.createdAt,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
+      skillId: jobSkillsTable.skillId,
+      skillName: skillsTable.label,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobsTable)
+    .leftJoin(jobSkillsTable, eq(jobSkillsTable.jobId, jobsTable.id))
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(eq(jobsTable.employerId, employerId));
+
+  // runs the query
+  const jobsRaw = await jobsQuery.execute();
+
+  // This avoids duplicate job entries when multiple skills are attached to a job
+  const jobsMap = new Map<number, Job>();
+
+  // Loops through the raw job data
+  // If the job doesn't exist in the map, it adds the job without skills
+  // If a skill is found, it adds the skill to the job's requiredSkills list
+  // This ensures that each job is stored once and its skills are properly grouped
+  for (const row of jobsRaw) {
+    if (!jobsMap.has(row.id)) {
+      jobsMap.set(row.id, {
+        id: row.id,
+        employerId: row.employerId,
+        title: row.title,
+        description: row.description,
+        workingHoursPerWeek: row.workingHoursPerWeek,
+        locationPreference: row.locationPreference,
+        projectType: row.projectType,
+        budget: row.budget,
+        experienceLevel: row.experienceLevel,
+        status: row.status as JobStatus,
+        createdAt: row.createdAt,
+        jobCategoryId: row.jobCategoryId,
+        fulfilledAt: row.fulfilledAt,
+        requiredSkills: [],
+      });
+    }
+
+    if (row.skillId) {
+      jobsMap.get(row.id)?.requiredSkills.push({
+        id: row.skillId,
+        name: row.skillName,
+        isStarred: row.isStarred,
+      });
+    }
   }
 
-  // Map each job result to a structured object
-  return jobs.map((job) => ({
-    id: job.id,
-    employerId: job.employerId,
-    title: job.title,
-    description: job.description,
-    workingHoursPerWeek: job.workingHoursPerWeek,
-    locationPreference: job.locationPreference,
-    // requiredSkills: job.requiredSkills as Skill[],
-    requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-    projectType: job.projectType,
-    budget: job.budget,
-    experienceLevel: job.experienceLevel,
-    status: job.status as JobStatus,
-    createdAt: job.createdAt?.toISOString(),
-  }));
+  // Converts the Map structure back into an array of jobs (which is the expected output format)
+  // Now, each job has a clean list of skills inside requiredSkills
+  return Array.from(jobsMap.values());
 }
 
-/* export async function getFreelancerRecommendedJobs(): Promise<Job[]> {
+export async function getJobById(jobId: number): Promise<Job | null> {
+  const jobQuery = db
+    .select({
+      id: jobsTable.id,
+      employerId: jobsTable.employerId,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      status: jobsTable.status,
+      createdAt: jobsTable.createdAt,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
+      skillId: jobSkillsTable.skillId,
+      skillName: skillsTable.label,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobsTable)
+    .leftJoin(jobSkillsTable, eq(jobSkillsTable.jobId, jobsTable.id))
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(eq(jobsTable.id, jobId));
+
+  const jobRaw = await jobQuery.execute();
+
+  if (!jobRaw.length) {
+    return null;
+  }
+
+  // Group skills under `requiredSkills`
+  const jobData: Job = {
+    id: jobRaw[0].id,
+    employerId: jobRaw[0].employerId,
+    title: jobRaw[0].title,
+    description: jobRaw[0].description,
+    workingHoursPerWeek: jobRaw[0].workingHoursPerWeek,
+    locationPreference: jobRaw[0].locationPreference,
+    projectType: jobRaw[0].projectType,
+    budget: jobRaw[0].budget,
+    experienceLevel: jobRaw[0].experienceLevel,
+    status: jobRaw[0].status as JobStatus,
+    createdAt: jobRaw[0].createdAt,
+    jobCategoryId: jobRaw[0].jobCategoryId,
+    fulfilledAt: jobRaw[0].fulfilledAt,
+    requiredSkills: [],
+  };
+
+  for (const row of jobRaw) {
+    if (row.skillId) {
+      jobData.requiredSkills.push({
+        id: row.skillId,
+        name: row.skillName,
+        isStarred: row.isStarred,
+      });
+    }
+  }
+
+  return jobData;
+}
+
+/* export async function getFreelancerDesignJobs(): Promise<Job[]> {
   // freelancer: Freelancer
-  // fetch recommended jobs
-  const recommendedJobs = await db
+  // fetch Design jobs
+  const DesignJobs = await db
     .select()
     .from(jobsTable)
     .where(
@@ -173,66 +328,724 @@ export async function getEmployerJobs(
         eq(jobsTable.employerId, freelancer.id)
       )
     );
-  return recommendedJobs.map((job) => ({
+  return DesignJobs.map((job) => ({
     ...job,
     status: job.status as JobStatus,
   }));
 } */
 
-/**
- * get a single job by its ID
- *
- * @param jobId the ID of the job to get
- * @returns the job with the given ID or null if it doesn't exist
- */
-export async function getJobById(jobId: number): Promise<Job | null> {
-  const job = await db.select().from(jobsTable).where(eq(jobsTable.id, jobId));
-  if (!job) {
-    return null;
+// ✅ Get Design Jobs (Jobs Freelancer Hasn't Applied To)
+// export async function getDesignJobs(freelancerId: number) {
+//   // Query to select all jobs that are active and the freelancer hasn't applied
+//   const jobs = await db
+//     .select({
+//       id: jobsTable.id,
+//       title: jobsTable.title,
+//       description: jobsTable.description,
+//       employerId: jobsTable.employerId,
+//       status: jobsTable.status,
+//       applicationStatus: jobApplicationsTable.status,
+//       createdAt: jobsTable.createdAt,
+//       budget: jobsTable.budget,
+//       experienceLevel: jobsTable.experienceLevel,
+//       jobCategoryId: jobsTable.jobCategoryId,
+//       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+//       locationPreference: jobsTable.locationPreference,
+//       projectType: jobsTable.projectType,
+//     })
+//     .from(jobsTable)
+//     .leftJoin(
+//       jobApplicationsTable,
+//       and(
+//         eq(jobApplicationsTable.jobId, jobsTable.id),
+//         eq(jobApplicationsTable.freelancerId, freelancerId)
+//       )
+//     )
+//     .where(
+//       and(
+//         eq(jobsTable.status, JobStatus.Active),
+//         isNull(jobApplicationsTable.id) // ✅ Exclude jobs where freelancer has applied
+//       )
+//     )
+//     .orderBy(desc(jobsTable.createdAt));
+
+//   return jobs;
+// }
+
+interface JobRecommendation {
+  jobId: number;
+  title: string;
+  description: string;
+  budget: number;
+  workingHoursPerWeek: number;
+  locationPreference: string;
+  projectType: string;
+  experienceLevel: ExperienceLevel;
+  matchScore: number;
+  skillsMatch: {
+    matchingSkills: Array<{
+      id: number;
+      label: string;
+      isStarred: boolean;
+      freelancerYearsOfExperience: number;
+    }>;
+    missingSkills: Array<{
+      id: number;
+      label: string;
+      isStarred: boolean;
+    }>;
+    matchPercentage: number;
+  };
+  createdAt: string;
+}
+
+function calculateMatchScore(
+  freelancer: any,
+  freelancerSkills: any[],
+  job: any,
+  jobSkills: any[]
+): number {
+  // console.log("🎯 Calculating match score for job:", job.id);
+
+  let score = 0;
+  const weights = {
+    skills: 0.4, // 40% - Most important
+    experience: 0.15, // 15% - Experience level match
+    location: 0.1, // 10% - Location preference
+    projectType: 0.1, // 10% - Project type match
+    workingHours: 0.1, // 10% - Working hours compatibility
+    languages: 0.1, // 10% - Language requirements
+    description: 0.05, // 5%  - Description keyword match
+  };
+
+  // 1. Skills match (40%)
+  const matchingSkillsCount = jobSkills.filter((jobSkill) =>
+    freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+  ).length;
+
+  // Calculate base skills score
+  let skillsScore =
+    jobSkills.length > 0 ? matchingSkillsCount / jobSkills.length : 1;
+
+  // Bonus for matching starred/important skills
+  const starredSkills = jobSkills.filter((skill) => skill.isStarred);
+  if (starredSkills.length > 0) {
+    const matchingStarredCount = starredSkills.filter((starredSkill) =>
+      freelancerSkills.some((fs) => fs.skillId === starredSkill.skillId)
+    ).length;
+    const starredScore = matchingStarredCount / starredSkills.length;
+    skillsScore = skillsScore * 0.7 + starredScore * 0.3; // Give 30% extra weight to starred skills
   }
-  return job[0] as unknown as Job;
+
+  // Add experience bonus for matching skills
+  const matchingSkills = jobSkills.filter((jobSkill) =>
+    freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+  );
+  if (matchingSkills.length > 0) {
+    let experienceBonus = 0;
+    matchingSkills.forEach((jobSkill) => {
+      const freelancerSkill = freelancerSkills.find(
+        (fs) => fs.skillId === jobSkill.skillId
+      );
+      if (freelancerSkill && freelancerSkill.yearsOfExperience >= 3) {
+        experienceBonus += 0.1; // 10% bonus for each skill with 3+ years experience
+      }
+    });
+    skillsScore = Math.min(1, skillsScore + experienceBonus);
+  }
+
+  score += skillsScore * weights.skills;
+  // console.log("📊 Skills Score:", Math.round(skillsScore * 100) + "%");
+
+  // 2. Experience level match (15%)
+  const experienceLevels = Object.values(ExperienceLevel);
+
+  // Function to map yearsOfExperience to an experience level
+  function getExperienceLevel(yearsOfExperience: number): ExperienceLevel {
+    if (yearsOfExperience <= 2) return ExperienceLevel.Entry;
+    if (yearsOfExperience <= 4) return ExperienceLevel.Mid;
+    return ExperienceLevel.Expert; // 5+ years
+  }
+
+  // 🏆 Get the highest years of experience from freelancer's skills
+  const freelancerYearsOfExperience = Math.max(
+    ...freelancerSkills.map((skill) => skill.yearsOfExperience || 0),
+    0 // Default value if no skills exist
+  );
+
+  // 🛠️ LOG FREELANCER YEARS OF EXPERIENCE
+  // console.log(
+  //   "📌 Freelancer Max Years of Experience:",
+  //   freelancerYearsOfExperience
+  // );
+
+  // 🔄 Map to Experience Level
+  const freelancerExpLevel = getExperienceLevel(freelancerYearsOfExperience);
+  // console.log("📌 Mapped Freelancer Experience Level:", freelancerExpLevel);
+
+  // ✅ Now use `experienceLevels` to get the correct index
+  const freelancerExpIndex = experienceLevels.indexOf(freelancerExpLevel);
+  const jobExpIndex = experienceLevels.indexOf(job.experienceLevel);
+
+  // 🛠️ LOG EXPERIENCE INDEX VALUES
+  // console.log(
+  //   "👨‍💻 Freelancer Experience Level:",
+  //   freelancerExpLevel,
+  //   "➡ Index:",
+  //   freelancerExpIndex
+  // );
+  // console.log(
+  //   "🏢 Job Experience Level:",
+  //   job.experienceLevel,
+  //   "➡ Index:",
+  //   jobExpIndex
+  // );
+
+  let experienceScore = 0;
+  if (freelancerExpIndex >= jobExpIndex) {
+    experienceScore = 1; // Fully qualified
+    // console.log("✅ Freelancer meets or exceeds the required experience.");
+  } else {
+    const levelDiff = jobExpIndex - freelancerExpIndex;
+    experienceScore = Math.max(0, 1 - levelDiff * 0.5); // Partial match for close levels
+    // console.log(
+    //   "⚠️ Freelancer has lower experience. Level difference:",
+    //   levelDiff
+    // );
+    // console.log("📉 Adjusted Experience Score:", experienceScore);
+  }
+
+  score += experienceScore * weights.experience;
+  // console.log(
+  //   "📊 Final Weighted Experience Score:",
+  //   experienceScore * weights.experience
+  // );
+  // console.log("🛠️ Updated Total Score:", score);
+
+  // 3. Location preference match (10%)
+  let locationScore = 0;
+  if (job.locationPreference === "Remote") {
+    locationScore = 1; // Remote jobs are fully compatible
+  } else if (job.locationPreference === freelancer.country) {
+    locationScore = 1; // Same country/city is fully compatible
+  } else if (
+    job.locationPreference === "Hybrid" &&
+    freelancer.country === job.locationPreference
+  ) {
+    locationScore = 0.8; // Hybrid with matching location is highly compatible
+  } else {
+    locationScore = 0.2; // Different locations have low compatibility
+  }
+
+  score += locationScore * weights.location;
+  // console.log("📊 Location Score:", Math.round(locationScore * 100) + "%");
+
+  // 4. Project type match (10%)
+  let projectTypeScore = 0;
+  if (
+    freelancer.preferredProjectTypes &&
+    Array.isArray(freelancer.preferredProjectTypes)
+  ) {
+    projectTypeScore = freelancer.preferredProjectTypes.includes(
+      job.projectType
+    )
+      ? 1
+      : 0.3;
+  } else {
+    projectTypeScore = 0.5; // Neutral score if no preferences set
+  }
+
+  score += projectTypeScore * weights.projectType;
+  // console.log(
+  //   "📊 Project Type Score:",
+  //   Math.round(projectTypeScore * 100) + "%"
+  // );
+
+  // 5. Working hours compatibility (10%)
+  let hoursScore = 0;
+  const freelancerPreferredHours = freelancer.preferredWorkingHours || 40;
+  const jobHours = job.workingHoursPerWeek;
+
+  if (jobHours <= freelancerPreferredHours) {
+    hoursScore = 1; // Job requires fewer or equal hours than preferred
+  } else {
+    const hoursDiff = jobHours - freelancerPreferredHours;
+    hoursScore = Math.max(0, 1 - hoursDiff / 20); // Gradually reduce score for each extra hour
+  }
+
+  score += hoursScore * weights.workingHours;
+  // console.log("📊 Working Hours Score:", Math.round(hoursScore * 100) + "%");
+
+  // 6. Language match (10%)
+  let languageScore = 0;
+  if (freelancer.languages && Array.isArray(freelancer.languages)) {
+    // Assuming job has required languages field
+    const jobLanguages = job.languages || ["English"]; // Default to English if not specified
+    const matchingLanguages = freelancer.languages.filter((lang) =>
+      jobLanguages.includes(lang)
+    );
+    languageScore =
+      jobLanguages.length > 0
+        ? matchingLanguages.length / jobLanguages.length
+        : 1;
+  } else {
+    languageScore = 0.5; // Neutral score if no language info
+  }
+
+  score += languageScore * weights.languages;
+  // console.log("📊 Language Score:", Math.round(languageScore * 100) + "%");
+
+  // 7. Description keyword match (5%)
+  let descriptionScore = 0;
+  if (
+    freelancer.fieldsOfExpertise &&
+    Array.isArray(freelancer.fieldsOfExpertise)
+  ) {
+    const jobText = `${job.title} ${job.description}`.toLowerCase();
+    const matchingKeywords = freelancer.fieldsOfExpertise.filter((keyword) =>
+      jobText.includes(keyword.toLowerCase())
+    );
+    descriptionScore =
+      matchingKeywords.length > 0
+        ? Math.min(1, matchingKeywords.length / 3)
+        : 0.2;
+  } else {
+    descriptionScore = 0.3; // Basic score if no expertise fields defined
+  }
+
+  score += descriptionScore * weights.description;
+  // console.log(
+  //   "📊 Description Match Score:",
+  //   Math.round(descriptionScore * 100) + "%"
+  // );
+
+  // Calculate final score (0-100)
+  const finalScore = Math.round(score * 100);
+  // console.log("🎯 Final Match Score:", finalScore + "%");
+
+  return finalScore;
 }
 
-export async function getAllJobs(): Promise<Job[]> {
-  // Query to select all jobs that are active
-  const jobs = await db
-    .select()
-    .from(jobsTable)
-    .where(eq(jobsTable.status, JobStatus.Active));
+export async function getJobRecommendations(
+  freelancerId: number,
+  limit: number = 10
+): Promise<JobRecommendation[]> {
+  // console.log("🚀 Getting job recommendations for freelancer:", freelancerId);
+  // console.log("📊 Requested limit:", limit);
 
-  return jobs.map((job) => ({
-    ...job,
-    status: job.status as JobStatus, // Ensuring correct enum typing
-  }));
+  try {
+    // 1. Get freelancer data
+    const freelancer = await db
+      .select({
+        id: freelancersTable.id,
+        accountId: freelancersTable.accountId,
+        about: freelancersTable.about,
+        fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+        yearsOfExperience: freelancersTable.yearsOfExperience,
+        preferredProjectTypes: freelancersTable.preferredProjectTypes,
+        availableForWork: freelancersTable.availableForWork,
+        hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+        hoursAvailableTo: freelancersTable.hoursAvailableTo,
+        country: accountsTable.country,
+      })
+      .from(freelancersTable)
+      .leftJoin(accountsTable, eq(accountsTable.id, freelancersTable.accountId))
+      .where(eq(freelancersTable.id, freelancerId))
+      .limit(1);
+
+    // console.log("✅ Freelancer data:", freelancer);
+
+    if (!freelancer || freelancer.length === 0) {
+      console.error(`Freelancer with ID ${freelancerId} not found`);
+      throw new Error(`Freelancer with ID ${freelancerId} not found`);
+    }
+
+    const freelancerData = freelancer[0];
+
+    // 2. Get freelancer skills with experience info
+    const freelancerSkills = await db
+      .select({
+        skillId: freelancerSkillsTable.skillId,
+        yearsOfExperience: freelancerSkillsTable.yearsOfExperience,
+        label: skillsTable.label,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // console.log("✅ Found freelancer skills:", freelancerSkills.length);
+
+    // 3. Get applied jobs to exclude
+    const appliedJobIds = await db
+      .select({ jobId: jobApplicationsTable.jobId })
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.freelancerId, freelancerId));
+
+    const appliedJobIdsArray = appliedJobIds.map((item) => item.jobId);
+    // console.log("✅ Already applied jobs:", appliedJobIdsArray.length);
+
+    // 4. Get active jobs - fetch more initially for better filtering
+    const initialJobLimit = Math.max(limit * 4, 40);
+    const activeJobs = await db
+      .select({
+        id: jobsTable.id,
+        title: jobsTable.title,
+        description: jobsTable.description,
+        budget: jobsTable.budget,
+        workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+        locationPreference: jobsTable.locationPreference,
+        projectType: jobsTable.projectType,
+        experienceLevel: jobsTable.experienceLevel,
+        createdAt: jobsTable.createdAt,
+      })
+      .from(jobsTable)
+      .where(
+        and(
+          eq(jobsTable.status, JobStatus.Active),
+          appliedJobIdsArray.length > 0
+            ? not(inArray(jobsTable.id, appliedJobIdsArray))
+            : undefined
+        )
+      )
+      .limit(initialJobLimit);
+
+    // console.log("✅ Initial active jobs found:", activeJobs.length);
+
+    // 5. Calculate match scores and filter jobs
+    const jobRecommendations: JobRecommendation[] = [];
+    const MINIMUM_MATCH_SCORE = 65; // Only show jobs with at least 60% match
+
+    for (const job of activeJobs) {
+      const jobSkills = await db
+        .select({
+          skillId: jobSkillsTable.skillId,
+          isStarred: jobSkillsTable.isStarred,
+          label: skillsTable.label,
+        })
+        .from(jobSkillsTable)
+        .leftJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+        .where(eq(jobSkillsTable.jobId, job.id));
+
+      const matchScore = calculateMatchScore(
+        freelancerData,
+        freelancerSkills,
+        job,
+        jobSkills
+      );
+
+      // Only include jobs with good match score
+      if (matchScore >= MINIMUM_MATCH_SCORE) {
+        const matchingSkills = jobSkills
+          .filter((jobSkill) =>
+            freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+          )
+          .map((jobSkill) => ({
+            id: jobSkill.skillId,
+            label: jobSkill.label,
+            isStarred: jobSkill.isStarred,
+            freelancerYearsOfExperience:
+              freelancerSkills.find((fs) => fs.skillId === jobSkill.skillId)
+                ?.yearsOfExperience || 0,
+          }));
+
+        const missingSkills = jobSkills
+          .filter(
+            (jobSkill) =>
+              !freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+          )
+          .map((jobSkill) => ({
+            id: jobSkill.skillId,
+            label: jobSkill.label,
+            isStarred: jobSkill.isStarred,
+          }));
+
+        const skillsMatchPercentage =
+          jobSkills.length > 0
+            ? (matchingSkills.length / jobSkills.length) * 100
+            : 100;
+
+        jobRecommendations.push({
+          jobId: job.id,
+          title: job.title,
+          description: job.description,
+          budget: job.budget,
+          workingHoursPerWeek: job.workingHoursPerWeek,
+          locationPreference: job.locationPreference,
+          projectType: job.projectType,
+          experienceLevel: job.experienceLevel as ExperienceLevel,
+          matchScore,
+          skillsMatch: {
+            matchingSkills,
+            missingSkills,
+            matchPercentage: skillsMatchPercentage,
+          },
+          createdAt: job.createdAt.toISOString(),
+        });
+      }
+    }
+
+    // Sort by match score (descending) and return top recommendations
+    const sortedRecommendations = jobRecommendations
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, limit);
+
+    // console.log(
+    //   "📊 Final recommendations found:",
+    //   sortedRecommendations.length
+    // );
+    // console.log(
+    //   "📊 Average match score:",
+    //   Math.round(
+    //     sortedRecommendations.reduce((acc, job) => acc + job.matchScore, 0) /
+    //       sortedRecommendations.length
+    //   ) + "%"
+    // );
+
+    return sortedRecommendations;
+  } catch (error) {
+    console.error("❌ Error getting job recommendations:", error);
+    throw error;
+  }
 }
 
-/**
- * A function to get recommended jobs for freelancers it does not return the jobs that the freelancer has already applied to
- *
- * @param freelancerId
- * @returns
- */
-export async function getRecommendedJobs(freelancerId: number) {
-  // Get jobs that the freelancer hasn't applied to yet
+// ✅ Get All Jobs (No Restrictions)
+export async function getAllJobs() {
+  // Query to select all jobs that are active even if the freelancer applied
   const jobs = await db
-    .select()
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      applicationStatus: jobApplicationsTable.status,
+      createdAt: jobsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+    })
     .from(jobsTable)
     .leftJoin(
+      jobApplicationsTable,
+      eq(jobApplicationsTable.jobId, jobsTable.id) // ✅ LEFT JOIN ensures all jobs are included
+    )
+    .where(eq(jobsTable.status, JobStatus.Active)) // Only active jobs
+    .orderBy(desc(jobsTable.createdAt));
+
+  return jobs;
+}
+
+// ✅ Get My Jobs (Jobs Freelancer Applied To)
+export async function getMyJobs(freelancerId: number) {
+  // Query to select all jobs that the freelancer has applied to
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      applicationStatus: jobApplicationsTable.status,
+      createdAt: jobsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+    })
+    .from(jobsTable)
+    .innerJoin(
       jobApplicationsTable,
       and(
         eq(jobApplicationsTable.jobId, jobsTable.id),
         eq(jobApplicationsTable.freelancerId, freelancerId)
       )
     )
+    .orderBy(desc(jobsTable.createdAt));
+
+  return jobs;
+}
+
+// ✅ Ensure the freelancer has an accepted job application before reviewing
+export async function hasAcceptedApplication(
+  freelancerId: number,
+  employerId: number
+) {
+  // ✅ Join job applications with jobs to check employer
+  const result = await db
+    .select()
+    .from(jobApplicationsTable)
+    .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id)) // ✅ Join jobs table
     .where(
       and(
-        eq(jobsTable.status, JobStatus.Active),
-        isNull(jobApplicationsTable.id)
+        eq(jobApplicationsTable.freelancerId, freelancerId),
+        eq(jobsTable.employerId, employerId), // ✅ Check for employer, not just jobId
+        eq(jobApplicationsTable.status, "approved") // ✅ Ensure status is "approved"
       )
     )
-    .orderBy(desc(jobsTable.createdAt));
-  return jobs ? jobs.map((job) => job.jobs) : [];
+    .limit(1);
+
+  // console.log("📨 Retrieved Applications:", result);
+  return result.length > 0;
 }
+
+// ✅ Save Review to Database
+// ✅ Ensure freelancer exists before saving review
+export async function saveReview({
+  employerId,
+  freelancerId,
+  rating,
+  comment,
+}: {
+  employerId: number;
+  freelancerId: number;
+  rating: number;
+  comment: string;
+}) {
+  try {
+    const result = await db
+      .insert(reviewsTable)
+      .values({
+        employerId,
+        freelancerId,
+        rating,
+        comment,
+      } as typeof reviewsTable.$inferInsert)
+      .returning({ id: reviewsTable.id }); // ✅ Ensure an ID is returned
+
+    return { success: true, message: "Review submitted successfully." };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ✅ Get Review for a Specific Freelancer and Employer
+export async function getReview(freelancerId: number, employerId: number) {
+  const result = await db
+    .select()
+    .from(reviewsTable)
+    .where(
+      and(
+        eq(reviewsTable.freelancerId, freelancerId),
+        eq(reviewsTable.employerId, employerId)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null; // ✅ Ensure `null` is returned if no review exists
+}
+
+export async function updateReview({
+  employerId,
+  freelancerId,
+  rating,
+  comment,
+}: {
+  employerId: number;
+  freelancerId: number;
+  rating: number;
+  comment?: string | null;
+}) {
+  const updateData: { rating: number; comment?: string | null } = { rating };
+  if (comment !== undefined) {
+    updateData.comment = comment;
+  }
+
+  const result = await db
+    .update(reviewsTable)
+    .set(updateData)
+    .where(
+      and(
+        eq(reviewsTable.freelancerId, freelancerId),
+        eq(reviewsTable.employerId, employerId)
+      )
+    );
+
+  return result;
+}
+
+// used in the laoder for the review task
+// used in the laoder for the review task
+
+/** ✅ Get employerId by Job ID */
+export async function getEmployerIdByJobId(jobId: number) {
+  const job = await db
+    .select({ employerId: jobsTable.employerId })
+    .from(jobsTable)
+    .where(eq(jobsTable.id, jobId))
+    .limit(1);
+
+  return job.length > 0 ? job[0].employerId : null;
+}
+
+/** ✅ Get Freelancer ID by Account ID */
+export async function getAccountIdbyUserId(userId: number) {
+  // console.log("🔍 Checking account for user ID:", userId);
+
+  // ✅ Make sure to filter by both userId and accountType
+  const account = await db
+    .select()
+    .from(accountsTable)
+    .where(
+      and(
+        eq(accountsTable.userId, userId),
+        eq(accountsTable.accountType, "freelancer")
+      )
+    ) // ✅ Now only fetching freelancers
+    .limit(1);
+
+  // console.log("✅ Retrieved freelancer account:", account);
+
+  if (!account || account.length === 0) {
+    console.error("❌ Freelancer account NOT FOUND for user ID:", userId);
+    return null;
+  }
+
+  return account[0].id; // ✅ Return the freelancer account ID
+}
+
+// used in the laoder for the review task
+// used in the laoder for the review task
+
+// 👇 is not with 👆 :D
+// export async function getJobApplicationStatus(jobId: number) {
+//   const application = await db
+//     .select({ status: jobApplicationsTable.status })
+//     .from(jobApplicationsTable)
+//     .where(eq(jobApplicationsTable.jobId, jobId))
+//     .limit(1);
+
+//   // console.log(`🔍 Job ${jobId} - Found Application Status:`, application);
+
+//   return application.length > 0 ? application[0].status : null;
+// }
+
+// export async function getExistingReview(jobId: number, freelancerId: number) {
+//   // const review = await db
+//   //   .select({
+//   //     rating: reviewsTable.rating,
+//   //     comment: reviewsTable.comment,
+//   //   })
+//   //   .from(reviewsTable)
+//   //   .where(
+//   //     and(
+//   //       eq(
+//   //         reviewsTable.employerId,
+//   //         db
+//   //           .select({ employerId: jobsTable.employerId })
+//   //           .from(jobsTable)
+//   //           .where(eq(jobsTable.id, jobId))
+//   //       ),
+//   //       eq(reviewsTable.freelancerId, freelancerId)
+//   //     )
+//   //   )
+//   //   .limit(1);
+//   // return review.length > 0 ? review[0] : null;
+// }
 
 export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
   const query = db.select().from(jobsTable);
@@ -483,8 +1296,6 @@ export async function getJobApplicationsByFreelancerId(freelancerId: number) {
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.freelancerId, freelancerId));
 
-  // console.log("Fetched Job Applications:", jobApplications);
-
   return jobApplications;
 }
 
@@ -582,24 +1393,65 @@ export async function getFreelancersIdsByJobId(jobId: number) {
   return freelancerIds || [];
 }
 
-/**
- *
- * get freelancers content
- * @param freelancerIds
- * @returns
- * @throws Error
- */
+// ✅ Full Query: Fetch Freelancers with `account` and `user`
 export async function getFreelancerDetails(freelancerIds: number[]) {
   if (freelancerIds.length === 0) {
     return [];
   }
 
   const freelancers = await db
-    .select()
+    .select({
+      // 🆕 Freelancer Fields
+      id: freelancersTable.id,
+      accountId: freelancersTable.accountId,
+      about: freelancersTable.about,
+      fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+      portfolio: freelancersTable.portfolio,
+      workHistory: freelancersTable.workHistory,
+      cvLink: freelancersTable.cvLink,
+      videoLink: freelancersTable.videoLink,
+      certificates: freelancersTable.certificates,
+      educations: freelancersTable.educations,
+      yearsOfExperience: freelancersTable.yearsOfExperience,
+      hourlyRate: freelancersTable.hourlyRate,
+      compensationType: freelancersTable.compensationType,
+      availableForWork: freelancersTable.availableForWork,
+      dateAvailableFrom: freelancersTable.dateAvailableFrom,
+      hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+      hoursAvailableTo: freelancersTable.hoursAvailableTo,
+
+      // 🆕 UserAccount Fields
+      accountType: accountsTable.accountType,
+      slug: accountsTable.slug,
+      isCreationComplete: accountsTable.isCreationComplete,
+      country: accountsTable.country,
+      address: accountsTable.address,
+      region: accountsTable.region,
+      phone: accountsTable.phone,
+      websiteURL: accountsTable.websiteURL,
+      socialMediaLinks: accountsTable.socialMediaLinks,
+
+      // 🆕 User Fields
+      userId: UsersTable.id,
+      firstName: UsersTable.firstName,
+      lastName: UsersTable.lastName,
+      email: UsersTable.email,
+      isVerified: UsersTable.isVerified,
+      isOnboarded: UsersTable.isOnboarded,
+    })
     .from(freelancersTable)
+    .leftJoin(
+      accountsTable,
+      eq(accountsTable.id, freelancersTable.accountId) // ✅ FIXED: Proper eq() usage
+    )
+    .leftJoin(
+      UsersTable,
+      eq(UsersTable.id, accountsTable.userId) // ✅ FIXED: Proper eq() usage
+    )
     .where(inArray(freelancersTable.id, freelancerIds));
 
-  return freelancers; // Return the raw result directly
+  // ✅ Return Results Directly
+  return freelancers;
 }
 
 export async function updateJobStatus(
@@ -614,5 +1466,101 @@ export async function updateJobStatus(
   } catch (error) {
     console.error("Error updating job status:", error);
     throw new Error("Failed to update job status.");
+  }
+}
+
+export async function getApplicationMatchScore(
+  jobId: number,
+  freelancerId: number
+): Promise<number> {
+  try {
+    // console.log(
+    //   `Calculating match score for job ${jobId} and freelancer ${freelancerId}`
+    // );
+
+    // 1. Get freelancer data
+    const freelancer = await db
+      .select({
+        id: freelancersTable.id,
+        accountId: freelancersTable.accountId,
+        about: freelancersTable.about,
+        fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+        yearsOfExperience: freelancersTable.yearsOfExperience,
+        preferredProjectTypes: freelancersTable.preferredProjectTypes,
+        availableForWork: freelancersTable.availableForWork,
+        hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+        hoursAvailableTo: freelancersTable.hoursAvailableTo,
+        country: accountsTable.country,
+      })
+      .from(freelancersTable)
+      .leftJoin(accountsTable, eq(accountsTable.id, freelancersTable.accountId))
+      .where(eq(freelancersTable.id, freelancerId))
+      .limit(1);
+
+    if (!freelancer || freelancer.length === 0) {
+      console.error(`Freelancer with ID ${freelancerId} not found`);
+      return 0;
+    }
+
+    const freelancerData = freelancer[0];
+
+    // 2. Get freelancer skills
+    const freelancerSkills = await db
+      .select({
+        skillId: freelancerSkillsTable.skillId,
+        yearsOfExperience: freelancerSkillsTable.yearsOfExperience,
+        label: skillsTable.label,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // 3. Get job data
+    const job = await db
+      .select({
+        id: jobsTable.id,
+        title: jobsTable.title,
+        description: jobsTable.description,
+        budget: jobsTable.budget,
+        workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+        locationPreference: jobsTable.locationPreference,
+        projectType: jobsTable.projectType,
+        experienceLevel: jobsTable.experienceLevel,
+        createdAt: jobsTable.createdAt,
+      })
+      .from(jobsTable)
+      .where(eq(jobsTable.id, jobId))
+      .limit(1);
+
+    if (!job || job.length === 0) {
+      console.error(`Job with ID ${jobId} not found`);
+      return 0;
+    }
+
+    const jobData = job[0];
+
+    // 4. Get job skills
+    const jobSkills = await db
+      .select({
+        skillId: jobSkillsTable.skillId,
+        isStarred: jobSkillsTable.isStarred,
+        label: skillsTable.label,
+      })
+      .from(jobSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+      .where(eq(jobSkillsTable.jobId, jobId));
+
+    // 5. Calculate match score
+    const matchScore = calculateMatchScore(
+      freelancerData,
+      freelancerSkills,
+      jobData,
+      jobSkills
+    );
+
+    return matchScore;
+  } catch (error) {
+    console.error(`Error calculating match score: ${error}`);
+    return 0;
   }
 }

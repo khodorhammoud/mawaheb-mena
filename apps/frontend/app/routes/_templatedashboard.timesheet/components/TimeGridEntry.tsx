@@ -48,7 +48,6 @@ export function TimeGridEntry({
 
     return calcResult.firstSlotIndex === timeIndex;
   });
-  console.log("======status", status);
 
   return (
     <div

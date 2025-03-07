@@ -4,6 +4,8 @@ import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSect
 import { Link } from "@remix-run/react";
 import { JobStatus } from "~/types/enums";
 import { parseDate } from "~/lib/utils";
+import { formatTimeAgo } from "~/utils/formatTimeAgo";
+import { IoPencilSharp } from "react-icons/io5";
 
 export default function JobDesignThree({
   data,
@@ -26,20 +28,26 @@ export default function JobDesignThree({
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center mb-6">
+      {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
+      <div className="flex items-center space-x-2">
+        {/* Show Edit button only when the job status is "draft" */}
+        {status === JobStatus.Draft && (
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+          >
+            <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
+            Edit
+          </Link>
+        )}
+
         {status && (
           <JobStateButton
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
+            className="w-[106px] h-[36px]"
           />
-        )}
-
-        {/* Show Edit button only when the job status is "draft" */}
-        {status === JobStatus.Draft && (
-          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:brightness-90">
-            Edit
-          </button>
         )}
       </div>
 
@@ -49,7 +57,7 @@ export default function JobDesignThree({
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
-          Fixed price - Posted {formattedDate.toDateString()}
+          Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : "N/A"}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
           <div>

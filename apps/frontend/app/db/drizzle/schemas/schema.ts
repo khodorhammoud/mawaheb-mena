@@ -8,32 +8,143 @@ import {
   time,
   timestamp,
   jsonb,
-  json,
+  // json,
+  real,
   date,
   numeric,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 /** Import custom enums and types from the schemaTypes file. */
-import {
+/* import {
   projectTypeEnum,
   accountStatusEnum,
   accountTypeEnum,
-  languageEnum,
-  countryEnum,
+  // languageEnum,
+  // countryEnum,
   dayOfWeekEnum,
   compensationTypeEnum,
   employerAccountTypeEnum,
   jobsOpenToEnum,
   // timesheetStatusEnum,
   timesheetStatusEnum,
-  /*  jobStatusEnum,
+  jobStatusEnum,
   locationPreferenceTypeEnum,
-  experienceLevelEnum, */
   jobApplicationStatusEnum,
-} from "./schemaTypes";
+  providerEnum,
+  // belongsToEnum,
+  experienceLevelEnum,
+  userRoleEnum,
+} from "./schemaTypes"; */
 
 import { sql } from "drizzle-orm";
-import { TimesheetStatus } from "~/types/enums";
+// import { TimesheetStatus } from "~/types/enums";
+
+/* enums definitions */
+
+import {
+  AccountStatus,
+  EmployerAccountType,
+  ProjectType,
+  CompensationType,
+  Language,
+  Country,
+  DayOfWeek,
+  AccountType,
+  LocationPreferenceType,
+  ExperienceLevel,
+  JobStatus,
+  // JobApplicationStatus,
+  TimesheetStatus,
+  JobApplicationStatus,
+  JobsOpenTo,
+  Provider,
+  AttachmentBelongsTo,
+} from "~/types/enums";
+
+export const providerEnum = pgEnum(
+  "provider",
+  Object.values(Provider) as [string, ...string[]]
+);
+
+export const accountStatusEnum = pgEnum(
+  "account_status",
+  Object.values(AccountStatus) as [string, ...string[]]
+);
+
+export const employerAccountTypeEnum = pgEnum(
+  "eployer_account_type",
+  Object.values(EmployerAccountType) as [string, ...string[]]
+);
+export const accountTypeEnum = pgEnum(
+  "account_type",
+  Object.values(AccountType) as [string, ...string[]]
+);
+
+export const timesheetStatusEnum = pgEnum(
+  "timesheet_status",
+  Object.values(TimesheetStatus) as [string, ...string[]]
+);
+
+export const languageEnum = pgEnum(
+  "language",
+  Object.values(Language) as [string, ...string[]]
+);
+
+export const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+
+export const countryEnum = pgEnum(
+  // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
+  "country", // this name is not depending on any other name for now !
+  Object.values(Country) as [string, ...string[]] // List of all valid country values from the Country enum
+);
+export const dayOfWeekEnum = pgEnum(
+  "day_of_week",
+  Object.values(DayOfWeek) as [string, ...string[]]
+);
+export const projectTypeEnum = pgEnum(
+  "project_type",
+  Object.values(ProjectType) as [string, ...string[]]
+);
+export const compensationTypeEnum = pgEnum(
+  "compensation_type",
+  Object.values(CompensationType) as [string, ...string[]]
+);
+
+export const locationPreferenceTypeEnum = pgEnum(
+  "location_preference_type",
+  Object.values(LocationPreferenceType) as [string, ...string[]]
+);
+
+export const experienceLevelEnum = pgEnum(
+  "experience_level",
+  Object.values(ExperienceLevel) as [string, ...string[]]
+);
+
+export const jobStatusEnum = pgEnum(
+  "job_status",
+  Object.values(JobStatus) as [string, ...string[]]
+);
+
+export const jobsOpenToEnum = pgEnum(
+  "jobs_open_to",
+  Object.values(JobsOpenTo) as [string, ...string[]]
+);
+
+export const belongsToEnum = pgEnum(
+  "belongs_to",
+  Object.values(AttachmentBelongsTo) as [string, ...string[]]
+);
+/* const jobApplicationStatusEnum = pgEnum(
+  "job_application_status",
+  Object.values(JobApplicationStatus) as [string, ...string[]]
+);
+ */
+
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 
 /**
  * Definition of the Users table.
@@ -55,9 +166,33 @@ export const UsersTable = pgTable("users", {
   firstName: varchar("first_name", { length: 80 }),
   lastName: varchar("last_name", { length: 80 }),
   email: varchar("email", { length: 150 }).unique().notNull(),
-  passHash: varchar("password_hash").notNull(),
+  passHash: varchar("password_hash"),
   isVerified: boolean("is_verified").default(false),
-  isOnboarded: boolean("is_onboarded").default(false), // Make sure this matches your DB column
+  isOnboarded: boolean("is_onboarded").default(false),
+  provider: providerEnum("provider"),
+  role: userRoleEnum("role").default("user"),
+});
+
+/**
+ * Stores the social accounts of users when they log in using social media
+ * @property id - serial primary key
+ * @property user_id - integer referencing the UsersTable id
+ * @property provider - the name of the social media platform
+ * @property provider_account_id - the id of the user's account on the social media platform
+ * @property profile_url - URL to the user's profile on the social media platform
+ * @property access_token -  the access token of the user's account on the social media platform
+ * @property refresh_token -  the refresh token of the user's account on the social media platform
+ * @property expires_at - timestamp, the expiration date of the access token
+ */
+export const socialAccountsTable = pgTable("social_accounts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
+  provider: varchar("provider", { length: 50 }),
+  providerAccountId: varchar("provider_account_id", { length: 255 }),
+  profileUrl: varchar("profile_url", { length: 255 }),
+  accessToken: varchar("access_token", { length: 500 }),
+  refreshToken: varchar("refresh_token", { length: 500 }),
+  expiresAt: timestamp("expires_at"),
 });
 
 /**
@@ -76,14 +211,14 @@ export const UsersTable = pgTable("users", {
  * @property social_media_links - text array with default ''
  */
 export const accountsTable = pgTable("accounts", {
-  id: serial("id").primaryKey(), // The serial type makes sure the id is a number that automatically increases for each new account
-  userId: integer("user_id").references(() => UsersTable.id), // foreign key
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
   slug: varchar("slug", { length: 60 }).unique(),
   accountType: accountTypeEnum("account_type"),
-  location: varchar("location", { length: 150 }),
-  country: countryEnum("country"), // countryEnum is a variable, and we are calling it only, and the name inside paranthesis is the one that will apear in the table schema // click on countryEnum if you want
+  country: varchar("country", { length: 100 }),
+  address: varchar("address", { length: 150 }),
   region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("account_status"), // the emun defines a field that can only hold specific values // freelancer or employer
+  accountStatus: accountStatusEnum("account_status"),
   phone: varchar("phone", { length: 30 }),
   websiteURL: text("website_url"),
   socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
@@ -212,11 +347,11 @@ export const employersTable = pgTable("employers", {
  * Define the languagesTable schema using PG Core types.
  *
  * @property id - serial primary key
- * @property name - languageEnum
+ * @property name - varchar with length 25
  */
 export const languagesTable = pgTable("languages", {
   id: serial("id").primaryKey(),
-  name: languageEnum("language"),
+  language: varchar("language", { length: 25 }),
 });
 
 /**
@@ -323,15 +458,9 @@ export const jobsTable = pgTable("jobs", {
   workingHoursPerWeek: integer("working_hours_per_week"),
   locationPreference: text("location_preference"),
   //locationPreferenceTypeEnum("location_preference_type"),
-  // Updated requiredSkills to be an array of JSON objects
-  // TODO: remove required skills since we are using job_skills table
-  requiredSkills: json("required_skills")
-    .notNull()
-    .default(sql`'[]'::jsonb`),
   projectType: projectTypeEnum("project_type"),
   budget: integer("budget"),
-  experienceLevel: text("experience_level"),
-  //experienceLevelEnum("experience_level"),
+  experienceLevel: experienceLevelEnum("experience_level"),
   status: text("status"), //jobStatusEnum("status"),
   createdAt: timestamp("created_at").default(sql`now()`),
   fulfilledAt: timestamp("fulfilled_at"),
@@ -346,8 +475,10 @@ export const jobsTable = pgTable("jobs", {
  */
 export const skillsTable = pgTable("skills", {
   id: serial("id").primaryKey(),
-  name: text("name"),
-  metaData: jsonb("meta_data").default(sql`'{}'::jsonb`),
+  label: text("label"),
+  metaData: text("meta_data").default("[]"),
+  isHot: boolean("is_hot").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
 });
 
 /**
@@ -362,6 +493,20 @@ export const jobSkillsTable = pgTable("job_skills", {
   jobId: integer("job_id").references(() => jobsTable.id),
   skillId: integer("skill_id").references(() => skillsTable.id),
   isStarred: boolean("is_starred").default(false),
+});
+
+/**
+ * Define the relation between freelancers and skills where each freelancer can have zero to many skills
+ * @property id - serial primary key
+ * @property freelancer_id - integer referencing the freelancersTable
+ * @property skill_id - integer referencing the skillsTable id
+ * @property years_of_experience - integer the number of years of experience the freelancer has with the skill
+ */
+export const freelancerSkillsTable = pgTable("freelancer_skills", {
+  id: serial("id").primaryKey(),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
+  skillId: integer("skill_id").references(() => skillsTable.id),
+  yearsOfExperience: integer("years_of_experience"),
 });
 
 /**
@@ -382,6 +527,29 @@ export const jobApplicationsTable = pgTable("job_applications", {
 });
 
 // projectType: projectTypeEnum("project_type"),
+
+/**
+ * Define the Reviews table schema
+ *
+ * @property id - serial primary key
+ * @property employer_id - integer referencing the employersTable id
+ * @property freelancer_id - integer referencing the freelancersTable id
+ * @property rating - real (floating-point) rating between 1.0 and 5.0
+ * @property comment - text field for review comments
+ * @property created_at - timestamp when the review was submitted
+ */
+export const reviewsTable = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  employerId: integer("employer_id")
+    .references(() => employersTable.id)
+    .notNull(),
+  freelancerId: integer("freelancer_id")
+    .references(() => freelancersTable.id)
+    .notNull(),
+  rating: real("rating").notNull(),
+  comment: text("comment").default(null), // ✅ Ensure nullable field
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
 
 /**
  * Define the Timesheets table schema
@@ -450,4 +618,18 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
     .default(TimesheetStatus.Submitted), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Define the attachments table schema
+ * @property id
+ * @property key
+ * @property metadata
+ * @property createdAt
+ */
+export const attachmentsTable = pgTable("attachments", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull(),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
 });
