@@ -5,7 +5,7 @@ import {
   getJobDetails,
   getSkillsForJob,
   getJobApplicationsBasic,
-} from "~/routes/admin.server";
+} from "~/servers/admin.server";
 import { JobApplicationStatus } from "~/types/enums";
 import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
 
