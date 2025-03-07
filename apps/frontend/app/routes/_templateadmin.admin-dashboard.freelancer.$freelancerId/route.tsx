@@ -13,7 +13,7 @@ import {
   getFreelancerApplications,
   updateFreelancerAccountStatus,
   safeParseJSON,
-} from "../admin.server";
+} from "~/servers/admin.server";
 
 import type {
   ActionResponse,
