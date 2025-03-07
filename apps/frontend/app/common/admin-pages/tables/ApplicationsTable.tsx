@@ -7,6 +7,7 @@ interface Application {
     id: number;
     status: JobApplicationStatus;
     createdAt: string | Date;
+    matchScore?: number;
   };
   freelancer?: {
     id: number;
@@ -26,6 +27,7 @@ interface ApplicationsTableProps {
   applications: Application[];
   showJob?: boolean;
   showFreelancer?: boolean;
+  showMatchScore?: boolean;
   emptyMessage?: string;
 }
 
@@ -44,10 +46,19 @@ function getStatusColor(status: JobApplicationStatus) {
   }
 }
 
+function getMatchScoreColor(score: number) {
+  if (score >= 90) return "bg-green-100 text-green-800";
+  if (score >= 80) return "bg-green-50 text-green-700";
+  if (score >= 70) return "bg-blue-100 text-blue-800";
+  if (score >= 60) return "bg-yellow-100 text-yellow-800";
+  return "bg-gray-100 text-gray-800";
+}
+
 export function ApplicationsTable({
   applications,
   showJob = true,
   showFreelancer = true,
+  showMatchScore = true,
   emptyMessage = "No applications found",
 }: ApplicationsTableProps) {
   const columns = [
@@ -96,6 +107,25 @@ export function ApplicationsTable({
         </span>
       ),
     },
+    ...(showMatchScore
+      ? [
+          {
+            header: "Match Score",
+            accessor: (app: Application) =>
+              app.application.matchScore ? (
+                <span
+                  className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getMatchScoreColor(
+                    app.application.matchScore
+                  )}`}
+                >
+                  {app.application.matchScore}%
+                </span>
+              ) : (
+                <span className="text-gray-400 text-xs">Not calculated</span>
+              ),
+          },
+        ]
+      : []),
     {
       header: "Applied Date",
       accessor: (app: Application) =>
