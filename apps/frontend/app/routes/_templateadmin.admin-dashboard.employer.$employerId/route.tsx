@@ -6,30 +6,18 @@ import {
   Form,
   Outlet,
 } from "@remix-run/react";
-import { eq, count, aliasedTable } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
-import {
-  employersTable,
-  accountsTable,
-  UsersTable,
-  jobsTable,
-  jobApplicationsTable,
-} from "~/db/drizzle/schemas/schema";
 import { AccountStatus, JobStatus } from "~/types/enums";
+import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
+import {
+  getEmployerDetails,
+  updateEmployerAccountStatus,
+  type Job,
+} from "~/servers/admin.server";
 
 type ActionResponse = {
   success: boolean;
   error?: string;
 };
-
-interface Job {
-  id: number;
-  title: string;
-  status: JobStatus;
-  createdAt: Date;
-  employerId: number;
-  applicationCount: number;
-}
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const employerId = params.employerId;
@@ -38,52 +26,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Employer ID is required", { status: 400 });
   }
 
-  const employerDetails = await db
-    .select({
-      employer: employersTable,
-      account: accountsTable,
-      user: UsersTable,
-    })
-    .from(employersTable)
-    .where(eq(employersTable.id, parseInt(employerId)))
-    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
+  const data = await getEmployerDetails(employerId);
 
-  if (employerDetails.length === 0) {
+  if (!data) {
     throw new Response("Employer not found", { status: 404 });
   }
 
-  // Get all jobs
-  const jobs = await db
-    .select({
-      id: jobsTable.id,
-      title: jobsTable.title,
-      status: jobsTable.status,
-      createdAt: jobsTable.createdAt,
-      employerId: jobsTable.employerId,
-    })
-    .from(jobsTable)
-    .where(eq(jobsTable.employerId, parseInt(employerId)));
-
-  // Get application counts for each job
-  const applicationCounts = await Promise.all(
-    jobs.map(async (job) => {
-      const result = await db
-        .select({ count: count() })
-        .from(jobApplicationsTable)
-        .where(eq(jobApplicationsTable.jobId, job.id));
-      return {
-        ...job,
-        applicationCount: Number(result[0].count) || 0,
-      };
-    })
-  );
-
-  return {
-    employer: employerDetails[0],
-    jobs: applicationCounts,
-    jobCount: jobs.length,
-  };
+  return data;
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -98,34 +47,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     });
   }
 
-  try {
-    // Get the account ID for this employer
-    const employer = await db
-      .select({ accountId: employersTable.accountId })
-      .from(employersTable)
-      .where(eq(employersTable.id, parseInt(employerId)));
-
-    if (employer.length === 0) {
-      return json<ActionResponse>({
-        success: false,
-        error: "Employer not found",
-      });
-    }
-
-    // Update the account status
-    await db
-      .update(accountsTable)
-      .set({ accountStatus: status })
-      .where(eq(accountsTable.id, employer[0].accountId));
-
-    return json<ActionResponse>({ success: true });
-  } catch (error) {
-    console.error("Error updating account status:", error);
-    return json<ActionResponse>({
-      success: false,
-      error: "Failed to update account status",
-    });
-  }
+  const result = await updateEmployerAccountStatus(employerId, status);
+  return json<ActionResponse>(result);
 }
 
 function getStatusColor(status: JobStatus) {
@@ -526,74 +449,18 @@ export default function EmployerDetails() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Job Title
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Applications
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Posted Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {jobs.map((job) => (
-                    <tr key={job.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {job.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status as JobStatus)}`}
-                        >
-                          {job.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {job.applicationCount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(job.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Link
-                          to={`/admin-dashboard/employer/${employer.employer.id}/jobs/${job.id}/applications`}
-                          className="text-primaryColor hover:text-primaryColor/80"
-                        >
-                          View Applications
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <JobsTable
+              jobs={jobs.map((job) => ({
+                id: job.id,
+                title: job.title,
+                status: job.status,
+                applicationCount: job.applicationCount,
+              }))}
+              showEmployer={false}
+              showBudget={false}
+              showWorkingHours={false}
+              showCategory={false}
+            />
           )}
         </div>
       </div>

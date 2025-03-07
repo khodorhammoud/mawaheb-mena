@@ -1,72 +1,35 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { eq } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
+import { useLoaderData } from "@remix-run/react";
+import { AccountStatus } from "~/types/enums";
 import {
-  accountsTable,
-  UsersTable,
-  freelancersTable,
-  employersTable,
-} from "~/db/drizzle/schemas/schema";
-import { AccountType, AccountStatus } from "~/types/enums";
-import { Freelancer, Employer } from "~/types/User";
+  AccountsTable,
+  Account,
+} from "~/common/admin-pages/tables/AccountsTable";
+import {
+  getFreelancerAccounts,
+  getEmployerAccounts,
+} from "~/servers/admin.server";
 
 type LoaderData = {
-  freelancers: Freelancer[];
-  employers: Employer[];
+  freelancers: Account[];
+  employers: Account[];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // Fetch freelancers with complete information
-  const freelancersQuery = await db
-    .select({
-      freelancer: freelancersTable,
-      account: accountsTable,
-      user: UsersTable,
-    })
-    .from(freelancersTable)
-    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .where(eq(accountsTable.accountType, AccountType.Freelancer));
+  const [freelancers, employers] = await Promise.all([
+    getFreelancerAccounts(),
+    getEmployerAccounts(),
+  ]);
 
-  // Fetch employers with complete information
-  const employersQuery = await db
-    .select({
-      employer: employersTable,
-      account: accountsTable,
-      user: UsersTable,
-    })
-    .from(employersTable)
-    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .where(eq(accountsTable.accountType, AccountType.Employer));
-
-  // Transform the data to match Freelancer and Employer types
-  const freelancers = freelancersQuery.map(({ freelancer, account, user }) => ({
-    ...freelancer,
-    account: {
-      ...account,
-      user: user,
-    },
-  })) as unknown as Freelancer[];
-
-  const employers = employersQuery.map(({ employer, account, user }) => ({
-    ...employer,
-    account: {
-      ...account,
-      user: user,
-    },
-  })) as unknown as Employer[];
-
-  return { freelancers, employers } as LoaderData;
+  return { freelancers, employers };
 }
 
 interface AccountTableProps {
-  accounts: (Freelancer | Employer)[];
+  accounts: Account[];
   type: "Freelancer" | "Employer";
 }
 
-function AccountTable({ accounts, type }: AccountTableProps) {
+/* function AccountTable({ accounts, type }: AccountTableProps) {
   return (
     <div className="mt-8 flow-root">
       <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -136,7 +99,7 @@ function AccountTable({ accounts, type }: AccountTableProps) {
       </div>
     </div>
   );
-}
+} */
 
 export default function AdminDashboard() {
   const { freelancers, employers } = useLoaderData<typeof loader>();
@@ -145,12 +108,12 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <section>
         <h2 className="text-2xl font-bold mb-4">Freelancer Accounts</h2>
-        <AccountTable accounts={freelancers} type="Freelancer" />
+        <AccountsTable accounts={freelancers} type="Freelancer" />
       </section>
 
       <section>
         <h2 className="text-2xl font-bold mb-4">Employer Accounts</h2>
-        <AccountTable accounts={employers} type="Employer" />
+        <AccountsTable accounts={employers} type="Employer" />
       </section>
     </div>
   );

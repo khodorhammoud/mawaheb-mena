@@ -1,5 +1,6 @@
 import { useLocation } from "@remix-run/react";
 import GoogleAuthButton from "../auth/GoogleAuthButton";
+import { AccountType } from "~/types/enums";
 
 export default function SocialLinks() {
   const location = useLocation();
@@ -9,7 +10,9 @@ export default function SocialLinks() {
   const isEmployer = location.pathname.includes("employer");
 
   const mode = isLogin ? "login" : "signup";
-  const accountType = isEmployer ? "employer" : "freelancer";
+  const accountType = isEmployer
+    ? AccountType.Employer
+    : AccountType.Freelancer;
 
   return (
     <div className="mt-6 w-full grid grid-cols-1 gap-3">
