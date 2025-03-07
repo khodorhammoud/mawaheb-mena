@@ -1,20 +1,23 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { Link, useLoaderData, Outlet } from "@remix-run/react";
-import { eq, sql } from "drizzle-orm";
-import React from "react";
-import { db } from "~/db/drizzle/connector";
-import {
-  jobsTable,
-  employersTable,
-  jobCategoriesTable,
-  jobApplicationsTable,
-  accountsTable,
-  UsersTable,
-  freelancersTable,
-} from "~/db/drizzle/schemas/schema";
-import { ChevronRightIcon } from "@heroicons/react/24/solid";
+// import { eq, sql } from "drizzle-orm";
+// import { db } from "~/db/drizzle/connector";
+// import {
+//   jobsTable,
+//   employersTable,
+//   jobCategoriesTable,
+//   jobApplicationsTable,
+//   accountsTable,
+//   UsersTable,
+//   freelancersTable,
+// } from "~/db/drizzle/schemas/schema";
+// import { ChevronRightIcon } from "@heroicons/react/24/solid";
+import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
+import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
+import { JobStatus, JobApplicationStatus } from "~/types/enums";
+import { getBasicJobs, getAllApplications } from "~/servers/admin.server";
 
-function ApplicationsTable({ applications }: { applications: any[] }) {
+/* function ApplicationsTable({ applications }: { applications: any[] }) {
   if (applications.length === 0) return null;
 
   return (
@@ -75,71 +78,14 @@ function ApplicationsTable({ applications }: { applications: any[] }) {
     </div>
   );
 }
+ */
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // First get jobs with their basic info
-  const jobs = await db
-    .select({
-      jobId: jobsTable.id,
-      jobTitle: jobsTable.title,
-      jobBudget: jobsTable.budget,
-      jobStatus: jobsTable.status,
-      jobCreatedAt: jobsTable.createdAt,
-      jobWorkingHours: jobsTable.workingHoursPerWeek,
-      jobLocation: jobsTable.locationPreference,
-      employerId: employersTable.id,
-      employerFirstName: UsersTable.firstName,
-      employerLastName: UsersTable.lastName,
-      categoryId: jobCategoriesTable.id,
-      categoryLabel: jobCategoriesTable.label,
-      applicationCount: sql<number>`count(${jobApplicationsTable.id})::int`,
-    })
-    .from(jobsTable)
-    .leftJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
-    .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .leftJoin(
-      jobCategoriesTable,
-      eq(jobsTable.jobCategoryId, jobCategoriesTable.id)
-    )
-    .leftJoin(
-      jobApplicationsTable,
-      eq(jobsTable.id, jobApplicationsTable.jobId)
-    )
-    .groupBy(
-      jobsTable.id,
-      jobsTable.title,
-      jobsTable.budget,
-      jobsTable.status,
-      jobsTable.createdAt,
-      jobsTable.workingHoursPerWeek,
-      jobsTable.locationPreference,
-      employersTable.id,
-      UsersTable.firstName,
-      UsersTable.lastName,
-      jobCategoriesTable.id,
-      jobCategoriesTable.label
-    )
-    .orderBy(jobsTable.createdAt);
+  // First get jobs with their basic info (moved to admin.server.ts)
+  const jobs = await getBasicJobs();
 
-  // Then get all applications with freelancer info
-  const applications = await db
-    .select({
-      id: jobApplicationsTable.id,
-      status: jobApplicationsTable.status,
-      createdAt: jobApplicationsTable.createdAt,
-      jobId: jobApplicationsTable.jobId,
-      freelancerId: freelancersTable.id,
-      freelancerFirstName: UsersTable.firstName,
-      freelancerLastName: UsersTable.lastName,
-    })
-    .from(jobApplicationsTable)
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
-    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
+  // Then get all applications with freelancer info (also in admin.server.ts)
+  const applications = await getAllApplications();
 
   // Format jobs and include their applications
   const formattedJobs = jobs.map((job) => ({
@@ -196,106 +142,60 @@ export default function JobsList() {
 
       <Outlet />
 
-      {jobs.map((job, index) => (
+      {jobs.map((job) => (
         <div
           key={job.job.id}
           className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
         >
-          <table className="min-w-full divide-y border-b border-gray-200">
-            {index === 0 && (
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Employer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Budget
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Applications
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Posted Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-            )}
-            <tbody className="bg-white">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <div className="flex items-center space-x-3 animate-[bounce_1s_ease-in-out_infinite] mt-1">
-                    <Link
-                      to={`/admin-dashboard/job/${job.job.id}`}
-                      className="text-primaryColor hover:text-primaryColor/80 font-medium text-base flex items-center justify-center gap-2"
-                    >
-                      <ChevronRightIcon className="h-6 w-6 text-primaryColor/70" />
-                      {job.job.title}
-                    </Link>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {job.employer ? (
-                    <Link
-                      to={`/admin-dashboard/employer/${job.employer.id}`}
-                      className="text-primaryColor hover:text-primaryColor/80"
-                    >
-                      {job.employer.user.firstName} {job.employer.user.lastName}
-                    </Link>
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {job.category?.label || "-"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {job.job.budget ? `$${job.job.budget}` : "-"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="text-primaryColor font-medium">
-                    {job.applicationCount} applications
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                      job.job.status
-                    )}`}
-                  >
-                    {job.job.status.toLowerCase()}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {job.job.createdAt
-                    ? new Date(job.job.createdAt).toLocaleDateString()
-                    : "-"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <Link
-                    to={`/admin-dashboard/job/${job.job.id}`}
-                    className="text-primaryColor hover:text-primaryColor/80 font-medium"
-                  >
-                    Manage
-                  </Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <JobsTable
+            jobs={[
+              {
+                id: job.job.id,
+                title: job.job.title,
+                status: job.job.status as JobStatus,
+                budget: job.job.budget,
+                workingHoursPerWeek: job.job.workingHoursPerWeek,
+                applicationCount: job.applicationCount,
+                employer: job.employer
+                  ? {
+                      id: job.employer.id,
+                      firstName: job.employer.user.firstName,
+                      lastName: job.employer.user.lastName,
+                    }
+                  : undefined,
+                category: job.category
+                  ? {
+                      id: job.category.id,
+                      label: job.category.label,
+                    }
+                  : undefined,
+              },
+            ]}
+          />
+
           {job.applications.length > 0 && (
-            <div className="">
-              <ApplicationsTable applications={job.applications} />
+            <div className="bg-gray-50 pt-2">
+              <div className="px-6 py-2 text-sm font-medium text-gray-700">
+                Applications
+              </div>
+              <ApplicationsTable
+                applications={job.applications.map((app) => ({
+                  application: {
+                    id: app.id,
+                    status: app.status as JobApplicationStatus,
+                    createdAt: app.createdAt,
+                  },
+                  freelancer: {
+                    id: app.freelancer.id,
+                    user: {
+                      firstName: app.freelancer.firstName,
+                      lastName: app.freelancer.lastName,
+                      email: "",
+                    },
+                  },
+                }))}
+                showJob={false}
+              />
             </div>
           )}
         </div>
@@ -304,6 +204,7 @@ export default function JobsList() {
   );
 }
 
+/* 
 function getStatusColor(status: string) {
   switch (status) {
     case "OPEN":
@@ -333,3 +234,4 @@ function getApplicationStatusColor(status: string) {
       return "bg-gray-100 text-gray-800";
   }
 }
+*/
