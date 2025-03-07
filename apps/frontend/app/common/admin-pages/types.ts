@@ -89,6 +89,7 @@ export interface JobApplication {
   status: JobApplicationStatus;
   createdAt: string;
   freelancerId: number;
+  matchScore?: number;
 }
 
 /** The loader data structure */

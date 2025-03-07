@@ -78,6 +78,7 @@ export default function AllJobApplications() {
                   <ApplicationsTable
                     applications={jobApplications}
                     showJob={false}
+                    showMatchScore={true}
                   />
                 </div>
               </div>
