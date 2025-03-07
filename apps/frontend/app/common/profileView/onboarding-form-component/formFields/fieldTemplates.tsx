@@ -352,7 +352,7 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 // }
 
 export const VideoFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+  FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
     // Generate thumbnail on mount for non-YouTube videos
     const isYouTube =
