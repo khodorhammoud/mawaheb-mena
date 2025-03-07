@@ -5,7 +5,10 @@ import {
   AccountsTable,
   Account,
 } from "~/common/admin-pages/tables/AccountsTable";
-import { getFreelancerAccounts, getEmployerAccounts } from "../admin.server";
+import {
+  getFreelancerAccounts,
+  getEmployerAccounts,
+} from "~/servers/admin.server";
 
 type LoaderData = {
   freelancers: Account[];
