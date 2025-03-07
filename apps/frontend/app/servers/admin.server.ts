@@ -26,6 +26,7 @@ import {
   FreelancerData,
   JobApplication,
 } from "~/common/admin-pages/types";
+import { getApplicationMatchScore } from "~/servers/job.server";
 
 // Types
 type DbJobApplication = typeof jobApplicationsTable.$inferSelect;
@@ -281,6 +282,7 @@ export interface Application {
     id: number;
     status: JobApplicationStatus;
     createdAt: Date;
+    matchScore?: number;
   };
   job: {
     id: number;
@@ -320,7 +322,8 @@ export async function getEmployerApplications(employerId: string) {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(jobsTable.employerId, parseInt(employerId)));
 
-  return applications.map(
+  // Map applications and calculate match scores
+  const mappedApplications = applications.map(
     (app): Application => ({
       application: {
         id: app.job_applications.id,
@@ -345,6 +348,21 @@ export async function getEmployerApplications(employerId: string) {
       },
     })
   );
+
+  // Calculate match scores for each application
+  for (const app of mappedApplications) {
+    try {
+      const matchScore = await getApplicationMatchScore(
+        app.job.id,
+        app.freelancer.id
+      );
+      app.application.matchScore = matchScore;
+    } catch (error) {
+      console.error(`Error calculating match score: ${error}`);
+    }
+  }
+
+  return mappedApplications;
 }
 
 export async function getJobApplications(employerId: string, jobId: string) {
@@ -418,10 +436,17 @@ export function safeParseJSON<T>(
   defaultValue: T
 ): T {
   if (!jsonString) return defaultValue;
+
+  // If it's already an object or array, return it directly
+  if (typeof jsonString === "object") {
+    return jsonString as unknown as T;
+  }
+
   try {
     return JSON.parse(jsonString) as T;
   } catch (error) {
     console.error("Error parsing JSON:", error);
+    console.error("Failed to parse:", jsonString);
     return defaultValue;
   }
 }
@@ -464,7 +489,26 @@ export async function getFreelancerApplications(freelancerId: number) {
     .where(eq(jobApplicationsTable.freelancerId, freelancerId))
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id));
 
-  return apps;
+  // Calculate match scores for each application
+  const appsWithScores = await Promise.all(
+    apps.map(async (app) => {
+      try {
+        const matchScore = await getApplicationMatchScore(
+          app.jobId,
+          freelancerId
+        );
+        return {
+          ...app,
+          matchScore,
+        };
+      } catch (error) {
+        console.error(`Error calculating match score: ${error}`);
+        return app;
+      }
+    })
+  );
+
+  return appsWithScores;
 }
 
 /**
@@ -583,15 +627,36 @@ export async function getJobApplicationsBasic(jobId: number) {
       eq(jobApplicationsTable.freelancerId, freelancersTable.id)
     )
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .orderBy(jobApplicationsTable.createdAt);
+    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
-  return applications;
+  // Calculate match scores for each application
+  const applicationsWithScores = await Promise.all(
+    applications.map(async (app) => {
+      try {
+        const matchScore = await getApplicationMatchScore(
+          jobId,
+          app.freelancer.id
+        );
+        return {
+          ...app,
+          application: {
+            ...app.application,
+            matchScore,
+          },
+        };
+      } catch (error) {
+        console.error(`Error calculating match score: ${error}`);
+        return app;
+      }
+    })
+  );
+
+  return applicationsWithScores;
 }
 
 /**
  *
- * ### The 2 new functions for your “Jobs List”
+ * ### The 2 new functions for your "Jobs List"
  *
  * We'll replicate the queries from the route:
  * 1) getBasicJobs() -> "First get jobs with their basic info"

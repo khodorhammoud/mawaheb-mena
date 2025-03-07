@@ -8,6 +8,7 @@
     "dev": "remix vite:dev ",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx  app/db/migrator.ts",
+    "db:drop": "drizzle-kit drop --out=app/db/drizzle/migrations",
     "db:seed": "tsx app/db/seeders/seeder.ts",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",

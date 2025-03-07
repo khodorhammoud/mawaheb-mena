@@ -15,6 +15,7 @@ type JobApplication = {
     id: number;
     status: string;
     createdAt: Date;
+    matchScore?: number;
   };
   freelancer: {
     id: number;
@@ -345,6 +346,7 @@ function ApplicationsSection({
                 id: app.application.id,
                 status: app.application.status as JobApplicationStatus,
                 createdAt: app.application.createdAt,
+                matchScore: app.application.matchScore,
               },
               freelancer: {
                 id: app.freelancer.id,
@@ -356,6 +358,7 @@ function ApplicationsSection({
               },
             }))}
             showJob={false}
+            showMatchScore={true}
           />
         ) : (
           <p className="text-sm text-gray-500">No applications yet</p>

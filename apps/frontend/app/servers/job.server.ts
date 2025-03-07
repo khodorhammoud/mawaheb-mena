@@ -1,5 +1,15 @@
 import { db } from "../db/drizzle/connector";
-import { and, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Job, JobApplication, JobCardData, JobFilter } from "~/types/Job";
 import {
   jobApplicationsTable,
@@ -12,9 +22,14 @@ import {
   employersTable,
   accountsTable,
   UsersTable,
+  freelancerSkillsTable,
 } from "../db/drizzle/schemas/schema";
 import { /*  Freelancer, */ JobCategory } from "../types/User";
-import { JobApplicationStatus, JobStatus } from "~/types/enums";
+import {
+  JobApplicationStatus,
+  JobStatus,
+  ExperienceLevel,
+} from "~/types/enums";
 import { getUser, getUserIdFromFreelancerId } from "./user.server";
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
@@ -71,7 +86,7 @@ export async function createJobPosting(
           .from(skillsTable)
           .where(eq(skillsTable.label, skillName));
 
-        // ✅ Only insert new skills if they don’t exist
+        // ✅ Only insert new skills if they don't exist
         if (!existingSkill) {
           [existingSkill] = await db
             .insert(skillsTable)
@@ -202,8 +217,8 @@ export async function getEmployerJobs(
   const jobsMap = new Map<number, Job>();
 
   // Loops through the raw job data
-  // If the job doesn’t exist in the map, it adds the job without skills
-  // If a skill is found, it adds the skill to the job’s requiredSkills list
+  // If the job doesn't exist in the map, it adds the job without skills
+  // If a skill is found, it adds the skill to the job's requiredSkills list
   // This ensures that each job is stored once and its skills are properly grouped
   for (const row of jobsRaw) {
     if (!jobsMap.has(row.id)) {
@@ -320,41 +335,477 @@ export async function getJobById(jobId: number): Promise<Job | null> {
 } */
 
 // ✅ Get Design Jobs (Jobs Freelancer Hasn't Applied To)
-export async function getDesignJobs(freelancerId: number) {
-  // Query to select all jobs that are active and the freelancer hasn't applied
-  const jobs = await db
-    .select({
-      id: jobsTable.id,
-      title: jobsTable.title,
-      description: jobsTable.description,
-      employerId: jobsTable.employerId,
-      status: jobsTable.status,
-      applicationStatus: jobApplicationsTable.status,
-      createdAt: jobsTable.createdAt,
-      budget: jobsTable.budget,
-      experienceLevel: jobsTable.experienceLevel,
-      jobCategoryId: jobsTable.jobCategoryId,
-      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
-      locationPreference: jobsTable.locationPreference,
-      projectType: jobsTable.projectType,
-    })
-    .from(jobsTable)
-    .leftJoin(
-      jobApplicationsTable,
-      and(
-        eq(jobApplicationsTable.jobId, jobsTable.id),
-        eq(jobApplicationsTable.freelancerId, freelancerId)
-      )
-    )
-    .where(
-      and(
-        eq(jobsTable.status, JobStatus.Active),
-        isNull(jobApplicationsTable.id) // ✅ Exclude jobs where freelancer has applied
-      )
-    )
-    .orderBy(desc(jobsTable.createdAt));
+// export async function getDesignJobs(freelancerId: number) {
+//   // Query to select all jobs that are active and the freelancer hasn't applied
+//   const jobs = await db
+//     .select({
+//       id: jobsTable.id,
+//       title: jobsTable.title,
+//       description: jobsTable.description,
+//       employerId: jobsTable.employerId,
+//       status: jobsTable.status,
+//       applicationStatus: jobApplicationsTable.status,
+//       createdAt: jobsTable.createdAt,
+//       budget: jobsTable.budget,
+//       experienceLevel: jobsTable.experienceLevel,
+//       jobCategoryId: jobsTable.jobCategoryId,
+//       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+//       locationPreference: jobsTable.locationPreference,
+//       projectType: jobsTable.projectType,
+//     })
+//     .from(jobsTable)
+//     .leftJoin(
+//       jobApplicationsTable,
+//       and(
+//         eq(jobApplicationsTable.jobId, jobsTable.id),
+//         eq(jobApplicationsTable.freelancerId, freelancerId)
+//       )
+//     )
+//     .where(
+//       and(
+//         eq(jobsTable.status, JobStatus.Active),
+//         isNull(jobApplicationsTable.id) // ✅ Exclude jobs where freelancer has applied
+//       )
+//     )
+//     .orderBy(desc(jobsTable.createdAt));
 
-  return jobs;
+//   return jobs;
+// }
+
+interface JobRecommendation {
+  jobId: number;
+  title: string;
+  description: string;
+  budget: number;
+  workingHoursPerWeek: number;
+  locationPreference: string;
+  projectType: string;
+  experienceLevel: ExperienceLevel;
+  matchScore: number;
+  skillsMatch: {
+    matchingSkills: Array<{
+      id: number;
+      label: string;
+      isStarred: boolean;
+      freelancerYearsOfExperience: number;
+    }>;
+    missingSkills: Array<{
+      id: number;
+      label: string;
+      isStarred: boolean;
+    }>;
+    matchPercentage: number;
+  };
+  createdAt: string;
+}
+
+function calculateMatchScore(
+  freelancer: any,
+  freelancerSkills: any[],
+  job: any,
+  jobSkills: any[]
+): number {
+  // console.log("🎯 Calculating match score for job:", job.id);
+
+  let score = 0;
+  const weights = {
+    skills: 0.4, // 40% - Most important
+    experience: 0.15, // 15% - Experience level match
+    location: 0.1, // 10% - Location preference
+    projectType: 0.1, // 10% - Project type match
+    workingHours: 0.1, // 10% - Working hours compatibility
+    languages: 0.1, // 10% - Language requirements
+    description: 0.05, // 5%  - Description keyword match
+  };
+
+  // 1. Skills match (40%)
+  const matchingSkillsCount = jobSkills.filter((jobSkill) =>
+    freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+  ).length;
+
+  // Calculate base skills score
+  let skillsScore =
+    jobSkills.length > 0 ? matchingSkillsCount / jobSkills.length : 1;
+
+  // Bonus for matching starred/important skills
+  const starredSkills = jobSkills.filter((skill) => skill.isStarred);
+  if (starredSkills.length > 0) {
+    const matchingStarredCount = starredSkills.filter((starredSkill) =>
+      freelancerSkills.some((fs) => fs.skillId === starredSkill.skillId)
+    ).length;
+    const starredScore = matchingStarredCount / starredSkills.length;
+    skillsScore = skillsScore * 0.7 + starredScore * 0.3; // Give 30% extra weight to starred skills
+  }
+
+  // Add experience bonus for matching skills
+  const matchingSkills = jobSkills.filter((jobSkill) =>
+    freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+  );
+  if (matchingSkills.length > 0) {
+    let experienceBonus = 0;
+    matchingSkills.forEach((jobSkill) => {
+      const freelancerSkill = freelancerSkills.find(
+        (fs) => fs.skillId === jobSkill.skillId
+      );
+      if (freelancerSkill && freelancerSkill.yearsOfExperience >= 3) {
+        experienceBonus += 0.1; // 10% bonus for each skill with 3+ years experience
+      }
+    });
+    skillsScore = Math.min(1, skillsScore + experienceBonus);
+  }
+
+  score += skillsScore * weights.skills;
+  // console.log("📊 Skills Score:", Math.round(skillsScore * 100) + "%");
+
+  // 2. Experience level match (15%)
+  const experienceLevels = Object.values(ExperienceLevel);
+
+  // Function to map yearsOfExperience to an experience level
+  function getExperienceLevel(yearsOfExperience: number): ExperienceLevel {
+    if (yearsOfExperience <= 2) return ExperienceLevel.Entry;
+    if (yearsOfExperience <= 4) return ExperienceLevel.Mid;
+    return ExperienceLevel.Expert; // 5+ years
+  }
+
+  // 🏆 Get the highest years of experience from freelancer's skills
+  const freelancerYearsOfExperience = Math.max(
+    ...freelancerSkills.map((skill) => skill.yearsOfExperience || 0),
+    0 // Default value if no skills exist
+  );
+
+  // 🛠️ LOG FREELANCER YEARS OF EXPERIENCE
+  // console.log(
+  //   "📌 Freelancer Max Years of Experience:",
+  //   freelancerYearsOfExperience
+  // );
+
+  // 🔄 Map to Experience Level
+  const freelancerExpLevel = getExperienceLevel(freelancerYearsOfExperience);
+  // console.log("📌 Mapped Freelancer Experience Level:", freelancerExpLevel);
+
+  // ✅ Now use `experienceLevels` to get the correct index
+  const freelancerExpIndex = experienceLevels.indexOf(freelancerExpLevel);
+  const jobExpIndex = experienceLevels.indexOf(job.experienceLevel);
+
+  // 🛠️ LOG EXPERIENCE INDEX VALUES
+  // console.log(
+  //   "👨‍💻 Freelancer Experience Level:",
+  //   freelancerExpLevel,
+  //   "➡ Index:",
+  //   freelancerExpIndex
+  // );
+  // console.log(
+  //   "🏢 Job Experience Level:",
+  //   job.experienceLevel,
+  //   "➡ Index:",
+  //   jobExpIndex
+  // );
+
+  let experienceScore = 0;
+  if (freelancerExpIndex >= jobExpIndex) {
+    experienceScore = 1; // Fully qualified
+    // console.log("✅ Freelancer meets or exceeds the required experience.");
+  } else {
+    const levelDiff = jobExpIndex - freelancerExpIndex;
+    experienceScore = Math.max(0, 1 - levelDiff * 0.5); // Partial match for close levels
+    // console.log(
+    //   "⚠️ Freelancer has lower experience. Level difference:",
+    //   levelDiff
+    // );
+    // console.log("📉 Adjusted Experience Score:", experienceScore);
+  }
+
+  score += experienceScore * weights.experience;
+  // console.log(
+  //   "📊 Final Weighted Experience Score:",
+  //   experienceScore * weights.experience
+  // );
+  // console.log("🛠️ Updated Total Score:", score);
+
+  // 3. Location preference match (10%)
+  let locationScore = 0;
+  if (job.locationPreference === "Remote") {
+    locationScore = 1; // Remote jobs are fully compatible
+  } else if (job.locationPreference === freelancer.country) {
+    locationScore = 1; // Same country/city is fully compatible
+  } else if (
+    job.locationPreference === "Hybrid" &&
+    freelancer.country === job.locationPreference
+  ) {
+    locationScore = 0.8; // Hybrid with matching location is highly compatible
+  } else {
+    locationScore = 0.2; // Different locations have low compatibility
+  }
+
+  score += locationScore * weights.location;
+  // console.log("📊 Location Score:", Math.round(locationScore * 100) + "%");
+
+  // 4. Project type match (10%)
+  let projectTypeScore = 0;
+  if (
+    freelancer.preferredProjectTypes &&
+    Array.isArray(freelancer.preferredProjectTypes)
+  ) {
+    projectTypeScore = freelancer.preferredProjectTypes.includes(
+      job.projectType
+    )
+      ? 1
+      : 0.3;
+  } else {
+    projectTypeScore = 0.5; // Neutral score if no preferences set
+  }
+
+  score += projectTypeScore * weights.projectType;
+  // console.log(
+  //   "📊 Project Type Score:",
+  //   Math.round(projectTypeScore * 100) + "%"
+  // );
+
+  // 5. Working hours compatibility (10%)
+  let hoursScore = 0;
+  const freelancerPreferredHours = freelancer.preferredWorkingHours || 40;
+  const jobHours = job.workingHoursPerWeek;
+
+  if (jobHours <= freelancerPreferredHours) {
+    hoursScore = 1; // Job requires fewer or equal hours than preferred
+  } else {
+    const hoursDiff = jobHours - freelancerPreferredHours;
+    hoursScore = Math.max(0, 1 - hoursDiff / 20); // Gradually reduce score for each extra hour
+  }
+
+  score += hoursScore * weights.workingHours;
+  // console.log("📊 Working Hours Score:", Math.round(hoursScore * 100) + "%");
+
+  // 6. Language match (10%)
+  let languageScore = 0;
+  if (freelancer.languages && Array.isArray(freelancer.languages)) {
+    // Assuming job has required languages field
+    const jobLanguages = job.languages || ["English"]; // Default to English if not specified
+    const matchingLanguages = freelancer.languages.filter((lang) =>
+      jobLanguages.includes(lang)
+    );
+    languageScore =
+      jobLanguages.length > 0
+        ? matchingLanguages.length / jobLanguages.length
+        : 1;
+  } else {
+    languageScore = 0.5; // Neutral score if no language info
+  }
+
+  score += languageScore * weights.languages;
+  // console.log("📊 Language Score:", Math.round(languageScore * 100) + "%");
+
+  // 7. Description keyword match (5%)
+  let descriptionScore = 0;
+  if (
+    freelancer.fieldsOfExpertise &&
+    Array.isArray(freelancer.fieldsOfExpertise)
+  ) {
+    const jobText = `${job.title} ${job.description}`.toLowerCase();
+    const matchingKeywords = freelancer.fieldsOfExpertise.filter((keyword) =>
+      jobText.includes(keyword.toLowerCase())
+    );
+    descriptionScore =
+      matchingKeywords.length > 0
+        ? Math.min(1, matchingKeywords.length / 3)
+        : 0.2;
+  } else {
+    descriptionScore = 0.3; // Basic score if no expertise fields defined
+  }
+
+  score += descriptionScore * weights.description;
+  // console.log(
+  //   "📊 Description Match Score:",
+  //   Math.round(descriptionScore * 100) + "%"
+  // );
+
+  // Calculate final score (0-100)
+  const finalScore = Math.round(score * 100);
+  // console.log("🎯 Final Match Score:", finalScore + "%");
+
+  return finalScore;
+}
+
+export async function getJobRecommendations(
+  freelancerId: number,
+  limit: number = 10
+): Promise<JobRecommendation[]> {
+  // console.log("🚀 Getting job recommendations for freelancer:", freelancerId);
+  // console.log("📊 Requested limit:", limit);
+
+  try {
+    // 1. Get freelancer data
+    const freelancer = await db
+      .select({
+        id: freelancersTable.id,
+        accountId: freelancersTable.accountId,
+        about: freelancersTable.about,
+        fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+        yearsOfExperience: freelancersTable.yearsOfExperience,
+        preferredProjectTypes: freelancersTable.preferredProjectTypes,
+        availableForWork: freelancersTable.availableForWork,
+        hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+        hoursAvailableTo: freelancersTable.hoursAvailableTo,
+        country: accountsTable.country,
+      })
+      .from(freelancersTable)
+      .leftJoin(accountsTable, eq(accountsTable.id, freelancersTable.accountId))
+      .where(eq(freelancersTable.id, freelancerId))
+      .limit(1);
+
+    // console.log("✅ Freelancer data:", freelancer);
+
+    if (!freelancer || freelancer.length === 0) {
+      console.error(`Freelancer with ID ${freelancerId} not found`);
+      throw new Error(`Freelancer with ID ${freelancerId} not found`);
+    }
+
+    const freelancerData = freelancer[0];
+
+    // 2. Get freelancer skills with experience info
+    const freelancerSkills = await db
+      .select({
+        skillId: freelancerSkillsTable.skillId,
+        yearsOfExperience: freelancerSkillsTable.yearsOfExperience,
+        label: skillsTable.label,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // console.log("✅ Found freelancer skills:", freelancerSkills.length);
+
+    // 3. Get applied jobs to exclude
+    const appliedJobIds = await db
+      .select({ jobId: jobApplicationsTable.jobId })
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.freelancerId, freelancerId));
+
+    const appliedJobIdsArray = appliedJobIds.map((item) => item.jobId);
+    // console.log("✅ Already applied jobs:", appliedJobIdsArray.length);
+
+    // 4. Get active jobs - fetch more initially for better filtering
+    const initialJobLimit = Math.max(limit * 4, 40);
+    const activeJobs = await db
+      .select({
+        id: jobsTable.id,
+        title: jobsTable.title,
+        description: jobsTable.description,
+        budget: jobsTable.budget,
+        workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+        locationPreference: jobsTable.locationPreference,
+        projectType: jobsTable.projectType,
+        experienceLevel: jobsTable.experienceLevel,
+        createdAt: jobsTable.createdAt,
+      })
+      .from(jobsTable)
+      .where(
+        and(
+          eq(jobsTable.status, JobStatus.Active),
+          appliedJobIdsArray.length > 0
+            ? not(inArray(jobsTable.id, appliedJobIdsArray))
+            : undefined
+        )
+      )
+      .limit(initialJobLimit);
+
+    // console.log("✅ Initial active jobs found:", activeJobs.length);
+
+    // 5. Calculate match scores and filter jobs
+    const jobRecommendations: JobRecommendation[] = [];
+    const MINIMUM_MATCH_SCORE = 65; // Only show jobs with at least 60% match
+
+    for (const job of activeJobs) {
+      const jobSkills = await db
+        .select({
+          skillId: jobSkillsTable.skillId,
+          isStarred: jobSkillsTable.isStarred,
+          label: skillsTable.label,
+        })
+        .from(jobSkillsTable)
+        .leftJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+        .where(eq(jobSkillsTable.jobId, job.id));
+
+      const matchScore = calculateMatchScore(
+        freelancerData,
+        freelancerSkills,
+        job,
+        jobSkills
+      );
+
+      // Only include jobs with good match score
+      if (matchScore >= MINIMUM_MATCH_SCORE) {
+        const matchingSkills = jobSkills
+          .filter((jobSkill) =>
+            freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+          )
+          .map((jobSkill) => ({
+            id: jobSkill.skillId,
+            label: jobSkill.label,
+            isStarred: jobSkill.isStarred,
+            freelancerYearsOfExperience:
+              freelancerSkills.find((fs) => fs.skillId === jobSkill.skillId)
+                ?.yearsOfExperience || 0,
+          }));
+
+        const missingSkills = jobSkills
+          .filter(
+            (jobSkill) =>
+              !freelancerSkills.some((fs) => fs.skillId === jobSkill.skillId)
+          )
+          .map((jobSkill) => ({
+            id: jobSkill.skillId,
+            label: jobSkill.label,
+            isStarred: jobSkill.isStarred,
+          }));
+
+        const skillsMatchPercentage =
+          jobSkills.length > 0
+            ? (matchingSkills.length / jobSkills.length) * 100
+            : 100;
+
+        jobRecommendations.push({
+          jobId: job.id,
+          title: job.title,
+          description: job.description,
+          budget: job.budget,
+          workingHoursPerWeek: job.workingHoursPerWeek,
+          locationPreference: job.locationPreference,
+          projectType: job.projectType,
+          experienceLevel: job.experienceLevel as ExperienceLevel,
+          matchScore,
+          skillsMatch: {
+            matchingSkills,
+            missingSkills,
+            matchPercentage: skillsMatchPercentage,
+          },
+          createdAt: job.createdAt.toISOString(),
+        });
+      }
+    }
+
+    // Sort by match score (descending) and return top recommendations
+    const sortedRecommendations = jobRecommendations
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, limit);
+
+    // console.log(
+    //   "📊 Final recommendations found:",
+    //   sortedRecommendations.length
+    // );
+    // console.log(
+    //   "📊 Average match score:",
+    //   Math.round(
+    //     sortedRecommendations.reduce((acc, job) => acc + job.matchScore, 0) /
+    //       sortedRecommendations.length
+    //   ) + "%"
+    // );
+
+    return sortedRecommendations;
+  } catch (error) {
+    console.error("❌ Error getting job recommendations:", error);
+    throw error;
+  }
 }
 
 // ✅ Get All Jobs (No Restrictions)
@@ -532,14 +983,29 @@ export async function getEmployerIdByJobId(jobId: number) {
 }
 
 /** ✅ Get Freelancer ID by Account ID */
-export async function getFreelancerIdbyAccountId(accountId: number) {
-  const freelancer = await db
+export async function getAccountIdbyUserId(userId: number) {
+  // console.log("🔍 Checking account for user ID:", userId);
+
+  // ✅ Make sure to filter by both userId and accountType
+  const account = await db
     .select()
-    .from(freelancersTable)
-    .where(eq(freelancersTable.accountId, accountId))
+    .from(accountsTable)
+    .where(
+      and(
+        eq(accountsTable.userId, userId),
+        eq(accountsTable.accountType, "freelancer")
+      )
+    ) // ✅ Now only fetching freelancers
     .limit(1);
 
-  return freelancer.length > 0 ? freelancer[0].id : null;
+  // console.log("✅ Retrieved freelancer account:", account);
+
+  if (!account || account.length === 0) {
+    console.error("❌ Freelancer account NOT FOUND for user ID:", userId);
+    return null;
+  }
+
+  return account[0].id; // ✅ Return the freelancer account ID
 }
 
 // used in the laoder for the review task
@@ -1000,5 +1466,101 @@ export async function updateJobStatus(
   } catch (error) {
     console.error("Error updating job status:", error);
     throw new Error("Failed to update job status.");
+  }
+}
+
+export async function getApplicationMatchScore(
+  jobId: number,
+  freelancerId: number
+): Promise<number> {
+  try {
+    // console.log(
+    //   `Calculating match score for job ${jobId} and freelancer ${freelancerId}`
+    // );
+
+    // 1. Get freelancer data
+    const freelancer = await db
+      .select({
+        id: freelancersTable.id,
+        accountId: freelancersTable.accountId,
+        about: freelancersTable.about,
+        fieldsOfExpertise: freelancersTable.fieldsOfExpertise,
+        yearsOfExperience: freelancersTable.yearsOfExperience,
+        preferredProjectTypes: freelancersTable.preferredProjectTypes,
+        availableForWork: freelancersTable.availableForWork,
+        hoursAvailableFrom: freelancersTable.hoursAvailableFrom,
+        hoursAvailableTo: freelancersTable.hoursAvailableTo,
+        country: accountsTable.country,
+      })
+      .from(freelancersTable)
+      .leftJoin(accountsTable, eq(accountsTable.id, freelancersTable.accountId))
+      .where(eq(freelancersTable.id, freelancerId))
+      .limit(1);
+
+    if (!freelancer || freelancer.length === 0) {
+      console.error(`Freelancer with ID ${freelancerId} not found`);
+      return 0;
+    }
+
+    const freelancerData = freelancer[0];
+
+    // 2. Get freelancer skills
+    const freelancerSkills = await db
+      .select({
+        skillId: freelancerSkillsTable.skillId,
+        yearsOfExperience: freelancerSkillsTable.yearsOfExperience,
+        label: skillsTable.label,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, freelancerSkillsTable.skillId))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+    // 3. Get job data
+    const job = await db
+      .select({
+        id: jobsTable.id,
+        title: jobsTable.title,
+        description: jobsTable.description,
+        budget: jobsTable.budget,
+        workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+        locationPreference: jobsTable.locationPreference,
+        projectType: jobsTable.projectType,
+        experienceLevel: jobsTable.experienceLevel,
+        createdAt: jobsTable.createdAt,
+      })
+      .from(jobsTable)
+      .where(eq(jobsTable.id, jobId))
+      .limit(1);
+
+    if (!job || job.length === 0) {
+      console.error(`Job with ID ${jobId} not found`);
+      return 0;
+    }
+
+    const jobData = job[0];
+
+    // 4. Get job skills
+    const jobSkills = await db
+      .select({
+        skillId: jobSkillsTable.skillId,
+        isStarred: jobSkillsTable.isStarred,
+        label: skillsTable.label,
+      })
+      .from(jobSkillsTable)
+      .leftJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+      .where(eq(jobSkillsTable.jobId, jobId));
+
+    // 5. Calculate match score
+    const matchScore = calculateMatchScore(
+      freelancerData,
+      freelancerSkills,
+      jobData,
+      jobSkills
+    );
+
+    return matchScore;
+  } catch (error) {
+    console.error(`Error calculating match score: ${error}`);
+    return 0;
   }
 }
