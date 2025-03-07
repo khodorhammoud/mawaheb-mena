@@ -69,7 +69,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
-    const freelancers = (await getFreelancerDetails(freelancerIds)) || [];
+    let freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
     // Fetch applicants
     const jobApplications = await fetchJobApplications(parseInt(jobId));
@@ -77,10 +77,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     let profile = null;
     let accountBio = null;
     let about = null;
-    let review = null;
     let canReview = false;
 
-    if (freelancers.length > 0) {
+    // Enhance freelancers with review data
+    if (freelancers.length > 0 && currentProfile.id) {
+      // Get reviews for all freelancers
+      const enhancedFreelancers = await Promise.all(
+        freelancers.map(async (freelancer) => {
+          // Get existing review if any for this specific freelancer
+          const review = await getReview({
+            employerId: currentProfile.id,
+            freelancerId: freelancer.id,
+            reviewType: "employer_review",
+          });
+
+          return {
+            ...freelancer,
+            review: review
+              ? {
+                  rating: review.rating,
+                  comment: review.comment,
+                }
+              : null,
+          };
+        })
+      );
+
+      freelancers = enhancedFreelancers;
+
+      // Get profile info for the first freelancer (for backward compatibility)
       try {
         profile = await getProfileInfoByAccountId(freelancers[0].accountId);
 
@@ -89,16 +114,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           about = await getFreelancerAbout(profile.account);
         }
 
-        // Get existing review if any
-        if (freelancers[0].id && currentProfile.id) {
-          review = await getReview({
-            reviewerId: currentProfile.id,
-            revieweeId: freelancers[0].id,
-            reviewType: "employer_review",
-          });
-          // Check if employer can review (has an application from this freelancer)
-          canReview = true; // Employers can always review freelancers who have applied
-        }
+        // Check if employer can review (has an application from this freelancer)
+        canReview = true; // Employers can always review freelancers who have applied
       } catch (error) {
         console.error("Error fetching profile or account bio:", error);
       }
@@ -114,7 +131,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       accountBio,
       freelancers,
       about,
-      review,
       canReview,
     });
   } catch (error) {
@@ -149,8 +165,8 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
 
       // Check if there's an existing review
       const existingReview = await getReview({
-        reviewerId: currentProfile.id,
-        revieweeId: freelancerId,
+        employerId: currentProfile.id,
+        freelancerId: freelancerId,
         reviewType: "employer_review",
       });
 
@@ -158,8 +174,8 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
         if (existingReview) {
           // Update existing review
           await updateReview({
-            reviewerId: currentProfile.id,
-            revieweeId: freelancerId,
+            employerId: currentProfile.id,
+            freelancerId: freelancerId,
             rating,
             comment,
             reviewType: "employer_review",
@@ -167,8 +183,8 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
         } else {
           // Create new review
           await saveReview({
-            reviewerId: currentProfile.id,
-            revieweeId: freelancerId,
+            employerId: currentProfile.id,
+            freelancerId: freelancerId,
             rating,
             comment,
             reviewType: "employer_review",

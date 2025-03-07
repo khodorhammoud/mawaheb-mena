@@ -540,8 +540,8 @@ export const jobApplicationsTable = pgTable("job_applications", {
  */
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
-  reviewerId: integer("reviewer_id").notNull(),
-  revieweeId: integer("reviewee_id").notNull(),
+  employerId: integer("employer_id").references(() => employersTable.id),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
   rating: real("rating").notNull(),
   comment: text("comment").default(null),
   createdAt: timestamp("created_at").default(sql`now()`),

@@ -467,14 +467,14 @@ export async function getJobApplicationsForFreelancer(
 
 // ✅ Save Review to Database
 export async function saveReview({
-  reviewerId,
-  revieweeId,
+  employerId,
+  freelancerId,
   rating,
   comment,
   reviewType,
 }: {
-  reviewerId: number;
-  revieweeId: number;
+  employerId: number;
+  freelancerId: number;
   rating: number;
   comment?: string | null;
   reviewType: "employer_review" | "freelancer_review";
@@ -483,8 +483,8 @@ export async function saveReview({
     const result = await db
       .insert(reviewsTable)
       .values({
-        reviewerId,
-        revieweeId,
+        employerId,
+        freelancerId,
         rating,
         comment,
         reviewType,
@@ -501,14 +501,14 @@ export async function saveReview({
   }
 }
 
-// ✅ Get Review for a Specific Reviewer and Reviewee
+// ✅ Get Review for a Specific employer and freelancer
 export async function getReview({
-  reviewerId,
-  revieweeId,
+  employerId,
+  freelancerId,
   reviewType,
 }: {
-  reviewerId: number;
-  revieweeId: number;
+  employerId: number;
+  freelancerId: number;
   reviewType: "employer_review" | "freelancer_review";
 }) {
   const result = await db
@@ -516,8 +516,8 @@ export async function getReview({
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.reviewerId, reviewerId),
-        eq(reviewsTable.revieweeId, revieweeId),
+        eq(reviewsTable.employerId, employerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, reviewType)
       )
     )
@@ -527,14 +527,14 @@ export async function getReview({
 }
 
 export async function updateReview({
-  reviewerId,
-  revieweeId,
+  employerId,
+  freelancerId,
   rating,
   comment,
   reviewType,
 }: {
-  reviewerId: number;
-  revieweeId: number;
+  employerId: number;
+  freelancerId: number;
   rating: number;
   comment?: string | null;
   reviewType: "employer_review" | "freelancer_review";
@@ -549,8 +549,8 @@ export async function updateReview({
     .set(updateData)
     .where(
       and(
-        eq(reviewsTable.reviewerId, reviewerId),
-        eq(reviewsTable.revieweeId, revieweeId),
+        eq(reviewsTable.employerId, employerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, reviewType)
       )
     );
@@ -582,7 +582,7 @@ export async function getFreelancerAverageRating(freelancerId: number) {
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.revieweeId, freelancerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, "employer_review")
       )
     );
@@ -601,7 +601,7 @@ export async function getFreelancerTotalReviews(freelancerId: number) {
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.revieweeId, freelancerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, "employer_review")
       )
     );
@@ -617,13 +617,13 @@ export async function getFreelancerReviews(freelancerId: number) {
       rating: reviewsTable.rating,
       comment: reviewsTable.comment,
       createdAt: reviewsTable.createdAt,
-      reviewerId: reviewsTable.reviewerId,
+      employerId: reviewsTable.employerId,
       reviewType: reviewsTable.reviewType,
     })
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.revieweeId, freelancerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, "employer_review")
       )
     )

@@ -34,7 +34,8 @@ export default function ApplicantSheet({
     educations: parseArray(freelancer.educations),
   };
 
-  // console.log("normalizedFreelancer Data:", normalizedFreelancer);
+  console.log("Normalized Freelancer Data:", normalizedFreelancer);
+  console.log("Review data:", normalizedFreelancer.review);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
