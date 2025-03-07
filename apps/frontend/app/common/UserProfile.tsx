@@ -37,14 +37,14 @@ export default function UserProfile({
   const hasReview = profile.review && profile.review.rating !== undefined;
 
   useEffect(() => {
-    if (hasReview) {
+    if (hasReview && profile.review) {
       setRating(profile.review.rating);
-      setComment(profile.review.comment);
+      setComment(profile.review.comment || "");
     } else {
       setRating(0);
       setComment("");
     }
-  }, [profile.review]);
+  }, [profile.review, hasReview]);
 
   // ✅ Fetch overall review rating & all reviews when profile updates
   useEffect(() => {
@@ -168,7 +168,7 @@ export default function UserProfile({
     ],
   ];
 
-  console.log("profile.review", profile.review);
+  // console.log("profile.review", profile.review);
 
   return (
     <div className="relative w-full max-w-7xl mx-auto pr-10">
@@ -187,20 +187,28 @@ export default function UserProfile({
           </div>
         )}
 
-        {/* ⭐ Review Section */}
+        {/* ⭐⭐⭐⭐⭐ Reviews Section */}
         <div className="absolute sm:top-20 top-14 right-4 flex flex-col sm:flex-row items-start sm:items-center cursor-pointer gap-2 sm:gap-2">
           {/* Current Employer's Review */}
           {!canEdit && (
             <div
-              className="flex items-center xl:text-xl lg:text-lg text-sm"
+              className={`flex items-center xl:text-xl lg:text-lg text-sm ${
+                hasReview
+                  ? "bg-green-50 border border-green-200 px-3 py-1 rounded-lg"
+                  : "bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg"
+              }`}
               onClick={handleStarClick}
             >
-              <AiFillStar className="text-yellow-500 xl:h-6 xl:w-6 lg:h-5 lg:w-5 h-4 w-4 mr-1" />
+              <AiFillStar
+                className={`xl:h-6 xl:w-6 lg:h-5 lg:w-5 h-4 w-4 mr-1 ${
+                  hasReview ? "text-yellow-500" : "text-gray-400"
+                }`}
+              />
               <span className="font-semibold">
                 {profile.review?.rating || "0"}/5
               </span>
               <span className="text-gray-500 xl:text-base md:text-sm text-xs ml-2">
-                (Your Review)
+                {hasReview ? "(Your Review)" : "(Click to Review)"}
               </span>
             </div>
           )}
@@ -261,15 +269,21 @@ export default function UserProfile({
             <DialogTitle className="text-lg font-semibold">
               {hasReview ? "Edit your review" : "Leave a review"}
             </DialogTitle>
+            {hasReview && (
+              <p className="text-sm text-gray-500 mt-1">
+                You've already reviewed this freelancer. You can update your
+                review below.
+              </p>
+            )}
           </DialogHeader>
 
           {/* ⭐ Star Rating */}
-          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
+          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4 justify-center">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 onClick={() => setRating(star)}
-                className={`text-3xl ${
+                className={`text-3xl transition-all transform hover:scale-110 ${
                   star <= rating ? "text-yellow-400" : "text-gray-300"
                 }`}
               >

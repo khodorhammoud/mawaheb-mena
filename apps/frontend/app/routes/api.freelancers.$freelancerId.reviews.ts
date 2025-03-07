@@ -16,7 +16,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     .from(reviewsTable)
     .where(
       and(
-        eq(reviewsTable.revieweeId, freelancerId),
+        eq(reviewsTable.freelancerId, freelancerId),
         eq(reviewsTable.reviewType, "employer_review")
       )
     );

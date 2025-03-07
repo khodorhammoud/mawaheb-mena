@@ -82,23 +82,23 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     if (actionType === "review") {
       const existingReview = await getReview({
-        reviewerId: freelancerId,
-        revieweeId: employerId,
+        freelancerId: freelancerId,
+        employerId: employerId,
         reviewType: "freelancer_review",
       });
 
       if (existingReview) {
         await updateReview({
-          reviewerId: freelancerId,
-          revieweeId: employerId,
+          freelancerId: freelancerId,
+          employerId: employerId,
           rating,
           comment,
           reviewType: "freelancer_review",
         });
       } else {
         await saveReview({
-          reviewerId: freelancerId,
-          revieweeId: employerId,
+          freelancerId: freelancerId,
+          employerId: employerId,
           rating,
           comment,
           reviewType: "freelancer_review",
@@ -150,8 +150,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let existingReview = null;
   if (employerId > 0) {
     const fetchedReview = await getReview({
-      reviewerId: freelancerId,
-      revieweeId: employerId,
+      freelancerId: freelancerId,
+      employerId: employerId,
       reviewType: "freelancer_review",
     });
 
