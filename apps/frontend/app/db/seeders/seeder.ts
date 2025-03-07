@@ -1,10 +1,9 @@
 // import { integer } from 'drizzle-orm/pg-core';
 import { db } from "../drizzle/connector";
-// import { asc, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   UsersTable,
   accountsTable,
-  // preferredWorkingTimesTable,
   freelancersTable,
   employersTable,
   languagesTable,
@@ -17,7 +16,7 @@ import {
   jobCategoriesTable,
   jobApplicationsTable,
   userVerificationsTable,
-} from "../drizzle/schemas/schema"; // adjust the import path accordingly
+} from "../drizzle/schemas/schema";
 import { faker } from "@faker-js/faker";
 
 import * as dotenv from "dotenv";
@@ -31,14 +30,673 @@ import {
   ExperienceLevel,
   LocationPreferenceType,
   JobsOpenTo,
+  JobApplicationStatus,
 } from "~/types/enums";
 dotenv.config({
   path: ".env",
 });
 import { hash } from "bcrypt-ts";
-import { sql } from "drizzle-orm";
 
-// dotenv.config();
+// Define IT-focused freelancer profiles
+const FREELANCER_PROFILES = [
+  {
+    name: "Alex Chen",
+    title: "Full Stack Developer",
+    about:
+      "I'm a full stack developer with 8 years of experience building web applications using React, Node.js, and PostgreSQL. I specialize in creating scalable, responsive applications with clean, maintainable code. I have extensive experience with modern JavaScript frameworks and have led teams in delivering complex projects on time and within budget.",
+    expertise: ["Web Development", "JavaScript", "React", "Node.js"],
+    education: [
+      {
+        institution: "University of California, Berkeley",
+        degree: "Bachelor's",
+        fieldOfStudy: "Computer Science",
+        description:
+          "Focused on software engineering and web technologies. Graduated with honors and completed a capstone project building a real-time collaboration platform.",
+      },
+      {
+        institution: "Stanford University",
+        degree: "Master's",
+        fieldOfStudy: "Software Engineering",
+        description:
+          "Specialized in distributed systems and cloud architecture. Thesis on scalable microservices architecture patterns.",
+      },
+    ],
+    workHistory: [
+      {
+        title: "Senior Full Stack Developer",
+        company: "TechNova Solutions",
+        currentlyWorkingThere: true,
+        jobDescription:
+          "Leading a team of 5 developers building a SaaS platform for healthcare providers. Architected the system using React, Node.js, and PostgreSQL. Implemented CI/CD pipelines and containerized the application using Docker and Kubernetes.",
+      },
+      {
+        title: "Full Stack Developer",
+        company: "Digital Frontier",
+        jobDescription:
+          "Developed and maintained multiple client projects using React, Express, and MongoDB. Implemented authentication systems, payment processing, and real-time features using WebSockets.",
+      },
+      {
+        title: "Frontend Developer",
+        company: "WebSphere Inc",
+        jobDescription:
+          "Built responsive user interfaces using React and Redux. Collaborated with designers to implement pixel-perfect UIs and improve user experience.",
+      },
+    ],
+    certificates: [
+      {
+        name: "AWS Certified Solutions Architect",
+        issuer: "Amazon Web Services",
+        credentialId: "AWS-CSA-12345",
+        credentialURL:
+          "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
+      },
+      {
+        name: "MongoDB Certified Developer",
+        issuer: "MongoDB Inc",
+        credentialId: "MDB-DEV-67890",
+        credentialURL: "https://university.mongodb.com/certification",
+      },
+    ],
+    skills: [
+      { name: "JavaScript", years: 8 },
+      { name: "React", years: 6 },
+      { name: "Node.js", years: 5 },
+      { name: "Python", years: 4 },
+      { name: "UI/UX Design", years: 3 },
+    ],
+    languages: ["English", "Spanish", "French"],
+    hourlyRate: 85,
+    yearsOfExperience: 8,
+  },
+  {
+    name: "Sophia Rodriguez",
+    title: "Data Scientist",
+    about:
+      "Data scientist with 6 years of experience applying statistical analysis, machine learning, and data visualization to solve complex business problems. Proficient in Python, R, SQL, and various ML frameworks. I've worked across industries including finance, healthcare, and e-commerce to deliver data-driven insights that drive business decisions.",
+    expertise: ["Data Science", "Python", "Machine Learning", "Data Analysis"],
+    education: [
+      {
+        institution: "Massachusetts Institute of Technology",
+        degree: "Master's",
+        fieldOfStudy: "Data Science",
+        description:
+          "Specialized in machine learning algorithms and statistical modeling. Completed research on predictive analytics for healthcare outcomes.",
+      },
+      {
+        institution: "University of Michigan",
+        degree: "Bachelor's",
+        fieldOfStudy: "Statistics",
+        description:
+          "Minored in Computer Science. Completed coursework in data structures, algorithms, and database systems.",
+      },
+    ],
+    workHistory: [
+      {
+        title: "Senior Data Scientist",
+        company: "Predictive Analytics Partners",
+        currentlyWorkingThere: true,
+        jobDescription:
+          "Leading data science initiatives for financial services clients. Developing predictive models for credit risk assessment, fraud detection, and customer segmentation. Implementing ML pipelines using Python, TensorFlow, and AWS SageMaker.",
+      },
+      {
+        title: "Data Scientist",
+        company: "HealthTech Innovations",
+        jobDescription:
+          "Developed machine learning models to predict patient readmission risks and optimize treatment plans. Worked with large healthcare datasets and implemented privacy-preserving analytics techniques.",
+      },
+      {
+        title: "Data Analyst",
+        company: "E-Commerce Analytics",
+        jobDescription:
+          "Performed customer segmentation, churn prediction, and recommendation system development. Created interactive dashboards using Tableau and PowerBI for executive reporting.",
+      },
+    ],
+    certificates: [
+      {
+        name: "TensorFlow Developer Certificate",
+        issuer: "Google",
+        credentialId: "TF-DEV-54321",
+        credentialURL: "https://www.tensorflow.org/certificate",
+      },
+      {
+        name: "Microsoft Certified: Azure Data Scientist Associate",
+        issuer: "Microsoft",
+        credentialId: "AZURE-DS-98765",
+        credentialURL:
+          "https://learn.microsoft.com/en-us/certifications/azure-data-scientist/",
+      },
+    ],
+    skills: [
+      { name: "Python", years: 6 },
+      { name: "Data Analysis", years: 6 },
+      { name: "Machine Learning", years: 5 },
+      { name: "SQL", years: 4 },
+      { name: "Data Engineering", years: 3 },
+    ],
+    languages: ["English", "Spanish", "Portuguese"],
+    hourlyRate: 90,
+    yearsOfExperience: 6,
+  },
+  {
+    name: "Michael Johnson",
+    title: "DevOps Engineer",
+    about:
+      "DevOps engineer with 7 years of experience automating infrastructure, implementing CI/CD pipelines, and managing cloud resources. Expert in AWS, Docker, Kubernetes, and Terraform. I focus on building reliable, scalable, and secure infrastructure that enables development teams to deliver features rapidly while maintaining system stability.",
+    expertise: ["DevOps", "Cloud Infrastructure", "Automation", "Security"],
+    education: [
+      {
+        institution: "Georgia Institute of Technology",
+        degree: "Bachelor's",
+        fieldOfStudy: "Computer Engineering",
+        description:
+          "Focused on systems architecture and network security. Completed projects on automated deployment systems and containerization.",
+      },
+    ],
+    workHistory: [
+      {
+        title: "Lead DevOps Engineer",
+        company: "Cloud Solutions Inc",
+        currentlyWorkingThere: true,
+        jobDescription:
+          "Managing cloud infrastructure across AWS and GCP for enterprise clients. Implementing Infrastructure as Code using Terraform and CloudFormation. Designing and maintaining Kubernetes clusters for microservices architectures.",
+      },
+      {
+        title: "DevOps Engineer",
+        company: "FinTech Innovations",
+        jobDescription:
+          "Built and maintained CI/CD pipelines using Jenkins, GitHub Actions, and ArgoCD. Implemented monitoring and alerting systems using Prometheus and Grafana. Reduced deployment time by 70% through automation.",
+      },
+      {
+        title: "Systems Administrator",
+        company: "Tech Solutions Group",
+        jobDescription:
+          "Managed on-premises and cloud infrastructure. Implemented backup and disaster recovery solutions. Migrated legacy systems to cloud platforms.",
+      },
+    ],
+    certificates: [
+      {
+        name: "AWS Certified DevOps Engineer - Professional",
+        issuer: "Amazon Web Services",
+        credentialId: "AWS-DEVOPS-24680",
+        credentialURL:
+          "https://aws.amazon.com/certification/certified-devops-engineer-professional/",
+      },
+      {
+        name: "Certified Kubernetes Administrator (CKA)",
+        issuer: "Cloud Native Computing Foundation",
+        credentialId: "CKA-13579",
+        credentialURL: "https://www.cncf.io/certification/cka/",
+      },
+    ],
+    skills: [
+      { name: "AWS", years: 7 },
+      { name: "Docker", years: 6 },
+      { name: "Kubernetes", years: 5 },
+      { name: "Terraform", years: 4 },
+      { name: "Python", years: 3 },
+    ],
+    languages: ["English", "German"],
+    hourlyRate: 95,
+    yearsOfExperience: 7,
+  },
+  {
+    name: "Emily Zhang",
+    title: "UI/UX Designer",
+    about:
+      "UI/UX designer with 5 years of experience creating intuitive, accessible, and visually appealing digital experiences. I combine user research, interaction design, and visual design to create products that delight users while meeting business objectives. I have expertise in design systems, responsive design, and user testing methodologies.",
+    expertise: [
+      "UI/UX Design",
+      "User Research",
+      "Interaction Design",
+      "Visual Design",
+    ],
+    education: [
+      {
+        institution: "Rhode Island School of Design",
+        degree: "Bachelor's",
+        fieldOfStudy: "Graphic Design",
+        description:
+          "Focused on digital interfaces and user experience design. Completed coursework in typography, color theory, and interaction design.",
+      },
+      {
+        institution: "Interaction Design Foundation",
+        degree: "Certificate",
+        fieldOfStudy: "UX Design",
+        description:
+          "Specialized training in user research methods, usability testing, and information architecture.",
+      },
+    ],
+    workHistory: [
+      {
+        title: "Senior UI/UX Designer",
+        company: "Digital Experience Lab",
+        currentlyWorkingThere: true,
+        jobDescription:
+          "Leading design for enterprise SaaS products. Creating and maintaining design systems. Conducting user research and usability testing to inform design decisions. Collaborating with development teams to ensure high-quality implementation.",
+      },
+      {
+        title: "Product Designer",
+        company: "Mobile Innovations",
+        jobDescription:
+          "Designed user interfaces for mobile applications across iOS and Android platforms. Created wireframes, prototypes, and high-fidelity mockups. Implemented design thinking methodologies to solve complex user problems.",
+      },
+      {
+        title: "UI Designer",
+        company: "Web Solutions Agency",
+        jobDescription:
+          "Designed responsive websites for clients across various industries. Created visual assets, icons, and illustrations. Collaborated with developers to ensure pixel-perfect implementation.",
+      },
+    ],
+    certificates: [
+      {
+        name: "Certified User Experience Professional",
+        issuer: "Nielsen Norman Group",
+        credentialId: "NNG-UX-12345",
+        credentialURL: "https://www.nngroup.com/ux-certification/",
+      },
+      {
+        name: "Adobe Certified Expert - XD",
+        issuer: "Adobe",
+        credentialId: "ADOBE-XD-67890",
+        credentialURL: "https://www.adobe.com/products/xd/certification.html",
+      },
+    ],
+    skills: [
+      { name: "UI/UX Design", years: 5 },
+      { name: "Figma", years: 4 },
+      { name: "Adobe XD", years: 3 },
+      { name: "User Research", years: 4 },
+      { name: "Design Systems", years: 3 },
+    ],
+    languages: ["English", "Mandarin", "French"],
+    hourlyRate: 80,
+    yearsOfExperience: 5,
+  },
+];
+
+// Define IT-focused employer profiles
+const EMPLOYER_PROFILES = [
+  {
+    name: "TechSolutions Global",
+    description:
+      "TechSolutions Global is a leading software development company specializing in enterprise solutions, cloud migration, and digital transformation. Founded in 2010, we've helped over 200 companies modernize their technology stack and improve operational efficiency.",
+    industries: [
+      "Software Development",
+      "Cloud Services",
+      "Enterprise Solutions",
+    ],
+    companySize: "50-200 employees",
+    location: "United States",
+    jobs: [
+      {
+        title: "Senior React Developer",
+        description:
+          "We're looking for a Senior React Developer to join our front-end team working on enterprise SaaS applications. You'll be responsible for architecting and implementing complex UI components, optimizing application performance, and mentoring junior developers.\n\nResponsibilities:\n- Design and implement scalable React components and applications\n- Work with REST APIs and GraphQL to integrate front-end with back-end services\n- Implement state management solutions using Redux or Context API\n- Optimize application performance and ensure cross-browser compatibility\n- Collaborate with UX designers to implement responsive, accessible interfaces\n\nRequirements:\n- 5+ years of experience with React and modern JavaScript\n- Strong understanding of state management, hooks, and React best practices\n- Experience with TypeScript and testing frameworks (Jest, React Testing Library)\n- Knowledge of modern build tools and CI/CD pipelines\n- Excellent problem-solving and communication skills",
+        skills: ["JavaScript", "React", "TypeScript", "Redux", "UI/UX Design"],
+        experienceLevel: ExperienceLevel.Expert,
+        projectType: ProjectType.LongTerm,
+        budget: 8000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "DevOps Engineer",
+        description:
+          "We're seeking a DevOps Engineer to help us build and maintain our cloud infrastructure and CI/CD pipelines. You'll work closely with development teams to automate deployment processes and ensure system reliability and security.\n\nResponsibilities:\n- Design and implement cloud infrastructure using AWS services\n- Create and maintain CI/CD pipelines for automated testing and deployment\n- Implement monitoring, logging, and alerting solutions\n- Optimize system performance and cost-efficiency\n- Collaborate with development teams to resolve infrastructure issues\n\nRequirements:\n- 3+ years of experience with AWS and infrastructure as code (Terraform, CloudFormation)\n- Experience with containerization (Docker) and orchestration (Kubernetes)\n- Knowledge of CI/CD tools (Jenkins, GitHub Actions, CircleCI)\n- Familiarity with monitoring tools (Prometheus, Grafana, ELK stack)\n- Strong scripting skills (Bash, Python)",
+        skills: ["DevOps", "AWS", "Docker", "Kubernetes", "Python"],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 7000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Backend Node.js Developer",
+        description:
+          "We're looking for a Backend Developer with Node.js expertise to join our team building microservices for our enterprise platform. You'll design and implement scalable APIs, integrate with databases, and ensure high performance and reliability.\n\nResponsibilities:\n- Design and develop RESTful APIs and microservices using Node.js\n- Implement database schemas and queries (PostgreSQL, MongoDB)\n- Ensure code quality through testing and code reviews\n- Optimize application performance and scalability\n- Collaborate with front-end developers for seamless integration\n\nRequirements:\n- 3+ years of experience with Node.js and Express\n- Strong knowledge of SQL and NoSQL databases\n- Experience with microservices architecture\n- Understanding of authentication and security best practices\n- Familiarity with message queues and event-driven architecture",
+        skills: [
+          "Node.js",
+          "JavaScript",
+          "PostgreSQL",
+          "MongoDB",
+          "API Design",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 6500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Data Engineer",
+        description:
+          "We're seeking a Data Engineer to help us build and maintain our data infrastructure. You'll design data pipelines, implement ETL processes, and ensure data quality and accessibility for our analytics team.\n\nResponsibilities:\n- Design and implement data pipelines using modern tools and frameworks\n- Create and optimize ETL processes for various data sources\n- Implement data quality checks and monitoring\n- Collaborate with data scientists and analysts to support their data needs\n- Maintain and optimize data warehouse architecture\n\nRequirements:\n- 3+ years of experience in data engineering\n- Proficiency with Python and SQL\n- Experience with data processing frameworks (Apache Spark, Airflow)\n- Knowledge of cloud data services (AWS Redshift, S3, Glue)\n- Understanding of data modeling and warehouse design",
+        skills: ["Data Engineering", "Python", "SQL", "ETL", "Data Analysis"],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 7000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "UI/UX Designer",
+        description:
+          "We're looking for a UI/UX Designer to create intuitive and engaging user experiences for our enterprise applications. You'll work closely with product managers and developers to design interfaces that balance user needs with business goals.\n\nResponsibilities:\n- Create wireframes, prototypes, and high-fidelity mockups\n- Conduct user research and usability testing\n- Develop and maintain design systems and component libraries\n- Create user flows and journey maps\n- Collaborate with developers to ensure accurate implementation\n\nRequirements:\n- 3+ years of experience in UI/UX design for web applications\n- Proficiency with design tools (Figma, Adobe XD)\n- Understanding of accessibility standards and responsive design\n- Experience with user research methodologies\n- Portfolio demonstrating strong visual design skills",
+        skills: [
+          "UI/UX Design",
+          "Figma",
+          "User Research",
+          "Visual Design",
+          "Interaction Design",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 6000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "QA Automation Engineer",
+        description:
+          "We're seeking a QA Automation Engineer to help us ensure the quality and reliability of our software products. You'll design and implement automated test frameworks, create test cases, and work with development teams to resolve issues.\n\nResponsibilities:\n- Design and implement automated test frameworks and scripts\n- Create comprehensive test plans and test cases\n- Execute manual and automated tests across different environments\n- Report and track bugs through issue tracking systems\n- Collaborate with developers to resolve quality issues\n\nRequirements:\n- 2+ years of experience in QA automation\n- Proficiency with test automation tools and frameworks (Selenium, Cypress, Jest)\n- Knowledge of programming languages (JavaScript, Python)\n- Experience with CI/CD pipelines and test integration\n- Strong analytical and problem-solving skills",
+        skills: [
+          "QA Automation",
+          "JavaScript",
+          "Selenium",
+          "Cypress",
+          "Testing",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 5500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Mobile App Developer (React Native)",
+        description:
+          "We're looking for a Mobile App Developer with React Native expertise to help us build cross-platform mobile applications. You'll work on developing new features, improving performance, and ensuring a seamless user experience across iOS and Android platforms.\n\nResponsibilities:\n- Develop and maintain mobile applications using React Native\n- Implement responsive UI components and integrate with APIs\n- Optimize application performance and ensure cross-platform compatibility\n- Collaborate with designers and backend developers\n- Troubleshoot and fix bugs and performance bottlenecks\n\nRequirements:\n- 3+ years of experience with React Native development\n- Strong knowledge of JavaScript/TypeScript\n- Experience with native modules and third-party libraries\n- Understanding of mobile app architecture and state management\n- Familiarity with app deployment processes for iOS and Android",
+        skills: [
+          "React Native",
+          "JavaScript",
+          "Mobile Development",
+          "iOS",
+          "Android",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 6500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Product Manager",
+        description:
+          "We're seeking a Product Manager to lead the development of our enterprise SaaS products. You'll work closely with stakeholders, designers, and developers to define product vision, prioritize features, and ensure successful delivery.\n\nResponsibilities:\n- Define product vision, strategy, and roadmap\n- Gather and prioritize requirements from stakeholders and customers\n- Create detailed product specifications and user stories\n- Collaborate with design and development teams throughout the product lifecycle\n- Analyze market trends and competitor offerings\n\nRequirements:\n- 4+ years of experience in product management for software products\n- Strong understanding of software development lifecycle\n- Experience with agile methodologies and project management tools\n- Excellent communication and presentation skills\n- Analytical mindset with ability to make data-driven decisions",
+        skills: [
+          "Product Management",
+          "Agile",
+          "User Stories",
+          "Market Research",
+          "Roadmapping",
+        ],
+        experienceLevel: ExperienceLevel.Expert,
+        projectType: ProjectType.LongTerm,
+        budget: 8000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Technical Content Writer",
+        description:
+          "We're looking for a Technical Content Writer to create high-quality documentation, tutorials, and blog posts for our developer community. You'll work closely with our engineering team to explain complex technical concepts in clear, accessible language.\n\nResponsibilities:\n- Create technical documentation for APIs, SDKs, and developer tools\n- Write tutorials and how-to guides for developers\n- Produce blog posts on technical topics and product updates\n- Review and edit content for technical accuracy and clarity\n- Collaborate with engineers and product managers to gather information\n\nRequirements:\n- 2+ years of experience in technical writing for software products\n- Strong understanding of software development concepts\n- Excellent writing and editing skills\n- Ability to explain complex technical concepts clearly\n- Familiarity with documentation tools and markdown",
+        skills: [
+          "Content Writing",
+          "Technical Writing",
+          "Documentation",
+          "Markdown",
+          "Editing",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.ShortTerm,
+        budget: 3000,
+        workingHours: 20,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Frontend Developer (Vue.js)",
+        description:
+          "We're seeking a Frontend Developer with Vue.js expertise for a short-term project to revamp our customer portal. You'll work on implementing new UI components, improving performance, and enhancing the overall user experience.\n\nResponsibilities:\n- Develop responsive UI components using Vue.js\n- Implement state management using Vuex or Pinia\n- Optimize application performance and loading times\n- Ensure cross-browser compatibility and accessibility\n- Collaborate with designers and backend developers\n\nRequirements:\n- 2+ years of experience with Vue.js development\n- Strong knowledge of JavaScript/TypeScript\n- Experience with Vue CLI, Vuex, and Vue Router\n- Understanding of responsive design and CSS preprocessors\n- Familiarity with testing frameworks (Jest, Vue Test Utils)",
+        skills: ["Vue.js", "JavaScript", "Vuex", "CSS", "Frontend Development"],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.ShortTerm,
+        budget: 4000,
+        workingHours: 30,
+        location: LocationPreferenceType.Remote,
+      },
+    ],
+  },
+  {
+    name: "DataInsight Innovations",
+    description:
+      "DataInsight Innovations is a data analytics and AI consulting firm that helps businesses leverage their data for strategic decision-making. We specialize in building custom analytics solutions, implementing machine learning models, and providing data strategy consulting.",
+    industries: [
+      "Data Analytics",
+      "Artificial Intelligence",
+      "Business Intelligence",
+    ],
+    companySize: "20-50 employees",
+    location: "United Kingdom",
+    jobs: [
+      {
+        title: "Machine Learning Engineer",
+        description:
+          "We're looking for a Machine Learning Engineer to join our AI team. You'll design and implement machine learning models for various client projects, from natural language processing to computer vision applications.\n\nResponsibilities:\n- Design and develop machine learning models for client projects\n- Preprocess and analyze large datasets\n- Implement and optimize ML pipelines\n- Evaluate model performance and make improvements\n- Collaborate with data scientists and engineers\n\nRequirements:\n- 3+ years of experience in machine learning engineering\n- Strong knowledge of Python and ML frameworks (TensorFlow, PyTorch)\n- Experience with NLP, computer vision, or time series analysis\n- Understanding of feature engineering and model evaluation\n- Familiarity with ML deployment and MLOps practices",
+        skills: [
+          "Machine Learning",
+          "Python",
+          "TensorFlow",
+          "PyTorch",
+          "Data Science",
+        ],
+        experienceLevel: ExperienceLevel.Expert,
+        projectType: ProjectType.LongTerm,
+        budget: 9000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Data Scientist",
+        description:
+          "We're seeking a Data Scientist to help our clients extract insights from their data. You'll work on various projects involving statistical analysis, predictive modeling, and data visualization.\n\nResponsibilities:\n- Analyze complex datasets to identify patterns and trends\n- Develop statistical models and machine learning algorithms\n- Create visualizations and dashboards to communicate findings\n- Collaborate with clients to understand their business problems\n- Present results and recommendations to stakeholders\n\nRequirements:\n- 3+ years of experience in data science\n- Strong knowledge of Python, R, and SQL\n- Experience with statistical analysis and machine learning\n- Proficiency with data visualization tools (Tableau, PowerBI)\n- Excellent communication and presentation skills",
+        skills: ["Data Science", "Python", "R", "SQL", "Statistics"],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 7500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Data Engineer",
+        description:
+          "We're looking for a Data Engineer to build and maintain our data infrastructure. You'll design data pipelines, implement ETL processes, and ensure data quality and accessibility.\n\nResponsibilities:\n- Design and implement scalable data pipelines\n- Create ETL processes for various data sources\n- Optimize database schemas and queries\n- Implement data quality checks and monitoring\n- Collaborate with data scientists to support their data needs\n\nRequirements:\n- 3+ years of experience in data engineering\n- Proficiency with Python, SQL, and big data technologies\n- Experience with data processing frameworks (Spark, Airflow)\n- Knowledge of cloud data services (AWS, Azure, GCP)\n- Understanding of data modeling and warehouse design",
+        skills: ["Data Engineering", "Python", "SQL", "Apache Spark", "ETL"],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 7000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Business Intelligence Analyst",
+        description:
+          "We're seeking a Business Intelligence Analyst to help our clients transform their data into actionable insights. You'll design and implement BI solutions, create dashboards, and provide data-driven recommendations.\n\nResponsibilities:\n- Design and develop BI dashboards and reports\n- Analyze business data to identify trends and opportunities\n- Create data models and implement ETL processes\n- Collaborate with stakeholders to understand reporting needs\n- Present findings and recommendations to clients\n\nRequirements:\n- 2+ years of experience in business intelligence\n- Proficiency with BI tools (Tableau, Power BI, Looker)\n- Strong SQL skills and data modeling knowledge\n- Experience with ETL processes and data warehousing\n- Excellent analytical and problem-solving skills",
+        skills: [
+          "Business Intelligence",
+          "SQL",
+          "Tableau",
+          "Power BI",
+          "Data Analysis",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 6000,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "NLP Specialist",
+        description:
+          "We're looking for an NLP Specialist to work on natural language processing projects for our clients. You'll design and implement solutions for text classification, sentiment analysis, entity recognition, and other NLP tasks.\n\nResponsibilities:\n- Develop NLP models for various applications\n- Preprocess and analyze text data\n- Implement and optimize NLP pipelines\n- Evaluate model performance and make improvements\n- Collaborate with data scientists and engineers\n\nRequirements:\n- 3+ years of experience in NLP\n- Strong knowledge of Python and NLP libraries (NLTK, spaCy, Transformers)\n- Experience with deep learning for NLP (BERT, GPT, etc.)\n- Understanding of text preprocessing and feature engineering\n- Familiarity with multiple languages is a plus",
+        skills: ["NLP", "Python", "Machine Learning", "BERT", "Transformers"],
+        experienceLevel: ExperienceLevel.Expert,
+        projectType: ProjectType.LongTerm,
+        budget: 8500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Computer Vision Engineer",
+        description:
+          "We're seeking a Computer Vision Engineer to work on image and video analysis projects. You'll design and implement solutions for object detection, image classification, and other computer vision tasks.\n\nResponsibilities:\n- Develop computer vision models for various applications\n- Preprocess and analyze image and video data\n- Implement and optimize computer vision pipelines\n- Evaluate model performance and make improvements\n- Collaborate with data scientists and engineers\n\nRequirements:\n- 3+ years of experience in computer vision\n- Strong knowledge of Python and CV libraries (OpenCV, TensorFlow, PyTorch)\n- Experience with deep learning for computer vision (CNNs, object detection)\n- Understanding of image preprocessing and feature engineering\n- Familiarity with deployment of CV models in production",
+        skills: [
+          "Computer Vision",
+          "Python",
+          "OpenCV",
+          "TensorFlow",
+          "Deep Learning",
+        ],
+        experienceLevel: ExperienceLevel.Expert,
+        projectType: ProjectType.LongTerm,
+        budget: 8500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+      {
+        title: "Data Visualization Specialist",
+        description:
+          "We're looking for a Data Visualization Specialist to create compelling visual representations of complex data. You'll design interactive dashboards, infographics, and data stories that communicate insights effectively.\n\nResponsibilities:\n- Create interactive data visualizations and dashboards\n- Design clear and intuitive ways to present complex data\n- Develop custom visualization components using D3.js\n- Work with stakeholders to understand visualization needs\n- Ensure visualizations are accessible and responsive\n\nRequirements:\n- 3+ years of experience in data visualization\n- Expertise in D3.js and other visualization libraries\n- Strong JavaScript and HTML/CSS skills\n- Understanding of data visualization principles\n- Experience with dashboard design and UX principles",
+        skills: [
+          "Data Visualization",
+          "D3.js",
+          "JavaScript",
+          "Dashboard Design",
+          "UX Design",
+        ],
+        experienceLevel: ExperienceLevel.Mid,
+        projectType: ProjectType.LongTerm,
+        budget: 6500,
+        workingHours: 40,
+        location: LocationPreferenceType.Remote,
+      },
+    ],
+  },
+];
+
+// IT-focused skills
+const IT_SKILLS = [
+  { label: "JavaScript", isHot: true },
+  { label: "Python", isHot: true },
+  { label: "React", isHot: true },
+  { label: "Node.js", isHot: true },
+  { label: "TypeScript", isHot: true },
+  { label: "SQL", isHot: false },
+  { label: "AWS", isHot: true },
+  { label: "Docker", isHot: true },
+  { label: "Kubernetes", isHot: false },
+  { label: "Machine Learning", isHot: true },
+  { label: "Data Science", isHot: true },
+  { label: "TensorFlow", isHot: false },
+  { label: "PyTorch", isHot: false },
+  { label: "Java", isHot: false },
+  { label: "C#", isHot: false },
+  { label: "Angular", isHot: false },
+  { label: "Vue.js", isHot: false },
+  { label: "DevOps", isHot: true },
+  { label: "CI/CD", isHot: false },
+  { label: "Cloud Architecture", isHot: true },
+  { label: "Data Engineering", isHot: true },
+  { label: "UI/UX Design", isHot: false },
+  { label: "GraphQL", isHot: false },
+  { label: "MongoDB", isHot: false },
+  { label: "PostgreSQL", isHot: false },
+  { label: "Cybersecurity", isHot: true },
+  { label: "Blockchain", isHot: false },
+  { label: "Mobile Development", isHot: false },
+  { label: "React Native", isHot: false },
+  { label: "Flutter", isHot: false },
+];
+
+// IT-focused job categories
+const JOB_CATEGORIES = [
+  "Software Development",
+  "Data Science & Analytics",
+  "DevOps & Cloud",
+  "UI/UX Design",
+  "Cybersecurity",
+  "Mobile Development",
+  "AI & Machine Learning",
+  "Database Administration",
+  "IT Project Management",
+  "Technical Writing",
+];
+
+// IT-focused industries
+const IT_INDUSTRIES = [
+  "Software Development",
+  "Data Analytics",
+  "Cloud Services",
+  "Artificial Intelligence",
+  "Cybersecurity",
+  "E-commerce",
+  "FinTech",
+  "HealthTech",
+  "EdTech",
+  "IoT",
+];
+
+const PROFILE_IMAGES = {
+  developer: [
+    "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=800",
+    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800",
+    "https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?w=800",
+    "https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?w=800",
+  ],
+  company: [
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800",
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800",
+  ],
+  portfolio: {
+    webDev: [
+      "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800",
+      "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800",
+    ],
+    dataScience: [
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
+      "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
+    ],
+    ai: [
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800",
+      "https://images.unsplash.com/photo-1675557009875-476ea25ea75d?w=800",
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800",
+    ],
+    cybersecurity: [
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800",
+      "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800",
+      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800",
+    ],
+  },
+  certificates: {
+    aws: "https://images.unsplash.com/photo-1612538498456-e861df91d4d0?w=800",
+    google:
+      "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=800",
+    microsoft:
+      "https://images.unsplash.com/photo-1642132652859-3ef5a1048fd1?w=800",
+    cisco: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800",
+  },
+};
 
 async function seed() {
   await db.transaction(async (tx) => {
@@ -57,7 +715,6 @@ async function seed() {
       await tx.delete(UsersTable);
       await tx.delete(skillsTable);
       await tx.delete(languagesTable);
-      await tx.delete(freelancerLanguagesTable);
       await tx.delete(industriesTable);
       await tx.delete(jobCategoriesTable);
 
@@ -85,334 +742,31 @@ async function seed() {
 
       // Seed Languages
       console.log("Seeding languages...");
-      const languages = [
-        "Spanish",
+      for (const language of [
         "English",
-        "Italian",
-        "Arabic",
+        "Spanish",
         "French",
-        "Turkish",
         "German",
-        "Portuguese",
+        "Chinese",
+        "Japanese",
+        "Arabic",
         "Russian",
-      ];
-
-      for (const language of languages) {
+        "Portuguese",
+        "Hindi",
+      ]) {
         await tx.insert(languagesTable).values({
-          language: language,
+          name: language,
         });
       }
 
       // Seed Industries
       console.log("Seeding industries...");
-      const industries = [
-        {
-          label: "Accounting",
-          metadata: [
-            "accounting",
-            "banking",
-            "capital markets",
-            "financial services",
-            "insurance",
-            "investment banking",
-            "investment management",
-          ],
-        },
-        {
-          label: "Data Engineering",
-          metadata: [
-            "data engineering",
-            "data science",
-            "data analysis",
-            "data visualization",
-            "data warehousing",
-            "data mining",
-            "big data",
-            "business intelligence",
-            "data analytics",
-            "data management",
-            "data quality",
-            "data governance",
-            "data modeling",
-            "data architecture",
-            "data integration",
-            "data migration",
-            "data transformation",
-          ],
-        },
-        {
-          label: "Data Science",
-          metadata: [
-            "data science",
-            "data analysis",
-            "data visualization",
-            "data warehousing",
-            "data mining",
-            "big data",
-            "business intelligence",
-            "data analytics",
-            "data management",
-            "data quality",
-            "data governance",
-            "data modeling",
-            "data architecture",
-            "data integration",
-            "data migration",
-            "data transformation",
-          ],
-        },
-        {
-          label: "Design",
-          metadata: [
-            "design",
-            "graphic design",
-            "web design",
-            "ui/ux design",
-            "product design",
-            "industrial design",
-            "interior design",
-            "fashion design",
-            "design thinking",
-            "design research",
-            "design management",
-            "design strategy",
-            "design systems",
-            "design ops",
-            "design leadership",
-            "design education",
-            "design ethics",
-            "design psychology",
-            "design philosophy",
-            "design history",
-            "design theory",
-            "design criticism",
-            "design culture",
-            "design technology",
-            "design tools",
-            "design software",
-            "design hardware",
-            "design process",
-          ],
-        },
-        {
-          label: "Data Security",
-          metadata: [
-            "data security",
-            "cybersecurity",
-            "information security",
-            "network security",
-            "cloud security",
-            "application security",
-            "endpoint security",
-            "data protection",
-            "data privacy",
-            "data encryption",
-            "data loss prevention",
-            "data recovery",
-            "data backup",
-            "data breach",
-            "data leak",
-            "data theft",
-          ],
-        },
-        {
-          label: "Digital Marketing",
-          metadata: [
-            "digital marketing",
-            "social media marketing",
-            "content marketing",
-            "email marketing",
-            "influencer marketing",
-            "affiliate marketing",
-            "search engine marketing",
-            "search engine optimization",
-            "pay-per-click",
-            "display advertising",
-            "retargeting",
-            "remarketing",
-            "lead generation",
-            "conversion rate optimization",
-            "customer acquisition",
-            "customer retention",
-            "customer loyalty",
-            "customer engagement",
-            "customer experience",
-            "customer journey",
-            "customer relationship management",
-            "customer satisfaction",
-          ],
-        },
-      ];
-
-      for (const industry of industries) {
+      for (const industry of IT_INDUSTRIES) {
         await tx.insert(industriesTable).values({
-          label: industry.label,
-          metadata: industry.metadata,
+          name: industry,
         });
       }
 
-      // Seed Skills
-      console.log("Seeding skills...");
-      const skills = [
-        {
-          label: "Web Development",
-          metaData: [
-            "web development",
-            "web design",
-            "web programming",
-            "web development",
-          ],
-          isHot: true,
-        },
-        {
-          label: "Graphic Design",
-          metaData: [
-            "graphic design",
-            "art",
-            "design",
-            "illustration",
-            "photography",
-            "digital art",
-            "animation",
-            "video editing",
-            "graphic design",
-            "photoshop",
-            "illustrator",
-            "adobe",
-            "canva",
-            "figma",
-            "photoshop",
-          ],
-        },
-        {
-          label: "Content Writing",
-          metaData: [
-            "content writing",
-            "copywriting",
-            "blog writing",
-            "article writing",
-          ],
-        },
-        {
-          label: "Digital Marketing",
-          metaData: [
-            "digital marketing",
-            "social media marketing",
-            "content marketing",
-            "email marketing",
-          ],
-          isHot: true,
-        },
-        {
-          label: "Project Management",
-          metaData: [
-            "project management",
-            "project planning",
-            "project execution",
-            "project monitoring",
-            "project evaluation",
-            "project control",
-            "project risk management",
-            "project communication",
-            "project documentation",
-          ],
-        },
-        {
-          label: "Data Analysis",
-          metaData: [
-            "data analysis",
-            "python",
-            "sql",
-            "data visualization",
-            "data modeling",
-            "data warehousing",
-            "data mining",
-            "data analytics",
-            "data management",
-            "data quality",
-          ],
-        },
-        {
-          label: "Data Engineering",
-          metaData: [
-            "data engineering",
-            "data science",
-            "data analysis",
-            "data visualization",
-            "data warehousing",
-          ],
-          isHot: true,
-        },
-        {
-          label: "JavaScript",
-          metaData: [
-            "javascript",
-            "js",
-            "frontend",
-            "react",
-            "vue",
-            "angular",
-            "node",
-          ],
-          isHot: true,
-        },
-        {
-          label: "Python",
-          metaData: [
-            "python",
-            "django",
-            "flask",
-            "fastapi",
-            "data science",
-            "machine learning",
-          ],
-          isHot: true,
-        },
-        {
-          label: "UI/UX Design",
-          metaData: [
-            "ui",
-            "ux",
-            "user interface",
-            "user experience",
-            "figma",
-            "sketch",
-            "adobe xd",
-          ],
-          isHot: true,
-        },
-      ];
-
-      for (const skill of skills) {
-        await tx.insert(skillsTable).values({
-          label: skill.label,
-          metaData: JSON.stringify(skill.metaData),
-          isHot: skill.isHot || false,
-        });
-      }
-
-      // Seed Job Categories
-      console.log("Seeding job categories...");
-      const jobCategories = [
-        "Web Development",
-        "Mobile Development",
-        "Design",
-        "Writing",
-        "Marketing",
-        "Data Science",
-        "Project Management",
-        "Customer Support",
-        "Sales",
-        "Administrative",
-      ];
-
-      for (const category of jobCategories) {
-        await tx.insert(jobCategoriesTable).values({
-          label: category,
-        });
-      }
-
-      // Create admin account
       console.log("Creating admin account...");
       const adminPassword = "123";
       const hashedPassword = await hash(adminPassword, 10);
@@ -428,6 +782,32 @@ async function seed() {
         provider: Provider.Credentials,
       });
 
+      // Seed Skills - IMPORTANT: Create a map to track skill IDs
+      console.log("Seeding skills...");
+      const skillIdMap = new Map();
+
+      for (let i = 0; i < IT_SKILLS.length; i++) {
+        const skill = IT_SKILLS[i];
+        const result = await tx
+          .insert(skillsTable)
+          .values({
+            label: skill.label,
+            isHot: skill.isHot,
+          })
+          .returning({ id: skillsTable.id });
+
+        // Store the actual DB ID for each skill label
+        skillIdMap.set(skill.label, result[0].id);
+      }
+
+      // Seed Job Categories
+      console.log("Seeding job categories...");
+      for (const category of JOB_CATEGORIES) {
+        await tx.insert(jobCategoriesTable).values({
+          name: category,
+        });
+      }
+
       // Create freelancer accounts
       console.log("Creating freelancer accounts...");
       const freelancerEmails = [
@@ -437,27 +817,28 @@ async function seed() {
         "freelancer4@example.com",
       ];
 
-      const freelancerUserIds = [];
       const freelancerIds = [];
 
       for (let i = 0; i < freelancerEmails.length; i++) {
+        const profile = FREELANCER_PROFILES[i];
+
         // Create user
         const userResult = await tx
           .insert(UsersTable)
           .values({
-            firstName: `Freelancer${i + 1}`,
-            lastName: `User${i + 1}`,
+            firstName: profile.name.split(" ")[0],
+            lastName: profile.name.split(" ")[1],
             email: freelancerEmails[i],
             passHash: await hash("123", 10),
             isVerified: true,
             isOnboarded: true,
-            role: "user",
             provider: Provider.Credentials,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
           .returning({ id: UsersTable.id });
 
         const userId = userResult[0].id;
-        freelancerUserIds.push(userId);
 
         // Create account
         const accountResult = await tx
@@ -465,146 +846,139 @@ async function seed() {
           .values({
             userId: userId,
             accountType: AccountType.Freelancer,
-            accountStatus: AccountStatus.Published,
-            country: faker.helpers.arrayElement([
-              "Egypt",
-              "Jordan",
-              "Lebanon",
-              "United Arab Emirates",
-              "Saudi Arabia",
-            ]),
+            location: faker.location.city(),
+            country: faker.location.country(),
             region: faker.location.state(),
-            address: faker.location.streetAddress(),
-            phone: faker.phone.number().substring(0, 20),
-            websiteURL: faker.internet.url(),
-            socialMediaLinks: JSON.stringify({
-              linkedin: faker.internet.url(),
-              github: faker.internet.url(),
-              twitter: faker.internet.url(),
-            }),
+            accountStatus: AccountStatus.Published,
+            phone: faker.phone.number(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
           .returning({ id: accountsTable.id });
 
         const accountId = accountResult[0].id;
 
-        // Create freelancer profile
-        const portfolio = [];
+        // Prepare portfolio projects
+        const portfolioProjects = [];
         for (let j = 0; j < 3; j++) {
-          portfolio.push({
-            projectName: `Project ${j + 1}`,
-            projectLink: faker.internet.url(),
-            projectDescription: faker.lorem.paragraph(),
-            projectImageName: `project-image-${j + 1}.jpg`,
-            projectImageUrl: faker.image.url(),
-            attachmentName: `attachment-${j + 1}.pdf`,
-            attachmentId: j + 1,
+          let projectImages;
+          if (profile.expertise.includes("Web Development")) {
+            projectImages = PROFILE_IMAGES.portfolio.webDev;
+          } else if (profile.expertise.includes("Data Science")) {
+            projectImages = PROFILE_IMAGES.portfolio.dataScience;
+          } else if (profile.expertise.includes("AI")) {
+            projectImages = PROFILE_IMAGES.portfolio.ai;
+          } else {
+            projectImages = PROFILE_IMAGES.portfolio.cybersecurity;
+          }
+
+          portfolioProjects.push({
+            projectName: `${profile.expertise[j % profile.expertise.length]} Project ${j + 1}`,
+            projectLink: `https://github.com/${profile.name.replace(" ", "").toLowerCase()}/project-${j + 1}`,
+            projectDescription: `A ${profile.expertise[j % profile.expertise.length]} project that demonstrates my skills in ${profile.skills[j % profile.skills.length].name}. This project involved complex problem-solving and collaboration with a team of developers.`,
+            projectImageName: `project${j + 1}.jpg`,
+            projectImageUrl: projectImages[j % projectImages.length],
+            attachmentName: `project${j + 1}_details.pdf`,
+            attachmentUrl: `https://drive.google.com/file/d/1234567890${j}/view`,
           });
         }
 
+        // Prepare work history
         const workHistory = [];
-        for (let j = 0; j < 3; j++) {
-          const startDate = faker.date.past({ years: 5 });
-          const endDate =
-            j === 0
-              ? null
-              : faker.date.between({ from: startDate, to: new Date() });
+        for (const job of profile.workHistory) {
+          const startDate = faker.date
+            .past({ years: 5 })
+            .toISOString()
+            .split("T")[0];
+          const endDate = job.currentlyWorkingThere
+            ? null
+            : faker.date.past({ years: 2 }).toISOString().split("T")[0];
 
           workHistory.push({
-            title: faker.person.jobTitle(),
-            company: faker.company.name(),
-            currentlyWorkingThere: j === 0,
-            startDate: startDate.toISOString().split("T")[0],
-            endDate: j === 0 ? null : endDate.toISOString().split("T")[0],
-            jobDescription: faker.lorem.paragraph(),
+            title: job.title,
+            company: job.company,
+            currentlyWorkingThere: job.currentlyWorkingThere,
+            startDate: startDate,
+            endDate: endDate,
+            jobDescription: job.jobDescription,
           });
         }
 
+        // Prepare certificates
         const certificates = [];
-        for (let j = 0; j < 2; j++) {
+        for (const cert of profile.certificates) {
+          let certImageUrl;
+          if (cert.name.toLowerCase().includes("aws")) {
+            certImageUrl = PROFILE_IMAGES.certificates.aws;
+          } else if (cert.name.toLowerCase().includes("google")) {
+            certImageUrl = PROFILE_IMAGES.certificates.google;
+          } else if (cert.name.toLowerCase().includes("microsoft")) {
+            certImageUrl = PROFILE_IMAGES.certificates.microsoft;
+          } else {
+            certImageUrl = PROFILE_IMAGES.certificates.cisco;
+          }
+
           certificates.push({
-            name: `Certificate ${j + 1}`,
-            issuer: faker.company.name(),
+            name: cert.name,
+            issuer: cert.issuer,
+            credentialId: cert.credentialId,
+            credentialURL: cert.credentialURL,
+            certificateImageUrl: certImageUrl,
             issueDate: faker.date
               .past({ years: 3 })
               .toISOString()
               .split("T")[0],
-            expiryDate: faker.date
-              .future({ years: 2 })
-              .toISOString()
-              .split("T")[0],
-            credentialId: faker.string.alphanumeric(10),
-            credentialURL: faker.internet.url(),
           });
         }
 
+        // Prepare education
         const educations = [];
-        for (let j = 0; j < 2; j++) {
+        for (const edu of profile.education) {
+          const startDate = faker.date
+            .past({ years: 10 })
+            .toISOString()
+            .split("T")[0];
+          const endDate = faker.date
+            .past({ years: 5 })
+            .toISOString()
+            .split("T")[0];
+
           educations.push({
-            institution: faker.company.name() + " University",
-            degree: faker.helpers.arrayElement([
-              "Bachelor's",
-              "Master's",
-              "PhD",
-            ]),
-            fieldOfStudy: faker.person.jobArea(),
-            startDate: faker.date
-              .past({ years: 10 })
-              .toISOString()
-              .split("T")[0],
-            endDate: faker.date.past({ years: 5 }).toISOString().split("T")[0],
-            description: faker.lorem.paragraph(),
+            institution: edu.institution,
+            degree: edu.degree,
+            fieldOfStudy: edu.fieldOfStudy,
+            startDate: startDate,
+            endDate: endDate,
+            description: edu.description,
           });
         }
 
+        // Create freelancer
         const freelancerResult = await tx
           .insert(freelancersTable)
           .values({
             accountId: accountId,
-            about: faker.lorem.paragraphs(3),
-            fieldsOfExpertise: faker.helpers.arrayElements(
-              [
-                "Web Development",
-                "Graphic Design",
-                "Content Writing",
-                "Digital Marketing",
-                "Data Analysis",
-                "Project Management",
-              ],
-              { min: 2, max: 4 }
-            ),
-            portfolio: portfolio,
+            about: profile.about,
+            fieldsOfExpertise: profile.expertise,
+            portfolio: portfolioProjects,
             workHistory: workHistory,
-            cvLink: faker.internet.url(),
-            videoLink: faker.internet.url(),
+            cvLink: `https://example.com/cv/${profile.name.replace(" ", "_")}.pdf`,
+            videoLink: `https://example.com/intro/${profile.name.replace(" ", "_")}.mp4`,
             certificates: certificates,
             educations: educations,
-            yearsOfExperience: faker.number.int({ min: 1, max: 10 }),
-            preferredProjectTypes: faker.helpers.arrayElements(
-              [
-                ProjectType.ShortTerm,
-                ProjectType.LongTerm,
-                ProjectType.PerProjectBasis,
-              ],
-              { min: 1, max: 3 }
-            ),
-            hourlyRate: faker.number.int({ min: 20, max: 100 }),
-            compensationType: faker.helpers.arrayElement([
-              CompensationType.HourlyRate,
-              CompensationType.ProjectBasedRate,
-            ]),
+            yearsOfExperience: profile.yearsOfExperience,
+            preferredProjectTypes: [
+              ProjectType.LongTerm,
+              ProjectType.ShortTerm,
+            ],
+            hourlyRate: profile.hourlyRate,
+            compensationType: CompensationType.HourlyRate,
             availableForWork: true,
             dateAvailableFrom: faker.date
               .soon({ days: 10 })
               .toISOString()
               .split("T")[0],
-            jobsOpenTo: faker.helpers.arrayElements(
-              [
-                JobsOpenTo.FullTimeRoles,
-                JobsOpenTo.PartTimeRoles,
-                JobsOpenTo.EmployeeRoles,
-              ],
-              { min: 1, max: 3 }
-            ),
+            jobsOpenTo: [JobsOpenTo.FullTimeRoles, JobsOpenTo.PartTimeRoles],
             hoursAvailableFrom: "09:00:00",
             hoursAvailableTo: "17:00:00",
           })
@@ -614,13 +988,8 @@ async function seed() {
         freelancerIds.push(freelancerId);
 
         // Add languages for freelancer
-        const languageCount = faker.number.int({ min: 1, max: 3 });
-        const languageIds = faker.helpers.arrayElements(
-          [1, 2, 3, 4, 5, 6, 7, 8, 9],
-          { min: languageCount, max: languageCount }
-        );
-
-        for (const languageId of languageIds) {
+        for (const language of profile.languages) {
+          const languageId = profile.languages.indexOf(language) + 1;
           await tx.insert(freelancerLanguagesTable).values({
             freelancerId: freelancerId,
             languageId: languageId,
@@ -628,40 +997,45 @@ async function seed() {
         }
 
         // Add skills for freelancer
-        const skillCount = faker.number.int({ min: 3, max: 6 });
-        const skillIds = faker.helpers.arrayElements(
-          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          { min: skillCount, max: skillCount }
-        );
+        for (const skill of profile.skills) {
+          // Get the actual skill ID from our map
+          const skillId = skillIdMap.get(skill.name);
 
-        for (const skillId of skillIds) {
-          await tx.insert(freelancerSkillsTable).values({
-            freelancerId: freelancerId,
-            skillId: skillId,
-            yearsOfExperience: faker.number.int({ min: 1, max: 8 }),
-          });
+          if (skillId) {
+            await tx.insert(freelancerSkillsTable).values({
+              freelancerId: freelancerId,
+              skillId: skillId,
+              yearsOfExperience: skill.years,
+            });
+          } else {
+            console.warn(
+              `Warning: Skill "${skill.name}" not found in database. Skipping.`
+            );
+          }
         }
       }
 
       // Create employer accounts
       console.log("Creating employer accounts...");
       const employerEmails = ["employer1@example.com", "employer2@example.com"];
-
       const employerIds = [];
 
       for (let i = 0; i < employerEmails.length; i++) {
+        const company = EMPLOYER_PROFILES[i];
+
         // Create user
         const userResult = await tx
           .insert(UsersTable)
           .values({
             firstName: `Employer${i + 1}`,
-            lastName: `User${i + 1}`,
+            lastName: `Admin`,
             email: employerEmails[i],
             passHash: await hash("123", 10),
             isVerified: true,
             isOnboarded: true,
-            role: "user",
             provider: Provider.Credentials,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
           .returning({ id: UsersTable.id });
 
@@ -673,198 +1047,119 @@ async function seed() {
           .values({
             userId: userId,
             accountType: AccountType.Employer,
-            accountStatus: AccountStatus.Published,
-            country: faker.helpers.arrayElement([
-              "Egypt",
-              "Jordan",
-              "Lebanon",
-              "United Arab Emirates",
-              "Saudi Arabia",
-            ]),
+            location: company.location,
+            country: company.location,
             region: faker.location.state(),
-            address: faker.location.streetAddress(),
-            phone: faker.phone.number().substring(0, 20),
-            websiteURL: faker.internet.url(),
-            socialMediaLinks: JSON.stringify({
-              linkedin: faker.internet.url(),
-              facebook: faker.internet.url(),
-              twitter: faker.internet.url(),
-            }),
+            accountStatus: AccountStatus.Published,
+            phone: faker.phone.number(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
           .returning({ id: accountsTable.id });
 
         const accountId = accountResult[0].id;
 
-        // Create employer profile
+        // Create employer
         const employerResult = await tx
           .insert(employersTable)
           .values({
             accountId: accountId,
-            companyName: faker.company.name(),
-            employerName: faker.person.fullName(),
-            companyEmail: faker.internet.email(),
-            industrySector: faker.helpers.arrayElement([
-              "Technology",
-              "Finance",
-              "Healthcare",
-              "Education",
-              "Retail",
-            ]),
-            companyRepName: faker.person.fullName(),
-            companyRepEmail: faker.internet.email(),
-            companyRepPosition: faker.person.jobTitle(),
-            companyRepPhone: faker.phone.number().substring(0, 20),
-            taxIdNumber: faker.string.alphanumeric(10),
-            taxIdDocumentLink: faker.internet.url(),
-            businessLicenseLink: faker.internet.url(),
-            certificationOfIncorporationLink: faker.internet.url(),
-            WebsiteURL: faker.internet.url(),
-            socialMediaLinks: JSON.stringify({
-              linkedin: faker.internet.url(),
-              facebook: faker.internet.url(),
-              twitter: faker.internet.url(),
-            }),
+            companyName: company.name,
+            companyDescription: company.description,
+            companySize: company.companySize,
+            industrySector: company.industries[0],
+            companyWebsite: `https://${company.name.toLowerCase().replace(/\s+/g, "")}.com`,
+            companyEmail: `info@${company.name.toLowerCase().replace(/\s+/g, "")}.com`,
+            companyLogo:
+              PROFILE_IMAGES.company[i % PROFILE_IMAGES.company.length],
+            companyBanner:
+              PROFILE_IMAGES.company[(i + 1) % PROFILE_IMAGES.company.length],
           })
           .returning({ id: employersTable.id });
 
         const employerId = employerResult[0].id;
         employerIds.push(employerId);
 
-        const JOB_TITLES = [
-          "Frontend Developer",
-          "Backend Engineer",
-          "Full Stack Developer",
-          "UI/UX Designer",
-          "Graphic Designer",
-          "Content Writer",
-          "Digital Marketing Specialist",
-          "Data Analyst",
-          "Data Scientist",
-          "Project Manager",
-          "Product Manager",
-          "DevOps Engineer",
-          "Mobile App Developer",
-          "QA Engineer",
-          "SEO Specialist",
-          "Social Media Manager",
-          "Copywriter",
-          "Video Editor",
-          "3D Modeler",
-          "Game Developer",
-        ];
+        // Create jobs for this employer
+        console.log(`Creating jobs for employer ${i + 1}...`);
 
-        const JOB_DESCRIPTIONS = [
-          "We're looking for a talented professional to join our team. You'll be responsible for developing and maintaining high-quality solutions that meet our clients' needs.",
-          "Join our growing team to work on exciting projects. The ideal candidate has strong problem-solving skills and can work independently as well as collaboratively.",
-          "This role requires expertise in multiple technologies and the ability to adapt quickly to new challenges. You'll be working directly with clients to understand their requirements.",
-          "We need someone who can bring creative ideas and technical skills to our projects. This position offers competitive compensation and opportunities for growth.",
-          "The successful candidate will contribute to all phases of the development lifecycle, from concept to deployment. Experience with agile methodologies is a plus.",
-        ];
+        // Create 10 jobs per employer
+        for (let j = 0; j < company.jobs.length; j++) {
+          const job = company.jobs[j];
 
-        console.log(`Creating 10 jobs for employer ${i + 1}...`);
-
-        const jobStatuses = [
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Active,
-          JobStatus.Draft,
-          JobStatus.Paused,
-          JobStatus.Closed,
-        ];
-
-        for (let j = 0; j < 10; j++) {
-          // Create a diverse set of jobs with different characteristics
-          const status = jobStatuses[j];
-          const jobCategoryId = (j % 10) + 1; // Distribute across categories
-
-          // Generate a unique job title
-          const baseTitle = JOB_TITLES[j % JOB_TITLES.length];
-          const jobTitle = `${baseTitle} - ${faker.company.buzzNoun()}`;
-
-          // Generate a detailed job description
-          const baseDescription = JOB_DESCRIPTIONS[j % JOB_DESCRIPTIONS.length];
-          const detailedDescription = `
-            ${baseDescription}
-            
-            Responsibilities:
-            - ${faker.company.buzzPhrase()}
-            - ${faker.company.buzzPhrase()}
-            - ${faker.company.buzzPhrase()}
-            - ${faker.company.buzzPhrase()}
-            
-            Requirements:
-            - ${faker.number.int({ min: 1, max: 5 })}+ years of experience in ${baseTitle}
-            - Strong knowledge of ${faker.helpers.arrayElement(["JavaScript", "Python", "React", "Node.js", "UI/UX", "Adobe Creative Suite"])}
-            - Excellent communication and teamwork skills
-            - ${faker.helpers.arrayElement(["Bachelor's degree", "Master's degree", "Relevant certification", "Portfolio of work"])} required
-            
-            Benefits:
-            - Competitive salary
-            - ${faker.helpers.arrayElement(["Remote work options", "Flexible hours", "Professional development", "Health insurance"])}
-            - ${faker.helpers.arrayElement(["Paid time off", "Performance bonuses", "Team events", "Career advancement"])}
-          `;
-
-          // Vary project types, experience levels, and budgets
-          const projectType =
-            j % 3 === 0
-              ? ProjectType.ShortTerm
-              : j % 3 === 1
-                ? ProjectType.LongTerm
-                : ProjectType.PerProjectBasis;
-
-          const experienceLevel =
-            j % 4 === 0
-              ? ExperienceLevel.Entry
-              : j % 4 === 1
-                ? ExperienceLevel.Mid
-                : j % 4 === 2
-                  ? ExperienceLevel.Expert
-                  : ExperienceLevel.Mid;
-
-          // Vary budgets based on experience level and project type
-          let budget = 0;
-          if (experienceLevel === ExperienceLevel.Entry) {
-            budget = faker.number.int({ min: 500, max: 2000 });
-          } else if (experienceLevel === ExperienceLevel.Mid) {
-            budget = faker.number.int({ min: 2000, max: 5000 });
-          } else {
-            budget = faker.number.int({ min: 5000, max: 15000 });
+          // Determine job status - make most jobs active
+          let status = JobStatus.Active;
+          if (j >= company.jobs.length - 4) {
+            status = [
+              JobStatus.Draft,
+              JobStatus.Paused,
+              JobStatus.Closed,
+              JobStatus.Completed,
+            ][j - (company.jobs.length - 4)];
           }
 
-          // Adjust budget for project type
-          if (projectType === ProjectType.ShortTerm) {
-            budget = Math.round(budget * 0.7); // Lower for short term
-          } else if (projectType === ProjectType.LongTerm) {
-            budget = Math.round(budget * 1.3); // Higher for long term
+          // Find job category ID based on job title
+          let jobCategoryId = 1; // Default to Software Development
+          if (job.title.includes("Data") || job.title.includes("Analytics")) {
+            jobCategoryId = 2; // Data Science & Analytics
+          } else if (
+            job.title.includes("DevOps") ||
+            job.title.includes("Cloud")
+          ) {
+            jobCategoryId = 3; // DevOps & Cloud
+          } else if (
+            job.title.includes("Design") ||
+            job.title.includes("UI") ||
+            job.title.includes("UX")
+          ) {
+            jobCategoryId = 4; // UI/UX Design
+          } else if (
+            job.title.includes("Security") ||
+            job.title.includes("Cyber")
+          ) {
+            jobCategoryId = 5; // Cybersecurity
+          } else if (
+            job.title.includes("Mobile") ||
+            job.title.includes("iOS") ||
+            job.title.includes("Android")
+          ) {
+            jobCategoryId = 6; // Mobile Development
+          } else if (
+            job.title.includes("AI") ||
+            job.title.includes("Machine Learning") ||
+            job.title.includes("ML")
+          ) {
+            jobCategoryId = 7; // AI & Machine Learning
+          } else if (
+            job.title.includes("Database") ||
+            job.title.includes("SQL")
+          ) {
+            jobCategoryId = 8; // Database Administration
+          } else if (
+            job.title.includes("Project") ||
+            job.title.includes("Manager")
+          ) {
+            jobCategoryId = 9; // IT Project Management
+          } else if (
+            job.title.includes("Writer") ||
+            job.title.includes("Content")
+          ) {
+            jobCategoryId = 10; // Technical Writing
           }
-
-          // Vary location preferences
-          const locationPreference =
-            j % 5 === 0
-              ? LocationPreferenceType.Remote
-              : j % 5 === 1
-                ? LocationPreferenceType.Onsite
-                : j % 5 === 2
-                  ? LocationPreferenceType.Mixed
-                  : LocationPreferenceType.Onsite;
 
           // Create the job
           const jobResult = await tx
             .insert(jobsTable)
             .values({
               employerId: employerId,
-              title: jobTitle,
-              description: detailedDescription,
+              title: job.title,
+              description: job.description,
               jobCategoryId: jobCategoryId,
-              workingHoursPerWeek: faker.number.int({ min: 10, max: 40 }),
-              locationPreference: locationPreference,
-              projectType: projectType,
-              budget: budget,
-              experienceLevel: experienceLevel,
+              workingHoursPerWeek: job.workingHours,
+              locationPreference: job.location,
+              projectType: job.projectType,
+              budget: job.budget,
+              experienceLevel: job.experienceLevel,
               status: status,
               createdAt: faker.date.recent({ days: 30 }),
               fulfilledAt:
@@ -876,52 +1171,95 @@ async function seed() {
 
           const jobId = jobResult[0].id;
 
-          // Add skills to job - vary the number and types of skills
-          // For tech jobs, add more tech skills; for creative jobs, add more design skills, etc.
-          let skillPool = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+          // Add skills to job
+          for (const skillName of job.skills) {
+            // Get the actual skill ID from our map
+            const skillId = skillIdMap.get(skillName);
 
-          // Adjust skill pool based on job title
-          if (jobTitle.includes("Developer") || jobTitle.includes("Engineer")) {
-            // Tech-focused skills (assuming IDs 1, 2, 7, 8 are tech skills)
-            skillPool = [1, 2, 7, 8, 9];
-          } else if (
-            jobTitle.includes("Designer") ||
-            jobTitle.includes("Creative")
-          ) {
-            // Design-focused skills (assuming IDs 3, 4, 10 are design skills)
-            skillPool = [3, 4, 10];
-          } else if (
-            jobTitle.includes("Marketing") ||
-            jobTitle.includes("Content")
-          ) {
-            // Marketing-focused skills (assuming IDs 5, 6 are marketing skills)
-            skillPool = [5, 6];
-          }
+            if (skillId) {
+              // Mark some skills as starred (more important)
+              const isStarred = job.skills.indexOf(skillName) < 2; // First two skills are starred
 
-          // Determine number of skills based on job complexity
-          const skillCount =
-            experienceLevel === ExperienceLevel.Expert
-              ? faker.number.int({ min: 4, max: 6 })
-              : faker.number.int({ min: 2, max: 4 });
-
-          const skillIds = faker.helpers.arrayElements(skillPool, {
-            min: skillCount,
-            max: skillCount,
-          });
-
-          // Add skills to the job, with some marked as starred (important)
-          for (const skillId of skillIds) {
-            // Mark some skills as starred (more important)
-            const isStarred = faker.number.int({ min: 1, max: 3 }) === 1; // 1/3 chance of being starred
-
-            await tx.insert(jobSkillsTable).values({
-              jobId: jobId,
-              skillId: skillId,
-              isStarred: isStarred,
-            });
+              await tx.insert(jobSkillsTable).values({
+                jobId: jobId,
+                skillId: skillId,
+                isStarred: isStarred,
+              });
+            } else {
+              console.warn(
+                `Warning: Skill "${skillName}" not found in database. Skipping.`
+              );
+            }
           }
         }
       }
+
+      // Add job applications
+      console.log("Creating job applications...");
+
+      // Get the ID of freelancer1@example.com
+      const freelancer1Id = freelancerIds[0]; // First freelancer in our array
+
+      // Loop through all jobs and create applications
+      for (const employerId of employerIds) {
+        // Get all jobs for this employer
+        const jobsResult = await tx
+          .select({ id: jobsTable.id, status: jobsTable.status })
+          .from(jobsTable)
+          .where(sql`${jobsTable.employerId} = ${employerId}`);
+
+        for (const job of jobsResult) {
+          // Skip applications for non-active jobs
+          if (
+            job.status !== JobStatus.Active &&
+            job.status !== JobStatus.Paused
+          ) {
+            continue;
+          }
+
+          // Freelancer1 applies to all jobs
+          await tx.insert(jobApplicationsTable).values({
+            jobId: job.id,
+            freelancerId: freelancer1Id,
+            coverLetter:
+              "I'm very interested in this position and believe my skills and experience make me a perfect fit. I've worked on similar projects in the past and can deliver high-quality results within your timeline. I'm particularly excited about the opportunity to work with your team on this project.",
+            attachmentUrl: "https://drive.google.com/file/d/1234567890/view",
+            status: faker.helpers.arrayElement([
+              JobApplicationStatus.Pending,
+              JobApplicationStatus.Shortlisted,
+              JobApplicationStatus.Approved,
+              JobApplicationStatus.Rejected,
+            ]),
+            createdAt: faker.date.recent({ days: 14 }),
+          });
+
+          // Other freelancers apply to some jobs (30% chance)
+          for (let i = 1; i < freelancerIds.length; i++) {
+            if (faker.number.int({ min: 1, max: 10 }) <= 3) {
+              // 30% chance
+              await tx.insert(jobApplicationsTable).values({
+                jobId: job.id,
+                freelancerId: freelancerIds[i],
+                coverLetter:
+                  "I'm excited to apply for this position as it aligns perfectly with my expertise in " +
+                  FREELANCER_PROFILES[i].expertise.join(", ") +
+                  ". With my background and skills, I can deliver exceptional results for your project. I'm particularly interested in working with your company because of your focus on innovation and quality.",
+                attachmentUrl:
+                  "https://drive.google.com/file/d/1234567891/view",
+                status: faker.helpers.arrayElement([
+                  JobApplicationStatus.Pending,
+                  JobApplicationStatus.Shortlisted,
+                  JobApplicationStatus.Approved,
+                  JobApplicationStatus.Rejected,
+                ]),
+                createdAt: faker.date.recent({ days: 10 }),
+              });
+            }
+          }
+        }
+      }
+
+      console.log("Job applications created successfully!");
 
       console.log("Seeding completed successfully!");
     } catch (err) {
