@@ -6,7 +6,7 @@ import {
   getEmployerDetails,
   getEmployerApplications,
   type Application,
-} from "~/routes/admin.server";
+} from "~/servers/admin.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { employerId } = params;

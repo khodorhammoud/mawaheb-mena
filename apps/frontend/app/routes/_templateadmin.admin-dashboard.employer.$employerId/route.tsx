@@ -12,7 +12,7 @@ import {
   getEmployerDetails,
   updateEmployerAccountStatus,
   type Job,
-} from "~/routes/admin.server";
+} from "~/servers/admin.server";
 
 type ActionResponse = {
   success: boolean;
