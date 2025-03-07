@@ -1,3 +1,5 @@
+// this Calender code is so sensetive, try to keep the content in it as it is not to break anything for dashboard and onboarding states in the availability form 👍
+
 import { useState, useEffect, useRef } from "react";
 import {
   format,
@@ -8,6 +10,7 @@ import {
   addDays,
   setYear,
   getYear,
+  isSameDay,
 } from "date-fns";
 
 type CalendarProps = {
@@ -22,7 +25,6 @@ export default function Calendar({
   onClose,
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
-
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // Generate years for dropdown
@@ -63,8 +65,7 @@ export default function Calendar({
 
     for (let i = 0; i < 42; i++) {
       const day = addDays(startDate, i);
-      const isSelected =
-        selectedDate && day.getTime() === selectedDate.getTime();
+      const isSelected = selectedDate && isSameDay(day, selectedDate);
 
       days.push(
         <div
@@ -74,11 +75,20 @@ export default function Calendar({
               ? "bg-primaryColor text-white"
               : "hover:border hover:border-primaryColor"
           }`}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              onDateSelect(day); // Trigger parent function
+            }
+          }}
+          tabIndex={0}
+          role="button"
           style={{
             width: "2.5rem",
             height: "2.5rem",
           }}
-          onClick={() => onDateSelect(day)}
+          onClick={() => {
+            onDateSelect(day); // Trigger parent function
+          }}
         >
           {format(day, "d")}
         </div>
@@ -92,6 +102,7 @@ export default function Calendar({
       {/* Header with navigation */}
       <div className="flex justify-between items-center mb-4">
         <button
+          type="button" // Prevent form submission
           onClick={prevMonth}
           className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"
         >
@@ -116,6 +127,7 @@ export default function Calendar({
         </div>
 
         <button
+          type="button" // Prevent form submission
           onClick={nextMonth}
           className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"
         >
@@ -138,12 +150,14 @@ export default function Calendar({
       {/* Buttons */}
       <div className="flex justify-end text-sm gap-2 mt-2">
         <button
+          type="button" // Prevent form submission
           className="text-primaryColor px-2 py-1 hover:bg-gray-200 rounded-xl transition-all"
           onClick={onClose}
         >
           Cancel
         </button>
         <button
+          type="button" // Prevent form submission
           className="text-primaryColor px-2 py-1 hover:bg-gray-200 rounded-xl transition-all"
           onClick={() => onDateSelect(currentMonth)}
         >

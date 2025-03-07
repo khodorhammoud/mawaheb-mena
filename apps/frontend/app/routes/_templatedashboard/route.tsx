@@ -27,17 +27,17 @@ export default function Layout() {
   return (
     <div>
       <Header />
-      <div className="flex mt-[12px]">
+      <div className="flex mt-[100px] mb-10">
         {isOnboarded ? (
           <>
             <Sidebar />
-            <div className="container mt-10 p-5 lg:mr-8">
+            <div className="container">
               <Outlet />
             </div>
           </>
         ) : (
           // Add 'w-full' to make the container take full width when no sidebar
-          <div className="container w-full mt-10 p-5">
+          <div className="container w-full mt-10 p-5 mb-10">
             <Outlet />
           </div>
         )}

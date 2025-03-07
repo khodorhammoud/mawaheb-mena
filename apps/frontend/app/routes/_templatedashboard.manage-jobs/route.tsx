@@ -46,7 +46,7 @@ export default function Layout() {
   const jobsWithApplications = useLoaderData<JobCardData[]>();
 
   return (
-    <div className="xl:p-8 p-2 mx-2 xl:mt-20 mt-24 font-['Switzer-Regular'] w-full">
+    <div className="xl:p-8 p-2 mx-2 font-['Switzer-Regular'] w-full">
       <JobManagement data={jobsWithApplications} />
     </div>
   );

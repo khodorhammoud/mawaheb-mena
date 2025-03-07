@@ -1,4 +1,7 @@
+import { FetcherWithComponents } from "@remix-run/react";
+
 export interface GeneralizableFormCardProps {
+  fetcher: FetcherWithComponents<any>; // ✅ Accept fetcher from UserProfile
   formType:
     | "text"
     | "number"
@@ -16,10 +19,13 @@ export interface GeneralizableFormCardProps {
   triggerIcon?: React.ReactNode;
   formName: string;
   fieldName: string;
+  acceptedFileTypes?: string;
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
   editable?: boolean;
+  useRichText?: boolean;
+  value?: string | number | string[]; // ✅ Ensure value prop exists
 }
 
 export interface FilledGeneralizableFormCardProps {

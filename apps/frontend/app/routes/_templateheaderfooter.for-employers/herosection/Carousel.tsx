@@ -115,7 +115,7 @@ const Carousel = () => {
   return (
     <div
       {...handlers}
-      className="relative w-full h-screen mx-auto overflow-hidden mt-10 select-none"
+      className="relative w-full h-screen mx-auto mt-10 select-none"
     >
       {/* Animated Finger Icon for Swiping Instruction */}
       <AnimatePresence>

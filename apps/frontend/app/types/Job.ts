@@ -4,7 +4,9 @@ import {
 import { InferSelectModel } from "drizzle-orm";
 import { JobApplicationStatus } from "./enums";
 
-export type Job = InferSelectModel<typeof jobsTable>;
+export type Job = InferSelectModel<typeof jobsTable> & {
+  requiredSkills?: { id: number; name: string; isStarred: boolean }[];
+};
 
 export interface JobCardData {
   job: Job;

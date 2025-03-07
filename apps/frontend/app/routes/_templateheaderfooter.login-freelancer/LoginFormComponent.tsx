@@ -23,7 +23,7 @@ export default function LoginFormComponent() {
   }, [actionData, navigate]);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white p-10">
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white pl-2 pr-12 mt-20">
       <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
         Log In
       </h1>

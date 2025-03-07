@@ -1,48 +1,45 @@
-import { useState } from "react";
-import ApplicantSheet from "./ApplicantSheet";
-import { AccountBio, Freelancer } from "~/types/User";
 import { JobApplicationStatus } from "~/types/enums";
-import { Button } from "~/components/ui/button";
+import { useState } from "react";
 import StatusDropdown from "~/routes/_templatedashboard.jobs.$jobId/common/JobStatus";
-import { useLoaderData } from "@remix-run/react";
-import { JobApplication } from "~/types/Job";
+import ApplicantSheet from "./ApplicantSheet";
 
 type ApplicantsProps = {
-  freelancers: Freelancer[];
-  accountBio: AccountBio;
-  about: string;
+  freelancers: any[];
+  accountBio: any;
   status: JobApplicationStatus;
 };
 
 export default function Applicants({
   freelancers,
   accountBio,
-  about,
   status,
 }: ApplicantsProps) {
-  const { applications } = useLoaderData<{ applications: JobApplication[] }>();
-
+  const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Handle the click event to open the sheet with selected freelancer
-  const handleApplicantClick = () => {
+  const handleApplicantClick = (freelancer: any) => {
+    setSelectedFreelancer(freelancer);
     setIsSheetOpen(true);
   };
 
   return (
     <div className="">
       {freelancers && freelancers.length > 0 ? (
-        freelancers.map((freelancer, index) => (
+        freelancers.map((freelancer) => (
           <div
-            className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl gap-8 mb-6"
-            key={index}
+            key={freelancer.id}
+            className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl p-4 mb-8"
           >
+            {/* Header Section */}
             <div className="mt-8 lg:mx-7 mx-4">
               <div className="md:flex grid sm:grid-cols-2 grid-cols-1 xl:gap-6 sm:gap-4 gap-8 justify-between">
-                <div>
+                <div className="">
                   <img
                     src={
-                      "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                      freelancer.email
+                        ? `https://www.gravatar.com/avatar/${freelancer.email}?d=identicon`
+                        : "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
                     }
                     alt="profile"
                     className="h-24 w-auto rounded-xl"
@@ -50,37 +47,46 @@ export default function Applicants({
                 </div>
 
                 <div className="lg:w-[40%] md:w-[30%]">
-                  <Button
-                    className="text-xl font-semibold tracking-wide mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300 p-0"
-                    onClick={handleApplicantClick}
-                  >
-                    {accountBio.firstName}{" "}
-                    {accountBio.lastName?.charAt(0).toUpperCase()}.
-                  </Button>
-                  <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
-                  <p className="text-sm leading-6">{about}</p>
-                </div>
+                  <h2 className="tracking-wide mb-4  inline-block transition-transform duration-300 p-0">
+                    <button
+                      className="text-xl font-semibold hover:underline"
+                      onClick={() => handleApplicantClick(freelancer)}
+                    >
+                      {freelancer.firstName ?? "Unknown"}{" "}
+                      {freelancer.lastName?.charAt(0).toUpperCase() ?? ""}.
+                    </button>
+                  </h2>
 
+                  <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
+                  <div
+                    className="text-sm leading-6 mb-6"
+                    dangerouslySetInnerHTML={{
+                      __html: freelancer.about || "No description available",
+                    }}
+                  ></div>
+                </div>
                 <div>
-                  {applications.map((application) => (
-                    <div key={application.id}>
-                      {/* Render application details */}
-                      <StatusDropdown
-                        currentStatus={application.status}
-                        applicationId={application.id}
-                      />
-                    </div>
-                  ))}
+                  <div>
+                    {/* Render application details */}
+                    <StatusDropdown
+                      currentStatus={status}
+                      applicationId={freelancer.id}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <ApplicantSheet
-              isOpen={isSheetOpen}
-              onClose={() => setIsSheetOpen(false)}
-            />
+            {selectedFreelancer && (
+              <ApplicantSheet
+                isOpen={isSheetOpen}
+                onClose={() => setIsSheetOpen(false)}
+                freelancer={selectedFreelancer}
+              />
+            )}
 
-            <div className="mx-7 mb-6">
+            {/* Timeline Section */}
+            <div className="mx-7">
               <div className="lg:flex grid grid-cols-2 gap-y-4 lg:justify-between">
                 <div className="flex flex-col items-center">
                   <p className="mb-1 text-sm text-gray-400">Invitation sent</p>

@@ -16,9 +16,6 @@ export function EmployerActions({
   const { accountType, handleTimesheetActions, timesheetActionsState } =
     useTimesheet();
 
-  console.log("isSubmitted", isSubmitted);
-  console.log("status", status);
-
   if (accountType !== AccountType.Employer || !isSubmitted) {
     return null;
   }

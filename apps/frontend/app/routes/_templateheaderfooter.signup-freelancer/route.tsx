@@ -1,5 +1,4 @@
 import SignUpFreelancerPage from "./Signup";
-
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   generateVerificationToken,
@@ -8,76 +7,95 @@ import {
 import { RegistrationError } from "../../common/errors/UserError";
 import { sendEmail } from "../../servers/emails/emailSender.server";
 import { authenticator } from "../../auth/auth.server";
-// import { useLoaderData } from "@remix-run/react";
 import { Freelancer } from "../../types/User";
 
 export async function action({ request }: ActionFunctionArgs) {
-  // holds the newly registered user object once registration is successful
-  let newFreelancer: Freelancer = null;
-  const clonedRequest = request.clone();
+  let newFreelancer: Freelancer | null = null;
 
-  // use the authentication strategy to authenticate the submitted form data and register the user
   try {
-    const userId = await authenticator.authenticate("register", request);
-    newFreelancer = (await getProfileInfo({
-      userId,
-    })) as Freelancer;
-  } catch (error) {
-    // handle registration errors
-    if (error instanceof RegistrationError) {
-      console.error("Registration error:", error);
-      return Response.json({
-        success: false,
-        error: {
-          code: (error as RegistrationError).code,
-          message: (error as RegistrationError).message,
+    const formData = await request.clone().formData();
+
+    // Extract necessary fields
+    const termsAccepted = formData.get("termsAccepted");
+    const email = formData.get("email");
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+
+    // Backend validation for terms acceptance
+    if (!termsAccepted || termsAccepted !== "on") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: "You must accept the terms and conditions to proceed.",
+          },
         },
-      });
+        { status: 400 }
+      );
     }
-    console.error("Error registering user:", error);
 
-    return Response.json({ success: false, error });
-  }
-  // if registration was not successful, return an error response
-  if (!newFreelancer)
-    return Response.json({
-      success: false,
-      error: false,
-      message: "Failed to register user",
-    });
+    const userId = await authenticator.authenticate("register", request);
 
-  // send the account verification email
-  try {
-    const body = await clonedRequest.formData();
+    newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
 
-    const email = body.get("email") as string;
-    const name = (
-      body.get("firstName") ? body.get("firstName") : body.get("lastName")
-    ) as string;
-    const userId = newFreelancer.account?.user?.id;
+    if (!newFreelancer) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: "Failed to register user. Please try again later.",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     const verificationToken = await generateVerificationToken(userId);
-    sendEmail({
+    await sendEmail({
       type: "accountVerification",
-      email: email,
-      name: name,
+      email: email as string,
+      name: (firstName || lastName) as string,
       data: {
         // TODO: change the verification link to the actual production URL
         verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
       },
     });
-  } catch (error) {
-    console.error("Error sending verification email:", error);
-    return Response.json({ success: false, error });
-  }
 
-  return Response.json({ success: true, newFreelancer });
+    return Response.json({ success: true, newFreelancer });
+  } catch (error) {
+    if (
+      error instanceof RegistrationError &&
+      error.code === "Email already exists"
+    ) {
+      return Response.json(
+        {
+          success: false,
+          error: { message: "The email address is already registered." },
+        },
+        { status: 400 }
+      );
+    }
+
+    return Response.json(
+      {
+        success: false,
+        error: {
+          message: "An unexpected error occurred. Please try again later.",
+        },
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // If the user is already authenticated redirect to / dashboard directly
-  return await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
-  });
+  const user = await authenticator.isAuthenticated(request);
+
+  if (user) {
+    return Response.json({ redirect: "/dashboard" });
+  }
+
+  return Response.json({ success: false });
 }
 
 export default function Layout() {

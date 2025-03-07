@@ -5,9 +5,10 @@ import type { FormStateType, RepeatableInputType } from "../types";
 
 export const useFormState = (formType: string, fieldName: string) => {
   const initialData = useLoaderData();
+
   const [inputValue, setInputValue] = useState<FormStateType>(
     formType !== "repeatable"
-      ? (initialData?.[fieldName] ?? (formType === "increment" ? 0 : ""))
+      ? (initialData?.[fieldName] ?? null) // ✅ Use null as the default value
       : null
   );
 

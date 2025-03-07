@@ -10,6 +10,9 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ["dompurify"],
+  },
   plugins: [
     remix({
       future: {

@@ -1,12 +1,9 @@
-// This is the file of the success messages and error ones of all the GeneralizableFormCard, and the save button + its functionality
-
 import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";
 import RepeatableFields from "./RepeatableFields";
 import type { FormContentProps } from "../types";
 
-// Main FormContent component
 const FormContent = ({
   formType,
   formState,
@@ -36,16 +33,8 @@ const FormContent = ({
 
     if (fetcher.data?.error) {
       return (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-2">
           <span className="block sm:inline">{fetcher.data.error.message}</span>
-        </div>
-      );
-    }
-
-    if (fetcher.data?.success) {
-      return (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-6">
-          <span className="block sm:inline">Updated successfully</span>
         </div>
       );
     }
@@ -59,45 +48,77 @@ const FormContent = ({
     // Add target-updated field
     formData.append("target-updated", formName);
 
+    // console.log(
+    //   "repeatableInputValues before form submission:",
+    //   repeatableInputValues
+    // );
+    // console.log(
+    //   "repeatableInputFiles before form submission:",
+    //   repeatableInputFiles
+    // );
+
     // Handle repeatable fields
     if (formType === "repeatable") {
       formData.append(
         repeatableFieldName,
         JSON.stringify(repeatableInputValues)
       );
+
+      // Append files
       repeatableInputFiles.forEach((file, index) => {
         if (file) {
+          // console.log(`Appending file at index ${index}:`, file);
           formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
+        } else {
+          console.warn(`No file found at index ${index}`);
         }
       });
     }
 
+    // console.log("Final FormData entries:", Array.from(formData.entries()));
+
+    // Pass the formData to the onSubmit callback
     onSubmit(e, formData);
   };
 
-  // Fix: Add Type Guard to handle 'prev' correctly when it's a number
   const handleIncrement = (step: number) => {
-    setInputValue((prev) => {
-      // Check if prev is a number
-      if (typeof prev === "number") {
-        fetcher.submit(
-          {
-            "target-updated": formName,
-            [fieldName]: (prev + step).toString(),
-          },
-          { method: "post" }
-        );
-        return prev + step;
-      } else {
-        // Handle cases where prev is not a number
-        console.warn("Expected 'prev' to be a number but got:", typeof prev);
-        return prev; // Don't modify the state if it's not a number
-      }
-    });
+    const currentValue = inputValue;
+
+    if (typeof currentValue === "number") {
+      // ✅ Increment the number
+      const newValue = currentValue + step;
+      fetcher.submit(
+        {
+          "target-updated": formName,
+          [fieldName]: newValue.toString(),
+        },
+        { method: "post" }
+      );
+      setInputValue(newValue);
+    } else if (currentValue === null) {
+      // ✅ If the current value is null, start from the step value
+      setInputValue(step);
+    } else if (currentValue instanceof File) {
+      // ✅ If it's a File, log a warning and return it unchanged
+      console.warn("Cannot increment a File type");
+      setInputValue(currentValue);
+    } else {
+      // ✅ Handle unexpected types (like strings)
+      console.warn("Expected a number or null, but got:", typeof currentValue);
+      setInputValue(currentValue);
+    }
   };
 
+  // Numeric validation handler
+  const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/[^0-9.]/g, ""); // Remove non-numeric characters
+    setInputValue(numericValue);
+  };
+
+  // console.log("repeatableInputFiles in current state:", repeatableInputFiles);
+
   return (
-    //POPUPS
     <div className="">
       <fetcher.Form
         method="post"
@@ -132,14 +153,17 @@ const FormContent = ({
           })
         )}
 
-        <DialogFooter>
-          <Button
-            type="submit"
-            className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
-          >
-            Save
-          </Button>
-        </DialogFooter>
+        {/* ✅ Conditionally render the Save button */}
+        {formType !== "increment" && (
+          <DialogFooter>
+            <Button
+              type="submit"
+              className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        )}
       </fetcher.Form>
     </div>
   );

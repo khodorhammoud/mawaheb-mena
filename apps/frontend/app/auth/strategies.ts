@@ -7,7 +7,7 @@ import {
 } from "../servers/user.server";
 import { compare } from "bcrypt-ts";
 import { Employer, Freelancer } from "../types/User";
-import { AccountType, EmployerAccountType } from "../types/enums";
+import { AccountType, EmployerAccountType, Provider } from "../types/enums";
 
 export const loginStrategy = new FormStrategy(
   async ({ form }): Promise<number> => {
@@ -15,7 +15,21 @@ export const loginStrategy = new FormStrategy(
     const password = form.get("password") as string;
     const accountType = form.get("accountType") as string;
     email = email.toLowerCase().trim();
+    console.log(email, password, accountType);
     const user = await getUser({ userEmail: email }, true);
+    console.log(user);
+
+    if (accountType === "admin") {
+      if (
+        !user ||
+        user.role !== "admin" ||
+        !(await compare(password, user.passHash!))
+      ) {
+        throw new Error("Invalid admin credentials");
+      }
+      return user.id;
+    }
+
     if (user && (await getUserAccountType(user.id!)) !== accountType) {
       throw new Error(`This ${accountType} account does not exist`);
     }
@@ -52,27 +66,29 @@ export const registerationStrategy = new FormStrategy(
           profile = await registerEmployer({
             account: {
               user: {
-                firstName: firstName.toLowerCase().trim(),
-                lastName: lastName.toLowerCase().trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 email: email.toLowerCase().trim(),
                 password,
               },
             },
             employerAccountType,
-          } as Employer);
+            provider: Provider.Credentials,
+          } as Employer & { provider: Provider });
 
           break;
         case AccountType.Freelancer:
           profile = await registerFreelancer({
             account: {
               user: {
-                firstName: firstName.toLowerCase().trim(),
-                lastName: lastName.toLowerCase().trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 email: email.toLowerCase().trim(),
                 password,
               },
             },
-          } as Freelancer);
+            provider: Provider.Credentials,
+          } as Freelancer & { provider: Provider });
           break;
         default:
           throw new Error("Invalid registration type");

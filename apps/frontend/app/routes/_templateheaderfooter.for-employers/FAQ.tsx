@@ -73,31 +73,39 @@ const FAQ = () => {
             >
               {/* Header of the card with question and toggle icon */}
               <CardHeader
-                className="grid grid-cols-[80px_auto_60px] items-center cursor-pointer col-span-2 border-b-[1px] border-slate-200 pb-8"
+                className="grid md:grid-cols-[100px_auto_80px] grid-cols-[60px_auto_60px] items-center cursor-pointer col-span-2 border-slate-200"
                 onClick={() => toggleFAQ(faq.faqNb)} // faq number
               >
-                <div className="text-2xl font-bold text-primaryColor justify-self-center pt-1">
+                <div className="text-2xl font-bold text-primaryColor justify-self-center md:py-6 py-4">
                   {faq.faqNb < 10 ? `0${faq.faqNb}` : faq.faqNb}
                   {/* faq number */}
                 </div>
-                <CardTitle className="text-2xl font-medium flex justify-start items-center pl-2 overflow-hidden">
+                <CardTitle className="md:text-2xl text-xl font-medium flex justify-start items-center pr-2 overflow-hidden">
                   {faq.faqQuestion}
                   {/* faq question */}
                 </CardTitle>
-                <div className="flex justify-end items-center pr-2">
-                  {openFAQ === faq.faqNb ? ( // faq number
+
+                {/* +/- ICONS */}
+                <div
+                  className={`flex justify-center items-center w-full h-full ${
+                    openFAQ === faq.faqNb
+                      ? "bg-primaryColor text-white rounded-se-lg"
+                      : "bg-black text-white rounded-r-lg"
+                  }`}
+                >
+                  {openFAQ === faq.faqNb ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      className="w-7 h-7 text-primaryColor"
+                      className="w-6 h-6"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M12 4.5v15m7.5-7.5h-15"
+                        d="M5 12h14"
                       />
                     </svg>
                   ) : (
@@ -107,12 +115,12 @@ const FAQ = () => {
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      className="w-7 h-7 text-primaryColor"
+                      className="w-6 h-6"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M5 12h14"
+                        d="M12 4.5v15m7.5-7.5h-15"
                       />
                     </svg>
                   )}
