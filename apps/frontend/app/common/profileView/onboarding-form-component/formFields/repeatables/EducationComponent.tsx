@@ -33,7 +33,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         id="graduationYear[]"
         placeholder="Graduation Year"
         label="Graduation Year"
-        defaultValue={data.graduationYear.toString()}
+        defaultValue={data.graduationYear ? data.graduationYear.toString() : ""}
         onChange={(e) =>
           onTextChange({ ...data, graduationYear: parseInt(e.target.value) })
         }

@@ -168,22 +168,6 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                           </span>
                         </Badge>
                       </div>
-
-                      <div className="w-[200px]">
-                        <AppFormField
-                          type="increment"
-                          id={skill.skillId.toString()}
-                          name={skill.skillId.toString()}
-                          defaultValue={skill.yearsOfExperience}
-                          onChange={(e) =>
-                            handleYearsChange(
-                              skill.skillId,
-                              parseInt(e.target.value)
-                            )
-                          }
-                        />
-                        <span className="text-sm text-gray-500">years</span>
-                      </div>
                     </div>
                   ))}
                 </div>
