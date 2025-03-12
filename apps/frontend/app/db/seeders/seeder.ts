@@ -755,7 +755,7 @@ async function seed() {
         "Hindi",
       ]) {
         await tx.insert(languagesTable).values({
-          name: language,
+          language: language,
         });
       }
 
