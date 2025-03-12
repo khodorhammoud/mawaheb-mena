@@ -3,39 +3,46 @@ version: "3.8"
 services:
   frontend:
     build:
-      context: .
-      dockerfile: frontend.Dockerfile
-    # No command override - use the CMD from Dockerfile
+      context: ./apps/frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - CMS_BASE_URL=http://cms:3000
+      - PGHOST=${PGHOST}
+      - PGDATABASE=${PGDATABASE}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - ENDPOINT_ID=${ENDPOINT_ID}
+    restart: unless-stopped
     depends_on:
       - cms
-    networks:
-      - mawaheb-network
-    restart: unless-stopped
 
   cms:
     build:
-      context: .
-      dockerfile: cms.Dockerfile
-    # No command override - use the CMD from Dockerfile
+      context: ./apps/cms
+      dockerfile: Dockerfile
     ports:
-      - "3001:3000"
+      - "3001:3001"
     environment:
       - NODE_ENV=production
-      - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_for_development}
+      - DATABASE_URL=${DATABASE_URL}
+      - SESSION_SECRET=${SESSION_SECRET}
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
-      - cms_data:/app/apps/cms/.keystone
-    networks:
-      - mawaheb-network
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - cms
     restart: unless-stopped
 
 networks:
-  mawaheb-network:
+  default:
     driver: bridge
-
-volumes:
-  cms_data:
