@@ -13,7 +13,7 @@ import {
   getFreelancerApplications,
   updateFreelancerAccountStatus,
   safeParseJSON,
-} from "../admin.server";
+} from "~/servers/admin.server";
 
 import type {
   ActionResponse,
@@ -62,6 +62,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   // 3) Parse JSON fields with proper error handling
   const freelancer = detailRow.freelancer;
+
+  // console.log("Raw portfolio data:", freelancer.portfolio);
+  // console.log("Raw workHistory data:", freelancer.workHistory);
+  // console.log("Raw educations data:", freelancer.educations);
+  // console.log("Raw certificates data:", freelancer.certificates);
+
   const parsedFreelancer = {
     ...freelancer,
     fieldsOfExpertise: Array.isArray(freelancer.fieldsOfExpertise)
@@ -91,6 +97,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
     ),
   };
 
+  // console.log("Parsed portfolio:", parsedFreelancer.portfolio);
+  // console.log("Parsed workHistory:", parsedFreelancer.workHistory);
+  // console.log("Parsed educations:", parsedFreelancer.educations);
+  // console.log("Parsed certificates:", parsedFreelancer.certificates);
+
   // 4) Convert application date to ISO
   const jobApplications = apps.map((app) => ({
     id: app?.id,
@@ -99,6 +110,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     status: app?.status,
     createdAt: app?.createdAt.toISOString(),
     freelancerId: app?.freelancerId,
+    matchScore: (app as any)?.matchScore,
   }));
 
   return json<LoaderData>({
@@ -587,7 +599,7 @@ function PortfolioSection({ freelancer }: { freelancer: FreelancerData }) {
                   <img
                     src={project.projectImageUrl}
                     alt={project.projectName}
-                    className="mt-2 rounded-lg max-w-full h-auto"
+                    className="mt-2 rounded-lg w-auto h-48"
                   />
                 </div>
               )}
@@ -827,6 +839,7 @@ function ApplicationsArea({
                   id: app.id,
                   status: app.status,
                   createdAt: app.createdAt,
+                  matchScore: app.matchScore,
                 },
                 job: {
                   id: app.jobId,
@@ -834,6 +847,7 @@ function ApplicationsArea({
                 },
               }))}
               showFreelancer={false}
+              showMatchScore={true}
             />
           ) : (
             <p className="text-sm text-gray-500">

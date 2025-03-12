@@ -12,7 +12,7 @@ interface FreelancerProfileProps {
     fieldsOfExpertise: string[];
     jobsOpenTo: string[];
     preferredProjectTypes: string[];
-    dateAvailableFrom: string;
+    dateAvailableFrom: string | Date;
     skills: Array<{
       id: number;
       label: string;
@@ -61,6 +61,17 @@ export function FreelancerProfile({
         freelancer.preferredProjectTypes as unknown as string,
         []
       );
+
+  // Format date properly
+  const formatDate = (date: string | Date | null | undefined): string => {
+    if (!date) return "-";
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "-";
+    }
+  };
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -338,9 +349,7 @@ export function FreelancerProfile({
             <div>
               <p className="text-sm text-gray-500">Available From:</p>
               <p className="mt-1 text-sm text-gray-900">
-                {freelancer.dateAvailableFrom
-                  ? new Date(freelancer.dateAvailableFrom).toLocaleDateString()
-                  : "-"}
+                {formatDate(freelancer.dateAvailableFrom)}
               </p>
             </div>
             <div>

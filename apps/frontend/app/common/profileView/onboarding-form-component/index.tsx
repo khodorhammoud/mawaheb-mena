@@ -11,8 +11,11 @@ import { useFormSubmission } from "./hooks/useFormSubmission";
 import FormContent from "./formFields/FormContent";
 import { FieldTemplates } from "./formFields/fieldTemplates";
 import { IoPencilSharp } from "react-icons/io5";
-import type { GeneralizableFormCardProps } from "./types";
-import type { FormStateType, RepeatableInputType } from "./types";
+import type {
+  FormStateType,
+  RepeatableInputType,
+  GeneralizableFormCardProps,
+} from "./types";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const formState = useFormState(props.formType, props.fieldName);

@@ -5,8 +5,29 @@ import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable
 import {
   getEmployerDetails,
   getEmployerApplications,
-  type Application,
-} from "~/routes/admin.server";
+} from "~/servers/admin.server";
+
+// Define our own Application type to handle both Date and string for createdAt
+interface Application {
+  application: {
+    id: number;
+    status: JobApplicationStatus;
+    createdAt: Date | string;
+    matchScore?: number;
+  };
+  job: {
+    id: number;
+    title: string;
+  };
+  freelancer: {
+    id: number;
+    user: {
+      firstName: string;
+      lastName: string;
+      email: string;
+    };
+  };
+}
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { employerId } = params;
@@ -22,9 +43,22 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   const applications = await getEmployerApplications(employerId);
 
+  // Format dates to ensure they're properly handled
+  const formattedApplications = applications.map((app) => ({
+    ...app,
+    application: {
+      ...app.application,
+      createdAt:
+        app.application.createdAt &&
+        typeof app.application.createdAt === "object"
+          ? (app.application.createdAt as Date).toISOString()
+          : app.application.createdAt,
+    },
+  }));
+
   return {
     employer: employerData.employer,
-    applications,
+    applications: formattedApplications,
   };
 }
 
@@ -78,6 +112,7 @@ export default function AllJobApplications() {
                   <ApplicationsTable
                     applications={jobApplications}
                     showJob={false}
+                    showMatchScore={true}
                   />
                 </div>
               </div>

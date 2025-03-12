@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "id": "dbce91bd-cdf7-4e6f-9c3d-a6feafd6a30c",
+=======
+  "id": "8358201e-e7a9-4911-8c2e-30d93d06f285",
+>>>>>>> dev
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",

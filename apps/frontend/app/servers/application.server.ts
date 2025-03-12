@@ -14,6 +14,20 @@ import {
 } from "~/db/drizzle/schemas/schema";
 import { JobApplicationStatus, CompensationType } from "~/types/enums";
 
+// Helper function to safely parse JSON
+function safeParseJSON<T>(
+  jsonString: string | null | undefined,
+  defaultValue: T
+): T {
+  if (!jsonString) return defaultValue;
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return defaultValue;
+  }
+}
+
 export async function getApplicationDetails(applicationId: string) {
   // Create table aliases
   const freelancerAccountTable = aliasedTable(
@@ -118,13 +132,20 @@ export async function getApplicationDetails(applicationId: string) {
     skills: freelancerSkills,
     fieldsOfExpertise: Array.isArray(freelancer.fieldsOfExpertise)
       ? freelancer.fieldsOfExpertise
-      : JSON.parse((freelancer.fieldsOfExpertise as string) || "[]"),
+      : safeParseJSON((freelancer.fieldsOfExpertise as string) || "[]", []),
     jobsOpenTo: Array.isArray(freelancer.jobsOpenTo)
       ? freelancer.jobsOpenTo
-      : JSON.parse((freelancer.jobsOpenTo as string) || "[]"),
+      : safeParseJSON((freelancer.jobsOpenTo as string) || "[]", []),
     preferredProjectTypes: Array.isArray(freelancer.preferredProjectTypes)
       ? freelancer.preferredProjectTypes
-      : JSON.parse((freelancer.preferredProjectTypes as string) || "[]"),
+      : safeParseJSON((freelancer.preferredProjectTypes as string) || "[]", []),
+    dateAvailableFrom:
+      // Ensure dateAvailableFrom is properly formatted
+      freelancer.dateAvailableFrom
+        ? typeof freelancer.dateAvailableFrom === "object"
+          ? (freelancer.dateAvailableFrom as Date).toISOString()
+          : freelancer.dateAvailableFrom
+        : null,
   };
 
   return {
