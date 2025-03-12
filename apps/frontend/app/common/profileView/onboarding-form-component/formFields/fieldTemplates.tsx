@@ -373,7 +373,7 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 // }
 
 export const VideoFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+  FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
     // Generate thumbnail on mount for non-YouTube videos
     const isYouTube =
@@ -382,6 +382,25 @@ export const VideoFieldTemplate: FieldTemplateState = {
     // States
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
+
+    // Generate a thumbnail for non-YouTube videos
+    const captureThumbnail = (url: string) => {
+      const video = document.createElement("video");
+      video.src = url;
+      video.crossOrigin = "anonymous";
+      video.currentTime = 1;
+
+      video.addEventListener("loadeddata", () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnailUrl = canvas.toDataURL("image/png");
+        setThumbnail(thumbnailUrl);
+      });
+    };
+
     React.useEffect(() => {
       if (!isYouTube) {
         captureThumbnail(videoUrl);
@@ -416,24 +435,6 @@ export const VideoFieldTemplate: FieldTemplateState = {
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
-
-    // Generate a thumbnail for non-YouTube videos
-    const captureThumbnail = (url: string) => {
-      const video = document.createElement("video");
-      video.src = url;
-      video.crossOrigin = "anonymous";
-      video.currentTime = 1;
-
-      video.addEventListener("loadeddata", () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext("2d");
-        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const thumbnailUrl = canvas.toDataURL("image/png");
-        setThumbnail(thumbnailUrl);
-      });
-    };
 
     return (
       <div className="flex flex-col w-full h-auto">

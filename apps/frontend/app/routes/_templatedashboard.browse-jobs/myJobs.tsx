@@ -69,7 +69,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       let category = "Applied"; // Default
 
       if (job.applicationStatus) {
-        if (job.applicationStatus.toLowerCase() === "accepted") {
+        if (job.applicationStatus.toLowerCase() === "approved") {
           category = job.status === "closed" ? "Completed Jobs" : "Active Jobs";
         } else if (job.applicationStatus.toLowerCase() === "rejected") {
           category = "Opportunity Closed";

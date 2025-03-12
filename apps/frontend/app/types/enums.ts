@@ -14,6 +14,7 @@ export enum Provider {
 export enum AccountType {
   Freelancer = "freelancer",
   Employer = "employer",
+  Admin = "admin",
 }
 
 export enum EmployerAccountType {

@@ -1,13 +1,9 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData } from "@remix-run/react";
 import { JobApplicationStatus } from "~/types/enums";
 import { ApplicationOverview } from "~/components/application/ApplicationOverview";
 import { JobDetails } from "~/components/application/JobDetails";
 import { FreelancerProfile } from "~/components/application/FreelancerProfile";
-import {
-  getApplicationDetails,
-  updateApplicationStatus,
-} from "../application.server";
 
 // Helper function to safely parse JSON
 function safeParseJSON<T>(
@@ -30,6 +26,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Application ID is required", { status: 400 });
   }
 
+  // Import server functions dynamically inside the loader
+  const { getApplicationDetails } = await import(
+    "~/servers/application.server"
+  );
   return getApplicationDetails(applicationId);
 }
 
@@ -39,10 +39,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const applicationId = params.applicationId;
 
   if (!applicationId || !status) {
-    return json({ success: false, error: "Missing required fields" });
+    return Response.json({ success: false, error: "Missing required fields" });
   }
 
-  return json(await updateApplicationStatus(applicationId, status));
+  // Import server functions dynamically inside the action
+  const { updateApplicationStatus } = await import(
+    "~/servers/application.server"
+  );
+  return Response.json(await updateApplicationStatus(applicationId, status));
 }
 
 export default function ApplicationDetails() {

@@ -26,6 +26,7 @@ import {
   FreelancerData,
   JobApplication,
 } from "~/common/admin-pages/types";
+import { getApplicationMatchScore } from "~/servers/job.server";
 
 // Types
 type DbJobApplication = typeof jobApplicationsTable.$inferSelect;
@@ -191,7 +192,26 @@ export async function getApplications(params: {
   const finalQuery =
     conditions.length > 0 ? query.where(and(...conditions)) : query;
 
-  return await finalQuery;
+  const results = await finalQuery;
+
+  // Format dates in the results
+  return results.map((result) => ({
+    ...result,
+    application: {
+      ...result.application,
+      createdAt:
+        result.application.createdAt instanceof Date
+          ? result.application.createdAt.toISOString()
+          : result.application.createdAt,
+    },
+    job: {
+      ...result.job,
+      createdAt:
+        result.job.createdAt instanceof Date
+          ? result.job.createdAt.toISOString()
+          : result.job.createdAt,
+    },
+  }));
 }
 
 // ... existing getApplicationDetails and updateApplicationStatus functions ...
@@ -280,7 +300,8 @@ export interface Application {
   application: {
     id: number;
     status: JobApplicationStatus;
-    createdAt: Date;
+    createdAt: Date | string;
+    matchScore?: number;
   };
   job: {
     id: number;
@@ -320,12 +341,17 @@ export async function getEmployerApplications(employerId: string) {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(jobsTable.employerId, parseInt(employerId)));
 
-  return applications.map(
+  // Map applications and calculate match scores
+  const mappedApplications = applications.map(
     (app): Application => ({
       application: {
         id: app.job_applications.id,
         status: app.job_applications.status as JobApplicationStatus,
-        createdAt: app.job_applications.createdAt,
+        createdAt:
+          app.job_applications.createdAt &&
+          typeof app.job_applications.createdAt === "object"
+            ? (app.job_applications.createdAt as Date).toISOString()
+            : app.job_applications.createdAt,
       },
       job: {
         id: app.jobs.id,
@@ -345,6 +371,21 @@ export async function getEmployerApplications(employerId: string) {
       },
     })
   );
+
+  // Calculate match scores for each application
+  for (const app of mappedApplications) {
+    try {
+      const matchScore = await getApplicationMatchScore(
+        app.job.id,
+        app.freelancer.id
+      );
+      app.application.matchScore = matchScore;
+    } catch (error) {
+      console.error(`Error calculating match score: ${error}`);
+    }
+  }
+
+  return mappedApplications;
 }
 
 export async function getJobApplications(employerId: string, jobId: string) {
@@ -418,10 +459,17 @@ export function safeParseJSON<T>(
   defaultValue: T
 ): T {
   if (!jsonString) return defaultValue;
+
+  // If it's already an object or array, return it directly
+  if (typeof jsonString === "object") {
+    return jsonString as unknown as T;
+  }
+
   try {
     return JSON.parse(jsonString) as T;
   } catch (error) {
     console.error("Error parsing JSON:", error);
+    console.error("Failed to parse:", jsonString);
     return defaultValue;
   }
 }
@@ -464,7 +512,26 @@ export async function getFreelancerApplications(freelancerId: number) {
     .where(eq(jobApplicationsTable.freelancerId, freelancerId))
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id));
 
-  return apps;
+  // Calculate match scores for each application
+  const appsWithScores = await Promise.all(
+    apps.map(async (app) => {
+      try {
+        const matchScore = await getApplicationMatchScore(
+          app.jobId,
+          freelancerId
+        );
+        return {
+          ...app,
+          matchScore,
+        };
+      } catch (error) {
+        console.error(`Error calculating match score: ${error}`);
+        return app;
+      }
+    })
+  );
+
+  return appsWithScores;
 }
 
 /**
@@ -534,7 +601,23 @@ export async function getJobDetails(jobId: number) {
     );
 
   // Return the first row or `null` if none found
-  return jobDetails.length > 0 ? jobDetails[0] : null;
+  if (jobDetails.length === 0) {
+    return null;
+  }
+
+  // Format dates before returning
+  const result = jobDetails[0];
+  if (result.job.createdAt && typeof result.job.createdAt === "object") {
+    // Use type assertion to handle the mixed type
+    result.job = {
+      ...result.job,
+      createdAt: (
+        result.job.createdAt as Date
+      ).toISOString() as unknown as Date,
+    };
+  }
+
+  return result;
 }
 
 export async function getSkillsForJob(jobId: number) {
@@ -583,15 +666,51 @@ export async function getJobApplicationsBasic(jobId: number) {
       eq(jobApplicationsTable.freelancerId, freelancersTable.id)
     )
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
-    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .orderBy(jobApplicationsTable.createdAt);
+    .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
-  return applications;
+  // Calculate match scores for each application
+  const applicationsWithScores = await Promise.all(
+    applications.map(async (app) => {
+      try {
+        const matchScore = await getApplicationMatchScore(
+          jobId,
+          app.freelancer.id
+        );
+        return {
+          ...app,
+          application: {
+            ...app.application,
+            matchScore,
+            createdAt:
+              app.application.createdAt &&
+              typeof app.application.createdAt === "object"
+                ? (app.application.createdAt as Date).toISOString()
+                : app.application.createdAt,
+          },
+        };
+      } catch (error) {
+        console.error(`Error calculating match score: ${error}`);
+        return {
+          ...app,
+          application: {
+            ...app.application,
+            createdAt:
+              app.application.createdAt &&
+              typeof app.application.createdAt === "object"
+                ? (app.application.createdAt as Date).toISOString()
+                : app.application.createdAt,
+          },
+        };
+      }
+    })
+  );
+
+  return applicationsWithScores;
 }
 
 /**
  *
- * ### The 2 new functions for your “Jobs List”
+ * ### The 2 new functions for your "Jobs List"
  *
  * We'll replicate the queries from the route:
  * 1) getBasicJobs() -> "First get jobs with their basic info"

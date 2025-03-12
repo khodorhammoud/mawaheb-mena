@@ -8,7 +8,7 @@ import { getCurrentUserAccountType } from "~/servers/user.server";
 import { AccountType } from "~/types/enums";
 import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import DesignJobs from "./designJobs";
+import RecommendedJobs from "./recommendedJobs";
 import AllJobs from "./allJobs";
 import MyJobs from "./myJobs";
 import {
@@ -21,15 +21,16 @@ import { Job } from "~/types/Job";
 import SingleJobView from "./singleJobView";
 import { getJobSkills } from "~/servers/skill.server";
 import { Skill } from "~/types/Skill";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   getReview,
   saveReview,
   updateReview,
   hasAcceptedApplication,
   getEmployerIdByJobId,
+  getAccountIdbyUserId,
 } from "~/servers/job.server";
-import { getFreelancerIdByUserId } from "~/servers/freelancer.server";
+import { getFreelancerIdByAccountId } from "~/servers/freelancer.server";
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
@@ -37,21 +38,22 @@ export type LoaderData = {
   jobSkills: Skill[];
   review?: { rating: number; comment: string; employerId: number } | null;
   canReview: boolean; // ✅ Add this
+  freelancerId: number | null;
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  const accountId = await requireUserIsFreelancerPublished(request);
-  if (!accountId) {
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) {
     return redirect("/login-employer");
   }
 
   const formData = await request.formData();
 
   const actionType = formData.get("_action");
-  const jobId = Number(formData.get("jobId"));
-  const employerId = Number(formData.get("employerId"));
-  const rating = Number(formData.get("rating"));
-  const comment = formData.get("comment") as string;
+  const jobId = Number(formData.get("jobId") || 0);
+  const employerId = Number(formData.get("employerId") || 0);
+  const rating = Number(formData.get("rating") || 0);
+  const comment = (formData.get("comment") as string) || "";
 
   if (!jobId || !employerId) {
     return Response.json({
@@ -60,7 +62,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  const freelancerId = await getFreelancerIdByUserId(accountId);
+  const accountId = await getAccountIdbyUserId(userId);
+
+  const freelancerId = await getFreelancerIdByAccountId(accountId);
   if (!freelancerId) {
     return Response.json({
       success: false,
@@ -115,11 +119,13 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const accountId = await requireUserIsFreelancerPublished(request);
-  if (!accountId) return redirect("/login-employer");
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) return redirect("/login-employer");
+  // console.log("🚀 Loader: Account ID =", userId);
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
   if (accountType !== AccountType.Freelancer) return redirect("/dashboard");
+  // console.log("🚀 Loader: Account Type =", accountType);
 
   const url = new URL(request.url);
   const jobId = parseInt(url.searchParams.get("jobId") || "0", 10);
@@ -129,7 +135,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     employerId = (await getEmployerIdByJobId(jobId)) || 0;
   }
 
-  const freelancerId = await getFreelancerIdByUserId(accountId);
+  const accountId = await getAccountIdbyUserId(userId);
+  // console.log("🚀 Loader: Account ID =", accountId);
+
+  const freelancerId = await getFreelancerIdByAccountId(accountId);
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
+
   if (!freelancerId) {
     return Response.json({
       success: false,
@@ -139,8 +150,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       canReview: false,
     });
   }
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
+  // console.log("🚀 Loader: Job Skills =", jobSkills);
 
   const canReview =
     employerId > 0
@@ -162,8 +175,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       };
     }
   }
-
-  return Response.json({ jobSkills, review: existingReview, canReview });
+  return Response.json({
+    jobSkills,
+    review: existingReview,
+    canReview,
+    freelancerId,
+  });
 }
 
 export default function Layout() {
@@ -172,6 +189,8 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
 
   const fetcher = useFetcher<LoaderData>();
+  const { freelancerId } = useLoaderData<LoaderData>();
+  // console.log("freelancerId", freelancerId);
 
   const handleJobSelect = async (jobData: Job) => {
     setIsLoading(true);
@@ -218,12 +237,15 @@ export default function Layout() {
 
       <Tabs defaultValue="recommended-jobs" className="">
         <TabsList className="mt-4 mb-6">
-          <TabsTrigger value="recommended-jobs">Design Jobs</TabsTrigger>
+          <TabsTrigger value="recommended-jobs">Recommended Jobs</TabsTrigger>
           <TabsTrigger value="all-jobs">All Jobs</TabsTrigger>
           <TabsTrigger value="my-jobs">My Jobs</TabsTrigger>
         </TabsList>
         <TabsContent value="recommended-jobs" className="">
-          <DesignJobs onJobSelect={handleJobSelect} />
+          <RecommendedJobs
+            onJobSelect={handleJobSelect}
+            freelancerId={freelancerId}
+          />
         </TabsContent>
         <TabsContent value="all-jobs">
           <AllJobs onJobSelect={handleJobSelect} />

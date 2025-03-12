@@ -43,6 +43,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 // Layout component
 export default function Layout() {
+  // Get the data from the loader with the correct type
   const jobsWithApplications = useLoaderData<JobCardData[]>();
 
   return (

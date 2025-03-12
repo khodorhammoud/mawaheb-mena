@@ -2,7 +2,7 @@ import Heading from "~/common/profileView/heading/Heading";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
-import { FaDollarSign } from "react-icons/fa";
+import { FaDollarSign, FaFileUpload } from "react-icons/fa";
 import { AiFillStar } from "react-icons/ai";
 import { FreelancerOnboardingData } from "../types";
 
@@ -39,6 +39,23 @@ export default function FreelancerOnboardingScreen() {
 
       <Heading />
       <div className="grid grid-cols-1 mb-4">
+        {/* CV Upload */}
+        <div className="grid mb-4 grid-cols-1 gap-4 md:ml-20 md:mr-20 ml-10 mr-10">
+          <GeneralizableFormCard
+            formType="file"
+            cardTitle="Upload your CV"
+            cardSubtitle="Upload your CV to automatically fill your profile information"
+            popupTitle="Upload CV"
+            triggerLabel="Upload CV"
+            formName="freelancer-cv"
+            fieldName="cvFile"
+            triggerIcon={<FaFileUpload />}
+            editable={true}
+            acceptedFileTypes=".pdf,.doc,.docx"
+            showLoadingOnSubmit={true}
+          />
+        </div>
+
         <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Hourly Rate */}
           <GeneralizableFormCard

@@ -40,7 +40,12 @@ export default function SingleJobView({
     message?: string;
   }>();
 
-  const relatedJobs = fetcher.data?.jobs || [];
+  const relatedJobs =
+    fetcher.data?.jobs.map((job) => ({
+      ...job,
+      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+    })) || [];
 
   const requiredSkills = jobSkills.map((skill) => ({
     name: skill.name,
@@ -231,8 +236,12 @@ export default function SingleJobView({
           <reviewFetcher.Form method="post" action="/browse-jobs">
             <input type="hidden" name="_action" value="review" />
             <input type="hidden" name="jobId" value={job.id || ""} />
-            <input type="hidden" name="employerId" value={job.employerId} />
-            <input type="hidden" name="rating" value={rating} />
+            <input
+              type="hidden"
+              name="employerId"
+              value={job.employerId || ""}
+            />
+            <input type="hidden" name="rating" value={rating || 0} />
 
             <AppFormField
               id="reviewComment"
@@ -240,9 +249,9 @@ export default function SingleJobView({
               type="textarea"
               label="Comments"
               placeholder="Write your feedback..."
-              defaultValue={comment}
+              defaultValue={comment || ""}
               col={6}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => setComment(e.target.value || "")}
             />
 
             <div className="flex justify-end">

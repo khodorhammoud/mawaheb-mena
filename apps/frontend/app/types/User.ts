@@ -26,8 +26,8 @@ export interface PreferredWorkingTimes {
   id: number;
   accountId: number;
   dayOfWeek: DayOfWeek;
-  startTime: Date;
-  endTime: Date;
+  startTime: Date | string;
+  endTime: Date | string;
 }
 
 export interface SocialAccount {
@@ -37,7 +37,7 @@ export interface SocialAccount {
   profileUrl?: string;
   accessToken?: string;
   refreshToken?: string;
-  expiresAt?: Date;
+  expiresAt?: Date | string;
   userId?: number;
 }
 
@@ -202,8 +202,8 @@ export interface WorkHistoryFormFieldType {
   title: string;
   company: string;
   currentlyWorkingThere: boolean;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | string;
+  endDate: Date | string;
   jobDescription: string;
 }
 

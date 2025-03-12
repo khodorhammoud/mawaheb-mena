@@ -71,6 +71,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const freelancerIds = await getFreelancersIdsByJobId(parseInt(jobId));
     let freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
+    // Process freelancers to convert string dates to Date objects in workHistory
+    freelancers = freelancers.map((freelancer) => ({
+      ...freelancer,
+      workHistory: Array.isArray(freelancer.workHistory)
+        ? freelancer.workHistory.map((work) => ({
+            ...work,
+            startDate: work.startDate ? new Date(work.startDate) : new Date(),
+            endDate: work.endDate ? new Date(work.endDate) : new Date(),
+          }))
+        : [],
+      // Convert other date fields if needed
+    }));
+
     // Fetch applicants
     const jobApplications = await fetchJobApplications(parseInt(jobId));
 
@@ -254,7 +267,7 @@ const Layout = () => {
 
       {freelancers.length > 0 ? (
         <JobApplicants
-          freelancers={freelancers}
+          freelancers={freelancers as Freelancer[]}
           accountBio={accountBio}
           status={JobApplicationStatus.Pending}
         />

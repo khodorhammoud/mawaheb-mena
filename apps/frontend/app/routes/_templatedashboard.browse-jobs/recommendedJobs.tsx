@@ -6,13 +6,25 @@ import { Job } from "~/types/Job";
 import JobCard from "./jobCard";
 import FilteringSearchSection from "./filters/filtering-search-section";
 
-interface DesignJobsProps {
+interface RecommendedJobsProps {
   onJobSelect: (job: Job) => void;
+  freelancerId: number;
+  initialLimit?: number; // Add optional limit prop
 }
 
-export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
+export default function RecommendedJobs({
+  onJobSelect,
+  freelancerId,
+  initialLimit = 20, // Default to 20 jobs
+}: RecommendedJobsProps) {
   const fetcher = useFetcher<{ jobs: Job[] }>();
-  const DesignJobs = fetcher.data?.jobs || [];
+  const recommendedJobs =
+    fetcher.data?.jobs.map((job) => ({
+      ...job,
+      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+    })) || [];
+  const [limit, setLimit] = useState(initialLimit);
 
   // ✅ Filters (same as AllJobs)
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,16 +35,27 @@ export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
     budget: null,
   });
 
-  // ✅ Use useFetcher to load Design jobs dynamically
+  // ✅ Use useFetcher to load Recommended jobs dynamically
   useEffect(() => {
-    fetcher.submit(null, {
+    // console.log("🚀 Freelancer ID before setting searchParams:", freelancerId);
+    // console.log("📊 Current limit:", limit);
+
+    const searchParams = new URLSearchParams();
+    searchParams.set("freelancerId", freelancerId.toString());
+    searchParams.set("limit", limit.toString());
+
+    // console.log("Submitting fetch request with:", searchParams.toString());
+
+    fetcher.submit(searchParams, {
       method: "get",
-      action: "/api/jobs-designJobs",
+      action: "/api/jobs-recommendationJobs",
     });
-  }, []);
+  }, [freelancerId, limit]); // Add limit to dependencies
+
+  // console.log("Recommended Jobs Data:", recommendedJobs);
 
   // ✅ Apply frontend filtering logic
-  const filteredJobs = DesignJobs.filter((job) => {
+  const filteredJobs = recommendedJobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -63,6 +86,11 @@ export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
     );
   });
 
+  // Add load more functionality
+  const handleLoadMore = () => {
+    setLimit((prevLimit) => prevLimit + 10); // Increase limit by 10
+  };
+
   return (
     <div>
       {/* <h1>Still ma 3melet job application hon 3ammi</h1> */}
@@ -89,6 +117,18 @@ export default function DesignJobs({ onJobSelect }: DesignJobsProps) {
           <p className="text-center text-gray-500">No jobs found.</p>
         )}
       </div>
+
+      {/* Load More Button */}
+      {filteredJobs.length >= limit && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleLoadMore}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Load More Jobs
+          </button>
+        </div>
+      )}
     </div>
   );
 }
