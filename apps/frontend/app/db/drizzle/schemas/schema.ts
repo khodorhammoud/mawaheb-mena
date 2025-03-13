@@ -540,15 +540,12 @@ export const jobApplicationsTable = pgTable("job_applications", {
  */
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
-  employerId: integer("employer_id")
-    .references(() => employersTable.id)
-    .notNull(),
-  freelancerId: integer("freelancer_id")
-    .references(() => freelancersTable.id)
-    .notNull(),
+  employerId: integer("employer_id").references(() => employersTable.id),
+  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
   rating: real("rating").notNull(),
-  comment: text("comment").default(null), // ✅ Ensure nullable field
+  comment: text("comment").default(null),
   createdAt: timestamp("created_at").default(sql`now()`),
+  reviewType: text("review_type").notNull(),
 });
 
 /**

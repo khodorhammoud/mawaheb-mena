@@ -9,12 +9,23 @@ import {
 import { JobApplicationStatus } from "~/types/enums";
 import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
 
+// Helper function to safely format dates
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
+  }
+}
+
 // Our local type definitions
 type JobApplication = {
   application: {
     id: number;
     status: string;
-    createdAt: Date;
+    createdAt: Date | string;
     matchScore?: number;
   };
   freelancer: {
@@ -41,7 +52,7 @@ type LoaderData = {
     description: string;
     budget: number;
     status: string;
-    createdAt: Date;
+    createdAt: Date | string;
     workingHoursPerWeek: number;
     locationPreference: string;
     projectType: string;
@@ -87,11 +98,36 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // 3) Fetch job applications
   const applications = await getJobApplicationsBasic(jobId);
 
+  // Format dates in job details
+  const formattedJobDetails = {
+    ...jobDetails,
+    job: {
+      ...jobDetails.job,
+      createdAt:
+        jobDetails.job.createdAt && typeof jobDetails.job.createdAt === "object"
+          ? (jobDetails.job.createdAt as Date).toISOString()
+          : jobDetails.job.createdAt,
+    },
+  };
+
+  // Format dates in applications
+  const formattedApplications = applications.map((app) => ({
+    ...app,
+    application: {
+      ...app.application,
+      createdAt:
+        app.application.createdAt &&
+        typeof app.application.createdAt === "object"
+          ? (app.application.createdAt as Date).toISOString()
+          : app.application.createdAt,
+    },
+  }));
+
   // Combine them into a single object for the loader
   const data: LoaderData = {
-    ...jobDetails, // merges { job, employer, user, category } from getJobDetails
+    ...formattedJobDetails, // merges { job, employer, user, category } from getJobDetails
     skills,
-    applications,
+    applications: formattedApplications,
   };
 
   return json(data);
@@ -253,9 +289,7 @@ function JobOverview({
                   Posted Date:
                 </span>
                 <span className="text-sm text-gray-900">
-                  {job.createdAt
-                    ? `📅 ${new Date(job.createdAt).toLocaleDateString()}`
-                    : "-"}
+                  {formatDate(job.createdAt)}
                 </span>
               </div>
             </div>

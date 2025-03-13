@@ -10,6 +10,7 @@ interface Job {
   budget?: number | null;
   workingHoursPerWeek?: number | null;
   applicationCount?: number;
+  createdAt?: string | Date;
   employer?: {
     id: number;
     firstName?: string;
@@ -28,6 +29,7 @@ interface JobsTableProps {
   showApplicationCount?: boolean;
   showBudget?: boolean;
   showWorkingHours?: boolean;
+  showCreatedAt?: boolean;
   emptyMessage?: string;
 }
 
@@ -46,6 +48,17 @@ function getStatusColor(status: JobStatus) {
   }
 }
 
+// Helper function to safely format dates
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
+  }
+}
+
 export function JobsTable({
   jobs,
   showEmployer = true,
@@ -53,6 +66,7 @@ export function JobsTable({
   showApplicationCount = true,
   showBudget = true,
   showWorkingHours = true,
+  showCreatedAt = true,
   emptyMessage = "No jobs found",
 }: JobsTableProps) {
   const columns = [
@@ -129,6 +143,14 @@ export function JobsTable({
           {
             header: "Applications",
             accessor: (job: Job) => job.applicationCount || 0,
+          },
+        ]
+      : []),
+    ...(showCreatedAt && jobs.some((job) => job.createdAt)
+      ? [
+          {
+            header: "Created Date",
+            accessor: (job: Job) => formatDate(job.createdAt),
           },
         ]
       : []),

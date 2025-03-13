@@ -42,18 +42,18 @@ export type LoaderData = {
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  const accountId = await requireUserIsFreelancerPublished(request);
-  if (!accountId) {
+  const userId = await requireUserIsFreelancerPublished(request);
+  if (!userId) {
     return redirect("/login-employer");
   }
 
   const formData = await request.formData();
 
   const actionType = formData.get("_action");
-  const jobId = Number(formData.get("jobId"));
-  const employerId = Number(formData.get("employerId"));
-  const rating = Number(formData.get("rating"));
-  const comment = formData.get("comment") as string;
+  const jobId = Number(formData.get("jobId") || 0);
+  const employerId = Number(formData.get("employerId") || 0);
+  const rating = Number(formData.get("rating") || 0);
+  const comment = (formData.get("comment") as string) || "";
 
   if (!jobId || !employerId) {
     return Response.json({
@@ -61,6 +61,8 @@ export async function action({ request }: ActionFunctionArgs) {
       message: "Invalid job or employer ID.",
     });
   }
+
+  const accountId = await getAccountIdbyUserId(userId);
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
   if (!freelancerId) {
@@ -70,7 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  // ✅ Check if the freelancer has an accepted job application for this employer
+  // Check if the freelancer has an accepted job application for this employer
   const hasApplication = await hasAcceptedApplication(freelancerId, employerId);
 
   if (!hasApplication) {
@@ -83,12 +85,28 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     if (actionType === "review") {
-      const existingReview = await getReview(freelancerId, employerId);
+      const existingReview = await getReview({
+        freelancerId: freelancerId,
+        employerId: employerId,
+        reviewType: "freelancer_review",
+      });
 
       if (existingReview) {
-        await updateReview({ employerId, freelancerId, rating, comment });
+        await updateReview({
+          freelancerId: freelancerId,
+          employerId: employerId,
+          rating,
+          comment,
+          reviewType: "freelancer_review",
+        });
       } else {
-        await saveReview({ employerId, freelancerId, rating, comment });
+        await saveReview({
+          freelancerId: freelancerId,
+          employerId: employerId,
+          rating,
+          comment,
+          reviewType: "freelancer_review",
+        });
       }
 
       return Response.json({ success: true });
@@ -103,11 +121,11 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserIsFreelancerPublished(request);
   if (!userId) return redirect("/login-employer");
-  // console.log("🚀 Loader: Account ID =", userId); // Debug log
+  // console.log("🚀 Loader: Account ID =", userId);
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
   if (accountType !== AccountType.Freelancer) return redirect("/dashboard");
-  // console.log("🚀 Loader: Account Type =", accountType); // Debug log
+  // console.log("🚀 Loader: Account Type =", accountType);
 
   const url = new URL(request.url);
   const jobId = parseInt(url.searchParams.get("jobId") || "0", 10);
@@ -118,10 +136,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const accountId = await getAccountIdbyUserId(userId);
-  // console.log("🚀 Loader: Account ID =", accountId); // Debug log
+  // console.log("🚀 Loader: Account ID =", accountId);
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId); // Debug log
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   if (!freelancerId) {
     return Response.json({
@@ -132,12 +150,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       canReview: false,
     });
   }
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId); // Debug log
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
-  // console.log("🚀 Loader: Job Skills =", jobSkills); // Debug log
+  // console.log("🚀 Loader: Job Skills =", jobSkills);
 
-  // ✅ Ensure `hasAcceptedApplication` checks by employerId, not jobId
   const canReview =
     employerId > 0
       ? await hasAcceptedApplication(freelancerId, employerId)
@@ -145,7 +162,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   let existingReview = null;
   if (employerId > 0) {
-    const fetchedReview = await getReview(freelancerId, employerId);
+    const fetchedReview = await getReview({
+      freelancerId: freelancerId,
+      employerId: employerId,
+      reviewType: "freelancer_review",
+    });
+
     if (fetchedReview) {
       existingReview = {
         ...fetchedReview,
@@ -168,7 +190,7 @@ export default function Layout() {
 
   const fetcher = useFetcher<LoaderData>();
   const { freelancerId } = useLoaderData<LoaderData>();
-  console.log("freelancerId", freelancerId);
+  // console.log("freelancerId", freelancerId);
 
   const handleJobSelect = async (jobData: Job) => {
     setIsLoading(true);

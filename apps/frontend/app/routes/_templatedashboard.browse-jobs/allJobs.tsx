@@ -12,7 +12,12 @@ interface AllJobsProps {
 
 export default function AllJobs({ onJobSelect }: AllJobsProps) {
   const fetcher = useFetcher<{ jobs: Job[] }>();
-  const allJobs = fetcher.data?.jobs || [];
+  const allJobs: Job[] =
+    fetcher.data?.jobs.map((job) => ({
+      ...job,
+      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+    })) || [];
 
   // ✅ Filters (same as RecommendedJobs)
   const [searchQuery, setSearchQuery] = useState("");

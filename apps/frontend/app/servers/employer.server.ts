@@ -350,7 +350,7 @@ export async function getAllLanguages(): Promise<
     if (!languages) {
       throw new Error("Failed to get languages");
     }
-    return languages.map((lang) => ({ id: lang.id, name: lang.name }));
+    return languages.map((lang) => ({ id: lang.id, name: lang.language }));
   } catch (error) {
     console.error("Error getting languages", error);
     throw error;
