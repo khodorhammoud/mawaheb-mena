@@ -1,0 +1,13 @@
+node_modules
+.env
+npm-debug.log
+.git
+.gitignore
+**/build
+**/dist
+**/.keystone
+**/keystone.db
+**/logs
+**/.next
+**/.turbo
+.DS_Store 
