@@ -9,15 +9,38 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - CMS_BASE_URL=http://cms:3000
+      - DATABASE_URL=${DATABASE_URL}
+      - STRAPI_API_KEY=${STRAPI_API_KEY}
+      - STRAPI_API=${STRAPI_API}
+      - bycryptSalt=${bycryptSalt}
       - PGHOST=${PGHOST}
       - PGDATABASE=${PGDATABASE}
       - PGUSER=${PGUSER}
       - PGPASSWORD=${PGPASSWORD}
       - ENDPOINT_ID=${ENDPOINT_ID}
-      - HOST_URL=${HOST_URL}
       - BREVO_API_KEY=${BREVO_API_KEY}
       - EMAIL_FROM=${EMAIL_FROM}
+      - HOST_URL=${HOST_URL}
+      - CMS_BASE_URL=${CMS_BASE_URL}
+      - GOOGLE_STORAGE_APPLICATION_CREDENTIALS=${GOOGLE_STORAGE_APPLICATION_CREDENTIALS}
+      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
+      - GOOGLE_STORAGE_BUCKET_NAME=${GOOGLE_STORAGE_BUCKET_NAME}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL_EMPLOYER=${GOOGLE_CALLBACK_URL_EMPLOYER}
+      - GOOGLE_CALLBACK_URL_FREELANCER=${GOOGLE_CALLBACK_URL_FREELANCER}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - AWS_REGION=${AWS_REGION}
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_PRIVATE_BUCKET_NAME=${S3_PRIVATE_BUCKET_NAME}
+      - S3_PUBLIC_BUCKET_NAME=${S3_PUBLIC_BUCKET_NAME}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     restart: unless-stopped
+    networks:
+      - app-network
     depends_on:
       - cms
 
@@ -26,26 +49,15 @@ services:
       context: .
       dockerfile: cms.Dockerfile
     ports:
-      - "3001:3001"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - SESSION_SECRET=${SESSION_SECRET}
+      # - DATABASE_URL=${DATABASE_URL}
+      # - SESSION_SECRET=${SESSION_SECRET}
     restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - frontend
-      - cms
-    restart: unless-stopped
+    networks:
+      - app-network
 
 networks:
-  default:
+  app-network:
     driver: bridge
