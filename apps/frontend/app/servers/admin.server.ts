@@ -192,7 +192,26 @@ export async function getApplications(params: {
   const finalQuery =
     conditions.length > 0 ? query.where(and(...conditions)) : query;
 
-  return await finalQuery;
+  const results = await finalQuery;
+
+  // Format dates in the results
+  return results.map((result) => ({
+    ...result,
+    application: {
+      ...result.application,
+      createdAt:
+        result.application.createdAt instanceof Date
+          ? result.application.createdAt.toISOString()
+          : result.application.createdAt,
+    },
+    job: {
+      ...result.job,
+      createdAt:
+        result.job.createdAt instanceof Date
+          ? result.job.createdAt.toISOString()
+          : result.job.createdAt,
+    },
+  }));
 }
 
 // ... existing getApplicationDetails and updateApplicationStatus functions ...
@@ -281,7 +300,7 @@ export interface Application {
   application: {
     id: number;
     status: JobApplicationStatus;
-    createdAt: Date;
+    createdAt: Date | string;
     matchScore?: number;
   };
   job: {
@@ -328,7 +347,11 @@ export async function getEmployerApplications(employerId: string) {
       application: {
         id: app.job_applications.id,
         status: app.job_applications.status as JobApplicationStatus,
-        createdAt: app.job_applications.createdAt,
+        createdAt:
+          app.job_applications.createdAt &&
+          typeof app.job_applications.createdAt === "object"
+            ? (app.job_applications.createdAt as Date).toISOString()
+            : app.job_applications.createdAt,
       },
       job: {
         id: app.jobs.id,
@@ -578,7 +601,23 @@ export async function getJobDetails(jobId: number) {
     );
 
   // Return the first row or `null` if none found
-  return jobDetails.length > 0 ? jobDetails[0] : null;
+  if (jobDetails.length === 0) {
+    return null;
+  }
+
+  // Format dates before returning
+  const result = jobDetails[0];
+  if (result.job.createdAt && typeof result.job.createdAt === "object") {
+    // Use type assertion to handle the mixed type
+    result.job = {
+      ...result.job,
+      createdAt: (
+        result.job.createdAt as Date
+      ).toISOString() as unknown as Date,
+    };
+  }
+
+  return result;
 }
 
 export async function getSkillsForJob(jobId: number) {
@@ -642,11 +681,26 @@ export async function getJobApplicationsBasic(jobId: number) {
           application: {
             ...app.application,
             matchScore,
+            createdAt:
+              app.application.createdAt &&
+              typeof app.application.createdAt === "object"
+                ? (app.application.createdAt as Date).toISOString()
+                : app.application.createdAt,
           },
         };
       } catch (error) {
         console.error(`Error calculating match score: ${error}`);
-        return app;
+        return {
+          ...app,
+          application: {
+            ...app.application,
+            createdAt:
+              app.application.createdAt &&
+              typeof app.application.createdAt === "object"
+                ? (app.application.createdAt as Date).toISOString()
+                : app.application.createdAt,
+          },
+        };
       }
     })
   );

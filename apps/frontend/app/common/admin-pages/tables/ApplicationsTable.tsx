@@ -54,6 +54,17 @@ function getMatchScoreColor(score: number) {
   return "bg-gray-100 text-gray-800";
 }
 
+// Helper function to safely format dates
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
+  }
+}
+
 export function ApplicationsTable({
   applications,
   showJob = true,
@@ -128,8 +139,7 @@ export function ApplicationsTable({
       : []),
     {
       header: "Applied Date",
-      accessor: (app: Application) =>
-        new Date(app.application.createdAt).toLocaleDateString(),
+      accessor: (app: Application) => formatDate(app.application.createdAt),
     },
     {
       header: "Actions",

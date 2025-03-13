@@ -6,7 +6,7 @@ interface ApplicationOverviewProps {
     application: {
       id: number;
       status: JobApplicationStatus;
-      createdAt: Date;
+      createdAt: string | Date;
     };
     freelancerUser: {
       firstName: string;
@@ -43,6 +43,17 @@ function getStatusColor(status: JobApplicationStatus) {
       return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
+  }
+}
+
+// Helper function to safely format dates
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
   }
 }
 
@@ -148,9 +159,7 @@ export function ApplicationOverview({
                 </span>
                 <span className="text-sm text-gray-900">
                   {application.application.createdAt
-                    ? `📅 ${new Date(
-                        application.application.createdAt
-                      ).toLocaleDateString()}`
+                    ? `📅 ${formatDate(application.application.createdAt)}`
                     : "-"}
                 </span>
               </div>

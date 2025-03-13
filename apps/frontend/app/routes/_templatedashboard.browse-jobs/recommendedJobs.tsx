@@ -18,7 +18,12 @@ export default function RecommendedJobs({
   initialLimit = 20, // Default to 20 jobs
 }: RecommendedJobsProps) {
   const fetcher = useFetcher<{ jobs: Job[] }>();
-  const recommendedJobs = fetcher.data?.jobs || [];
+  const recommendedJobs =
+    fetcher.data?.jobs.map((job) => ({
+      ...job,
+      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+    })) || [];
   const [limit, setLimit] = useState(initialLimit);
 
   // ✅ Filters (same as AllJobs)

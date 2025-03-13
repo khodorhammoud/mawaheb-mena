@@ -34,7 +34,18 @@ export default function SingleJobView({
     success?: boolean;
     error?: { message: string };
   }>();
-  const relatedJobs = fetcher.data?.jobs || [];
+
+  const reviewFetcher = useFetcher<{
+    success?: boolean;
+    message?: string;
+  }>();
+
+  const relatedJobs =
+    fetcher.data?.jobs.map((job) => ({
+      ...job,
+      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+    })) || [];
 
   const requiredSkills = jobSkills.map((skill) => ({
     name: skill.name,
@@ -54,9 +65,7 @@ export default function SingleJobView({
 
   const handleOpenReview = () => {
     if (!canReview) {
-      alert(
-        "You must have an accepted job application to review this employer."
-      );
+      alert("You must have an application to review this employer.");
       return;
     }
     setOpen(true);
@@ -87,6 +96,13 @@ export default function SingleJobView({
       });
     }
   }, [job.employerId]);
+
+  // Close dialog when review is successfully submitted
+  useEffect(() => {
+    if (reviewFetcher.data?.success) {
+      setOpen(false);
+    }
+  }, [reviewFetcher.data]);
 
   return (
     <div className="rounded-lg mx-auto text-black pr-10">
@@ -147,15 +163,21 @@ export default function SingleJobView({
         {/* ✅ Interested / Review Employer / Edit Review Button */}
         <div className="pl-6 pr-6 pt-4">
           {job.applicationStatus ? (
-            <Button
-              className="w-full mb-4 bg-primaryColor text-white py-2 rounded-xl font-semibold not-active-gradient"
-              onClick={() => {
-                setOpen(true), handleOpenReview;
-              }}
-              disabled={!canReview}
-            >
-              {hasReview ? "Edit Review" : "Review Employer"}
-            </Button>
+            canReview ? (
+              <Button
+                className="w-full mb-4 bg-primaryColor text-white py-2 rounded-xl font-semibold not-active-gradient"
+                onClick={handleOpenReview}
+              >
+                {hasReview ? "Edit Review" : "Review Employer"}
+              </Button>
+            ) : (
+              <Button
+                className="w-full mb-4 bg-gray-400 text-white py-2 rounded-xl font-semibold not-active-gradient"
+                disabled
+              >
+                Review Unavailable
+              </Button>
+            )
           ) : (
             <Button
               disabled={
@@ -211,11 +233,15 @@ export default function SingleJobView({
             ))}
           </div>
 
-          <Form method="post" action="/browse-jobs">
+          <reviewFetcher.Form method="post" action="/browse-jobs">
             <input type="hidden" name="_action" value="review" />
             <input type="hidden" name="jobId" value={job.id || ""} />
-            <input type="hidden" name="employerId" value={job.employerId} />
-            <input type="hidden" name="rating" value={rating} />
+            <input
+              type="hidden"
+              name="employerId"
+              value={job.employerId || ""}
+            />
+            <input type="hidden" name="rating" value={rating || 0} />
 
             <AppFormField
               id="reviewComment"
@@ -223,20 +249,25 @@ export default function SingleJobView({
               type="textarea"
               label="Comments"
               placeholder="Write your feedback..."
-              defaultValue={comment}
+              defaultValue={comment || ""}
               col={6}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => setComment(e.target.value || "")}
             />
 
             <div className="flex justify-end">
               <Button
                 type="submit"
                 className="mt-2 w-fit bg-primaryColor text-white rounded-xl px-10"
+                disabled={rating === 0 || reviewFetcher.state === "submitting"}
               >
-                {hasReview ? "Update Review" : "Submit"}
+                {reviewFetcher.state === "submitting"
+                  ? "Submitting..."
+                  : hasReview
+                    ? "Update Review"
+                    : "Submit"}
               </Button>
             </div>
-          </Form>
+          </reviewFetcher.Form>
         </DialogContent>
       </Dialog>
       {/* Related Jobs Section */}

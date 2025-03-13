@@ -4,7 +4,15 @@ import {
 import { InferSelectModel } from "drizzle-orm";
 import { JobApplicationStatus } from "./enums";
 
-export type Job = InferSelectModel<typeof jobsTable> & {
+// Create a modified version of the Job type that accepts both Date and string for date fields
+type JobBase = Omit<
+  InferSelectModel<typeof jobsTable>,
+  "createdAt" | "fulfilledAt"
+>;
+
+export type Job = JobBase & {
+  createdAt: Date | string;
+  fulfilledAt: Date | string | null;
   requiredSkills?: { id: number; name: string; isStarred: boolean }[];
 };
 

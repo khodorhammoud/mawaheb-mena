@@ -7,7 +7,7 @@ interface JobDetailsProps {
     locationPreference: string;
     projectType: string;
     experienceLevel: string;
-    createdAt: string;
+    createdAt: string | Date;
     category?: {
       label: string;
     };
@@ -17,6 +17,17 @@ interface JobDetailsProps {
       isStarred: boolean;
     }>;
   };
+}
+
+// Helper function to safely format dates
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
+  }
 }
 
 export function JobDetails({ job }: JobDetailsProps) {
@@ -121,9 +132,7 @@ export function JobDetails({ job }: JobDetailsProps) {
           <div>
             <h4 className="text-sm font-medium text-gray-500">Posted Date</h4>
             <p className="mt-1 text-sm text-gray-900">
-              {job.createdAt
-                ? new Date(job.createdAt).toLocaleDateString()
-                : "-"}
+              {formatDate(job.createdAt)}
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 // import * as pdfParse from "pdf-parse";
 // import * as pdfjslib from "pdfjs-dist";
+// import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 
 const ALLOWED_FILE_TYPES = {
@@ -153,10 +154,10 @@ export async function genParseCV(file: File) {
         // Validate the structure of parsed data
         validateParsedData(parsedData);
         return parsedData;
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(`Invalid JSON response: ${error.message}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       if (attempt < MAX_RETRIES && isRetryableError(error)) {
         await new Promise((resolve) =>
           setTimeout(resolve, RETRY_DELAY * attempt)

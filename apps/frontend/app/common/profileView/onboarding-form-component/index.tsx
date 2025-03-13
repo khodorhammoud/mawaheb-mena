@@ -20,8 +20,13 @@ import type {
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const formState = useFormState(props.formType, props.fieldName);
   const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
+
+  // Get values from formState
   const { inputValue, repeatableInputValues } = formState;
 
+  // console.log("🛠️ [GeneralizableFormCard] inputValue:", inputValue);
+
+  // Fix: Ensure inputValue does not overwrite props.value with incorrect data
   const value =
     props.formType === "repeatable"
       ? Array.isArray(repeatableInputValues) && repeatableInputValues.length > 0
@@ -29,13 +34,16 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         : Array.isArray(props.value)
           ? props.value
           : []
-      : (inputValue ?? props.value);
+      : inputValue && inputValue !== "this is the about me section..."
+        ? inputValue
+        : props.value;
 
   const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
   const templateKey =
     props.formType === "repeatable"
       ? `repeatable_${props.repeatableFieldName}`
       : props.formType;
+
   const Template = FieldTemplates[templateKey];
   if (!Template) return null;
 
@@ -43,7 +51,16 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     ? Template.FilledState
     : Template.EmptyState;
 
-  // console.log("GeneralizableFormCard Value:", props.fieldName, props.value);
+  // console.log("🔍 [GeneralizableFormCard] Props on First Render:", props);
+  // console.log(
+  //   "🚀 [GeneralizableFormCard] Before Passing to TemplateComponent:",
+  //   {
+  //     fieldName: props.fieldName,
+  //     value,
+  //     type: typeof value,
+  //     isArray: Array.isArray(value),
+  //   }
+  // );
 
   return (
     <Card
@@ -51,47 +68,47 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         isFilled ? "bg-[#F1F0F3]" : "bg-gray-100 border-gray-300 border-dashed"
       }`}
     >
-      {/* ✅ Full height wrapper to force equal heights */}
-      <div className="flex flex-col h-full items-start">
-        {/* ✅ Inner content takes full height */}
-        <div className="flex-1 flex flex-col pt-8 pb-6 pl-6 pr-6 relative">
-          <TemplateComponent
-            value={
-              Array.isArray(value)
-                ? (value as RepeatableInputType[])
-                : (value as FormStateType)
-            }
-            fieldName={props.fieldName}
-            cardTitle={props.cardTitle}
-            cardSubtitle={props.cardSubtitle}
-          />
-          {props.editable && (
-            <Dialog>
-              <DialogTrigger>
-                {isFilled ? (
-                  <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="text-primaryColor border-gray-300"
-                  >
-                    {props.triggerIcon} {props.triggerLabel}
-                  </Button>
-                )}
-              </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>{props.popupTitle}</DialogTitle>
-                <FormContent
-                  {...props}
-                  formState={formState}
-                  onSubmit={handleSubmit}
-                  fetcher={fetcher}
-                  showStatusMessage={showStatusMessage}
-                />
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
+      <div
+        className={`flex flex-col relative ${
+          props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"
+        }`}
+      >
+        <TemplateComponent
+          value={
+            Array.isArray(value)
+              ? (value as RepeatableInputType[])
+              : (value as FormStateType)
+          }
+          fieldName={props.fieldName}
+          cardTitle={props.cardTitle}
+          cardSubtitle={props.cardSubtitle}
+        />
+        {props.editable && (
+          <Dialog>
+            <DialogTrigger>
+              {isFilled ? (
+                <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
+              ) : (
+                <Button
+                  variant="outline"
+                  className="text-primaryColor border-gray-300"
+                >
+                  {props.triggerIcon} {props.triggerLabel}
+                </Button>
+              )}
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>{props.popupTitle}</DialogTitle>
+              <FormContent
+                {...props}
+                formState={formState}
+                onSubmit={handleSubmit}
+                fetcher={fetcher}
+                showStatusMessage={showStatusMessage}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </Card>
   );
