@@ -31,6 +31,7 @@ WORKDIR /app
 COPY --from=builder /app/apps/frontend/build ./apps/frontend/build
 COPY --from=builder /app/apps/frontend/package.json ./apps/frontend/package.json
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/frontend/node_modules ./apps/frontend/node_modules
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -41,5 +42,7 @@ WORKDIR /app/apps/frontend
 # Expose port
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "start"] 
+# # Start the app
+# CMD ["npm", "start"] 
+# Instead of starting the app let's start a shell to debug it
+CMD ["/bin/sh"]
