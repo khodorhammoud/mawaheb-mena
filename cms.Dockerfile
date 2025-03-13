@@ -1,8 +1,27 @@
 # Build stage
 FROM node:20-alpine as builder
 
-# Install build dependencies if needed
-RUN apk add --no-cache autoconf automake libtool make g++ python3
+# Install build dependencies and canvas-specific dependencies
+RUN apk add --no-cache \
+    autoconf \
+    automake \
+    libtool \
+    make \
+    g++ \
+    python3 \
+    python3-dev \
+    py3-setuptools \
+    pkgconfig \
+    pixman-dev \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    file \
+    nasm \
+    libjpeg-turbo-dev \
+    libjpeg-turbo-utils
 
 # Set working directory
 WORKDIR /app
@@ -15,8 +34,10 @@ COPY apps/cms/package.json ./apps/cms/
 # Create packages directory if needed for turborepo
 RUN mkdir -p packages
 
-# Install dependencies
-RUN npm install
+# Install dependencies with specific options to avoid compilation issues
+RUN npm install --ignore-scripts && \
+    npm rebuild canvas && \
+    npm rebuild isomorphic-dompurify
 
 # Copy the CMS application code
 COPY apps/cms ./apps/cms
@@ -26,6 +47,14 @@ RUN cd apps/cms && npx keystone build
 
 # Production stage
 FROM node:20-alpine as runner
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    libjpeg-turbo \
+    cairo \
+    pango \
+    giflib \
+    librsvg
 
 WORKDIR /app
 
