@@ -43,11 +43,13 @@ RUN npm install --ignore-scripts && \
 
 # Copy the frontend application code
 COPY apps/frontend ./apps/frontend
+COPY apps/frontend/.env.production.local .env
+COPY apps/frontend/.env.production.local ./apps/frontend/.env
 
 # Ensure commonly missed packages are explicitly installed
 RUN npm install --save openai dotenv @remix-run/dev remix-auth-google
 
-# Build the app
+# Build the app with environment variables file .env
 RUN npm run build -- --filter=frontend
 
 # Production stage
@@ -75,6 +77,8 @@ WORKDIR /app
 # RUN cd apps/frontend && npm install --production --ignore-scripts
 # Copy ALL files from builder (including node_modules with all deps) to ensure everything needed is available
 COPY --from=builder /app ./
+# COPY /app/apps/frontend/.env.production.local /app/apps/frontend/.env
+# COPY apps/frontend/.env.production.local ./apps/frontend/.env
 
 # Set environment variables
 ENV NODE_ENV=production
