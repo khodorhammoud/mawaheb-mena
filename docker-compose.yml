@@ -3,8 +3,8 @@ version: "3.8"
 services:
   frontend:
     build:
-      context: ./apps/frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend.Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -14,14 +14,17 @@ services:
       - PGUSER=${PGUSER}
       - PGPASSWORD=${PGPASSWORD}
       - ENDPOINT_ID=${ENDPOINT_ID}
+      - HOST_URL=${HOST_URL}
+      - BREVO_API_KEY=${BREVO_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
     restart: unless-stopped
     depends_on:
       - cms
 
   cms:
     build:
-      context: ./apps/cms
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: cms.Dockerfile
     ports:
       - "3001:3001"
     environment:
