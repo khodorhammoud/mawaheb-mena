@@ -539,12 +539,31 @@ export const VideoFieldTemplate: FieldTemplateState = {
 };
 
 export const FileFieldTemplate: FieldTemplateState = {
-  FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
-    <div className="flex flex-col py-4 pl-5 pr-8">
-      <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-base font-medium">{value as string}</span>
-    </div>
-  ),
+  FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
+    // Convert File objects to string representation
+    let displayValue = "";
+
+    if (value instanceof File) {
+      displayValue = `File: ${value.name}`;
+    } else if (typeof value === "string" && value.startsWith("File:")) {
+      displayValue = value;
+    } else if (typeof value === "string") {
+      displayValue = value;
+    } else if (value !== null && value !== undefined) {
+      try {
+        displayValue = JSON.stringify(value);
+      } catch (e) {
+        displayValue = String(value);
+      }
+    }
+
+    return (
+      <div className="flex flex-col py-4 pl-5 pr-8">
+        <span className="text-lg font-medium">{cardTitle}</span>
+        <span className="text-base font-medium">{displayValue}</span>
+      </div>
+    );
+  },
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col pb-4">
       <span className="text-lg font-medium">{cardTitle}</span>

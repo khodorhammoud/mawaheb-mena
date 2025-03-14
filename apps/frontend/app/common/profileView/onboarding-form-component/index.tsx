@@ -1,9 +1,10 @@
 import { Card } from "~/common/header/card";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogTitle,
+  DialogClose,
+  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { useFormState } from "./hooks/useFormState";
@@ -15,8 +16,9 @@ import type {
   FormStateType,
   RepeatableInputType,
   GeneralizableFormCardProps,
+  FormType,
 } from "./types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const formState = useFormState(props.formType, props.fieldName);
@@ -24,15 +26,28 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     handleSubmit: localHandleSubmit,
     fetcher: localFetcher,
     showStatusMessage: localShowStatusMessage,
+    formRef,
   } = useFormSubmission();
 
-  // Add state to control dialog open/close
+  // Dialog open state
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Reset form submitted state when dialog opens
+  useEffect(() => {
+    if (dialogOpen) {
+      setFormSubmitted(false);
+    }
+  }, [dialogOpen]);
 
   // Use the provided fetcher or the local one
   const fetcher = props.fetcher || localFetcher;
+
+  // Custom submit handler that closes the dialog after submission
   const handleSubmit = (e: React.FormEvent, formData: FormData) => {
     localHandleSubmit(e, formData);
+    setFormSubmitted(true);
+
     // Close dialog after successful submission
     setTimeout(() => {
       if (fetcher.state !== "submitting") {
@@ -40,12 +55,11 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
       }
     }, 500);
   };
+
   const showStatusMessage = localShowStatusMessage;
 
   // Get values from formState
   const { inputValue, repeatableInputValues } = formState;
-
-  // console.log("🛠️ [GeneralizableFormCard] inputValue:", inputValue);
 
   // Fix: Ensure inputValue does not overwrite props.value with incorrect data
   const value =
@@ -59,7 +73,13 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         ? inputValue
         : props.value;
 
-  const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
+  // Safely determine if the value is filled
+  const isFilled = Array.isArray(value)
+    ? value.length > 0
+    : value instanceof File
+      ? true
+      : Boolean(value);
+
   const templateKey =
     props.formType === "repeatable"
       ? `repeatable_${props.repeatableFieldName}`
@@ -72,17 +92,6 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     ? Template.FilledState
     : Template.EmptyState;
 
-  // console.log("🔍 [GeneralizableFormCard] Props on First Render:", props);
-  // console.log(
-  //   "🚀 [GeneralizableFormCard] Before Passing to TemplateComponent:",
-  //   {
-  //     fieldName: props.fieldName,
-  //     value,
-  //     type: typeof value,
-  //     isArray: Array.isArray(value),
-  //   }
-  // );
-
   // Handle button click to open dialog and prevent form submission
   const handleButtonClick = (e: React.MouseEvent) => {
     // Stop event propagation to prevent it from reaching the parent form
@@ -91,6 +100,20 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     e.preventDefault();
     // Open the dialog
     setDialogOpen(true);
+  };
+
+  // Safely prepare the value for rendering
+  const prepareValueForRendering = () => {
+    if (Array.isArray(value)) {
+      return value as RepeatableInputType[];
+    }
+
+    if (value instanceof File) {
+      // For File objects, convert to a string representation
+      return `File: ${value.name}` as FormStateType;
+    }
+
+    return value as FormStateType;
   };
 
   return (
@@ -105,11 +128,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         }`}
       >
         <TemplateComponent
-          value={
-            Array.isArray(value)
-              ? (value as RepeatableInputType[])
-              : (value as FormStateType)
-          }
+          value={prepareValueForRendering()}
           fieldName={props.fieldName}
           cardTitle={props.cardTitle}
           cardSubtitle={props.cardSubtitle}
@@ -143,6 +162,13 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
+              {formSubmitted && (
+                <DialogFooter className="mt-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                  </DialogClose>
+                </DialogFooter>
+              )}
             </DialogContent>
           </Dialog>
         )}

@@ -164,6 +164,42 @@ const FormContent = ({
     return false;
   };
 
+  // Safely render form field based on type
+  const renderFormField = () => {
+    if (formType === "repeatable") {
+      return (
+        <RepeatableFields
+          fieldName={repeatableFieldName}
+          values={repeatableInputValues}
+          files={repeatableInputFiles}
+          expandedIndex={expandedIndex}
+          onAdd={handleAddRepeatableField}
+          onRemove={handleRemoveRepeatableField}
+          onDataChange={handleDataChange}
+          onToggleExpand={setExpandedIndex}
+          {...props}
+        />
+      );
+    }
+
+    const FormField = FormFields[formType];
+    if (!FormField) return null;
+
+    return FormField({
+      value: inputValue,
+      onChange:
+        formType === "file"
+          ? handleFileChange
+          : (e) =>
+              setInputValue(
+                formType === "number" ? Number(e.target.value) : e.target.value
+              ),
+      handleIncrement: handleIncrement,
+      name: fieldName,
+      props,
+    });
+  };
+
   return (
     <div className="">
       <form
@@ -178,35 +214,7 @@ const FormContent = ({
       >
         {renderStatusMessages()}
 
-        {formType === "repeatable" ? (
-          <RepeatableFields
-            fieldName={repeatableFieldName}
-            values={repeatableInputValues}
-            files={repeatableInputFiles}
-            expandedIndex={expandedIndex}
-            onAdd={handleAddRepeatableField}
-            onRemove={handleRemoveRepeatableField}
-            onDataChange={handleDataChange}
-            onToggleExpand={setExpandedIndex}
-            {...props}
-          />
-        ) : (
-          FormFields[formType]?.({
-            value: inputValue,
-            onChange:
-              formType === "file"
-                ? handleFileChange
-                : (e) =>
-                    setInputValue(
-                      formType === "number"
-                        ? Number(e.target.value)
-                        : e.target.value
-                    ),
-            handleIncrement: handleIncrement,
-            name: fieldName,
-            props,
-          })
-        )}
+        {renderFormField()}
 
         {/* ✅ Conditionally render the Save button */}
         {formType !== "increment" && (
