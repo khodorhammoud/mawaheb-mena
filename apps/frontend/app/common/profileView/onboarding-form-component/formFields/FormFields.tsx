@@ -174,14 +174,44 @@ export const FormFields = {
   },
 
   file: ({ value, onChange, name, props }: FormFieldProps) => {
+    // Helper function to safely get file information
+    const getFileInfo = (fileValue: any) => {
+      if (fileValue instanceof File) {
+        return {
+          name: fileValue.name,
+          size: Math.round(fileValue.size / 1024), // Convert to KB
+        };
+      }
+      return null;
+    };
+
+    const fileInfo = getFileInfo(value);
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      // Prevent form submission
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Call the original onChange handler
+      onChange(e);
+    };
+
     return (
-      <Input
-        type="file"
-        name={name}
-        accept={props.acceptedFileTypes}
-        onChange={onChange}
-        className="w-full p-3 border border-gray-300 rounded-md"
-      />
+      <div className="flex flex-col space-y-2">
+        <Input
+          type="file"
+          name={name}
+          accept={props.acceptedFileTypes}
+          onChange={handleFileInputChange}
+          className="w-full p-3 border border-gray-300 rounded-md cursor-pointer"
+          onClick={(e) => e.stopPropagation()} // Prevent form submission
+        />
+        {fileInfo && (
+          <div className="text-sm text-green-600">
+            Selected file: {fileInfo.name} ({fileInfo.size} KB)
+          </div>
+        )}
+      </div>
     );
   },
 };
