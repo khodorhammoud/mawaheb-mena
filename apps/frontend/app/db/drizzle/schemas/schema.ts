@@ -174,6 +174,21 @@ export const UsersTable = pgTable("users", {
 });
 
 /**
+ * Definition of the user_identifications table.
+ *
+ * @property {serial} id - Primary key, serial identifier
+ * @property {integer} userId - References the UsersTable.id
+ * @property {jsonb} attachments - JSONB field for multiple file attachments
+ * @property {timestamp} createdAt - Timestamp for when the record was created
+ */
+export const userIdentificationsTable = pgTable("user_identifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => UsersTable.id),
+  attachments: jsonb("attachments").default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+/**
  * Stores the social accounts of users when they log in using social media
  * @property id - serial primary key
  * @property user_id - integer referencing the UsersTable id

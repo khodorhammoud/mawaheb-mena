@@ -1,8 +1,9 @@
 import { Button } from "~/components/ui/button";
-import { DialogFooter } from "~/components/ui/dialog";
+import { DialogFooter, DialogClose } from "~/components/ui/dialog";
 import { FormFields } from "./FormFields";
 import RepeatableFields from "./RepeatableFields";
 import type { FormContentProps } from "../types";
+import { useState } from "react";
 
 const FormContent = ({
   formType,
@@ -13,6 +14,7 @@ const FormContent = ({
   formName,
   fieldName,
   repeatableFieldName,
+  showLoadingOnSubmit,
   ...props
 }: FormContentProps) => {
   const {
@@ -27,6 +29,10 @@ const FormContent = ({
     setExpandedIndex,
   } = formState;
 
+  // Track if a file has been selected
+  const [fileSelected, setFileSelected] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   // Render status messages (error/success)
   const renderStatusMessages = () => {
     if (!showStatusMessage) return null;
@@ -38,24 +44,30 @@ const FormContent = ({
         </div>
       );
     }
+
+    if (fetcher.data?.success) {
+      return (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-2">
+          <span className="block sm:inline">Successfully saved!</span>
+        </div>
+      );
+    }
   };
 
   // Handle form submission
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // For file uploads, validate that a file is selected
+    if (formType === "file" && !fileSelected && !inputValue) {
+      alert("Please select a file before saving.");
+      return;
+    }
+
     const formData = new FormData(e.target as HTMLFormElement);
 
     // Add target-updated field
     formData.append("target-updated", formName);
-
-    // console.log(
-    //   "repeatableInputValues before form submission:",
-    //   repeatableInputValues
-    // );
-    // console.log(
-    //   "repeatableInputFiles before form submission:",
-    //   repeatableInputFiles
-    // );
 
     // Handle repeatable fields
     if (formType === "repeatable") {
@@ -67,7 +79,6 @@ const FormContent = ({
       // Append files
       repeatableInputFiles.forEach((file, index) => {
         if (file) {
-          // console.log(`Appending file at index ${index}:`, file);
           formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
         } else {
           console.warn(`No file found at index ${index}`);
@@ -75,7 +86,13 @@ const FormContent = ({
       });
     }
 
-    // console.log("Final FormData entries:", Array.from(formData.entries()));
+    // For file type, append the file to formData
+    if (formType === "file" && inputValue instanceof File) {
+      formData.append(fieldName, inputValue);
+    }
+
+    // Mark form as submitted
+    setFormSubmitted(true);
 
     // Pass the formData to the onSubmit callback
     onSubmit(e, formData);
@@ -87,13 +104,16 @@ const FormContent = ({
     if (typeof currentValue === "number") {
       // ✅ Increment the number
       const newValue = currentValue + step;
-      fetcher.submit(
-        {
-          "target-updated": formName,
-          [fieldName]: newValue.toString(),
-        },
-        { method: "post" }
-      );
+      // Only submit for increment type, not for file uploads
+      if (formType === "increment") {
+        fetcher.submit(
+          {
+            "target-updated": formName,
+            [fieldName]: newValue.toString(),
+          },
+          { method: "post" }
+        );
+      }
       setInputValue(newValue);
     } else if (currentValue === null) {
       // ✅ If the current value is null, start from the step value
@@ -116,14 +136,45 @@ const FormContent = ({
     setInputValue(numericValue);
   };
 
-  // console.log("repeatableInputFiles in current state:", repeatableInputFiles);
+  // Handle file input change without auto-submission
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setInputValue(file);
+      setFileSelected(true);
+
+      // Prevent form submission
+      e.stopPropagation();
+    } else {
+      setFileSelected(false);
+    }
+  };
+
+  // Determine if the Save button should be disabled
+  const isSaveButtonDisabled = () => {
+    if (showLoadingOnSubmit && fetcher.state === "submitting") {
+      return true;
+    }
+
+    // For file inputs, disable the Save button if no file is selected
+    if (formType === "file" && !fileSelected && !inputValue) {
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <div className="">
-      <fetcher.Form
+      <form
         method="post"
         className="space-y-6"
         onSubmit={handleFormSubmit}
-        encType={formType === "repeatable" ? "multipart/form-data" : undefined}
+        encType={
+          formType === "repeatable" || formType === "file"
+            ? "multipart/form-data"
+            : undefined
+        }
       >
         {renderStatusMessages()}
 
@@ -142,10 +193,15 @@ const FormContent = ({
         ) : (
           FormFields[formType]?.({
             value: inputValue,
-            onChange: (e) =>
-              setInputValue(
-                formType === "number" ? Number(e.target.value) : e.target.value
-              ),
+            onChange:
+              formType === "file"
+                ? handleFileChange
+                : (e) =>
+                    setInputValue(
+                      formType === "number"
+                        ? Number(e.target.value)
+                        : e.target.value
+                    ),
             handleIncrement: handleIncrement,
             name: fieldName,
             props,
@@ -155,15 +211,25 @@ const FormContent = ({
         {/* ✅ Conditionally render the Save button */}
         {formType !== "increment" && (
           <DialogFooter>
-            <Button
-              type="submit"
-              className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-            >
-              Save
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="submit"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+                disabled={isSaveButtonDisabled()}
+              >
+                {showLoadingOnSubmit && fetcher.state === "submitting"
+                  ? "Saving..."
+                  : "Save"}
+              </Button>
+              {formSubmitted && fetcher.state !== "submitting" && (
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
+              )}
+            </div>
           </DialogFooter>
         )}
-      </fetcher.Form>
+      </form>
     </div>
   );
 };
