@@ -1,5 +1,10 @@
 import Heading from "~/common/profileView/heading/Heading";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useFetcher,
+} from "@remix-run/react";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { SlBadge } from "react-icons/sl";
 import { FaDollarSign, FaFileUpload } from "react-icons/fa";
@@ -12,6 +17,7 @@ export default function FreelancerOnboardingScreen() {
   };
   const actionData = useActionData<ActionData>();
   const { accountOnboarded } = useLoaderData<FreelancerOnboardingData>();
+  const fetcher = useFetcher();
 
   return (
     <div className="mt-10 relative">
@@ -42,6 +48,7 @@ export default function FreelancerOnboardingScreen() {
         {/* CV Upload */}
         <div className="grid mb-4 grid-cols-1 gap-4 md:ml-20 md:mr-20 ml-10 mr-10">
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="file"
             cardTitle="Upload your CV"
             cardSubtitle="Upload your CV to automatically fill your profile information"
@@ -59,6 +66,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Hourly Rate */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="range"
             cardTitle="Hourly Rate"
             popupTitle="Hourly Rate"
@@ -73,6 +81,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Years of Experience */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="increment"
             cardTitle="Experience"
             popupTitle="Years of experience"
@@ -86,6 +95,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Years of Experience */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="video"
             cardTitle="Don't miss out on this opportunity to make a great first impression."
             cardSubtitle="Upload a video to introduce yourself and your business."
@@ -98,6 +108,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* About */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="textArea"
             cardTitle="About"
             cardSubtitle="Add your headline and bio
@@ -114,6 +125,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Portfolio */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Projects"
             popupTitle="Add a Project"
@@ -127,6 +139,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Work History */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Work History"
             popupTitle="Work History"
@@ -138,6 +151,7 @@ export default function FreelancerOnboardingScreen() {
           />
           {/* Certificates */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Certificates"
             cardSubtitle="Add your certifications."
@@ -151,6 +165,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Education */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Education"
             cardSubtitle="Add your education and degrees."

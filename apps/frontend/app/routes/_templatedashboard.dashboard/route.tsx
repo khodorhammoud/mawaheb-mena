@@ -33,7 +33,10 @@ import {
   getFreelancerSkills,
 } from "~/servers/freelancer.server";
 import Header from "../_templatedashboard/header";
-import { requireUserOnboarded, requireUserVerified } from "~/auth/auth.server";
+import {
+  requireUserAccountStatusPublished,
+  requireUserVerified,
+} from "~/auth/auth.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   await requireUserVerified(request);
@@ -65,8 +68,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // Ensure user is verified
-  await requireUserOnboarded(request);
+  // Ensure user is verified and has published account status
+  await requireUserAccountStatusPublished(request);
 
   // Determine account type (Freelancer/Employer)
   const accountType: AccountType = await getCurrentUserAccountType(request);

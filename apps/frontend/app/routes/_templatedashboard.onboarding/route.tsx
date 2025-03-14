@@ -78,9 +78,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  // Redirect to dashboard if already onboarded
+  // Redirect to identifying route or dashboard based on onboarding status and account status
   if (profile.account?.user?.isOnboarded) {
-    return redirect("/dashboard");
+    console.log(
+      "profile.account?.accountStatus",
+      profile.account?.accountStatus
+    );
+    // If account status is published, redirect to dashboard
+    if (profile.account?.accountStatus === "published") {
+      return redirect("/dashboard");
+    }
+    // If account is onboarded but not published, redirect to identifying route
+    else {
+      return redirect("/identifying");
+    }
   }
 
   if (accountType === AccountType.Employer) {

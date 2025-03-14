@@ -75,6 +75,10 @@ export default function FileUpload({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent form submission
+    e.preventDefault();
+    e.stopPropagation();
+
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     if (selectedFiles.length === 0) {
       clearFiles();
@@ -117,6 +121,11 @@ export default function FileUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={(e) => {
+          // Prevent form submission when clicking on the upload area
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       >
         {files.length > 0 ? (
           <div className="w-full">
@@ -129,7 +138,10 @@ export default function FileUpload({
                       : file.name}
                   </span>
                   <button
-                    onClick={() => {
+                    type="button" // Explicitly set button type to prevent form submission
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent form submission
+                      e.stopPropagation(); // Stop event propagation
                       setFiles(files.filter((_, i) => i !== index));
                       setPreviews(previews.filter((_, i) => i !== index));
                     }}
@@ -155,7 +167,10 @@ export default function FileUpload({
           </div>
         ) : (
           <>
-            <label className="flex flex-col items-center cursor-pointer">
+            <label
+              className="flex flex-col items-center cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex flex-col items-center">
                 <FaUpload className="text-white bg-primaryColor h-8 w-8 p-[7px] rounded-xl" />
                 <div className="inline text-sm mt-2">
@@ -169,6 +184,7 @@ export default function FileUpload({
                 accept={acceptedFileTypes}
                 onChange={handleFileChange}
                 multiple // Allow multiple files
+                onClick={(e) => e.stopPropagation()} // Prevent form submission
               />
             </label>
             <span className="text-gray-500 text-xs">

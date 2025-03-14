@@ -8,6 +8,7 @@ import {
   skillsTable,
   jobSkillsTable,
   accountsTable,
+  userIdentificationsTable,
 } from "../db/drizzle/schemas/schema";
 import { eq, inArray } from "drizzle-orm";
 import {
@@ -416,7 +417,7 @@ export async function handleFreelancerOnboardingAction(
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect("/dashboard")
+      ? redirect("/identifying")
       : Response.json({
           success: false,
           error: { message: "Failed to update onboarding status" },
@@ -1088,4 +1089,99 @@ export async function fetchFreelancerSkills(
   }));
 
   return freelancerSkills;
+}
+
+/**
+ * Create a new identification record for a freelancer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The created identification record
+ */
+export async function createFreelancerIdentification(
+  userId: number,
+  attachmentsData: any
+) {
+  try {
+    const result = await db
+      .insert(userIdentificationsTable)
+      .values({
+        userId,
+        attachments: attachmentsData,
+      })
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error creating freelancer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Get the identification record for a freelancer
+ * @param userId The user ID
+ * @returns The identification record
+ */
+export async function getFreelancerIdentification(userId: number) {
+  try {
+    const result = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId));
+
+    return { success: true, data: result[0] || null };
+  } catch (error) {
+    console.error("Error getting freelancer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Update the identification record for a freelancer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The updated identification record
+ */
+export async function updateFreelancerIdentification(
+  userId: number,
+  attachmentsData: any
+) {
+  try {
+    const result = await db
+      .update(userIdentificationsTable)
+      .set({
+        attachments: attachmentsData,
+      })
+      .where(eq(userIdentificationsTable.userId, userId))
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error updating freelancer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Update the account status to pending after identification submission
+ * @param accountId The account ID
+ * @returns Success status
+ */
+export async function updateFreelancerAccountStatusToPending(
+  accountId: number
+) {
+  try {
+    const result = await db
+      .update(accountsTable)
+      .set({
+        accountStatus: "pending",
+      })
+      .where(eq(accountsTable.id, accountId))
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error updating freelancer account status:", error);
+    return { success: false, error };
+  }
 }

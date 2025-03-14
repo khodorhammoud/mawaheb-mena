@@ -1,7 +1,7 @@
 import { FetcherWithComponents } from "@remix-run/react";
 
 export interface GeneralizableFormCardProps {
-  fetcher: FetcherWithComponents<any>; // ✅ Accept fetcher from UserProfile
+  fetcher?: FetcherWithComponents<any>; // Make fetcher optional
   formType:
     | "text"
     | "number"
@@ -20,12 +20,14 @@ export interface GeneralizableFormCardProps {
   formName: string;
   fieldName: string;
   acceptedFileTypes?: string;
+
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
   editable?: boolean;
   useRichText?: boolean;
   value?: string | number | string[]; // ✅ Ensure value prop exists
+  showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
 }
 
 export interface FilledGeneralizableFormCardProps {
@@ -74,6 +76,7 @@ export interface FormContentProps extends GeneralizableFormCardProps {
   onSubmit: (e: React.FormEvent, formData: FormData) => void;
   fetcher: any; // Replace with proper Remix fetcher type
   showStatusMessage: boolean;
+  showLoadingOnSubmit?: boolean;
 }
 
 export interface RepeatableFieldsProps {

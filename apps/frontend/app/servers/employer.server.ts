@@ -7,6 +7,7 @@ import {
   UsersTable,
   jobsTable,
   languagesTable,
+  userIdentificationsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -116,7 +117,7 @@ export async function handleEmployerOnboardingAction(
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect("/dashboard")
+      ? redirect("/identifying")
       : Response.json({
           success: false,
           error: { message: "Failed to update onboarding status" },
@@ -509,5 +510,98 @@ export async function getEmployerDashboardData(request: Request) {
   } catch (error) {
     console.error("Error fetching employer dashboard data:", error);
     throw error; // Re-throw the error for further handling
+  }
+}
+
+/**
+ * Create a new identification record for an employer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The created identification record
+ */
+export async function createEmployerIdentification(
+  userId: number,
+  attachmentsData: any
+) {
+  try {
+    const result = await db
+      .insert(userIdentificationsTable)
+      .values({
+        userId,
+        attachments: attachmentsData,
+      })
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error creating employer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Get the identification record for an employer
+ * @param userId The user ID
+ * @returns The identification record
+ */
+export async function getEmployerIdentification(userId: number) {
+  try {
+    const result = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId));
+
+    return { success: true, data: result[0] || null };
+  } catch (error) {
+    console.error("Error getting employer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Update the identification record for an employer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The updated identification record
+ */
+export async function updateEmployerIdentification(
+  userId: number,
+  attachmentsData: any
+) {
+  try {
+    const result = await db
+      .update(userIdentificationsTable)
+      .set({
+        attachments: attachmentsData,
+      })
+      .where(eq(userIdentificationsTable.userId, userId))
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error updating employer identification:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Update the account status to pending after identification submission
+ * @param accountId The account ID
+ * @returns Success status
+ */
+export async function updateEmployerAccountStatusToPending(accountId: number) {
+  try {
+    const result = await db
+      .update(accountsTable)
+      .set({
+        accountStatus: "pending",
+      })
+      .where(eq(accountsTable.id, accountId))
+      .returning();
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error updating employer account status:", error);
+    return { success: false, error };
   }
 }
