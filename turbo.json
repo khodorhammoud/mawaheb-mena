@@ -12,6 +12,17 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tests/**", "**/__tests__/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tests/**", "**/__tests__/**"]
+    },
+    "test": {
+      "dependsOn": ["test:unit", "test:integration"]
     }
   }
 }

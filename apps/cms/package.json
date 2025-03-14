@@ -2,10 +2,18 @@
   "name": "keystone-app",
   "version": "1.0.3",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "keystone dev",
     "start": "keystone start",
-    "build": "keystone build"
+    "build": "keystone build",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx schemas tests --ignore-pattern build --ignore-pattern dist --ignore-pattern .keystone --ignore-pattern node_modules",
+    "lint:fix": "eslint --ext .js,.jsx,.ts,.tsx schemas tests --ignore-pattern build --ignore-pattern dist --ignore-pattern .keystone --ignore-pattern node_modules --fix",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration:watch": "vitest --config vitest.integration.config.ts",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@getbrevo/brevo": "1.0.1",
@@ -23,5 +31,22 @@
     "remix-auth": "4.1.0",
     "remix-auth-form": "3.0.0",
     "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@testing-library/jest-dom": "^6.4.0",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
+    "jsdom": "^26.0.0",
+    "msw": "^2.2.4",
+    "supertest": "^6.3.3",
+    "vitest": "^1.2.2"
   }
 }

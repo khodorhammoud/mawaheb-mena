@@ -1,0 +1,30 @@
+# Build output
+build/**
+dist/**
+.keystone/**
+.turbo/**
+public/**
+**/node_modules/**
+
+# Cache
+.cache/**
+**/.eslintcache
+**/*.tsbuildinfo
+
+# IDE/OS Specific
+.vscode/**
+.idea/**
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/**
+*.log
+
+# Misc
+coverage/**
+.git/** 

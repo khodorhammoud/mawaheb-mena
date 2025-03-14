@@ -9,7 +9,7 @@ import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 
 async function main() {
-	// eslint-disable-next-line import/no-named-as-default-member
+	 
 	await i18next
 		.use(initReactI18next) // Tell i18next to use the react-i18next plugin
 		.use(I18nextBrowserLanguageDetector) // Setup a client-side language detector

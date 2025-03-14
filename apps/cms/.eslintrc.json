@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    "build/**",
+    "dist/**",
+    ".keystone/**",
+    ".turbo/**",
+    "public/**",
+    "node_modules/**"
+  ]
+}
