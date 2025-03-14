@@ -485,4 +485,4 @@ export const lists = {
       plural: "locationSection",
     },
   }),
-} satisfies Lists;
+} as Lists;

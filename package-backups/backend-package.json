@@ -27,9 +27,6 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
-    "@keystone-6/auth": "^4.0.1",
-    "@keystone-6/core": "^2.3.1",
-    "@keystone-6/fields-document": "^4.1.2",
     "@neondatabase/serverless": "^0.10.4",
     "@nestjs/common": "^11.0.11",
     "@nestjs/config": "^4.0.1",
@@ -37,13 +34,9 @@
     "@nestjs/platform-express": "^11.0.11",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.40.0",
-    "faker": "5.5.3",
     "pg": "^8.14.0",
     "postgres": "^3.4.5",
-    "react-quill": "^0.0.2",
     "reflect-metadata": "^0.2.2",
-    "remix-auth": "4.1.0",
-    "remix-auth-form": "3.0.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
@@ -58,7 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "drizzle-dbml-generator": "^0.10.0",
-    "drizzle-kit": "^0.19.1",
+    "drizzle-kit": "^0.30.5",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",

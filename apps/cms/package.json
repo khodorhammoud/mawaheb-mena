@@ -8,12 +8,20 @@
     "build": "keystone build"
   },
   "dependencies": {
+    "@getbrevo/brevo": "1.0.1",
     "@keystone-6/auth": "^8.0.0",
     "@keystone-6/core": "^6.0.0",
     "@keystone-6/fields-document": "^9.0.0",
-    "decamelize-keys": "^1.1.1",
+    "@prisma/engines-version": "^6.6.0-14.87e86e6709b4a07f354b64bf841f960f73d0891b",
+    "decamelize-keys": "^2.0.1",
+    "drizzle-kit": "^0.30.5",
+    "faker": "5.5.3",
+    "lodash": "^4.17.21",
     "minimist-options": "^4.1.0",
-    "quick-lru": "^4.0.1",
-    "typescript": "^5.5.0"
+    "quick-lru": "^7.0.0",
+    "react-quill": "^2.0.0",
+    "remix-auth": "4.1.0",
+    "remix-auth-form": "3.0.0",
+    "typescript": "^5.8.2"
   }
 }
