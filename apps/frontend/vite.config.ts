@@ -13,6 +13,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ["dompurify"],
   },
+  build: {
+    sourcemap: process.env.NODE_ENV !== "production",
+  },
   plugins: [
     remix({
       future: {
@@ -22,28 +25,6 @@ export default defineConfig({
         v3_lazyRouteDiscovery: true,
         v3_singleFetch: true,
       },
-      // routes(defineRoutes) {
-      //   return defineRoutes((route) => {
-      //     route(
-      //       "dashboard",
-      //       "routes/_templatedashboard.dashboard/dashboard/Dashboard.tsx"
-      //     ),
-      //       // Dashboard index route
-      //       route(
-      //         "dashboard/jobs",
-      //         "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
-      //       );
-
-      //     route(
-      //       "dashboard/jobs:jobId",
-      //       "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
-      //     );
-      //     route(
-      //       "dashboard/jobs/new",
-      //       "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
-      //     );
-      //   });
-      // },
     }),
     tsconfigPaths(),
   ],
