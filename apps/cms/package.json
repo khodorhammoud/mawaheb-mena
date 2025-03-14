@@ -16,9 +16,10 @@
     "decamelize-keys": "^2.0.1",
     "drizzle-kit": "^0.30.5",
     "faker": "5.5.3",
+    "lodash": "^4.17.21",
     "minimist-options": "^4.1.0",
     "quick-lru": "^7.0.0",
-    "react-quill": "^0.0.2",
+    "react-quill": "^2.0.0",
     "remix-auth": "4.1.0",
     "remix-auth-form": "3.0.0",
     "typescript": "^5.8.2"
