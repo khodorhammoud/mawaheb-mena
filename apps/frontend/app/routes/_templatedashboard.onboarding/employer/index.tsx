@@ -1,5 +1,10 @@
 import Heading from "~/common/profileView/heading/Heading";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useFetcher,
+} from "@remix-run/react";
 import type { Employer } from "~/types/User";
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 import { BsCurrencyDollar } from "react-icons/bs";
@@ -17,6 +22,7 @@ export default function EmployerOnboardingScreen() {
   const actionData = useActionData<ActionData>();
 
   const { accountOnboarded } = useLoaderData<EmployerOnboardingData>();
+  const fetcher = useFetcher();
 
   return (
     <div className="mt-20">
@@ -47,6 +53,7 @@ export default function EmployerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-3 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Years in Business */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="increment"
             cardTitle="Years in Business"
             popupTitle="Years in Business"
@@ -58,6 +65,7 @@ export default function EmployerOnboardingScreen() {
           />
           {/* Budget */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="number"
             cardTitle="Average Project Budget"
             popupTitle="Add Average Budget"
@@ -71,6 +79,7 @@ export default function EmployerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* About */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="textArea"
             cardTitle="About"
             popupTitle="Introduce Yourself"

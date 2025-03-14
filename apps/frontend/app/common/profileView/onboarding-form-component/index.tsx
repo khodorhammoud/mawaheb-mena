@@ -16,10 +16,31 @@ import type {
   RepeatableInputType,
   GeneralizableFormCardProps,
 } from "./types";
+import { useState } from "react";
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const formState = useFormState(props.formType, props.fieldName);
-  const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
+  const {
+    handleSubmit: localHandleSubmit,
+    fetcher: localFetcher,
+    showStatusMessage: localShowStatusMessage,
+  } = useFormSubmission();
+
+  // Add state to control dialog open/close
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Use the provided fetcher or the local one
+  const fetcher = props.fetcher || localFetcher;
+  const handleSubmit = (e: React.FormEvent, formData: FormData) => {
+    localHandleSubmit(e, formData);
+    // Close dialog after successful submission
+    setTimeout(() => {
+      if (fetcher.state !== "submitting") {
+        setDialogOpen(false);
+      }
+    }, 500);
+  };
+  const showStatusMessage = localShowStatusMessage;
 
   // Get values from formState
   const { inputValue, repeatableInputValues } = formState;
@@ -62,6 +83,16 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   //   }
   // );
 
+  // Handle button click to open dialog and prevent form submission
+  const handleButtonClick = (e: React.MouseEvent) => {
+    // Stop event propagation to prevent it from reaching the parent form
+    e.stopPropagation();
+    // Prevent the default form submission
+    e.preventDefault();
+    // Open the dialog
+    setDialogOpen(true);
+  };
+
   return (
     <Card
       className={`border-2 rounded-xl flex flex-col h-full ${
@@ -84,19 +115,25 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
           cardSubtitle={props.cardSubtitle}
         />
         {props.editable && (
-          <Dialog>
-            <DialogTrigger>
-              {isFilled ? (
-                <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
-              ) : (
-                <Button
-                  variant="outline"
-                  className="text-primaryColor border-gray-300"
-                >
-                  {props.triggerIcon} {props.triggerLabel}
-                </Button>
-              )}
-            </DialogTrigger>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            {isFilled ? (
+              <button
+                type="button"
+                className="absolute top-3 right-3"
+                onClick={handleButtonClick}
+              >
+                <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
+              </button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-primaryColor border-gray-300"
+                onClick={handleButtonClick}
+              >
+                {props.triggerIcon} {props.triggerLabel}
+              </Button>
+            )}
             <DialogContent>
               <DialogTitle>{props.popupTitle}</DialogTitle>
               <FormContent
