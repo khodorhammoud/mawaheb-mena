@@ -162,7 +162,7 @@ export const FormFields = {
               name={name} // Ensure name matches "videoLink"
               label="Paste YouTube URL or upload video"
               placeholder="Paste YouTube URL or upload video"
-              defaultValue={value as string}
+              defaultValue={typeof value === "string" ? value : ""}
               onChange={onChange}
               className=""
             />
@@ -201,7 +201,7 @@ export const FormFields = {
         <Input
           type="file"
           name={name}
-          accept={props.acceptedFileTypes}
+          accept={props?.acceptedFileTypes}
           onChange={handleFileInputChange}
           className="w-full p-3 border border-gray-300 rounded-md cursor-pointer"
           onClick={(e) => e.stopPropagation()} // Prevent form submission

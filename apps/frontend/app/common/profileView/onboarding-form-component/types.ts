@@ -1,17 +1,19 @@
 import { FetcherWithComponents } from "@remix-run/react";
 
+export type FormType =
+  | "text"
+  | "number"
+  | "range"
+  | "textArea"
+  | "increment"
+  | "video"
+  | "file"
+  | "repeatable"
+  | "custom";
+
 export interface GeneralizableFormCardProps {
   fetcher?: FetcherWithComponents<any>; // Make fetcher optional
-  formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
+  formType: FormType;
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
@@ -26,7 +28,7 @@ export interface GeneralizableFormCardProps {
   repeatableFieldName?: string;
   editable?: boolean;
   useRichText?: boolean;
-  value?: string | number | string[]; // ✅ Ensure value prop exists
+  value?: string | number | string[] | null; // ✅ Ensure value prop exists
   showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
 }
 
@@ -52,10 +54,10 @@ export interface FilledGeneralizableFormCardProps {
   maxVal?: number;
   repeatableFieldName?: string;
   repeatableInputValues: any[];
-  inputValue: string | number | File | string[];
+  inputValue: string | number | File | string[] | null;
 }
 
-export type FormStateType = number | string | File | null;
+export type FormStateType = string | number | File | null;
 
 export type RepeatableInputType = {
   [key: string]: any;
