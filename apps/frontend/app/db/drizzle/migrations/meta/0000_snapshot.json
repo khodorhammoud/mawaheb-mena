@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "id": "dbce91bd-cdf7-4e6f-9c3d-a6feafd6a30c",
-=======
-  "id": "8358201e-e7a9-4911-8c2e-30d93d06f285",
->>>>>>> dev
+  "id": "ae001050-89fd-44ff-8332-ef8133812f2d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1205,17 +1201,17 @@
           "primaryKey": true,
           "notNull": true
         },
-        "reviewer_id": {
-          "name": "reviewer_id",
+        "employer_id": {
+          "name": "employer_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "reviewee_id": {
-          "name": "reviewee_id",
+        "freelancer_id": {
+          "name": "freelancer_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "rating": {
           "name": "rating",
@@ -1245,7 +1241,34 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "reviews_employer_id_employers_id_fk": {
+          "name": "reviews_employer_id_employers_id_fk",
+          "tableFrom": "reviews",
+          "tableTo": "employers",
+          "columnsFrom": [
+            "employer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reviews_freelancer_id_freelancers_id_fk": {
+          "name": "reviews_freelancer_id_freelancers_id_fk",
+          "tableFrom": "reviews",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -1539,6 +1562,56 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.user_identifications": {
+      "name": "user_identifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_identifications_user_id_users_id_fk": {
+          "name": "user_identifications_user_id_users_id_fk",
+          "tableFrom": "user_identifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.user_verifications": {
       "name": "user_verifications",
       "schema": "",
@@ -1619,7 +1692,8 @@
       "schema": "public",
       "values": [
         "freelancer",
-        "employer"
+        "employer",
+        "admin"
       ]
     },
     "public.belongs_to": {
