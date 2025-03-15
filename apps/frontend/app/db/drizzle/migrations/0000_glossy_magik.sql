@@ -5,7 +5,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."account_type" AS ENUM('freelancer', 'employer');
+ CREATE TYPE "public"."account_type" AS ENUM('freelancer', 'employer', 'admin');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -271,8 +271,8 @@ CREATE TABLE IF NOT EXISTS "preferred_working_times" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "reviews" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"reviewer_id" integer NOT NULL,
-	"reviewee_id" integer NOT NULL,
+	"employer_id" integer,
+	"freelancer_id" integer,
 	"rating" real NOT NULL,
 	"comment" text DEFAULT null,
 	"created_at" timestamp DEFAULT now(),
@@ -318,6 +318,13 @@ CREATE TABLE IF NOT EXISTS "timesheet_submissions" (
 	"status" "timesheet_status" DEFAULT 'submitted' NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "user_identifications" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer,
+	"attachments" jsonb DEFAULT '{}'::jsonb,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user_verifications" (
@@ -450,6 +457,18 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "social_accounts" ADD CONSTRAINT "social_accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -475,6 +494,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "timesheet_submissions" ADD CONSTRAINT "timesheet_submissions_job_application_id_job_applications_id_fk" FOREIGN KEY ("job_application_id") REFERENCES "public"."job_applications"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "user_identifications" ADD CONSTRAINT "user_identifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
