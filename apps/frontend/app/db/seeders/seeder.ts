@@ -17,8 +17,9 @@ import {
   jobApplicationsTable,
   userVerificationsTable,
 } from "../drizzle/schemas/schema";
+// Import the inferred types from the schema
+import type { InferInsertModel } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
-
 import * as dotenv from "dotenv";
 import {
   AccountStatus,
@@ -32,10 +33,30 @@ import {
   JobsOpenTo,
   JobApplicationStatus,
 } from "~/types/enums";
+import { hash } from "bcrypt-ts";
+
+// Define types for inserting data
+type NewUser = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  passHash: string;
+  isVerified?: boolean;
+  isOnboarded?: boolean;
+  provider?: any;
+  role?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+// Override the insert method for UsersTable to accept our NewUser type
+const insertUser = (tx: any, data: NewUser) => {
+  return tx.insert(UsersTable).values(data as any);
+};
+
 dotenv.config({
   path: ".env",
 });
-import { hash } from "bcrypt-ts";
 
 // Define IT-focused freelancer profiles
 const FREELANCER_PROFILES = [
@@ -771,7 +792,7 @@ async function seed() {
       const adminPassword = "123";
       const hashedPassword = await hash(adminPassword, 10);
 
-      await tx.insert(UsersTable).values({
+      await insertUser(tx, {
         firstName: "Admin",
         lastName: "User",
         email: "admin@mawaheb.com",
@@ -823,20 +844,17 @@ async function seed() {
         const profile = FREELANCER_PROFILES[i];
 
         // Create user
-        const userResult = await tx
-          .insert(UsersTable)
-          .values({
-            firstName: profile.name.split(" ")[0],
-            lastName: profile.name.split(" ")[1],
-            email: freelancerEmails[i],
-            passHash: await hash("123", 10),
-            isVerified: true,
-            isOnboarded: true,
-            provider: Provider.Credentials,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning({ id: UsersTable.id });
+        const userResult = await insertUser(tx, {
+          firstName: profile.name.split(" ")[0],
+          lastName: profile.name.split(" ")[1],
+          email: freelancerEmails[i],
+          passHash: await hash("123", 10),
+          isVerified: true,
+          isOnboarded: true,
+          provider: Provider.Credentials,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning({ id: UsersTable.id });
 
         const userId = userResult[0].id;
 
@@ -1024,20 +1042,17 @@ async function seed() {
         const company = EMPLOYER_PROFILES[i];
 
         // Create user
-        const userResult = await tx
-          .insert(UsersTable)
-          .values({
-            firstName: `Employer${i + 1}`,
-            lastName: `Admin`,
-            email: employerEmails[i],
-            passHash: await hash("123", 10),
-            isVerified: true,
-            isOnboarded: true,
-            provider: Provider.Credentials,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning({ id: UsersTable.id });
+        const userResult = await insertUser(tx, {
+          firstName: `Employer${i + 1}`,
+          lastName: `Admin`,
+          email: employerEmails[i],
+          passHash: await hash("123", 10),
+          isVerified: true,
+          isOnboarded: true,
+          provider: Provider.Credentials,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning({ id: UsersTable.id });
 
         const userId = userResult[0].id;
 
