@@ -508,40 +508,14 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
     showStatusMessage: localShowStatusMessage,
   } = useFormSubmission();
   const formState = useFormState(props.formType, props.fieldName);
+  const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
 
-  // Dialog open state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-
-  // Reset formSubmitted when dialog opens
-  useEffect(() => {
-    if (dialogOpen) {
-      setFormSubmitted(false);
-    }
-  }, [dialogOpen]);
-
-  // Use the provided fetcher or the local one
-  const fetcher = props.fetcher || localFetcher;
-
-  // Custom submit that closes the dialog after submission
-  const handleSubmit = (e: React.FormEvent, formData: FormData) => {
-    localHandleSubmit(e, formData);
-    setFormSubmitted(true);
-
-    // close dialog after successful submission
-    setTimeout(() => {
-      if (fetcher.state !== "submitting") {
-        setDialogOpen(false);
-      }
-    }, 500);
-  };
-
-  const showStatusMessage = localShowStatusMessage;
-
-  // Extract from formState
+  // Get values from formState
   const { inputValue, repeatableInputValues } = formState;
 
-  // Make sure we don't overwrite props.value incorrectly
+  // console.log("🛠️ [GeneralizableFormCard] inputValue:", inputValue);
+
+  // Fix: Ensure inputValue does not overwrite props.value with incorrect data
   const value =
     props.formType === "repeatable"
       ? Array.isArray(repeatableInputValues) && repeatableInputValues.length > 0
@@ -553,18 +527,7 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
         ? inputValue
         : props.value;
 
-  // Decide if the card is "filled" or "empty" (excluding file logic here)
-  const isFilled = (() => {
-    if (value === null || value === undefined) {
-      return false;
-    }
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    }
-    return Boolean(value);
-  })();
-
-  // Choose the correct template
+  const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
   const templateKey =
     props.formType === "repeatable"
       ? `repeatable_${props.repeatableFieldName}`
@@ -577,24 +540,16 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
     ? Template.FilledState
     : Template.EmptyState;
 
-  // Prepare for rendering
-  const prepareValueForRendering = () => {
-    if (value === null || value === undefined) {
-      return "" as FormStateType;
-    }
-    if (Array.isArray(value)) {
-      return value as RepeatableInputType[];
-    }
-    // fallback
-    return value as FormStateType;
-  };
-
-  // Handle button click to open the dialog
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setDialogOpen(true);
-  };
+  // console.log("🔍 [GeneralizableFormCard] Props on First Render:", props);
+  // console.log(
+  //   "🚀 [GeneralizableFormCard] Before Passing to TemplateComponent:",
+  //   {
+  //     fieldName: props.fieldName,
+  //     value,
+  //     type: typeof value,
+  //     isArray: Array.isArray(value),
+  //   }
+  // );
 
   return (
     <Card
@@ -608,31 +563,29 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
         }`}
       >
         <TemplateComponent
-          value={prepareValueForRendering()}
+          value={
+            Array.isArray(value)
+              ? (value as RepeatableInputType[])
+              : (value as FormStateType)
+          }
           fieldName={props.fieldName}
           cardTitle={props.cardTitle}
           cardSubtitle={props.cardSubtitle}
         />
         {props.editable && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            {isFilled ? (
-              <button
-                type="button"
-                className="absolute top-3 right-3"
-                onClick={handleButtonClick}
-              >
-                <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
-              </button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                className="text-primaryColor border-gray-300"
-                onClick={handleButtonClick}
-              >
-                {props.triggerIcon} {props.triggerLabel}
-              </Button>
-            )}
+          <Dialog>
+            <DialogTrigger>
+              {isFilled ? (
+                <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
+              ) : (
+                <Button
+                  variant="outline"
+                  className="text-primaryColor border-gray-300"
+                >
+                  {props.triggerIcon} {props.triggerLabel}
+                </Button>
+              )}
+            </DialogTrigger>
             <DialogContent>
               <DialogTitle>{props.popupTitle}</DialogTitle>
               <FormContent
@@ -642,13 +595,6 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
-              {formSubmitted && (
-                <DialogFooter className="mt-2">
-                  <DialogClose asChild>
-                    <Button variant="outline">Close</Button>
-                  </DialogClose>
-                </DialogFooter>
-              )}
             </DialogContent>
           </Dialog>
         )}
@@ -657,18 +603,4 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
   );
 }
 
-/* =====================================================================
- *  3) The SINGLE exported component that decides which one to render
- * =====================================================================
- */
-function GeneralizableFormCard(props: GeneralizableFormCardProps) {
-  // If the formType is "file", use the forwardRef-based version:
-  if (props.formType === "file") {
-    return <FileFormCard {...props} />;
-  }
-
-  // Otherwise, use the default version from snippet #2:
-  return <DefaultFormCard {...props} />;
-}
-
-export default GeneralizableFormCard;
+export default DefaultFormCard;
