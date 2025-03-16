@@ -289,7 +289,6 @@ export default function EmployerIdentifyingScreen() {
     showLoadingOnSubmit: true,
     multiple: true,
     formRef: identificationFormRef,
-    value: identificationData || {},
   };
 
   // Define the form card props for trade license upload
@@ -306,7 +305,6 @@ export default function EmployerIdentifyingScreen() {
     showLoadingOnSubmit: true,
     multiple: true,
     formRef: tradeLicenseFormRef,
-    value: identificationData || {},
   };
 
   // Define the form card props for board resolution upload (only for company accounts)
@@ -323,7 +321,6 @@ export default function EmployerIdentifyingScreen() {
     showLoadingOnSubmit: true,
     multiple: true,
     formRef: boardResolutionFormRef,
-    value: identificationData || {},
   };
 
   return (
@@ -416,12 +413,33 @@ export default function EmployerIdentifyingScreen() {
             </div>
           )}
 
-          <GeneralizableFormCard {...identificationFormProps} />
+          <GeneralizableFormCard
+            {...identificationFormProps}
+            value={
+              identificationData?.attachments
+                ? (identificationData as any)
+                : null
+            }
+          />
 
-          <GeneralizableFormCard {...tradeLicenseFormProps} />
+          <GeneralizableFormCard
+            {...tradeLicenseFormProps}
+            value={
+              identificationData?.attachments
+                ? (identificationData as any)
+                : null
+            }
+          />
 
           {employerAccountType === EmployerAccountType.Company && (
-            <GeneralizableFormCard {...boardResolutionFormProps} />
+            <GeneralizableFormCard
+              {...boardResolutionFormProps}
+              value={
+                identificationData?.attachments
+                  ? (identificationData as any)
+                  : null
+              }
+            />
           )}
         </div>
 

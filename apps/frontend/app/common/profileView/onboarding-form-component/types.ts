@@ -10,8 +10,6 @@ export type FormType =
   | "video"
   | "file"
   | "repeatable"
-  | "select"
-  | "textarea"
   | "custom";
 
 export interface GeneralizableFormCardProps {
@@ -27,7 +25,6 @@ export interface GeneralizableFormCardProps {
   acceptedFileTypes?: string;
   multiple?: boolean; // Allow multiple file uploads
   formRef?: MutableRefObject<any>; // Reference to access form methods
-  showStatusMessage?: boolean; // Add showStatusMessage property
 
   minVal?: number;
   maxVal?: number;
@@ -36,6 +33,7 @@ export interface GeneralizableFormCardProps {
   useRichText?: boolean;
   value?: string | number | string[] | null; // ✅ Ensure value prop exists
   showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
+  showStatusMessage?: boolean; // Add showStatusMessage property
 }
 
 export interface FilledGeneralizableFormCardProps {
@@ -69,23 +67,22 @@ export type RepeatableInputType = {
   [key: string]: any;
 };
 
-export interface FormContentProps {
-  formType: FormType;
-  formState: any;
+export interface FormContentProps extends GeneralizableFormCardProps {
+  formState: {
+    inputValue: FormStateType;
+    setInputValue: (value: FormStateType) => void;
+    repeatableInputValues: RepeatableInputType[];
+    repeatableInputFiles: (File | null)[];
+    handleAddRepeatableField: () => void;
+    handleRemoveRepeatableField: (index: number) => void;
+    handleDataChange: (index: number, data: RepeatableInputType) => void;
+    expandedIndex: number | null;
+    setExpandedIndex: (index: number | null) => void;
+  };
   onSubmit: (e: React.FormEvent, formData: FormData) => void;
-  fetcher: any;
-  showStatusMessage?: boolean;
-  formName: string;
-  fieldName: string;
-  repeatableFieldName?: string;
+  fetcher: any; // Replace with proper Remix fetcher type
+  showStatusMessage: boolean;
   showLoadingOnSubmit?: boolean;
-  value?: any;
-  acceptedFileTypes?: string;
-  multiple?: boolean;
-  cardTitle?: string;
-  popupTitle?: string;
-  triggerLabel?: string;
-  [key: string]: any;
 }
 
 export interface RepeatableFieldsProps {

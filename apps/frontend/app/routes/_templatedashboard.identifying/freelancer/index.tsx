@@ -54,6 +54,12 @@ export default function FreelancerIdentifyingScreen() {
       }
     }
 
+    // Validate that identification document is uploaded
+    if (!hasIdentification && !hasFiles) {
+      alert("Please upload identification documents before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -164,7 +170,6 @@ export default function FreelancerIdentifyingScreen() {
     showLoadingOnSubmit: true,
     multiple: true,
     formRef: identificationFormRef,
-    value: identificationData || {},
   };
 
   return (
