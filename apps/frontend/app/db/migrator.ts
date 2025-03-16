@@ -34,7 +34,6 @@ async function drizzleMigrator() {
     migrationsFolder: "app/db/drizzle/migrations",
   });
 
-  console.log("Migrations completed successfully!");
   await psqlConnector.end();
 }
 
