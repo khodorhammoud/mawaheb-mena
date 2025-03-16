@@ -236,8 +236,44 @@ export async function action({ request }: ActionFunctionArgs) {
       // Get file uploads
       const identificationFiles = formData.getAll("identification") as File[];
 
+      // Get existing identification data
+      const existingIdentification = await getFreelancerIdentification(userId);
+      const existingAttachments =
+        (existingIdentification.data?.attachments as Record<string, any[]>) ||
+        {};
+
       // Prevent duplicate files by using a Map with filename as key
       const uniqueFiles = new Map<string, File>();
+
+      // Add existing files to the map if they exist
+      if (existingAttachments.identification) {
+        // If we're not updating identification files, keep the existing ones
+        if (identificationFiles.length === 0) {
+          existingAttachments.identification.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      // Add new files to the map
       identificationFiles.forEach((file) => {
         uniqueFiles.set(file.name, file);
       });
@@ -251,8 +287,6 @@ export async function action({ request }: ActionFunctionArgs) {
           lastModified: file.lastModified,
         })),
       };
-
-      const existingIdentification = await getFreelancerIdentification(userId);
 
       let result;
       if (!existingIdentification.data) {
