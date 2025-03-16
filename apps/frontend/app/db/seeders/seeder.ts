@@ -739,8 +739,6 @@ async function seed() {
       await tx.delete(industriesTable);
       await tx.delete(jobCategoriesTable);
 
-      console.log("Existing data cleared. Resetting sequences...");
-
       // Reset sequences for all tables
       await tx.execute(sql`
         ALTER SEQUENCE users_id_seq RESTART WITH 1;
@@ -759,10 +757,7 @@ async function seed() {
         ALTER SEQUENCE user_verifications_id_seq RESTART WITH 1;
       `);
 
-      console.log("Sequences reset. Starting fresh seed...");
-
       // Seed Languages
-      console.log("Seeding languages...");
       for (const language of [
         "English",
         "Spanish",
@@ -780,15 +775,12 @@ async function seed() {
         });
       }
 
-      // Seed Industries
-      console.log("Seeding industries...");
       for (const industry of IT_INDUSTRIES) {
         await tx.insert(industriesTable).values({
           name: industry,
         });
       }
 
-      console.log("Creating admin account...");
       const adminPassword = "123";
       const hashedPassword = await hash(adminPassword, 10);
 
@@ -803,8 +795,6 @@ async function seed() {
         provider: Provider.Credentials,
       });
 
-      // Seed Skills - IMPORTANT: Create a map to track skill IDs
-      console.log("Seeding skills...");
       const skillIdMap = new Map();
 
       for (let i = 0; i < IT_SKILLS.length; i++) {
@@ -829,8 +819,6 @@ async function seed() {
         });
       }
 
-      // Create freelancer accounts
-      console.log("Creating freelancer accounts...");
       const freelancerEmails = [
         "freelancer1@example.com",
         "freelancer2@example.com",

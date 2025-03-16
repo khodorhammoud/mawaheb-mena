@@ -10,26 +10,75 @@ import { GeneralizableFormCardProps } from "~/common/profileView/onboarding-form
 import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
 
 export default function FreelancerIdentifyingScreen() {
-  const { currentProfile } = useLoaderData<{ currentProfile: Freelancer }>();
+  const { currentProfile, identificationData } = useLoaderData<{
+    currentProfile: Freelancer;
+    identificationData: any;
+  }>();
   const actionData = useActionData<{ success: boolean }>();
   const submit = useSubmit();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasIdentification, setHasIdentification] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Reference to access the GeneralizableFormCard methods
+  const identificationFormRef = useRef<any>(null);
+
+  // Check if we already have identification data
+  useEffect(() => {
+    if (
+      identificationData &&
+      identificationData.attachments &&
+      identificationData.attachments.identification &&
+      identificationData.attachments.identification.length > 0
+    ) {
+      setHasIdentification(true);
+    }
+  }, [identificationData]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate that identification document is uploaded
-    if (!hasIdentification) {
-      alert("Please upload identification documents before submitting.");
-      return;
+    // Get files from the dialog component
+    let hasFiles = false;
+
+    if (identificationFormRef.current) {
+      const formCardRef = identificationFormRef.current;
+
+      // Check if there are files in the dialog
+      if (formCardRef.getFormData && formRef.current) {
+        const dialogFormData = formCardRef.getFormData(formRef.current);
+        if (dialogFormData) {
+          const identificationFiles = dialogFormData.getAll("identification");
+          hasFiles = identificationFiles.length > 0;
+        }
+      }
     }
 
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
     formData.append("target-updated", "freelancer-identification");
+
+    // Add files from the dialog if available
+    if (
+      identificationFormRef.current &&
+      identificationFormRef.current.getFormData
+    ) {
+      const dialogFormData = identificationFormRef.current.getFormData(
+        formRef.current
+      );
+      if (dialogFormData) {
+        const identificationFiles = dialogFormData.getAll("identification");
+
+        // Remove existing files with the same name
+        formData.delete("identification");
+
+        // Add all files from the dialog
+        identificationFiles.forEach((file) => {
+          formData.append("identification", file);
+        });
+      }
+    }
 
     submit(formData, { method: "post", encType: "multipart/form-data" });
   };
@@ -46,12 +95,34 @@ export default function FreelancerIdentifyingScreen() {
   // Update document state when form changes
   const handleFormChange = () => {
     setHasIdentification(checkFileInput("identification"));
+
+    // Also check if there are files in the dialog
+    if (
+      identificationFormRef.current &&
+      identificationFormRef.current.filesSelected
+    ) {
+      const dialogFiles = identificationFormRef.current.filesSelected;
+      if (dialogFiles && dialogFiles.length > 0) {
+        setHasIdentification(true);
+      }
+    }
   };
 
   // Check file inputs when component mounts and after any dialog closes
   useEffect(() => {
     const checkFiles = () => {
       setHasIdentification(checkFileInput("identification"));
+
+      // Also check if there are files in the dialog
+      if (
+        identificationFormRef.current &&
+        identificationFormRef.current.filesSelected
+      ) {
+        const dialogFiles = identificationFormRef.current.filesSelected;
+        if (dialogFiles && dialogFiles.length > 0) {
+          setHasIdentification(true);
+        }
+      }
     };
 
     // Check initially
@@ -86,11 +157,14 @@ export default function FreelancerIdentifyingScreen() {
       "Upload your identification documents (ID card, passport, etc.)",
     popupTitle: "Upload Identification",
     triggerLabel: "Upload Documents",
-    formName: "identification-form", // used in your action/loader logic
-    fieldName: "identification", // must match the `name` for the file input
+    formName: "freelancer-identification",
+    fieldName: "identification",
     acceptedFileTypes: ".pdf,.jpg,.jpeg,.png",
     editable: true,
     showLoadingOnSubmit: true,
+    multiple: true,
+    formRef: identificationFormRef,
+    value: identificationData || {},
   };
 
   return (
@@ -117,20 +191,34 @@ export default function FreelancerIdentifyingScreen() {
           </div>
         )}
 
+        {/* Display existing identification files if any */}
+        {identificationData &&
+          identificationData.attachments &&
+          identificationData.attachments.identification &&
+          identificationData.attachments.identification.length > 0 && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-md">
+              <h3 className="text-md font-medium mb-2">
+                Uploaded Identification Documents:
+              </h3>
+              <ul className="list-disc pl-5">
+                {identificationData.attachments.identification.map(
+                  (file: any, index: number) => (
+                    <li key={index} className="text-sm text-gray-600">
+                      {file.name}
+                      {file.size && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({Math.round(file.size / 1024)} KB)
+                        </span>
+                      )}
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
+
         {/* GeneralizableFormCard for identification */}
         <GeneralizableFormCard {...identificationFormProps} />
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting || !hasIdentification}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 
-                       focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Documents"}
-          </button>
-        </div>
       </Form>
     </div>
   );

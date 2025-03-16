@@ -173,45 +173,90 @@ export const FormFields = {
     );
   },
 
-  file: ({ value, onChange, name, props }: FormFieldProps) => {
-    // Helper function to safely get file information
-    const getFileInfo = (fileValue: any) => {
-      if (fileValue instanceof File) {
-        return {
-          name: fileValue.name,
-          size: Math.round(fileValue.size / 1024), // Convert to KB
-        };
-      }
-      return null;
-    };
+  file: ({ value, onChange, name, props, handleIncrement }: FormFieldProps) => (
+    <FileField
+      value={value}
+      onChange={onChange}
+      name={name}
+      props={props}
+      handleIncrement={handleIncrement}
+    />
+  ),
+};
 
-    const fileInfo = getFileInfo(value);
+export const FileField = ({
+  value,
+  onChange,
+  name,
+  props,
+  handleIncrement,
+}: FormFieldProps) => {
+  // Get file info for display
+  const getFileInfo = (fileValue: any) => {
+    if (fileValue instanceof File) {
+      return {
+        name: fileValue.name,
+        size: Math.round(fileValue.size / 1024),
+      };
+    }
+    return null;
+  };
 
-    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      // Prevent form submission
-      e.preventDefault();
-      e.stopPropagation();
+  const fileInfo = getFileInfo(value);
 
-      // Call the original onChange handler
-      onChange(e);
-    };
+  return (
+    <div className="w-full">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+        <svg
+          className="w-10 h-10 text-gray-400 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          ></path>
+        </svg>
+        <p className="mb-2 text-sm text-gray-500">
+          <span className="font-semibold">Click to upload</span> or drag and
+          drop
+        </p>
+        <p className="text-xs text-gray-500">
+          {props?.acceptedFileTypes
+            ? `Supported formats: ${props.acceptedFileTypes}`
+            : "PDF, JPG, PNG, etc."}
+        </p>
 
-    return (
-      <div className="flex flex-col space-y-2">
         <Input
-          type="file"
+          id={name}
           name={name}
+          type="file"
+          className="hidden"
           accept={props?.acceptedFileTypes}
-          onChange={handleFileInputChange}
-          className="w-full p-3 border border-gray-300 rounded-md cursor-pointer"
-          onClick={(e) => e.stopPropagation()} // Prevent form submission
+          onChange={onChange}
+          multiple={props?.multiple}
         />
-        {fileInfo && (
-          <div className="text-sm text-green-600">
-            Selected file: {fileInfo.name} ({fileInfo.size} KB)
-          </div>
-        )}
+
+        <label
+          htmlFor={name}
+          className="mt-4 px-4 py-2 bg-primaryColor text-white rounded-md cursor-pointer hover:bg-primaryColor/90 transition-colors"
+        >
+          Select Files
+        </label>
       </div>
-    );
-  },
+
+      {fileInfo && (
+        <div className="mt-4 p-3 bg-gray-50 rounded-md">
+          <p className="text-sm font-medium">{fileInfo.name}</p>
+          {fileInfo.size && (
+            <p className="text-xs text-gray-500">{fileInfo.size} KB</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
