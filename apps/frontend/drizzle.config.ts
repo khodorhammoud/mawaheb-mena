@@ -1,10 +1,18 @@
-import { Config, defineConfig } from "drizzle-kit";
-import dotenv from "dotenv";
+import { Config, defineConfig } from 'drizzle-kit';
+import dotenv from 'dotenv';
 
 dotenv.config(); // Load .env file
 
+interface PoolConfig {
+  PGHOST: string;
+  PGDATABASE: string;
+  PGUSER: string;
+  PGPASSWORD: string;
+  ENDPOINT_ID: string;
+}
+
 if (!process.env.DATABASE_URL) {
-  throw new Error("Missing DATABASE_URL environment variable");
+  throw new Error('Missing DATABASE_URL environment variable');
 }
 
 // Configuration options for database connection
@@ -27,11 +35,11 @@ if (process.env.DATABASE_URL) {
       user,
       password,
       port,
-      ssl: url.searchParams.get("sslmode") === "require",
+      ssl: url.searchParams.get('sslmode') === 'require',
     };
   } catch (error) {
-    console.error("Error parsing DATABASE_URL:", error);
-    throw new Error("Invalid DATABASE_URL format");
+    console.error('Error parsing DATABASE_URL:', error);
+    throw new Error('Invalid DATABASE_URL format');
   }
 } else {
   // Fallback to individual environment variables
@@ -39,7 +47,7 @@ if (process.env.DATABASE_URL) {
     process.env as unknown as PoolConfig;
 
   if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID) {
-    throw new Error("Missing db connection environment variables");
+    throw new Error('Missing db connection environment variables');
   }
 
   dbCredentials = {
@@ -53,9 +61,9 @@ if (process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: "./app/db/drizzle/schemas/schema.ts",
-  out: "./app/db/drizzle/migrations",
-  dialect: "postgresql",
+  schema: './app/db/drizzle/schemas/schema.ts',
+  out: './app/db/drizzle/migrations',
+  dialect: 'postgresql',
   dbCredentials,
   verbose: true,
   strict: true,
