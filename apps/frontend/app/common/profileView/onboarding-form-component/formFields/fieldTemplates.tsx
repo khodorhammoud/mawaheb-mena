@@ -540,27 +540,124 @@ export const VideoFieldTemplate: FieldTemplateState = {
 
 export const FileFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    // Convert File objects to string representation
-    let displayValue = "";
+    // Handle different types of file values
+    const getFileInfo = (fileValue: any) => {
+      if (fileValue instanceof File) {
+        return {
+          name: fileValue.name,
+          size: Math.round(fileValue.size / 1024),
+          type: fileValue.type,
+        };
+      } else if (
+        typeof fileValue === "string" &&
+        fileValue.startsWith("File:")
+      ) {
+        // Extract file name from string representation
+        const fileName = fileValue.substring(6).trim();
+        return { name: fileName, size: null, type: null };
+      } else if (
+        typeof fileValue === "object" &&
+        fileValue !== null &&
+        "name" in fileValue
+      ) {
+        // Handle file objects from the server
+        return {
+          name: fileValue.name,
+          size: fileValue.size ? Math.round(fileValue.size / 1024) : null,
+          type: fileValue.type || null,
+        };
+      }
 
-    if (value instanceof File) {
-      displayValue = `File: ${value.name}`;
-    } else if (typeof value === "string" && value.startsWith("File:")) {
-      displayValue = value;
-    } else if (typeof value === "string") {
-      displayValue = value;
-    } else if (value !== null && value !== undefined) {
-      try {
-        displayValue = JSON.stringify(value);
-      } catch (e) {
-        displayValue = String(value);
+      return null;
+    };
+
+    // Handle array of files or single file
+    let files = [];
+
+    if (Array.isArray(value)) {
+      // Handle array of files
+      files = value.map((file) => getFileInfo(file)).filter(Boolean);
+    } else {
+      // Handle single file
+      const fileInfo = getFileInfo(value);
+      if (fileInfo) {
+        files = [fileInfo];
       }
     }
 
     return (
       <div className="flex flex-col py-4 pl-5 pr-8">
         <span className="text-lg font-medium">{cardTitle}</span>
-        <span className="text-base font-medium">{displayValue}</span>
+
+        {files.length > 0 ? (
+          <div className="mt-2 space-y-2">
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-200"
+              >
+                <div className="flex-shrink-0 mr-3">
+                  {file.type && file.type.includes("image") ? (
+                    <svg
+                      className="w-5 h-5 text-blue-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  ) : file.type && file.type.includes("pdf") ? (
+                    <svg
+                      className="w-5 h-5 text-red-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-5 h-5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {file.name}
+                  </p>
+                  {file.size && (
+                    <p className="text-xs text-gray-500">{file.size} KB</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-base text-gray-400 italic">No file added</span>
+        )}
       </div>
     );
   },

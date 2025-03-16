@@ -38,7 +38,7 @@ async function drizzleMigrator() {
   });
 
   console.log("Migrations completed successfully!");
-  await psqlConnector.end();
+  // await psqlConnector.end();
 }
 
 // Run migration
