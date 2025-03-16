@@ -23,7 +23,7 @@ import {
 } from "~/servers/freelancer.server";
 
 export async function action({ request }: ActionFunctionArgs) {
-  // user must be verified
+  // User must be verified
   await requireUserVerified(request);
 
   try {
@@ -33,52 +33,202 @@ export async function action({ request }: ActionFunctionArgs) {
     const accountType = currentProfile.account.accountType;
     const targetUpdated = formData.get("target-updated") as string;
 
-    // Process based on account type
+    // Check if this is an identification form submission
+    const isIdentificationForm =
+      targetUpdated === "identification-form" ||
+      targetUpdated === "freelancer-identification" ||
+      targetUpdated === "employer-identification";
+
     if (
       accountType === AccountType.Employer &&
-      targetUpdated === "employer-identification"
+      (targetUpdated === "employer-identification" ||
+        (isIdentificationForm && accountType === AccountType.Employer))
     ) {
       const userId = currentProfile.account.user.id;
       const accountId = currentProfile.account.id;
-      const employerAccountType = formData.get("employerAccountType") as string;
+
+      // Get employer account type from the profile or form data
+      const employerAccountType =
+        accountType === AccountType.Employer &&
+        "employerAccountType" in currentProfile
+          ? (currentProfile as Employer).employerAccountType
+          : (formData.get("employerAccountType") as string);
 
       // Get file uploads
       const identificationFiles = formData.getAll("identification") as File[];
       const tradeLicenseFiles = formData.getAll("trade_license") as File[];
+      const boardResolutionFiles =
+        employerAccountType === EmployerAccountType.Company
+          ? (formData.getAll("board_resolution") as File[])
+          : [];
 
-      // Prepare attachments data
-      const attachmentsData: Record<string, string[]> = {
-        identification: identificationFiles.map((file) => file.name),
-        trade_license: tradeLicenseFiles.map((file) => file.name),
-      };
+      // Get existing identification data
+      const existingIdentification = await getEmployerIdentification(userId);
+      const existingAttachments =
+        (existingIdentification.data?.attachments as Record<string, any[]>) ||
+        {};
+
+      // Prevent duplicate files by using a Map with filename as key
+      const uniqueIdentificationFiles = new Map<string, File>();
+      const uniqueTradeLicenseFiles = new Map<string, File>();
+      const uniqueBoardResolutionFiles = new Map<string, File>();
+
+      // Add existing files to the maps if they exist
+      if (existingAttachments.identification) {
+        // If we're not updating identification files, keep the existing ones
+        if (identificationFiles.length === 0) {
+          existingAttachments.identification.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueIdentificationFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      if (existingAttachments.trade_license) {
+        // If we're not updating trade license files, keep the existing ones
+        if (tradeLicenseFiles.length === 0) {
+          existingAttachments.trade_license.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueTradeLicenseFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      // Handle board resolution files for company accounts
+      if (
+        employerAccountType === EmployerAccountType.Company &&
+        existingAttachments.board_resolution
+      ) {
+        // If we're not updating board resolution files, keep the existing ones
+        if (boardResolutionFiles.length === 0) {
+          existingAttachments.board_resolution.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueBoardResolutionFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      // Add new files to the maps
+      identificationFiles.forEach((file) => {
+        uniqueIdentificationFiles.set(file.name, file);
+      });
+
+      tradeLicenseFiles.forEach((file) => {
+        uniqueTradeLicenseFiles.set(file.name, file);
+      });
 
       // Add board resolution files for company accounts
       if (employerAccountType === EmployerAccountType.Company) {
-        const boardResolutionFiles = formData.getAll(
-          "board_resolution"
-        ) as File[];
-        attachmentsData.board_resolution = boardResolutionFiles.map(
-          (file) => file.name
-        );
+        boardResolutionFiles.forEach((file) => {
+          uniqueBoardResolutionFiles.set(file.name, file);
+        });
       }
 
-      // Check if identification record exists
-      const existingIdentification = await getEmployerIdentification(userId);
+      // Prepare attachments data - store file information
+      const attachmentsData: Record<string, any[]> = {
+        identification: Array.from(uniqueIdentificationFiles.values()).map(
+          (file) => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+          })
+        ),
+        trade_license: Array.from(uniqueTradeLicenseFiles.values()).map(
+          (file) => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+          })
+        ),
+      };
 
-      // Create or update identification record
+      if (employerAccountType === EmployerAccountType.Company) {
+        attachmentsData.board_resolution = Array.from(
+          uniqueBoardResolutionFiles.values()
+        ).map((file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified,
+        }));
+      }
+
+      let result;
       if (!existingIdentification.data) {
-        await createEmployerIdentification(userId, attachmentsData);
+        result = await createEmployerIdentification(userId, attachmentsData);
       } else {
-        await updateEmployerIdentification(userId, attachmentsData);
+        result = await updateEmployerIdentification(userId, attachmentsData);
       }
 
-      // Update account status to pending
-      await updateEmployerAccountStatusToPending(accountId);
+      if (!result.success) {
+        throw new Error("Failed to save employer identification");
+      }
+
+      const statusResult =
+        await updateEmployerAccountStatusToPending(accountId);
+
+      if (!statusResult.success) {
+        throw new Error("Failed to update employer account status");
+      }
 
       return Response.json({ success: true });
     } else if (
       accountType === AccountType.Freelancer &&
-      targetUpdated === "freelancer-identification"
+      (targetUpdated === "freelancer-identification" ||
+        (isIdentificationForm && accountType === AccountType.Freelancer))
     ) {
       const userId = currentProfile.account.user.id;
       const accountId = currentProfile.account.id;
@@ -86,31 +236,47 @@ export async function action({ request }: ActionFunctionArgs) {
       // Get file uploads
       const identificationFiles = formData.getAll("identification") as File[];
 
-      // Prepare attachments data
-      const attachmentsData: Record<string, string[]> = {
-        identification: identificationFiles.map((file) => file.name),
+      // Prevent duplicate files by using a Map with filename as key
+      const uniqueFiles = new Map<string, File>();
+      identificationFiles.forEach((file) => {
+        uniqueFiles.set(file.name, file);
+      });
+
+      // Prepare attachments data - store file information
+      const attachmentsData: Record<string, any[]> = {
+        identification: Array.from(uniqueFiles.values()).map((file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified,
+        })),
       };
 
-      // Check if identification record exists
       const existingIdentification = await getFreelancerIdentification(userId);
 
-      // Create or update identification record
+      let result;
       if (!existingIdentification.data) {
-        await createFreelancerIdentification(userId, attachmentsData);
+        result = await createFreelancerIdentification(userId, attachmentsData);
       } else {
-        await updateFreelancerIdentification(userId, attachmentsData);
+        result = await updateFreelancerIdentification(userId, attachmentsData);
       }
 
-      // Update account status to pending
-      await updateFreelancerAccountStatusToPending(accountId);
+      if (!result.success) {
+        throw new Error("Failed to save freelancer identification");
+      }
+
+      const statusResult =
+        await updateFreelancerAccountStatusToPending(accountId);
+
+      if (!statusResult.success) {
+        throw new Error("Failed to update freelancer account status");
+      }
 
       return Response.json({ success: true });
     }
 
-    // DEFAULT
     throw new Error("Unknown account type or target update");
   } catch (error) {
-    console.error("Error processing identification:", error);
     return Response.json(
       { success: false, error: { message: "An unexpected error occurred." } },
       { status: 500 }
@@ -147,12 +313,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // If account status is pending, show pending message
   const isPending = profile.account?.accountStatus === AccountStatus.Pending;
 
+  // Fetch identification data based on account type
+  let identificationData = null;
+  const userId = profile.account?.user?.id;
+
+  if (userId) {
+    if (accountType === AccountType.Employer) {
+      const result = await getEmployerIdentification(userId);
+      if (result.success && result.data) {
+        identificationData = result.data;
+      }
+    } else if (accountType === AccountType.Freelancer) {
+      const result = await getFreelancerIdentification(userId);
+      if (result.success && result.data) {
+        identificationData = result.data;
+      }
+    }
+  }
+
   if (accountType === AccountType.Employer) {
     profile = profile as Employer;
     return Response.json({
       accountType,
       currentProfile: profile,
       isPending,
+      identificationData,
     });
   } else if (accountType === AccountType.Freelancer) {
     profile = profile as Freelancer;
@@ -160,6 +345,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       accountType,
       currentProfile: profile,
       isPending,
+      identificationData,
     });
   }
 

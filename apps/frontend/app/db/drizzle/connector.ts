@@ -32,13 +32,11 @@ const psqlConnector = postgres({
 export const db = drizzle(psqlConnector);
 
 async function drizzleMigrator() {
-  console.log("Running Drizzle migrations...");
   await migrate(drizzle(psqlConnector), {
     migrationsFolder: "app/db/drizzle/migrations",
   });
 
-  console.log("Migrations completed successfully!");
-  await psqlConnector.end();
+  // await psqlConnector.end();
 }
 
 // Run migration

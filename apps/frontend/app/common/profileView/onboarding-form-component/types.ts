@@ -1,4 +1,5 @@
 import { FetcherWithComponents } from "@remix-run/react";
+import { MutableRefObject } from "react";
 
 export type FormType =
   | "text"
@@ -22,6 +23,8 @@ export interface GeneralizableFormCardProps {
   formName: string;
   fieldName: string;
   acceptedFileTypes?: string;
+  multiple?: boolean; // Allow multiple file uploads
+  formRef?: MutableRefObject<any>; // Reference to access form methods
 
   minVal?: number;
   maxVal?: number;
@@ -30,6 +33,7 @@ export interface GeneralizableFormCardProps {
   useRichText?: boolean;
   value?: string | number | string[] | null; // ✅ Ensure value prop exists
   showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
+  showStatusMessage?: boolean; // Add showStatusMessage property
 }
 
 export interface FilledGeneralizableFormCardProps {
