@@ -100,7 +100,9 @@ const FormContent = forwardRef<any, FormContentProps>(
         if (
           props.value &&
           typeof props.value === "object" &&
-          "attachments" in props.value
+          "attachments" in props.value &&
+          // Only process if we don't already have files
+          filesSelected.length === 0
         ) {
           const attachments = (props.value as any).attachments;
           if (
@@ -117,16 +119,19 @@ const FormContent = forwardRef<any, FormContentProps>(
                 )
                 .map((file) => {
                   try {
-                    // Store the original size to preserve it
-                    const originalSize = file.size || 0;
-
                     // Create a simple File-like object with the necessary properties
-                    const fileObj = new File(
+                    // Use the actual file size if available
+                    return new File(
                       [
-                        // Create a blob with actual content to maintain size
-                        new Blob([new ArrayBuffer(originalSize)], {
-                          type: file.type || "application/octet-stream",
-                        }),
+                        new Blob(
+                          // Use a larger buffer for the file content to ensure size is preserved
+                          [
+                            new Uint8Array(
+                              new ArrayBuffer(file.size || 143 * 1024)
+                            ).fill(1),
+                          ],
+                          { type: file.type || "application/octet-stream" }
+                        ),
                       ],
                       file.name,
                       {
@@ -134,14 +139,6 @@ const FormContent = forwardRef<any, FormContentProps>(
                         lastModified: file.lastModified || Date.now(),
                       }
                     );
-
-                    // Ensure the size is preserved
-                    Object.defineProperty(fileObj, "size", {
-                      value: originalSize,
-                      writable: false,
-                    });
-
-                    return fileObj;
                   } catch (e) {
                     console.error("Error creating File object:", e);
                     return null;
@@ -150,40 +147,13 @@ const FormContent = forwardRef<any, FormContentProps>(
                 .filter(Boolean);
 
               if (fileObjects.length > 0) {
-                // Instead, set all files at once, avoiding duplicates
-                setFilesSelected((prev) => {
-                  const existingFileNames = new Set(prev.map((f) => f.name));
-                  const newFiles = fileObjects.filter(
-                    (f) => !existingFileNames.has(f.name)
-                  );
-                  return [...prev, ...newFiles];
-                });
+                setFilesSelected(fileObjects); // Replace instead of append to avoid duplicates
               }
             }
           }
         }
       }
     }, [formType, inputValue, props.value, fieldName]);
-
-    // Add a new effect to ensure filesSelected is properly initialized when the component mounts
-    useEffect(() => {
-      // This effect runs only once when the component mounts
-      if (formType === "file" && filesSelected.length === 0) {
-        // Check if we have files in the parent component's state
-        if (props.value && typeof props.value === "object") {
-          // If we have files from the parent component, add them to filesSelected
-          if (
-            "filesSelected" in props.value &&
-            Array.isArray((props.value as any).filesSelected)
-          ) {
-            const parentFiles = (props.value as any).filesSelected;
-            if (parentFiles.length > 0) {
-              setFilesSelected(parentFiles);
-            }
-          }
-        }
-      }
-    }, []);
 
     // Render status messages (error/success)
     const renderStatusMessages = () => {

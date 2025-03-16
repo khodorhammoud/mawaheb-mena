@@ -57,11 +57,109 @@ export async function action({ request }: ActionFunctionArgs) {
       // Get file uploads
       const identificationFiles = formData.getAll("identification") as File[];
       const tradeLicenseFiles = formData.getAll("trade_license") as File[];
+      const boardResolutionFiles =
+        employerAccountType === EmployerAccountType.Company
+          ? (formData.getAll("board_resolution") as File[])
+          : [];
+
+      // Get existing identification data
+      const existingIdentification = await getEmployerIdentification(userId);
+      const existingAttachments =
+        (existingIdentification.data?.attachments as Record<string, any[]>) ||
+        {};
 
       // Prevent duplicate files by using a Map with filename as key
       const uniqueIdentificationFiles = new Map<string, File>();
       const uniqueTradeLicenseFiles = new Map<string, File>();
+      const uniqueBoardResolutionFiles = new Map<string, File>();
 
+      // Add existing files to the maps if they exist
+      if (existingAttachments.identification) {
+        // If we're not updating identification files, keep the existing ones
+        if (identificationFiles.length === 0) {
+          existingAttachments.identification.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueIdentificationFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      if (existingAttachments.trade_license) {
+        // If we're not updating trade license files, keep the existing ones
+        if (tradeLicenseFiles.length === 0) {
+          existingAttachments.trade_license.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueTradeLicenseFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      // Handle board resolution files for company accounts
+      if (
+        employerAccountType === EmployerAccountType.Company &&
+        existingAttachments.board_resolution
+      ) {
+        // If we're not updating board resolution files, keep the existing ones
+        if (boardResolutionFiles.length === 0) {
+          existingAttachments.board_resolution.forEach((fileInfo: any) => {
+            // Create a placeholder for existing files that preserves the size
+            const fileSize = fileInfo.size || 143 * 1024; // Default to 143KB if size not available
+            uniqueBoardResolutionFiles.set(
+              fileInfo.name,
+              new File(
+                [
+                  new Blob(
+                    // Use a larger buffer for the file content to ensure size is preserved
+                    [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
+                    { type: fileInfo.type || "application/octet-stream" }
+                  ),
+                ],
+                fileInfo.name,
+                {
+                  type: fileInfo.type || "application/octet-stream",
+                  lastModified: fileInfo.lastModified || Date.now(),
+                }
+              )
+            );
+          });
+        }
+      }
+
+      // Add new files to the maps
       identificationFiles.forEach((file) => {
         uniqueIdentificationFiles.set(file.name, file);
       });
@@ -69,6 +167,13 @@ export async function action({ request }: ActionFunctionArgs) {
       tradeLicenseFiles.forEach((file) => {
         uniqueTradeLicenseFiles.set(file.name, file);
       });
+
+      // Add board resolution files for company accounts
+      if (employerAccountType === EmployerAccountType.Company) {
+        boardResolutionFiles.forEach((file) => {
+          uniqueBoardResolutionFiles.set(file.name, file);
+        });
+      }
 
       // Prepare attachments data - store file information
       const attachmentsData: Record<string, any[]> = {
@@ -91,16 +196,6 @@ export async function action({ request }: ActionFunctionArgs) {
       };
 
       if (employerAccountType === EmployerAccountType.Company) {
-        const boardResolutionFiles = formData.getAll(
-          "board_resolution"
-        ) as File[];
-
-        // Prevent duplicate board resolution files
-        const uniqueBoardResolutionFiles = new Map<string, File>();
-        boardResolutionFiles.forEach((file) => {
-          uniqueBoardResolutionFiles.set(file.name, file);
-        });
-
         attachmentsData.board_resolution = Array.from(
           uniqueBoardResolutionFiles.values()
         ).map((file) => ({
@@ -110,8 +205,6 @@ export async function action({ request }: ActionFunctionArgs) {
           lastModified: file.lastModified,
         }));
       }
-
-      const existingIdentification = await getEmployerIdentification(userId);
 
       let result;
       if (!existingIdentification.data) {
