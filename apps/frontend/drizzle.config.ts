@@ -1,6 +1,6 @@
 import { Config, defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
-
+import { PoolConfig } from "~/types/PoolConfig";
 dotenv.config(); // Load .env file
 
 if (!process.env.DATABASE_URL) {
