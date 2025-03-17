@@ -1091,12 +1091,6 @@ export async function fetchFreelancerSkills(
   return freelancerSkills;
 }
 
-/**
- * Create a new identification record for a freelancer
- * @param userId The user ID
- * @param attachmentsData The attachments data in JSON format
- * @returns The created identification record
- */
 export async function createFreelancerIdentification(
   userId: number,
   attachmentsData: any
@@ -1117,11 +1111,6 @@ export async function createFreelancerIdentification(
   }
 }
 
-/**
- * Get the identification record for a freelancer
- * @param userId The user ID
- * @returns The identification record
- */
 export async function getFreelancerIdentification(userId: number) {
   try {
     const result = await db
@@ -1136,12 +1125,6 @@ export async function getFreelancerIdentification(userId: number) {
   }
 }
 
-/**
- * Update the identification record for a freelancer
- * @param userId The user ID
- * @param attachmentsData The attachments data in JSON format
- * @returns The updated identification record
- */
 export async function updateFreelancerIdentification(
   userId: number,
   attachmentsData: any
@@ -1162,11 +1145,6 @@ export async function updateFreelancerIdentification(
   }
 }
 
-/**
- * Update the account status to pending after identification submission
- * @param accountId The account ID
- * @returns Success status
- */
 export async function updateFreelancerAccountStatusToPending(
   accountId: number
 ) {

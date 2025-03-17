@@ -20,7 +20,7 @@ export default function FreelancerOnboardingScreen() {
   const fetcher = useFetcher();
 
   return (
-    <div className="mt-10 relative">
+    <div className="relative">
       <div
         className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 relative"
         style={{

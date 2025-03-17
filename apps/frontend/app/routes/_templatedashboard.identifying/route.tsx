@@ -21,6 +21,7 @@ import {
   updateFreelancerIdentification,
   updateFreelancerAccountStatusToPending,
 } from "~/servers/freelancer.server";
+import { setOnboardedStatus } from "~/servers/user.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   // User must be verified
@@ -32,6 +33,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const currentProfile = await getCurrentProfileInfo(request);
     const accountType = currentProfile.account.accountType;
     const targetUpdated = formData.get("target-updated") as string;
+
+    // Check if this is a request to go back to account info
+    if (targetUpdated === "back-to-account-info") {
+      const userId = currentProfile.account.user.id;
+
+      // Update the isOnboarded flag to false
+      const result = await setOnboardedStatus(userId, false);
+
+      if (!result.success) {
+        throw new Error("Failed to update onboarded status");
+      }
+
+      return redirect("/onboarding");
+    }
 
     // Check if this is an identification form submission
     const isIdentificationForm =

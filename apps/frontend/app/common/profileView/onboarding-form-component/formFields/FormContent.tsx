@@ -40,6 +40,7 @@ const FormContent = forwardRef<any, FormContentProps>(
     // Prepare form data for submission
     const prepareFormData = (form: HTMLFormElement) => {
       const formData = new FormData(form);
+      console.log("DEBUG: Preparing form data for", formName);
 
       // Add target-updated field
       formData.append("target-updated", formName);
@@ -64,12 +65,28 @@ const FormContent = forwardRef<any, FormContentProps>(
 
       // For file type, append all selected files to formData
       if (formType === "file") {
+        console.log("DEBUG: Processing file type form data");
+        console.log(
+          "DEBUG: Files selected:",
+          filesSelected.map((f) => f.name)
+        );
+
         // Clear any existing files with the same name
         formData.delete(fieldName);
+        console.log("DEBUG: Deleted existing", fieldName, "from formData");
 
         // Add all selected files
+        console.log("DEBUG: Adding", filesSelected.length, "files to formData");
         filesSelected.forEach((file) => {
           formData.append(fieldName, file);
+          console.log(
+            "DEBUG: Added file to formData:",
+            file.name,
+            "size:",
+            file.size,
+            "type:",
+            file.type
+          );
         });
       }
 
@@ -80,7 +97,14 @@ const FormContent = forwardRef<any, FormContentProps>(
     useImperativeHandle(ref, () => ({
       prepareFormData,
       filesSelected,
-      setFilesSelected,
+      setFilesSelected: (files: File[]) => {
+        console.log(
+          "DEBUG: FormContent setFilesSelected called with",
+          files.length,
+          "files"
+        );
+        setFilesSelected(files);
+      },
       formSubmitted,
       setFormSubmitted,
     }));
@@ -181,14 +205,35 @@ const FormContent = forwardRef<any, FormContentProps>(
     // Handle form submission
     const handleFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      console.log("DEBUG: FormContent handleFormSubmit called for", formName);
 
-      // For file uploads, validate that at least one file is selected
+      // For identification pages, just prepare the form data without validation
+      if (
+        formName === "employer-identification" ||
+        formName === "freelancer-identification"
+      ) {
+        console.log(
+          "DEBUG: Identification form detected, preparing form data without validation"
+        );
+        const formData = prepareFormData(e.target as HTMLFormElement);
+
+        // Mark form as submitted to show the close button
+        setFormSubmitted(true);
+
+        // Just close the dialog by calling the parent's onSubmit
+        console.log("DEBUG: Calling parent onSubmit for identification form");
+        onSubmit(e, formData);
+        return;
+      }
+
+      // For other form types, validate and submit
       if (
         formType === "file" &&
         filesSelected.length === 0 &&
         !(inputValue instanceof File)
       ) {
-        alert("Please select at least one file before saving.");
+        console.log("DEBUG: No files selected, skipping submission");
+        // Skip the alert, just disable the button (handled by isSaveButtonDisabled)
         return;
       }
 
@@ -198,6 +243,7 @@ const FormContent = forwardRef<any, FormContentProps>(
       setFormSubmitted(true);
 
       // Pass the formData to the onSubmit callback
+      console.log("DEBUG: Calling parent onSubmit for regular form");
       onSubmit(e, formData);
     };
 
@@ -243,6 +289,10 @@ const FormContent = forwardRef<any, FormContentProps>(
       if (files && files.length > 0) {
         // Convert FileList to array
         const fileArray = Array.from(files);
+        console.log(
+          "DEBUG: File input change detected, files:",
+          fileArray.map((f) => f.name)
+        );
 
         // Add new files to existing files, avoiding duplicates by name
         const newFiles = fileArray.filter(
@@ -253,6 +303,10 @@ const FormContent = forwardRef<any, FormContentProps>(
         );
 
         if (newFiles.length > 0) {
+          console.log(
+            "DEBUG: Adding new files to filesSelected:",
+            newFiles.map((f) => f.name)
+          );
           // Update state with all selected files
           setFilesSelected((prev) => [...prev, ...newFiles]);
 

@@ -21,12 +21,41 @@ export default function EmployerIdentifyingScreen() {
   const [hasIdentification, setHasIdentification] = useState(false);
   const [hasTradeLicense, setHasTradeLicense] = useState(false);
   const [hasBoardResolution, setHasBoardResolution] = useState(false);
+  const [documentsSubmitted, setDocumentsSubmitted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   // References to access the GeneralizableFormCard methods
-  const identificationFormRef = useRef<any>(null);
-  const tradeLicenseFormRef = useRef<any>(null);
-  const boardResolutionFormRef = useRef<any>(null);
+  const identificationFormRef = useRef<any>({
+    filesSelected: [],
+    forceUpdate: () => {
+      // Force a re-render by updating the state
+      setHasIdentification(
+        identificationFormRef.current?.filesSelected?.length > 0
+      );
+    },
+  });
+
+  const tradeLicenseFormRef = useRef<any>({
+    filesSelected: [],
+    forceUpdate: () => {
+      // Force a re-render by updating the state
+      setHasTradeLicense(
+        tradeLicenseFormRef.current?.filesSelected?.length > 0
+      );
+    },
+  });
+
+  const boardResolutionFormRef = useRef<any>({
+    filesSelected: [],
+    forceUpdate: () => {
+      // Force a re-render by updating the state
+      if (isCompany) {
+        setHasBoardResolution(
+          boardResolutionFormRef.current?.filesSelected?.length > 0
+        );
+      }
+    },
+  });
 
   const employerAccountType = currentProfile.employerAccountType;
   const isCompany = employerAccountType === EmployerAccountType.Company;
@@ -60,142 +89,248 @@ export default function EmployerIdentifyingScreen() {
     }
   }, [identificationData, isCompany]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmitDocuments = () => {
+    // Set loading state
+    setIsSubmitting(true);
+    console.log("DEBUG: Starting document submission process");
 
-    // Get files from the dialog components
+    // Get all files from the dialog components
     let hasIdentificationFiles = false;
     let hasTradeLicenseFiles = false;
     let hasBoardResolutionFiles = false;
 
-    // Check identification files
+    // Check identification files - directly access the filesSelected property
     if (
       identificationFormRef.current &&
-      identificationFormRef.current.getFormData &&
-      formRef.current
+      identificationFormRef.current.filesSelected
     ) {
-      const dialogFormData = identificationFormRef.current.getFormData(
-        formRef.current
+      hasIdentificationFiles =
+        identificationFormRef.current.filesSelected.length > 0;
+      console.log(
+        "DEBUG: Identification files count:",
+        identificationFormRef.current.filesSelected.length
       );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("identification");
-        hasIdentificationFiles = files.length > 0;
-      }
+      console.log(
+        "DEBUG: Identification files:",
+        identificationFormRef.current.filesSelected.map((f) => f.name)
+      );
     }
 
-    // Check trade license files
+    // Check trade license files - directly access the filesSelected property
     if (
       tradeLicenseFormRef.current &&
-      tradeLicenseFormRef.current.getFormData &&
-      formRef.current
+      tradeLicenseFormRef.current.filesSelected
     ) {
-      const dialogFormData = tradeLicenseFormRef.current.getFormData(
-        formRef.current
+      hasTradeLicenseFiles =
+        tradeLicenseFormRef.current.filesSelected.length > 0;
+      console.log(
+        "DEBUG: Trade license files count:",
+        tradeLicenseFormRef.current.filesSelected.length
       );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("trade_license");
-        hasTradeLicenseFiles = files.length > 0;
-      }
+      console.log(
+        "DEBUG: Trade license files:",
+        tradeLicenseFormRef.current.filesSelected.map((f) => f.name)
+      );
     }
 
-    // Check board resolution files if company
+    // Check board resolution files if company - directly access the filesSelected property
     if (
       isCompany &&
       boardResolutionFormRef.current &&
-      boardResolutionFormRef.current.getFormData &&
-      formRef.current
+      boardResolutionFormRef.current.filesSelected
     ) {
-      const dialogFormData = boardResolutionFormRef.current.getFormData(
-        formRef.current
+      hasBoardResolutionFiles =
+        boardResolutionFormRef.current.filesSelected.length > 0;
+      console.log(
+        "DEBUG: Board resolution files count:",
+        boardResolutionFormRef.current.filesSelected.length
       );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("board_resolution");
-        hasBoardResolutionFiles = files.length > 0;
+      console.log(
+        "DEBUG: Board resolution files:",
+        boardResolutionFormRef.current.filesSelected.map((f) => f.name)
+      );
+    }
+
+    // Check for existing files in the database
+    let hasExistingIdentificationFiles = false;
+    let hasExistingTradeLicenseFiles = false;
+    let hasExistingBoardResolutionFiles = false;
+
+    if (identificationData && identificationData.attachments) {
+      const attachments = identificationData.attachments;
+
+      // Check for existing identification files
+      if (attachments.identification && attachments.identification.length > 0) {
+        hasExistingIdentificationFiles = true;
+        console.log("DEBUG: Has existing identification files in database");
+      }
+
+      // Check for existing trade license files
+      if (attachments.trade_license && attachments.trade_license.length > 0) {
+        hasExistingTradeLicenseFiles = true;
+        console.log("DEBUG: Has existing trade license files in database");
+      }
+
+      // Check for existing board resolution files
+      if (
+        isCompany &&
+        attachments.board_resolution &&
+        attachments.board_resolution.length > 0
+      ) {
+        hasExistingBoardResolutionFiles = true;
+        console.log("DEBUG: Has existing board resolution files in database");
       }
     }
 
-    // Validate that at least one document is uploaded
-    const hasAllRequiredFiles =
-      (hasIdentification || hasIdentificationFiles) &&
-      (hasTradeLicense || hasTradeLicenseFiles) &&
-      (isCompany ? hasBoardResolution || hasBoardResolutionFiles : true);
+    // Update state variables based on file presence (either new or existing)
+    setHasIdentification(
+      hasIdentificationFiles || hasExistingIdentificationFiles
+    );
+    setHasTradeLicense(hasTradeLicenseFiles || hasExistingTradeLicenseFiles);
+    if (isCompany) {
+      setHasBoardResolution(
+        hasBoardResolutionFiles || hasExistingBoardResolutionFiles
+      );
+    }
 
+    // Validate that required documents are uploaded (either new or existing)
+    const hasAllRequiredFiles =
+      (hasIdentificationFiles || hasExistingIdentificationFiles) &&
+      (hasTradeLicenseFiles || hasExistingTradeLicenseFiles) &&
+      (isCompany
+        ? hasBoardResolutionFiles || hasExistingBoardResolutionFiles
+        : true);
+
+    console.log("DEBUG: Has all required files:", hasAllRequiredFiles);
+    console.log(
+      "DEBUG: Has identification files (new or existing):",
+      hasIdentificationFiles || hasExistingIdentificationFiles
+    );
+    console.log(
+      "DEBUG: Has trade license files (new or existing):",
+      hasTradeLicenseFiles || hasExistingTradeLicenseFiles
+    );
+    console.log(
+      "DEBUG: Has board resolution files (new or existing):",
+      hasBoardResolutionFiles || hasExistingBoardResolutionFiles
+    );
+
+    // If no files are selected or exist in the database, show an alert and return
     if (!hasAllRequiredFiles) {
       alert("Please upload all required documents before submitting.");
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    // Check if there are any new files to submit
+    const hasAnyNewFiles =
+      hasIdentificationFiles ||
+      hasTradeLicenseFiles ||
+      (isCompany && hasBoardResolutionFiles);
 
-    const formData = new FormData(e.currentTarget);
+    // If no new files and we're just submitting existing files, we can skip the form submission
+    if (!hasAnyNewFiles) {
+      console.log("DEBUG: No new files to submit, showing success message");
+      setDocumentsSubmitted(true);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData();
     formData.append("target-updated", "employer-identification");
     formData.append("employerAccountType", employerAccountType);
+    console.log(
+      "DEBUG: Form data initialized with target-updated and employerAccountType"
+    );
 
+    // Access the files directly from the formContentRef inside each GeneralizableFormCard
     // Add identification files from the dialog if available
     if (
       identificationFormRef.current &&
-      identificationFormRef.current.getFormData
+      identificationFormRef.current.filesSelected
     ) {
-      const dialogFormData = identificationFormRef.current.getFormData(
-        formRef.current
-      );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("identification");
+      const files = identificationFormRef.current.filesSelected;
 
-        // Remove existing files with the same name
-        formData.delete("identification");
+      // Remove existing files with the same name
+      formData.delete("identification");
 
-        // Add all files from the dialog
-        files.forEach((file) => {
-          formData.append("identification", file);
-        });
-      }
+      // Add all files from the dialog
+      files.forEach((file) => {
+        formData.append("identification", file);
+        console.log("DEBUG: Added identification file to formData:", file.name);
+      });
     }
 
     // Add trade license files from the dialog if available
     if (
       tradeLicenseFormRef.current &&
-      tradeLicenseFormRef.current.getFormData
+      tradeLicenseFormRef.current.filesSelected
     ) {
-      const dialogFormData = tradeLicenseFormRef.current.getFormData(
-        formRef.current
-      );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("trade_license");
+      const files = tradeLicenseFormRef.current.filesSelected;
 
-        // Remove existing files with the same name
-        formData.delete("trade_license");
+      // Remove existing files with the same name
+      formData.delete("trade_license");
 
-        // Add all files from the dialog
-        files.forEach((file) => {
-          formData.append("trade_license", file);
-        });
-      }
+      // Add all files from the dialog
+      files.forEach((file) => {
+        formData.append("trade_license", file);
+        console.log("DEBUG: Added trade_license file to formData:", file.name);
+      });
     }
 
     // Add board resolution files from the dialog if available (for company accounts)
     if (
       isCompany &&
       boardResolutionFormRef.current &&
-      boardResolutionFormRef.current.getFormData
+      boardResolutionFormRef.current.filesSelected
     ) {
-      const dialogFormData = boardResolutionFormRef.current.getFormData(
-        formRef.current
-      );
-      if (dialogFormData) {
-        const files = dialogFormData.getAll("board_resolution");
+      const files = boardResolutionFormRef.current.filesSelected;
 
-        // Remove existing files with the same name
-        formData.delete("board_resolution");
+      // Remove existing files with the same name
+      formData.delete("board_resolution");
 
-        // Add all files from the dialog
-        files.forEach((file) => {
-          formData.append("board_resolution", file);
-        });
-      }
+      // Add all files from the dialog
+      files.forEach((file) => {
+        formData.append("board_resolution", file);
+        console.log(
+          "DEBUG: Added board_resolution file to formData:",
+          file.name
+        );
+      });
     }
 
+    console.log("DEBUG: Final form data before submission:");
+    logFormData(formData);
+
+    console.log(
+      "DEBUG: Submitting form data with method post and encType multipart/form-data"
+    );
     submit(formData, { method: "post", encType: "multipart/form-data" });
+
+    // Show success message
+    setDocumentsSubmitted(true);
+
+    // Clear files from the dialog components after successful submission
+    if (
+      identificationFormRef.current &&
+      identificationFormRef.current.clearFiles
+    ) {
+      identificationFormRef.current.clearFiles();
+    }
+    if (tradeLicenseFormRef.current && tradeLicenseFormRef.current.clearFiles) {
+      tradeLicenseFormRef.current.clearFiles();
+    }
+    if (
+      isCompany &&
+      boardResolutionFormRef.current &&
+      boardResolutionFormRef.current.clearFiles
+    ) {
+      boardResolutionFormRef.current.clearFiles();
+    }
+
+    // Reset loading state
+    setIsSubmitting(false);
+    console.log("DEBUG: Document submission process completed");
   };
 
   // Function to check if a file input has files
@@ -207,23 +342,59 @@ export default function EmployerIdentifyingScreen() {
     return fileInput && fileInput.files && fileInput.files.length > 0;
   };
 
+  // Add this function to inspect the form data before submission
+  const logFormData = (formData: FormData) => {
+    console.log("DEBUG: Form data entries:");
+    for (const pair of formData.entries()) {
+      if (pair[1] instanceof File) {
+        console.log(
+          `DEBUG: ${pair[0]}: File - ${(pair[1] as File).name} (${(pair[1] as File).size} bytes, type: ${(pair[1] as File).type})`
+        );
+      } else {
+        console.log(`DEBUG: ${pair[0]}: ${pair[1]}`);
+      }
+    }
+
+    // Check if we have any files in the form data
+    const hasFiles = Array.from(formData.entries()).some(
+      (pair) => pair[1] instanceof File
+    );
+    console.log("DEBUG: Form data contains files:", hasFiles);
+
+    // Check if target-updated is set correctly
+    const targetUpdated = formData.get("target-updated");
+    console.log("DEBUG: target-updated value:", targetUpdated);
+  };
+
   // Update document state when form changes
   const handleFormChange = () => {
-    setHasIdentification(
-      checkFileInput("identification") ||
-        identificationFormRef.current?.filesSelected?.length > 0
+    // Directly check the filesSelected property in the refs
+    const hasIdentificationFiles =
+      identificationFormRef.current?.filesSelected?.length > 0;
+    const hasTradeLicenseFiles =
+      tradeLicenseFormRef.current?.filesSelected?.length > 0;
+    const hasBoardResolutionFiles = isCompany
+      ? boardResolutionFormRef.current?.filesSelected?.length > 0
+      : true;
+
+    console.log(
+      "DEBUG: Form changed - identification files:",
+      hasIdentificationFiles
+    );
+    console.log(
+      "DEBUG: Form changed - trade license files:",
+      hasTradeLicenseFiles
+    );
+    console.log(
+      "DEBUG: Form changed - board resolution files:",
+      hasBoardResolutionFiles
     );
 
-    setHasTradeLicense(
-      checkFileInput("trade_license") ||
-        tradeLicenseFormRef.current?.filesSelected?.length > 0
-    );
+    setHasIdentification(hasIdentificationFiles);
+    setHasTradeLicense(hasTradeLicenseFiles);
 
     if (isCompany) {
-      setHasBoardResolution(
-        checkFileInput("board_resolution") ||
-          boardResolutionFormRef.current?.filesSelected?.length > 0
-      );
+      setHasBoardResolution(hasBoardResolutionFiles);
     }
   };
 
@@ -337,7 +508,7 @@ export default function EmployerIdentifyingScreen() {
         ref={formRef}
         method="post"
         encType="multipart/form-data"
-        onSubmit={handleSubmit}
+        onSubmit={(e) => e.preventDefault()}
         onChange={handleFormChange}
         className="space-y-6"
       >
@@ -443,12 +614,52 @@ export default function EmployerIdentifyingScreen() {
           )}
         </div>
 
-        {actionData?.success && (
+        {/* Add success message */}
+        {documentsSubmitted && (
           <div className="mt-4 p-3 bg-green-100 text-green-800 rounded-md">
             Your documents have been submitted successfully. We will review them
             shortly.
           </div>
         )}
+
+        {/* Back to account info button */}
+        <div className="flex justify-start">
+          <button
+            type="button"
+            className="flex items-center text-red-500 hover:text-red-700 text-lg"
+            onClick={() => {
+              const formData = new FormData();
+              formData.append("target-updated", "back-to-account-info");
+
+              submit(formData, { method: "post" });
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Back to account info
+          </button>
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSubmitDocuments}
+            disabled={isSubmitting}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded text-lg shadow-md"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Documents"}
+          </button>
+        </div>
       </Form>
     </div>
   );

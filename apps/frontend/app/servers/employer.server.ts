@@ -539,11 +539,6 @@ export async function createEmployerIdentification(
   }
 }
 
-/**
- * Get the identification record for an employer
- * @param userId The user ID
- * @returns The identification record
- */
 export async function getEmployerIdentification(userId: number) {
   try {
     const result = await db
@@ -558,12 +553,6 @@ export async function getEmployerIdentification(userId: number) {
   }
 }
 
-/**
- * Update the identification record for an employer
- * @param userId The user ID
- * @param attachmentsData The attachments data in JSON format
- * @returns The updated identification record
- */
 export async function updateEmployerIdentification(
   userId: number,
   attachmentsData: any
@@ -584,11 +573,6 @@ export async function updateEmployerIdentification(
   }
 }
 
-/**
- * Update the account status to pending after identification submission
- * @param accountId The account ID
- * @returns Success status
- */
 export async function updateEmployerAccountStatusToPending(accountId: number) {
   try {
     const result = await db

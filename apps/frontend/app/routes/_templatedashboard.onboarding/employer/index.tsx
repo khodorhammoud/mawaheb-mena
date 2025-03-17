@@ -25,7 +25,7 @@ export default function EmployerOnboardingScreen() {
   const fetcher = useFetcher();
 
   return (
-    <div className="mt-20">
+    <div className="">
       <div
         className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 relative"
         style={{

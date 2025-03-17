@@ -69,17 +69,92 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
     const fetcher = useFetcher();
 
     // Expose methods to parent via ref (if parent needs them)
-    useImperativeHandle(ref, () => ({
-      getFormData: (form: HTMLFormElement) =>
-        getFormData(formContentRef.current, form),
-      filesSelected: formContentRef.current?.filesSelected || [],
-    }));
+    useImperativeHandle(ref, () => {
+      // Ensure we have the latest files from formContentRef
+      const currentFiles = formContentRef.current?.filesSelected || [];
+
+      return {
+        getFormData: (form: HTMLFormElement) =>
+          getFormData(formContentRef.current, form),
+        filesSelected: currentFiles,
+        setFilesSelected: (files: File[]) => {
+          console.log(
+            "DEBUG: setFilesSelected called with",
+            files.length,
+            "files"
+          );
+          if (formContentRef.current) {
+            formContentRef.current.setFilesSelected(files);
+          }
+        },
+        // Add a method to clear files after submission
+        clearFiles: () => {
+          console.log("DEBUG: clearFiles called");
+          if (formContentRef.current) {
+            formContentRef.current.setFilesSelected([]);
+          }
+        },
+      };
+    });
 
     // Handle the actual submit
     const handleSubmit = (e: React.FormEvent, formData: FormData) => {
       e.preventDefault();
+      console.log("DEBUG: FileFormCard handleSubmit called for", formName);
 
-      // Submit the form data
+      // For identification pages, just close the dialog without submitting
+      if (
+        formName === "employer-identification" ||
+        formName === "freelancer-identification"
+      ) {
+        console.log(
+          "DEBUG: Identification form detected, not submitting to server"
+        );
+        // Extract files from the form data
+        const files = formData.getAll(fieldName);
+        console.log("DEBUG: Files from form data:", files.length);
+
+        // Store the files in the formContentRef for display in the UI
+        if (formContentRef.current && files.length > 0) {
+          // Get existing files
+          const existingFiles = formContentRef.current.filesSelected || [];
+          console.log("DEBUG: Existing files count:", existingFiles.length);
+
+          // Add new files (avoiding duplicates)
+          const newFiles = files.filter(
+            (newFile: any) =>
+              !existingFiles.some(
+                (existingFile: File) => existingFile.name === newFile.name
+              )
+          );
+          console.log("DEBUG: New unique files count:", newFiles.length);
+
+          // Update the filesSelected array
+          if (newFiles.length > 0) {
+            console.log("DEBUG: Adding new files to filesSelected");
+            const updatedFiles = [...existingFiles, ...newFiles];
+            formContentRef.current.setFilesSelected(updatedFiles);
+
+            // Make sure the parent ref has access to these files
+            if (formRef && formRef.current) {
+              console.log("DEBUG: Updating parent formRef with new files");
+              formRef.current.filesSelected = updatedFiles;
+
+              // Force a re-render of the parent component to update the UI
+              if (typeof formRef.current.forceUpdate === "function") {
+                formRef.current.forceUpdate();
+              }
+            }
+          }
+        }
+
+        // Close the dialog
+        setDialogOpen(false);
+        return;
+      }
+
+      // For other form types, continue with the normal submission
+      console.log("DEBUG: Submitting form data to server");
       fetcher.submit(formData, {
         method: "post",
         encType: "multipart/form-data",
@@ -88,9 +163,16 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
 
     // Keep track of files if the dialog is closed and reopened
     useEffect(() => {
+      console.log("DEBUG: Dialog open state changed to:", dialogOpen);
+
       if (dialogOpen && formContentRef.current) {
+        console.log("DEBUG: Dialog opened, initializing files");
         // When dialog opens, ensure we restore file state from parent ref if needed
         if (formRef && formRef.current && formRef.current.filesSelected) {
+          console.log(
+            "DEBUG: Restoring files from parent ref:",
+            formRef.current.filesSelected.length
+          );
           formContentRef.current.setFilesSelected(
             formRef.current.filesSelected
           );
@@ -112,6 +194,10 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
               Array.isArray(attachments[fieldName]) &&
               attachments[fieldName].length > 0
             ) {
+              console.log(
+                "DEBUG: Found attachments in value:",
+                attachments[fieldName].length
+              );
               // Create File-like objects for display
               const fileObjects = attachments[fieldName]
                 .map((fileInfo: any) => {
@@ -147,6 +233,10 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
                 fileObjects.length > 0 &&
                 formContentRef.current.setFilesSelected
               ) {
+                console.log(
+                  "DEBUG: Setting file objects from attachments:",
+                  fileObjects.length
+                );
                 formContentRef.current.setFilesSelected(fileObjects);
               }
             }
@@ -187,6 +277,21 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
             ) {
               formContentRef.current.setFilesSelected(fileObjects);
             }
+          }
+        }
+      } else if (!dialogOpen) {
+        // When dialog closes, ensure the parent ref has the latest files
+        if (formRef && formRef.current && formContentRef.current) {
+          const files = formContentRef.current.filesSelected || [];
+          console.log(
+            "DEBUG: Dialog closed, updating parent ref with files:",
+            files.length
+          );
+          formRef.current.filesSelected = [...files];
+
+          // Force a re-render of the parent component to update the UI
+          if (typeof formRef.current.forceUpdate === "function") {
+            formRef.current.forceUpdate();
           }
         }
       }

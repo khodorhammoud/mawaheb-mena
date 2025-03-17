@@ -831,6 +831,22 @@ export async function updateOnboardingStatus(userId: number) {
   return result;
 }
 
+/**
+ * Set the isOnboarded status for a user
+ * @param userId The ID of the user
+ * @param isOnboarded Boolean value to set the isOnboarded status
+ * @returns The updated user record
+ */
+export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return { success: true, data: result[0] };
+}
+
 export async function getUserSettings(userId: number) {
   const result = await db
     .select({
