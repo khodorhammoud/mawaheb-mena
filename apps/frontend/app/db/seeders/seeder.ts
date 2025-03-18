@@ -34,6 +34,7 @@ import {
   JobApplicationStatus,
 } from '~/types/enums';
 import { hash } from 'bcrypt-ts';
+import { Label } from '@radix-ui/react-select';
 
 // Define types for inserting data
 type NewUser = {
@@ -65,7 +66,8 @@ const FREELANCER_PROFILES = [
     title: 'Full Stack Developer',
     about:
       "I'm a full stack developer with 8 years of experience building web applications using React, Node.js, and PostgreSQL. I specialize in creating scalable, responsive applications with clean, maintainable code. I have extensive experience with modern JavaScript frameworks and have led teams in delivering complex projects on time and within budget.",
-    expertise: ['Web Development', 'JavaScript', 'React', 'Node.js'],
+    // Replaced "Web Development" with "TypeScript" as it better aligns with modern web tech.
+    expertise: ['TypeScript', 'JavaScript', 'React', 'Node.js'],
     education: [
       {
         institution: 'University of California, Berkeley',
@@ -202,7 +204,8 @@ const FREELANCER_PROFILES = [
     title: 'DevOps Engineer',
     about:
       'DevOps engineer with 7 years of experience automating infrastructure, implementing CI/CD pipelines, and managing cloud resources. Expert in AWS, Docker, Kubernetes, and Terraform. I focus on building reliable, scalable, and secure infrastructure that enables development teams to deliver features rapidly while maintaining system stability.',
-    expertise: ['DevOps', 'Cloud Infrastructure', 'Automation', 'Security'],
+    // Replace "Cloud Infrastructure" -> "Cloud Architecture", "Automation" -> "CI/CD", "Security" -> "Cybersecurity"
+    expertise: ['DevOps', 'Cloud Architecture', 'CI/CD', 'Cybersecurity'],
     education: [
       {
         institution: 'Georgia Institute of Technology',
@@ -264,7 +267,8 @@ const FREELANCER_PROFILES = [
     title: 'UI/UX Designer',
     about:
       'UI/UX designer with 5 years of experience creating intuitive, accessible, and visually appealing digital experiences. I combine user research, interaction design, and visual design to create products that delight users while meeting business objectives. I have expertise in design systems, responsive design, and user testing methodologies.',
-    expertise: ['UI/UX Design', 'User Research', 'Interaction Design', 'Visual Design'],
+    // Replace "Interaction Design" -> "UI/UX Design", "Visual Design" -> "Figma"
+    expertise: ['User Research', 'UI/UX Design', 'Figma'],
     education: [
       {
         institution: 'Rhode Island School of Design',
@@ -387,7 +391,8 @@ const EMPLOYER_PROFILES = [
         title: 'UI/UX Designer',
         description:
           "We're looking for a UI/UX Designer to create intuitive and engaging user experiences for our enterprise applications. You'll work closely with product managers and developers to design interfaces that balance user needs with business goals.\n\nResponsibilities:\n- Create wireframes, prototypes, and high-fidelity mockups\n- Conduct user research and usability testing\n- Develop and maintain design systems and component libraries\n- Create user flows and journey maps\n- Collaborate with developers to ensure accurate implementation\n\nRequirements:\n- 3+ years of experience in UI/UX design for web applications\n- Proficiency with design tools (Figma, Adobe XD)\n- Understanding of accessibility standards and responsive design\n- Experience with user research methodologies\n- Portfolio demonstrating strong visual design skills",
-        skills: ['UI/UX Design', 'Figma', 'User Research', 'Visual Design', 'Interaction Design'],
+        // Replace "Visual Design" -> "Adobe XD" and "Interaction Design" -> "Design Systems"
+        skills: ['UI/UX Design', 'Figma', 'User Research', 'Adobe XD', 'Design Systems'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 6000,
@@ -398,7 +403,8 @@ const EMPLOYER_PROFILES = [
         title: 'QA Automation Engineer',
         description:
           "We're seeking a QA Automation Engineer to help us ensure the quality and reliability of our software products. You'll design and implement automated test frameworks, create test cases, and work with development teams to resolve issues.\n\nResponsibilities:\n- Design and implement automated test frameworks and scripts\n- Create comprehensive test plans and test cases\n- Execute manual and automated tests across different environments\n- Report and track bugs through issue tracking systems\n- Collaborate with developers to resolve quality issues\n\nRequirements:\n- 2+ years of experience in QA automation\n- Proficiency with test automation tools and frameworks (Selenium, Cypress, Jest)\n- Knowledge of programming languages (JavaScript, Python)\n- Experience with CI/CD pipelines and test integration\n- Strong analytical and problem-solving skills",
-        skills: ['QA Automation', 'JavaScript', 'Selenium', 'Cypress', 'Testing'],
+        // Remove "Testing" as no suitable replacement exists
+        skills: ['QA Automation', 'JavaScript', 'Selenium', 'Cypress'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 5500,
@@ -409,7 +415,8 @@ const EMPLOYER_PROFILES = [
         title: 'Mobile App Developer (React Native)',
         description:
           "We're looking for a Mobile App Developer with React Native expertise to help us build cross-platform mobile applications. You'll work on developing new features, improving performance, and ensuring a seamless user experience across iOS and Android platforms.\n\nResponsibilities:\n- Develop and maintain mobile applications using React Native\n- Implement responsive UI components and integrate with APIs\n- Optimize application performance and ensure cross-platform compatibility\n- Collaborate with designers and backend developers\n- Troubleshoot and fix bugs and performance bottlenecks\n\nRequirements:\n- 3+ years of experience with React Native development\n- Strong knowledge of JavaScript/TypeScript\n- Experience with native modules and third-party libraries\n- Understanding of mobile app architecture and state management\n- Familiarity with app deployment processes for iOS and Android",
-        skills: ['React Native', 'JavaScript', 'Mobile Development', 'iOS', 'Android'],
+        // Replace "iOS" and "Android" with "Mobile" and remove duplicates
+        skills: ['React Native', 'JavaScript', 'Mobile'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 6500,
@@ -420,7 +427,8 @@ const EMPLOYER_PROFILES = [
         title: 'Product Manager',
         description:
           "We're seeking a Product Manager to lead the development of our enterprise SaaS products. You'll work closely with stakeholders, designers, and developers to define product vision, prioritize features, and ensure successful delivery.\n\nResponsibilities:\n- Define product vision, strategy, and roadmap\n- Gather and prioritize requirements from stakeholders and customers\n- Create detailed product specifications and user stories\n- Collaborate with design and development teams throughout the product lifecycle\n- Analyze market trends and competitor offerings\n\nRequirements:\n- 4+ years of experience in product management for software products\n- Strong understanding of software development lifecycle\n- Experience with agile methodologies and project management tools\n- Excellent communication and presentation skills\n- Analytical mindset with ability to make data-driven decisions",
-        skills: ['Product Management', 'Agile', 'User Stories', 'Market Research', 'Roadmapping'],
+        // Replace non-matching skills with IT-focused ones
+        skills: ['UI/UX Design', 'Data Analysis', 'Roadmapping'],
         experienceLevel: ExperienceLevel.Expert,
         projectType: ProjectType.LongTerm,
         budget: 8000,
@@ -431,7 +439,8 @@ const EMPLOYER_PROFILES = [
         title: 'Technical Content Writer',
         description:
           "We're looking for a Technical Content Writer to create high-quality documentation, tutorials, and blog posts for our developer community. You'll work closely with our engineering team to explain complex technical concepts in clear, accessible language.\n\nResponsibilities:\n- Create technical documentation for APIs, SDKs, and developer tools\n- Write tutorials and how-to guides for developers\n- Produce blog posts on technical topics and product updates\n- Review and edit content for technical accuracy and clarity\n- Collaborate with engineers and product managers to gather information\n\nRequirements:\n- 2+ years of experience in technical writing for software products\n- Strong understanding of software development concepts\n- Excellent writing and editing skills\n- Ability to explain complex technical concepts clearly\n- Familiarity with documentation tools and markdown",
-        skills: ['Content Writing', 'Technical Writing', 'Documentation', 'Markdown', 'Editing'],
+        // Replace with IT skills that might relate to technical documentation
+        skills: ['API Design', 'UI/UX Design', 'Data Analysis'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.ShortTerm,
         budget: 3000,
@@ -442,7 +451,8 @@ const EMPLOYER_PROFILES = [
         title: 'Frontend Developer (Vue.js)',
         description:
           "We're seeking a Frontend Developer with Vue.js expertise for a short-term project to revamp our customer portal. You'll work on implementing new UI components, improving performance, and enhancing the overall user experience.\n\nResponsibilities:\n- Develop responsive UI components using Vue.js\n- Implement state management using Vuex or Pinia\n- Optimize application performance and loading times\n- Ensure cross-browser compatibility and accessibility\n- Collaborate with designers and backend developers\n\nRequirements:\n- 2+ years of experience with Vue.js development\n- Strong knowledge of JavaScript/TypeScript\n- Experience with Vue CLI, Vuex, and Vue Router\n- Understanding of responsive design and CSS preprocessors\n- Familiarity with testing frameworks (Jest, Vue Test Utils)",
-        skills: ['Vue.js', 'JavaScript', 'Vuex', 'CSS', 'Frontend Development'],
+        // Replace "Vuex", "CSS", and "Frontend Development" with a suitable IT skill
+        skills: ['Vue.js', 'JavaScript', 'UI/UX Design'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.ShortTerm,
         budget: 4000,
@@ -474,7 +484,8 @@ const EMPLOYER_PROFILES = [
         title: 'Data Scientist',
         description:
           "We're seeking a Data Scientist to help our clients extract insights from their data. You'll work on various projects involving statistical analysis, predictive modeling, and data visualization.\n\nResponsibilities:\n- Analyze complex datasets to identify patterns and trends\n- Develop statistical models and machine learning algorithms\n- Create visualizations and dashboards to communicate findings\n- Collaborate with clients to understand their business problems\n- Present results and recommendations to stakeholders\n\nRequirements:\n- 3+ years of experience in data science\n- Strong knowledge of Python, R, and SQL\n- Experience with statistical analysis and machine learning\n- Proficiency with data visualization tools (Tableau, PowerBI)\n- Excellent communication and presentation skills",
-        skills: ['Data Science', 'Python', 'R', 'SQL', 'Statistics'],
+        // Replace "R" and "Statistics" with "Data Analysis"
+        skills: ['Data Science', 'Python', 'SQL', 'Data Analysis'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 7500,
@@ -485,7 +496,8 @@ const EMPLOYER_PROFILES = [
         title: 'Data Engineer',
         description:
           "We're looking for a Data Engineer to build and maintain our data infrastructure. You'll design data pipelines, implement ETL processes, and ensure data quality and accessibility.\n\nResponsibilities:\n- Design and implement scalable data pipelines\n- Create ETL processes for various data sources\n- Optimize database schemas and queries\n- Implement data quality checks and monitoring\n- Collaborate with data scientists to support their data needs\n\nRequirements:\n- 3+ years of experience in data engineering\n- Proficiency with Python, SQL, and big data technologies\n- Experience with data processing frameworks (Spark, Airflow)\n- Knowledge of cloud data services (AWS, Azure, GCP)\n- Understanding of data modeling and warehouse design",
-        skills: ['Data Engineering', 'Python', 'SQL', 'Apache Spark', 'ETL'],
+        // Remove "Apache Spark" as it's not in our IT skills list
+        skills: ['Data Engineering', 'Python', 'SQL', 'ETL'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 7000,
@@ -496,7 +508,8 @@ const EMPLOYER_PROFILES = [
         title: 'Business Intelligence Analyst',
         description:
           "We're seeking a Business Intelligence Analyst to help our clients transform their data into actionable insights. You'll design and implement BI solutions, create dashboards, and provide data-driven recommendations.\n\nResponsibilities:\n- Design and develop BI dashboards and reports\n- Analyze business data to identify trends and opportunities\n- Create data models and implement ETL processes\n- Collaborate with stakeholders to understand reporting needs\n- Present findings and recommendations to clients\n\nRequirements:\n- 2+ years of experience in business intelligence\n- Proficiency with BI tools (Tableau, Power BI, Looker)\n- Strong SQL skills and data modeling knowledge\n- Experience with ETL processes and data warehousing\n- Excellent analytical and problem-solving skills",
-        skills: ['Business Intelligence', 'SQL', 'Tableau', 'Power BI', 'Data Analysis'],
+        // Replace non-matching skills with IT-focused ones
+        skills: ['Data Analysis', 'SQL', 'Data Science'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 6000,
@@ -507,7 +520,8 @@ const EMPLOYER_PROFILES = [
         title: 'NLP Specialist',
         description:
           "We're looking for an NLP Specialist to work on natural language processing projects for our clients. You'll design and implement solutions for text classification, sentiment analysis, entity recognition, and other NLP tasks.\n\nResponsibilities:\n- Develop NLP models for various applications\n- Preprocess and analyze text data\n- Implement and optimize NLP pipelines\n- Evaluate model performance and make improvements\n- Collaborate with data scientists and engineers\n\nRequirements:\n- 3+ years of experience in NLP\n- Strong knowledge of Python and NLP libraries (NLTK, spaCy, Transformers)\n- Experience with deep learning for NLP (BERT, GPT, etc.)\n- Understanding of text preprocessing and feature engineering\n- Familiarity with multiple languages is a plus",
-        skills: ['NLP', 'Python', 'Machine Learning', 'BERT', 'Transformers'],
+        // Replace "NLP", "BERT", "Transformers" with IT skills
+        skills: ['Machine Learning', 'Python', 'Data Science'],
         experienceLevel: ExperienceLevel.Expert,
         projectType: ProjectType.LongTerm,
         budget: 8500,
@@ -518,7 +532,8 @@ const EMPLOYER_PROFILES = [
         title: 'Computer Vision Engineer',
         description:
           "We're seeking a Computer Vision Engineer to work on image and video analysis projects. You'll design and implement solutions for object detection, image classification, and other computer vision tasks.\n\nResponsibilities:\n- Develop computer vision models for various applications\n- Preprocess and analyze image and video data\n- Implement and optimize computer vision pipelines\n- Evaluate model performance and make improvements\n- Collaborate with data scientists and engineers\n\nRequirements:\n- 3+ years of experience in computer vision\n- Strong knowledge of Python and CV libraries (OpenCV, TensorFlow, PyTorch)\n- Experience with deep learning for computer vision (CNNs, object detection)\n- Understanding of image preprocessing and feature engineering\n- Familiarity with deployment of CV models in production",
-        skills: ['Computer Vision', 'Python', 'OpenCV', 'TensorFlow', 'Deep Learning'],
+        // Replace non-matching skills with IT-focused ones
+        skills: ['Machine Learning', 'Python', 'TensorFlow'],
         experienceLevel: ExperienceLevel.Expert,
         projectType: ProjectType.LongTerm,
         budget: 8500,
@@ -529,7 +544,8 @@ const EMPLOYER_PROFILES = [
         title: 'Data Visualization Specialist',
         description:
           "We're looking for a Data Visualization Specialist to create compelling visual representations of complex data. You'll design interactive dashboards, infographics, and data stories that communicate insights effectively.\n\nResponsibilities:\n- Create interactive data visualizations and dashboards\n- Design clear and intuitive ways to present complex data\n- Develop custom visualization components using D3.js\n- Work with stakeholders to understand visualization needs\n- Ensure visualizations are accessible and responsive\n\nRequirements:\n- 3+ years of experience in data visualization\n- Expertise in D3.js and other visualization libraries\n- Strong JavaScript and HTML/CSS skills\n- Understanding of data visualization principles\n- Experience with dashboard design and UX principles",
-        skills: ['Data Visualization', 'D3.js', 'JavaScript', 'Dashboard Design', 'UX Design'],
+        // Replace non-matching skills with IT-focused ones
+        skills: ['UI/UX Design', 'JavaScript', 'Data Analysis'],
         experienceLevel: ExperienceLevel.Mid,
         projectType: ProjectType.LongTerm,
         budget: 6500,
@@ -542,36 +558,486 @@ const EMPLOYER_PROFILES = [
 
 // IT-focused skills
 const IT_SKILLS = [
-  { label: 'JavaScript', isHot: true },
-  { label: 'Python', isHot: true },
-  { label: 'React', isHot: true },
-  { label: 'Node.js', isHot: true },
-  { label: 'TypeScript', isHot: true },
-  { label: 'SQL', isHot: false },
-  { label: 'AWS', isHot: true },
-  { label: 'Docker', isHot: true },
-  { label: 'Kubernetes', isHot: false },
-  { label: 'Machine Learning', isHot: true },
-  { label: 'Data Science', isHot: true },
-  { label: 'TensorFlow', isHot: false },
-  { label: 'PyTorch', isHot: false },
-  { label: 'Java', isHot: false },
-  { label: 'C#', isHot: false },
-  { label: 'Angular', isHot: false },
-  { label: 'Vue.js', isHot: false },
-  { label: 'DevOps', isHot: true },
-  { label: 'CI/CD', isHot: false },
-  { label: 'Cloud Architecture', isHot: true },
-  { label: 'Data Engineering', isHot: true },
-  { label: 'UI/UX Design', isHot: false },
-  { label: 'GraphQL', isHot: false },
-  { label: 'MongoDB', isHot: false },
-  { label: 'PostgreSQL', isHot: false },
-  { label: 'Cybersecurity', isHot: true },
-  { label: 'Blockchain', isHot: false },
-  { label: 'Mobile Development', isHot: false },
-  { label: 'React Native', isHot: false },
-  { label: 'Flutter', isHot: false },
+  {
+    label: 'JavaScript',
+    isHot: true,
+    metaData: [
+      'JavaScript',
+      'JS',
+      'JavaScript Developer',
+      'JavaScript Engineer',
+      'ES6',
+      'ESNext',
+      'Vanilla JS',
+      'Web Development',
+      'Frontend Development',
+      'Full Stack Developer',
+    ],
+  },
+  {
+    label: 'Python',
+    isHot: true,
+    metaData: [
+      'Python',
+      'Python Developer',
+      'Python Engineer',
+      'Python Programmer',
+      'matplotlib',
+      'numpy',
+      'pandas',
+      'scipy',
+      'scikit-learn',
+      'tensorflow',
+      'pytorch',
+    ],
+  },
+  {
+    label: 'React',
+    isHot: true,
+    metaData: [
+      'React',
+      'React.js',
+      'React Developer',
+      'React Engineer',
+      'Frontend Development',
+      'React Hooks',
+      'Next.js',
+      'Redux',
+      'React Router',
+      'Web Development',
+    ],
+  },
+  {
+    label: 'Node.js',
+    isHot: true,
+    metaData: [
+      'Node.js',
+      'NodeJS',
+      'Node Developer',
+      'Backend Development',
+      'Express.js',
+      'NestJS',
+      'Fastify',
+      'Server-side JavaScript',
+      'Full Stack Developer',
+    ],
+  },
+  {
+    label: 'TypeScript',
+    isHot: true,
+    metaData: [
+      'TypeScript',
+      'TS',
+      'TypeScript Developer',
+      'Frontend Development',
+      'Backend Development',
+      'Strongly Typed JavaScript',
+      'TypeScript Engineer',
+      'Web Development',
+    ],
+  },
+  {
+    label: 'SQL',
+    isHot: false,
+    metaData: [
+      'SQL',
+      'Structured Query Language',
+      'SQL Developer',
+      'Database Management',
+      'SQL Queries',
+      'MySQL',
+      'PostgreSQL',
+      'SQL Server',
+      'Oracle SQL',
+      'Database Administrator',
+    ],
+  },
+  {
+    label: 'AWS',
+    isHot: true,
+    metaData: [
+      'AWS',
+      'Amazon Web Services',
+      'AWS Certified',
+      'AWS Developer',
+      'AWS Solutions Architect',
+      'AWS Lambda',
+      'EC2',
+      'S3',
+      'Cloud Computing',
+      'AWS Cloud Engineer',
+    ],
+  },
+  {
+    label: 'Docker',
+    isHot: true,
+    metaData: [
+      'Docker',
+      'Containerization',
+      'Docker Compose',
+      'Docker Swarm',
+      'Kubernetes',
+      'DevOps',
+      'CI/CD',
+      'Container Orchestration',
+      'Cloud Infrastructure',
+    ],
+  },
+  {
+    label: 'Kubernetes',
+    isHot: false,
+    metaData: [
+      'Kubernetes',
+      'K8s',
+      'Container Orchestration',
+      'Cloud-Native',
+      'DevOps',
+      'Docker',
+      'Helm',
+      'Kubernetes Engineer',
+    ],
+  },
+  {
+    label: 'Machine Learning',
+    isHot: true,
+    metaData: [
+      'Machine Learning',
+      'ML',
+      'Artificial Intelligence',
+      'AI',
+      'Deep Learning',
+      'Supervised Learning',
+      'Unsupervised Learning',
+      'TensorFlow',
+      'PyTorch',
+      'ML Engineer',
+    ],
+  },
+  {
+    label: 'Data Science',
+    isHot: true,
+    metaData: [
+      'Data Science',
+      'Data Analysis',
+      'Big Data',
+      'Data Scientist',
+      'Python for Data Science',
+      'SQL for Data Science',
+      'pandas',
+      'Machine Learning',
+      'R',
+      'Data Visualization',
+    ],
+  },
+  {
+    label: 'TensorFlow',
+    isHot: false,
+    metaData: [
+      'TensorFlow',
+      'Deep Learning',
+      'AI',
+      'ML',
+      'Neural Networks',
+      'Machine Learning Engineer',
+      'TF',
+    ],
+  },
+  {
+    label: 'PyTorch',
+    isHot: false,
+    metaData: [
+      'PyTorch',
+      'Deep Learning',
+      'Neural Networks',
+      'Machine Learning',
+      'AI',
+      'Torch',
+      'PyTorch Engineer',
+    ],
+  },
+  {
+    label: 'Java',
+    isHot: false,
+    metaData: [
+      'Java',
+      'Java Developer',
+      'Spring Boot',
+      'JVM',
+      'Microservices',
+      'Java EE',
+      'JPA',
+      'Hibernate',
+    ],
+  },
+  {
+    label: 'C#',
+    isHot: false,
+    metaData: [
+      'C#',
+      'CSharp',
+      '.NET',
+      'ASP.NET',
+      'Entity Framework',
+      'Game Development',
+      'Unity',
+      'Windows Development',
+    ],
+  },
+  {
+    label: 'Angular',
+    isHot: false,
+    metaData: [
+      'Angular',
+      'Angular.js',
+      'Frontend Development',
+      'Angular Developer',
+      'RxJS',
+      'TypeScript',
+      'Single Page Applications',
+    ],
+  },
+  {
+    label: 'Vue.js',
+    isHot: false,
+    metaData: [
+      'Vue.js',
+      'Vue',
+      'Frontend Development',
+      'Vue Developer',
+      'Vuex',
+      'Nuxt.js',
+      'Single Page Applications',
+    ],
+  },
+  {
+    label: 'DevOps',
+    isHot: true,
+    metaData: [
+      'DevOps',
+      'DevOps Engineer',
+      'CI/CD',
+      'Infrastructure as Code',
+      'Kubernetes',
+      'Cloud Engineering',
+      'AWS DevOps',
+    ],
+  },
+  {
+    label: 'CI/CD',
+    isHot: false,
+    metaData: [
+      'CI/CD',
+      'Continuous Integration',
+      'Continuous Deployment',
+      'Jenkins',
+      'GitHub Actions',
+      'GitLab CI',
+      'DevOps',
+    ],
+  },
+  {
+    label: 'Cloud Architecture',
+    isHot: true,
+    metaData: [
+      'Cloud Architecture',
+      'Cloud Engineer',
+      'AWS Solutions Architect',
+      'Cloud Computing',
+      'Infrastructure as Code',
+    ],
+  },
+  {
+    label: 'Data Engineering',
+    isHot: true,
+    metaData: [
+      'Data Engineering',
+      'Big Data',
+      'ETL',
+      'Apache Spark',
+      'SQL for Data Engineering',
+      'Data Pipelines',
+      'Hadoop',
+    ],
+  },
+  {
+    label: 'UI/UX Design',
+    isHot: false,
+    metaData: [
+      'UI/UX Design',
+      'User Interface',
+      'User Experience',
+      'Figma',
+      'Adobe XD',
+      'Wireframing',
+      'Prototyping',
+      'UX Research',
+    ],
+  },
+  {
+    label: 'GraphQL',
+    isHot: false,
+    metaData: [
+      'GraphQL',
+      'GraphQL API',
+      'Apollo',
+      'Relay',
+      'Backend Development',
+      'API Development',
+    ],
+  },
+  {
+    label: 'MongoDB',
+    isHot: false,
+    metaData: ['MongoDB', 'NoSQL', 'Database Management', 'Mongoose', 'MongoDB Atlas'],
+  },
+  {
+    label: 'PostgreSQL',
+    isHot: false,
+    metaData: [
+      'PostgreSQL',
+      'Postgres',
+      'Relational Database',
+      'SQL',
+      'Database Engineer',
+      'pgAdmin',
+    ],
+  },
+  {
+    label: 'Cybersecurity',
+    isHot: true,
+    metaData: [
+      'Cybersecurity',
+      'Information Security',
+      'Ethical Hacking',
+      'Penetration Testing',
+      'SOC Analyst',
+      'Network Security',
+    ],
+  },
+  {
+    label: 'Blockchain',
+    isHot: false,
+    metaData: ['Blockchain', 'Cryptocurrency', 'Smart Contracts', 'Ethereum', 'Solidity', 'DeFi'],
+  },
+  {
+    label: 'Mobile Development',
+    isHot: false,
+    metaData: [
+      'Mobile Development',
+      'iOS Development',
+      'Android Development',
+      'Swift',
+      'Kotlin',
+      'React Native',
+      'Flutter',
+    ],
+  },
+  {
+    label: 'React Native',
+    isHot: false,
+    metaData: [
+      'React Native',
+      'Mobile App Development',
+      'Cross-Platform Development',
+      'React',
+      'Expo',
+    ],
+  },
+  {
+    label: 'Flutter',
+    isHot: false,
+    metaData: ['Flutter', 'Dart', 'Mobile App Development', 'Cross-Platform Apps'],
+  },
+  {
+    label: 'Data Analysis',
+    isHot: false,
+    metaData: ['Data Analysis', 'Data Scientist', 'Data Analyst', 'Data Engineer'],
+  },
+  {
+    label: 'Terraform',
+    isHot: false,
+    metaData: [
+      'Terraform',
+      'Infrastructure as Code',
+      'Cloud Automation',
+      'AWS',
+      'Azure',
+      'Google Cloud',
+      'Terraform Engineer',
+    ],
+  },
+  {
+    label: 'Figma',
+    isHot: true,
+    metaData: ['Figma', 'UI/UX Design', 'Design Tools', 'Prototyping', 'Wireframing'],
+  },
+  {
+    label: 'Adobe XD',
+    isHot: true,
+    metaData: ['Adobe XD', 'UI/UX Design', 'Design Tools', 'Prototyping'],
+  },
+  {
+    label: 'User Research',
+    isHot: true,
+    metaData: ['User Research', 'User Testing', 'User Feedback', 'User Testing', 'User Feedback'],
+  },
+  {
+    label: 'Design Systems',
+    isHot: true,
+    metaData: [
+      'Design Systems',
+      'Design Tokens',
+      'Design Patterns',
+      'Design Systems',
+      'Design Tokens',
+    ],
+  },
+  {
+    label: 'Redux',
+    isHot: true,
+    metaData: ['Redux', 'Redux Toolkit', 'Redux Saga', 'Redux Thunk', 'Redux Toolkit'],
+  },
+  {
+    label: 'API Design',
+    isHot: true,
+    metaData: ['API Design', 'API Development', 'API Documentation', 'API Testing', 'API Testing'],
+  },
+  {
+    label: 'ETL',
+    isHot: true,
+    metaData: [
+      'ETL',
+      'Extract Transform Load',
+      'Data Integration',
+      'Data Pipeline',
+      'Data Pipeline',
+    ],
+  },
+  {
+    label: 'QA Automation',
+    isHot: true,
+    metaData: ['QA Automation', 'QA Testing', 'QA Engineer', 'QA Automation Engineer'],
+  },
+  {
+    label: 'Selenium',
+    isHot: true,
+    metaData: ['Selenium', 'Selenium Testing', 'Selenium Automation', 'Selenium Engineer'],
+  },
+  {
+    label: 'Cypress',
+    isHot: true,
+    metaData: ['Cypress', 'Cypress Testing', 'Cypress Automation', 'Cypress Engineer'],
+  },
+  {
+    label: 'Mobile',
+    isHot: true,
+    metaData: ['Mobile', 'Mobile Development', 'Mobile App Development', 'Mobile Engineer'],
+  },
+  {
+    label: 'Roadmapping',
+    isHot: true,
+    metaData: ['Roadmapping', 'Roadmap', 'Roadmap Development', 'Roadmap Engineer'],
+  },
 ];
 
 // IT-focused job categories
@@ -937,7 +1403,10 @@ async function seed() {
         const portfolioProjects = [];
         for (let j = 0; j < 3; j++) {
           let projectImages;
-          if (profile.expertise.includes('Web Development')) {
+          if (
+            profile.expertise.includes('Web Development') ||
+            profile.expertise.includes('JavaScript')
+          ) {
             projectImages = PROFILE_IMAGES.portfolio.webDev;
           } else if (profile.expertise.includes('Data Science')) {
             projectImages = PROFILE_IMAGES.portfolio.dataScience;
@@ -1133,7 +1602,7 @@ async function seed() {
         // Create jobs for this employer
         console.log(`Creating jobs for employer ${i + 1}...`);
 
-        // Create 10 jobs per employer
+        // Create jobs based on company.jobs array
         for (let j = 0; j < company.jobs.length; j++) {
           const job = company.jobs[j];
 
