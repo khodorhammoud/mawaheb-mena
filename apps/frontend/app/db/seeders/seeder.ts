@@ -16,19 +16,11 @@ import {
   jobCategoriesTable,
   jobApplicationsTable,
   userVerificationsTable,
-<<<<<<< HEAD
 } from '../drizzle/schemas/schema';
 // Import the inferred types from the schema
 import type { InferInsertModel } from 'drizzle-orm';
 import { faker } from '@faker-js/faker';
 import * as dotenv from 'dotenv';
-=======
-} from "../drizzle/schemas/schema";
-// Import the inferred types from the schema
-import type { InferInsertModel } from "drizzle-orm";
-import { faker } from "@faker-js/faker";
-import * as dotenv from "dotenv";
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
 import {
   AccountStatus,
   AccountType,
@@ -40,13 +32,8 @@ import {
   LocationPreferenceType,
   JobsOpenTo,
   JobApplicationStatus,
-<<<<<<< HEAD
 } from '~/types/enums';
 import { hash } from 'bcrypt-ts';
-=======
-} from "~/types/enums";
-import { hash } from "bcrypt-ts";
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
 
 // Define types for inserting data
 type NewUser = {
@@ -867,15 +854,9 @@ async function seed() {
       const hashedPassword = await hash(adminPassword, 10);
 
       await insertUser(tx, {
-<<<<<<< HEAD
         firstName: 'Admin',
         lastName: 'User',
         email: 'admin@mawaheb.com',
-=======
-        firstName: "Admin",
-        lastName: "User",
-        email: "admin@mawaheb.com",
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
         passHash: hashedPassword,
         isVerified: true,
         isOnboarded: true,
@@ -921,17 +902,10 @@ async function seed() {
 
         // Create user
         const userResult = await insertUser(tx, {
-<<<<<<< HEAD
           firstName: profile.name.split(' ')[0],
           lastName: profile.name.split(' ')[1],
           email: freelancerEmails[i],
           passHash: await hash('123', 10),
-=======
-          firstName: profile.name.split(" ")[0],
-          lastName: profile.name.split(" ")[1],
-          email: freelancerEmails[i],
-          passHash: await hash("123", 10),
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
           isVerified: true,
           isOnboarded: true,
           provider: Provider.Credentials,
@@ -1109,11 +1083,7 @@ async function seed() {
           firstName: `Employer${i + 1}`,
           lastName: `Admin`,
           email: employerEmails[i],
-<<<<<<< HEAD
           passHash: await hash('123', 10),
-=======
-          passHash: await hash("123", 10),
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
           isVerified: true,
           isOnboarded: true,
           provider: Provider.Credentials,
