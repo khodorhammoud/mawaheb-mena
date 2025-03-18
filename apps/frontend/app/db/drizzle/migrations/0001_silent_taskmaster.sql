@@ -1,2 +1,0 @@
-ALTER TABLE "user_identifications" ADD COLUMN "updated_at" timestamp DEFAULT now();--> statement-breakpoint
-ALTER TABLE "user_identifications" ADD CONSTRAINT "user_identifications_user_id_unique" UNIQUE("user_id");

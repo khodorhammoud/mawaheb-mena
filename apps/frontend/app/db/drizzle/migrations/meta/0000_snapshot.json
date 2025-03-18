@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "id": "4c7acfae-a353-4dcd-b471-e0a29b8fa5c1",
-=======
-  "id": "ae001050-89fd-44ff-8332-ef8133812f2d",
->>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
+  "id": "06df8167-c0eb-4531-bf58-0536962716b2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1595,6 +1591,13 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -1614,7 +1617,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "user_identifications_user_id_unique": {
+          "name": "user_identifications_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      }
     },
     "public.user_verifications": {
       "name": "user_verifications",
