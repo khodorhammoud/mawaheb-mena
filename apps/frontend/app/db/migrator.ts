@@ -59,6 +59,7 @@ if (process.env.DATABASE_URL) {
 const psqlConnector = postgres(connectionConfig);
 
 async function drizzleMigrator() {
+  console.log("Running Drizzle migrations...");
   await migrate(drizzle(psqlConnector), {
     migrationsFolder: 'app/db/drizzle/migrations',
   });
