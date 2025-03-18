@@ -53,10 +53,17 @@ if (process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: "./app/db/drizzle/schemas/schema.ts",
-  out: "./app/db/drizzle/migrations",
+  schema: "./app/db/drizzle/schemas/schema.ts", // ✅ UPDATED PATH TO MATCH YOUR FILE LOCATION
+  out: "./app/db/drizzle/migrations", // ✅ UPDATED PATH TO MATCH YOUR FILE LOCATION
   dialect: "postgresql",
-  dbCredentials,
+  dbCredentials: {
+    host,
+    port,
+    database,
+    user,
+    password,
+    ssl,
+  },
   verbose: true,
   strict: true,
 } satisfies Config);
