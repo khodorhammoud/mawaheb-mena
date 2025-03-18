@@ -133,8 +133,6 @@ export const FormFields = {
     const handleVideoUpload = (file: File) => {
       const fileUrl = URL.createObjectURL(file);
 
-      console.log("Generated file URL:", fileUrl);
-
       const event = {
         target: {
           value: fileUrl,

@@ -61,7 +61,7 @@ export async function requireUserAccountStatusPublished(request: Request) {
   );
   if (!status) {
     console.warn("Unauthorized, user is not published");
-    throw redirect("/identifying");
+    throw redirect("/identification");
   }
   return userId;
 }

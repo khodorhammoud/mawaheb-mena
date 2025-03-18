@@ -30,6 +30,7 @@ import {
   uploadFile,
   // generatePresignedUrl,
   // uploadFileToBucket,
+  saveAttachments,
 } from "./cloudStorage.server";
 import { FreelancerSkill } from "~/routes/_templatedashboard.onboarding/types";
 
@@ -417,7 +418,7 @@ export async function handleFreelancerOnboardingAction(
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect("/identifying")
+      ? redirect("/identification")
       : Response.json({
           success: false,
           error: { message: "Failed to update onboarding status" },
@@ -1093,14 +1094,85 @@ export async function fetchFreelancerSkills(
 
 export async function createFreelancerIdentification(
   userId: number,
-  attachmentsData: any
+  attachmentsData: {
+    identification?: File[];
+    trade_license?: File[];
+  }
 ) {
   try {
+    // Save identification attachments to the attachments table
+    let identificationIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    let tradeLicenseIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    if (
+      attachmentsData.identification &&
+      attachmentsData.identification.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.identification.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "identification");
+
+        // Check if the attachment uploads failed
+        if (!result.success) {
+          throw new Error("Failed to save attachments");
+        }
+
+        identificationIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Process trade license files if provided
+    if (
+      attachmentsData.trade_license &&
+      attachmentsData.trade_license.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.trade_license.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "trade_license");
+
+        // Check if the attachment uploads failed
+        if (!result.success) {
+          throw new Error("Failed to save trade license attachments");
+        }
+
+        tradeLicenseIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Prepare the attachments object with only the new attachments
+    const attachments = {
+      identification: identificationIds.data || [],
+      trade_license: tradeLicenseIds.data || [],
+    };
+
+    // Use upsert to either insert a new record or update the existing one
     const result = await db
       .insert(userIdentificationsTable)
       .values({
         userId,
-        attachments: attachmentsData,
+        attachments,
+      })
+      .onConflictDoUpdate({
+        target: [userIdentificationsTable.userId],
+        set: {
+          attachments,
+          updatedAt: new Date(),
+        },
       })
       .returning();
 
@@ -1113,10 +1185,35 @@ export async function createFreelancerIdentification(
 
 export async function getFreelancerIdentification(userId: number) {
   try {
+    console.log(
+      "DEBUG - getFreelancerIdentification called with userId:",
+      userId
+    );
+
     const result = await db
       .select()
       .from(userIdentificationsTable)
       .where(eq(userIdentificationsTable.userId, userId));
+
+    console.log(
+      "DEBUG - Raw DB result for freelancer identification:",
+      JSON.stringify(result, null, 2)
+    );
+
+    // Check if we have the expected data format
+    if (result.length > 0) {
+      console.log(
+        "DEBUG - Freelancer attachments found:",
+        result[0].attachments
+          ? JSON.stringify(result[0].attachments, null, 2)
+          : "No attachments"
+      );
+    } else {
+      console.log(
+        "DEBUG - No freelancer identification record found for userId:",
+        userId
+      );
+    }
 
     return { success: true, data: result[0] || null };
   } catch (error) {
@@ -1127,16 +1224,120 @@ export async function getFreelancerIdentification(userId: number) {
 
 export async function updateFreelancerIdentification(
   userId: number,
-  attachmentsData: any
+  attachmentsData: {
+    identification?: File[];
+    trade_license?: File[];
+  }
 ) {
   try {
+    if (
+      attachmentsData.trade_license &&
+      attachmentsData.trade_license.length > 0
+    ) {
+    }
+
+    // Get existing identification data
+    const existingIdentification = await getFreelancerIdentification(userId);
+
+    if (!existingIdentification.data) {
+      // If no record exists, create a new one
+      return createFreelancerIdentification(userId, attachmentsData);
+    }
+
+    // Get existing attachments
+    const existingAttachments =
+      (existingIdentification.data.attachments as {
+        identification?: number[];
+        trade_license?: number[];
+      }) || {};
+
+    // Initialize empty arrays if they don't exist
+    if (!existingAttachments.identification) {
+      existingAttachments.identification = [];
+    }
+
+    if (!existingAttachments.trade_license) {
+      existingAttachments.trade_license = [];
+    }
+
+    // Save new attachments if provided
+    let identificationIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    let tradeLicenseIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    if (
+      attachmentsData.identification &&
+      attachmentsData.identification.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.identification.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "identification");
+
+        if (!result.success) {
+          throw new Error("Failed to save identification attachments");
+        }
+        identificationIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Process trade license files if provided
+    if (
+      attachmentsData.trade_license &&
+      attachmentsData.trade_license.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.trade_license.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "trade_license");
+
+        if (!result.success) {
+          throw new Error("Failed to save trade license attachments");
+        }
+        tradeLicenseIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Combine existing and new attachment IDs, ensuring no duplicates
+    const updatedAttachments = {
+      identification: [
+        ...new Set([
+          ...existingAttachments.identification,
+          ...identificationIds.data,
+        ]),
+      ],
+      trade_license: [
+        ...new Set([
+          ...existingAttachments.trade_license,
+          ...tradeLicenseIds.data,
+        ]),
+      ],
+    };
+
+    // Update the identification record with combined attachment IDs
     const result = await db
       .update(userIdentificationsTable)
       .set({
-        attachments: attachmentsData,
+        attachments: updatedAttachments,
+        updatedAt: new Date(),
       })
       .where(eq(userIdentificationsTable.userId, userId))
       .returning();
+
+    // Verify the record was saved correctly
+    const verificationCheck = await getFreelancerIdentification(userId);
 
     return { success: true, data: result[0] };
   } catch (error) {
