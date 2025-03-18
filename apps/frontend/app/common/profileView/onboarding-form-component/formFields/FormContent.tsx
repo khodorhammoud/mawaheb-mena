@@ -4,6 +4,7 @@ import { FormFields } from "./FormFields";
 import RepeatableFields from "./RepeatableFields";
 import type { FormContentProps } from "../types";
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { X } from "lucide-react";
 
 const FormContent = forwardRef<any, FormContentProps>(
   (
@@ -36,11 +37,84 @@ const FormContent = forwardRef<any, FormContentProps>(
     // Track if files have been selected
     const [filesSelected, setFilesSelected] = useState<File[]>([]);
     const [formSubmitted, setFormSubmitted] = useState(false);
+    const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
+
+    // Local storage key for saving files
+    const getLocalStorageKey = () => `${formName}_${fieldName}_files`;
+
+    // Function to save files to local storage
+    const saveFilesToLocalStorage = (files: File[]) => {
+      if (!files) return;
+
+      const metadata = files.map((file) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+        storageKey: (file as any).storageKey,
+        serverId: (file as any).serverId,
+        isServerFile: (file as any).isServerFile || false,
+      }));
+
+      console.log(
+        "DEBUG - saveFilesToLocalStorage - Saving metadata:",
+        metadata
+      );
+      localStorage.setItem(`${fieldName}-files`, JSON.stringify(metadata));
+    };
+
+    // Function to load file metadata from local storage
+    const loadFilesFromLocalStorage = () => {
+      try {
+        const storedData = localStorage.getItem(`${fieldName}-files`);
+        if (!storedData) return null;
+
+        const metadata = JSON.parse(storedData);
+        console.log(
+          "DEBUG - loadFilesFromLocalStorage - Loaded metadata:",
+          metadata
+        );
+        return metadata;
+      } catch (error) {
+        console.error("Error loading files from localStorage:", error);
+        return null;
+      }
+    };
+
+    // Clear a specific file
+    const handleRemoveFile = (file: File) => {
+      console.log("DEBUG - handleRemoveFile - File to remove:", {
+        name: file.name,
+        storageKey: (file as any).storageKey,
+        serverId: (file as any).serverId,
+        isServerFile: (file as any).isServerFile,
+      });
+
+      const fileId = (file as any).serverId;
+      console.log("DEBUG - handleRemoveFile - File ID:", fileId);
+
+      if (fileId) {
+        setFilesToDelete((prev) => {
+          const newFilesToDelete = [...prev, fileId];
+          console.log(
+            "DEBUG - handleRemoveFile - Updated filesToDelete:",
+            newFilesToDelete
+          );
+          return newFilesToDelete;
+        });
+      }
+
+      setFilesSelected((prev) => {
+        const updatedFiles = prev.filter((f) => f.name !== file.name);
+        // Update localStorage with remaining files
+        saveFilesToLocalStorage(updatedFiles);
+        return updatedFiles;
+      });
+    };
 
     // Prepare form data for submission
     const prepareFormData = (form: HTMLFormElement) => {
       const formData = new FormData(form);
-      console.log("DEBUG: Preparing form data for", formName);
 
       // Add target-updated field
       formData.append("target-updated", formName);
@@ -65,29 +139,24 @@ const FormContent = forwardRef<any, FormContentProps>(
 
       // For file type, append all selected files to formData
       if (formType === "file") {
-        console.log("DEBUG: Processing file type form data");
-        console.log(
-          "DEBUG: Files selected:",
-          filesSelected.map((f) => f.name)
-        );
-
         // Clear any existing files with the same name
         formData.delete(fieldName);
-        console.log("DEBUG: Deleted existing", fieldName, "from formData");
 
         // Add all selected files
-        console.log("DEBUG: Adding", filesSelected.length, "files to formData");
         filesSelected.forEach((file) => {
           formData.append(fieldName, file);
-          console.log(
-            "DEBUG: Added file to formData:",
-            file.name,
-            "size:",
-            file.size,
-            "type:",
-            file.type
-          );
         });
+
+        // Add files to delete if any
+        if (filesToDelete.length > 0) {
+          console.log(
+            "DEBUG - prepareFormData - Adding filesToDelete to formData:",
+            filesToDelete
+          );
+          formData.append("filesToDelete", JSON.stringify(filesToDelete));
+        } else {
+          console.log("DEBUG - prepareFormData - No files to delete");
+        }
       }
 
       return formData;
@@ -98,43 +167,74 @@ const FormContent = forwardRef<any, FormContentProps>(
       prepareFormData,
       filesSelected,
       setFilesSelected: (files: File[]) => {
-        console.log(
-          "DEBUG: FormContent setFilesSelected called with",
-          files.length,
-          "files"
-        );
         setFilesSelected(files);
+        // Save files to localStorage when they're set
+        saveFilesToLocalStorage(files);
       },
       formSubmitted,
       setFormSubmitted,
+      // Add method to clear localStorage when form is submitted
+      clearLocalStorage: () => {
+        localStorage.removeItem(getLocalStorageKey());
+      },
+      // Add method to clear filesToDelete
+      clearFilesToDelete: () => {
+        setFilesToDelete([]);
+      },
     }));
+
+    // Handle file selection from the file input
+    const handleFileSelection = (newFiles: FileList | null) => {
+      if (!newFiles || newFiles.length === 0) return;
+
+      const fileArray = Array.from(newFiles);
+
+      // Combine with existing files, avoiding duplicates by name
+      const updatedFiles = [...filesSelected];
+
+      fileArray.forEach((file) => {
+        // Check if file with same name already exists
+        const existingIndex = updatedFiles.findIndex(
+          (f) => f.name === file.name
+        );
+        if (existingIndex >= 0) {
+          // Replace existing file
+          updatedFiles[existingIndex] = file;
+        } else {
+          // Add new file
+          updatedFiles.push(file);
+        }
+      });
+
+      setFilesSelected(updatedFiles);
+      saveFilesToLocalStorage(updatedFiles);
+    };
 
     // Update filesSelected when inputValue changes (for existing files)
     useEffect(() => {
       if (formType === "file") {
-        // If we have an existing file in inputValue, add it to filesSelected
-        if (
-          inputValue instanceof File &&
-          !filesSelected.some((f) => f.name === inputValue.name)
-        ) {
-          setFilesSelected((prev) => [...prev, inputValue]);
-        }
-
         // If we have existing files from the server in props.value
         if (
           props.value &&
           typeof props.value === "object" &&
           "attachments" in props.value &&
-          // Only process if we don't already have files
-          filesSelected.length === 0
+          filesSelected.length === 0 // Only process if we don't already have files
         ) {
           const attachments = (props.value as any).attachments;
+          console.log(
+            "DEBUG - useEffect - Found attachments in props.value:",
+            JSON.stringify(attachments, null, 2)
+          );
           if (
             attachments &&
             typeof attachments === "object" &&
             fieldName in attachments
           ) {
             const existingFiles = attachments[fieldName];
+            console.log(
+              "DEBUG - useEffect - Found existing files:",
+              JSON.stringify(existingFiles, null, 2)
+            );
             if (Array.isArray(existingFiles) && existingFiles.length > 0) {
               // Create File objects from the server data if possible
               const fileObjects = existingFiles
@@ -143,12 +243,16 @@ const FormContent = forwardRef<any, FormContentProps>(
                 )
                 .map((file) => {
                   try {
-                    // Create a simple File-like object with the necessary properties
-                    // Use the actual file size if available
-                    return new File(
+                    console.log(
+                      "DEBUG - Processing server file (full):",
+                      JSON.stringify(file, null, 2)
+                    );
+                    console.log("DEBUG - File storage object:", file.storage);
+
+                    // Create a File object with the actual size from the server
+                    const fileObj = new File(
                       [
                         new Blob(
-                          // Use a larger buffer for the file content to ensure size is preserved
                           [
                             new Uint8Array(
                               new ArrayBuffer(file.size || 143 * 1024)
@@ -163,6 +267,21 @@ const FormContent = forwardRef<any, FormContentProps>(
                         lastModified: file.lastModified || Date.now(),
                       }
                     );
+
+                    // Store both the storage key and attachment ID
+                    if (file.storage) {
+                      (fileObj as any).storageKey = file.storage.key;
+                      (fileObj as any).serverId = file.attachmentId; // Try to get the actual attachment ID
+                      (fileObj as any).isServerFile = true;
+                      console.log("DEBUG - useEffect - File details:", {
+                        name: file.name,
+                        storageKey: file.storage.key,
+                        attachmentId: file.attachmentId,
+                        fullFile: file,
+                      });
+                    }
+
+                    return fileObj;
                   } catch (e) {
                     console.error("Error creating File object:", e);
                     return null;
@@ -171,13 +290,92 @@ const FormContent = forwardRef<any, FormContentProps>(
                 .filter(Boolean);
 
               if (fileObjects.length > 0) {
-                setFilesSelected(fileObjects); // Replace instead of append to avoid duplicates
+                console.log(
+                  "DEBUG - useEffect - Setting file objects with server IDs:",
+                  fileObjects.map((f) => ({
+                    name: f.name,
+                    storageKey: (f as any).storageKey,
+                    serverId: (f as any).serverId,
+                    isServerFile: (f as any).isServerFile,
+                  }))
+                );
+                setFilesSelected(fileObjects);
               }
             }
           }
         }
+
+        // Then check if we have files in localStorage
+        const storedFileMetadata = loadFilesFromLocalStorage();
+        if (storedFileMetadata && storedFileMetadata.length > 0) {
+          console.log(
+            "DEBUG - useEffect - Found stored file metadata:",
+            storedFileMetadata
+          );
+          // Create File objects from metadata
+          const fileObjects = storedFileMetadata
+            .map((meta) => {
+              try {
+                const file = new File(
+                  [
+                    new Blob([new ArrayBuffer(meta.size || 143 * 1024)], {
+                      type: meta.type || "application/octet-stream",
+                    }),
+                  ],
+                  meta.name,
+                  {
+                    type: meta.type || "application/octet-stream",
+                    lastModified: meta.lastModified || Date.now(),
+                  }
+                );
+                // Preserve the ID and server status if they exist
+                if (meta.id) {
+                  (file as any).serverId = meta.id;
+                  (file as any).isServerFile = true;
+                  console.log(
+                    "DEBUG - useEffect - Preserved server ID from localStorage:",
+                    meta.id
+                  );
+                }
+                return file;
+              } catch (e) {
+                console.error(
+                  "Error creating File object from localStorage:",
+                  e
+                );
+                return null;
+              }
+            })
+            .filter(Boolean);
+
+          if (fileObjects.length > 0) {
+            setFilesSelected((prev) => {
+              // Combine with existing files, avoiding duplicates
+              const combined = [...prev];
+              fileObjects.forEach((file) => {
+                if (!combined.some((f) => f.name === file.name)) {
+                  combined.push(file);
+                }
+              });
+              return combined;
+            });
+          }
+        }
       }
-    }, [formType, inputValue, props.value, fieldName]);
+    }, [formType, props.value, fieldName]);
+
+    // Add effect to handle form submission
+    useEffect(() => {
+      if (formSubmitted) {
+        // Clear localStorage when form is submitted
+        localStorage.removeItem(getLocalStorageKey());
+      }
+    }, [formSubmitted]);
+
+    // Handle file input change
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleFileSelection(e.target.files);
+    };
 
     // Render status messages (error/success)
     const renderStatusMessages = () => {
@@ -202,193 +400,6 @@ const FormContent = forwardRef<any, FormContentProps>(
       }
     };
 
-    // Handle form submission
-    const handleFormSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log("DEBUG: FormContent handleFormSubmit called for", formName);
-
-      // For identification pages, just prepare the form data without validation
-      if (
-        formName === "employer-identification" ||
-        formName === "freelancer-identification"
-      ) {
-        console.log(
-          "DEBUG: Identification form detected, preparing form data without validation"
-        );
-        const formData = prepareFormData(e.target as HTMLFormElement);
-
-        // Mark form as submitted to show the close button
-        setFormSubmitted(true);
-
-        // Just close the dialog by calling the parent's onSubmit
-        console.log("DEBUG: Calling parent onSubmit for identification form");
-        onSubmit(e, formData);
-        return;
-      }
-
-      // For other form types, validate and submit
-      if (
-        formType === "file" &&
-        filesSelected.length === 0 &&
-        !(inputValue instanceof File)
-      ) {
-        console.log("DEBUG: No files selected, skipping submission");
-        // Skip the alert, just disable the button (handled by isSaveButtonDisabled)
-        return;
-      }
-
-      const formData = prepareFormData(e.target as HTMLFormElement);
-
-      // Mark form as submitted
-      setFormSubmitted(true);
-
-      // Pass the formData to the onSubmit callback
-      console.log("DEBUG: Calling parent onSubmit for regular form");
-      onSubmit(e, formData);
-    };
-
-    const handleIncrement = (step: number) => {
-      const currentValue = inputValue;
-
-      if (typeof currentValue === "number") {
-        // Increment the number
-        const newValue = currentValue + step;
-        // Only submit for increment type, not for file uploads
-        if (formType === "increment") {
-          fetcher.submit(
-            {
-              "target-updated": formName,
-              [fieldName]: newValue.toString(),
-            },
-            { method: "post" }
-          );
-        }
-        setInputValue(newValue);
-      } else if (currentValue === null) {
-        // If the current value is null, start from the step value
-        setInputValue(step);
-      } else if (currentValue instanceof File) {
-        // If it's a File, keep it unchanged
-        setInputValue(currentValue);
-      } else {
-        // Handle unexpected types (like strings)
-        setInputValue(currentValue);
-      }
-    };
-
-    // Numeric validation handler
-    const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      const numericValue = value.replace(/[^0-9.]/g, ""); // Remove non-numeric characters
-      setInputValue(numericValue);
-    };
-
-    // Handle file input change without auto-submission
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        // Convert FileList to array
-        const fileArray = Array.from(files);
-        console.log(
-          "DEBUG: File input change detected, files:",
-          fileArray.map((f) => f.name)
-        );
-
-        // Add new files to existing files, avoiding duplicates by name
-        const newFiles = fileArray.filter(
-          (newFile) =>
-            !filesSelected.some(
-              (existingFile) => existingFile.name === newFile.name
-            )
-        );
-
-        if (newFiles.length > 0) {
-          console.log(
-            "DEBUG: Adding new files to filesSelected:",
-            newFiles.map((f) => f.name)
-          );
-          // Update state with all selected files
-          setFilesSelected((prev) => [...prev, ...newFiles]);
-
-          // Set the first new file as inputValue for backward compatibility
-          setInputValue(newFiles[0]);
-        }
-
-        // Prevent form submission
-        e.stopPropagation();
-      }
-    };
-
-    // Remove a file from the selected files
-    const handleRemoveFile = (index: number) => {
-      const newFiles = [...filesSelected];
-      newFiles.splice(index, 1);
-      setFilesSelected(newFiles);
-
-      // Update inputValue if we removed the current inputValue
-      if (newFiles.length > 0) {
-        setInputValue(newFiles[0]);
-      } else {
-        setInputValue(null);
-      }
-    };
-
-    // Determine if the Save button should be disabled
-    const isSaveButtonDisabled = () => {
-      if (showLoadingOnSubmit && fetcher.state === "submitting") {
-        return true;
-      }
-
-      // For file inputs, disable the Save button if no file is selected
-      if (
-        formType === "file" &&
-        filesSelected.length === 0 &&
-        !(inputValue instanceof File)
-      ) {
-        return true;
-      }
-
-      return false;
-    };
-
-    // Safely render form field based on type
-    const renderFormField = () => {
-      if (formType === "repeatable") {
-        return (
-          <RepeatableFields
-            fieldName={repeatableFieldName}
-            values={repeatableInputValues}
-            files={repeatableInputFiles}
-            expandedIndex={expandedIndex}
-            onAdd={handleAddRepeatableField}
-            onRemove={handleRemoveRepeatableField}
-            onDataChange={handleDataChange}
-            onToggleExpand={setExpandedIndex}
-            {...props}
-          />
-        );
-      }
-
-      const FormField = FormFields[formType];
-      if (!FormField) return null;
-
-      return FormField({
-        value: inputValue,
-        onChange:
-          formType === "file"
-            ? handleFileChange
-            : (e) =>
-                setInputValue(
-                  formType === "number"
-                    ? Number(e.target.value)
-                    : e.target.value
-                ),
-        handleIncrement: handleIncrement,
-        name: fieldName,
-        props,
-      });
-    };
-
     // Render selected files
     const renderSelectedFiles = () => {
       if (formType !== "file" || filesSelected.length === 0) return null;
@@ -400,85 +411,14 @@ const FormContent = forwardRef<any, FormContentProps>(
           </h3>
           <div className="space-y-2">
             {filesSelected.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-200"
-              >
-                <div className="flex-shrink-0 mr-3">
-                  {file.type.includes("image") ? (
-                    <svg
-                      className="w-6 h-6 text-blue-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  ) : file.type.includes("pdf") ? (
-                    <svg
-                      className="w-6 h-6 text-red-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-6 h-6 text-gray-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {Math.round(file.size / 1024)} KB
-                  </p>
-                </div>
+              <div key={index} className="flex items-center mt-2">
+                <span className="text-sm text-gray-600">{file.name}</span>
                 <button
                   type="button"
-                  className="ml-2 text-red-500 hover:text-red-700"
-                  onClick={() => handleRemoveFile(index)}
+                  onClick={() => handleRemoveFile(file)}
+                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -492,16 +432,65 @@ const FormContent = forwardRef<any, FormContentProps>(
         <form
           method="post"
           className="space-y-6"
-          onSubmit={handleFormSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(e, prepareFormData(e.target as HTMLFormElement));
+          }}
           encType={
             formType === "repeatable" || formType === "file"
               ? "multipart/form-data"
               : undefined
           }
+          onChange={(e) => {
+            const target = e.target as HTMLInputElement;
+            if (target.type === "file") {
+              handleFileChange(
+                e as unknown as React.ChangeEvent<HTMLInputElement>
+              );
+            }
+          }}
         >
           {renderStatusMessages()}
 
-          {renderFormField()}
+          {formType === "repeatable" ? (
+            <RepeatableFields
+              fieldName={repeatableFieldName || ""}
+              values={repeatableInputValues}
+              onAdd={handleAddRepeatableField}
+              onRemove={handleRemoveRepeatableField}
+              onDataChange={handleDataChange}
+              expandedIndex={expandedIndex}
+              onToggleExpand={setExpandedIndex}
+              {...props}
+            />
+          ) : (
+            <div className="form-field-container">
+              {formType === "file" ? (
+                <input
+                  type="file"
+                  name={fieldName}
+                  onChange={handleFileChange}
+                  multiple={props.multiple}
+                  accept={props.acceptedFileTypes}
+                />
+              ) : formType === "textArea" ? (
+                <textarea
+                  name={fieldName}
+                  value={inputValue as string}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md"
+                />
+              ) : (
+                <input
+                  type={formType === "number" ? "number" : "text"}
+                  name={fieldName}
+                  value={inputValue as string}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md"
+                />
+              )}
+            </div>
+          )}
 
           {renderSelectedFiles()}
 
@@ -512,9 +501,11 @@ const FormContent = forwardRef<any, FormContentProps>(
                 <Button
                   type="submit"
                   className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-                  disabled={isSaveButtonDisabled()}
+                  disabled={
+                    fetcher.state === "submitting" && showLoadingOnSubmit
+                  }
                 >
-                  {showLoadingOnSubmit && fetcher.state === "submitting"
+                  {fetcher.state === "submitting" && showLoadingOnSubmit
                     ? "Saving..."
                     : "Save"}
                 </Button>
@@ -534,9 +525,11 @@ const FormContent = forwardRef<any, FormContentProps>(
                 <Button
                   type="submit"
                   className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-                  disabled={isSaveButtonDisabled()}
+                  disabled={
+                    fetcher.state === "submitting" && showLoadingOnSubmit
+                  }
                 >
-                  {showLoadingOnSubmit && fetcher.state === "submitting"
+                  {fetcher.state === "submitting" && showLoadingOnSubmit
                     ? "Saving..."
                     : "Save"}
                 </Button>

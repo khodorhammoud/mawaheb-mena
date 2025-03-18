@@ -90,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     // If account is onboarded but not published, redirect to identifying route
     else {
-      return redirect("/identifying");
+      return redirect("/identification");
     }
   }
 

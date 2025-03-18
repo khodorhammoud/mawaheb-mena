@@ -6,6 +6,9 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { db } from "../db/drizzle/connector";
+import { attachmentsTable } from "../db/drizzle/schemas/schema";
+import { eq } from "drizzle-orm";
 
 // Google Cloud Functions 👇👇
 
@@ -190,10 +193,8 @@ export async function deleteFileFromS3(
   };
 
   try {
-    console.log("Deleting file from S3 with params:", params);
     const command = new DeleteObjectCommand(params);
     await getS3Client().send(command);
-    console.log(`File deleted successfully from S3: ${key}`);
   } catch (error) {
     console.error(`Error deleting file from S3: ${key}`, error);
     throw new Error("Failed to delete file from S3.");
@@ -257,17 +258,78 @@ const isGoogleCloud = process.env.STORAGE_PROVIDER === "google";
  * @returns { key, bucket, url }
  */
 export async function uploadFile(prefix: string, file: File) {
-  if (isGoogleCloud) {
-    const uploadResult = await uploadFileToBucket(prefix, file);
-    const key = uploadResult.fileName;
-    const bucket = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
-    const url = uploadResult.url;
+  if (!file || !(file instanceof File) || file.size === 0) {
+    throw new Error("Invalid file provided to uploadFile");
+  }
 
-    return { key, bucket, url };
+  // Create a consistent key format that includes the original filename
+  const fileKey = `${prefix}-${file.name}`;
+
+  if (isGoogleCloud) {
+    // For Google Cloud, we need to modify how we call uploadFileToBucket
+    // to ensure it uses our consistent key format
+    const storage = getStorage();
+    const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME!;
+    const bucket = storage.bucket(bucketName);
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const blob = bucket.file(fileKey);
+
+    // Upload the file with our consistent key
+    const uploadResult = await new Promise<{ fileName: string; url: string }>(
+      (resolve, reject) => {
+        const blobStream = blob.createWriteStream({
+          metadata: {
+            contentType: file.type,
+          },
+        });
+
+        blobStream.on("error", (err) => {
+          console.error("Error writing to Google Cloud Storage:", err);
+          reject(err);
+        });
+
+        blobStream.on("finish", () => {
+          resolve({
+            fileName: fileKey,
+            url: blob.publicUrl(),
+          });
+        });
+
+        blobStream.end(fileBuffer);
+      }
+    );
+
+    return {
+      key: uploadResult.fileName,
+      bucket: bucketName,
+      url: uploadResult.url,
+    };
   } else {
-    const uploadResult = await uploadFileToS3(prefix, file);
-    const url = `https://${uploadResult.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadResult.key}`;
-    return { key: uploadResult.key, bucket: uploadResult.bucket, url };
+    // For S3, modify the uploadFileToS3 call to use our consistent key format
+    const bucketName = process.env.S3_PRIVATE_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error(
+        "S3_PRIVATE_BUCKET_NAME is not defined in the environment variables."
+      );
+    }
+
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: fileKey,
+      Body: fileBuffer,
+      ContentType: file.type,
+    };
+
+    try {
+      await getS3Client().send(new PutObjectCommand(uploadParams));
+      const url = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+      return { key: fileKey, bucket: bucketName, url };
+    } catch (error) {
+      console.error("Error uploading file to S3:", error);
+      throw new Error("Failed to upload file to S3.");
+    }
   }
 }
 
@@ -306,3 +368,139 @@ export async function getFile(fileKey: string): Promise<string> {
 }
 
 // functions for both cloud and s3 👆👆
+
+/**
+ * Saves a file's metadata to the attachments table
+ * @param file The file to save
+ * @param prefix The prefix to use for the file (e.g., 'identification', 'trade_license')
+ * @returns The ID of the saved attachment
+ */
+export async function saveAttachment(file: File, prefix: string) {
+  try {
+    if (!file || !(file instanceof File) || file.size === 0) {
+      console.error("Invalid file provided to saveAttachment");
+      return { success: false, error: "Invalid file" };
+    }
+
+    // Create a consistent key format that includes the original filename
+    const fileKey = `${prefix}-${file.name}`;
+
+    // Check if an attachment with the same key already exists
+    const existingAttachment = await db
+      .select()
+      .from(attachmentsTable)
+      .where(eq(attachmentsTable.key, fileKey))
+      .limit(1);
+
+    // First upload the file to cloud storage using the existing function
+    // Use a consistent key format that includes the original filename
+    const uploadResult = await uploadFile(prefix, file);
+
+    // Create the metadata object with file info and storage details
+    const metadata = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified,
+      storage: {
+        key: uploadResult.key,
+        bucket: uploadResult.bucket,
+        url: uploadResult.url,
+      },
+    };
+
+    let result;
+
+    // If an attachment with the same key exists, update it
+    if (existingAttachment.length > 0) {
+      result = await db
+        .update(attachmentsTable)
+        .set({
+          metadata: metadata,
+          updatedAt: new Date(),
+        } as any)
+        .where(eq(attachmentsTable.id, existingAttachment[0].id))
+        .returning();
+    } else {
+      // Otherwise, create a new attachment
+      result = await db
+        .insert(attachmentsTable)
+        .values({
+          key: fileKey, // Use consistent key format
+          metadata: metadata,
+        } as any)
+        .returning();
+    }
+
+    if (!result.length) {
+      throw new Error("Failed to save attachment");
+    }
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error saving attachment:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Saves multiple files to the attachments table
+ * @param files Array of files to save
+ * @param prefix The prefix to use for the files
+ * @returns Array of attachment IDs
+ */
+export async function saveAttachments(files: File[], prefix: string) {
+  try {
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // Filter out invalid files
+    const validFiles = files.filter(
+      (file) => file instanceof File && file.size > 0
+    );
+
+    if (validFiles.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // Process files one by one to ensure proper handling of duplicates
+    const results = [];
+    for (const file of validFiles) {
+      const result = await saveAttachment(file, prefix);
+
+      if (result.success && result.data) {
+        results.push(result.data.id);
+      }
+    }
+
+    return { success: true, data: results };
+  } catch (error) {
+    console.error("Error saving attachments:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Gets attachment metadata by ID
+ * @param id The attachment ID
+ * @returns The attachment metadata
+ */
+export async function getAttachmentMetadataById(id: number) {
+  try {
+    const attachment = await db
+      .select()
+      .from(attachmentsTable)
+      .where(eq(attachmentsTable.id, id))
+      .limit(1);
+
+    if (attachment.length > 0) {
+      return { success: true, data: attachment[0].metadata };
+    }
+
+    return { success: false, error: "Attachment not found" };
+  } catch (error) {
+    console.error("Error getting attachment metadata:", error);
+    return { success: false, error };
+  }
+}

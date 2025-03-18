@@ -175,27 +175,10 @@
 //   }
 // }
 
-// export async function deleteAttachmentById(
-//   attachmentId: number
-// ): Promise<void> {
-//   try {
-//     await db
-//       .delete(attachmentsTable)
-//       .where(eq(attachmentsTable.id, attachmentId));
-
-//     console.log(`Attachment with ID ${attachmentId} successfully deleted.`);
-//   } catch (error) {
-//     console.error(
-//       `Failed to delete attachment with ID ${attachmentId}:`,
-//       error
-//     );
-//     throw new Error("Failed to delete attachment.");
-//   }
-// }
-
 import { db } from "~/db/drizzle/connector";
 import { attachmentsTable } from "~/db/drizzle/schemas/schema";
 import { AttachmentsType } from "~/types/User";
+import { eq } from "drizzle-orm";
 
 export async function saveAttachment(
   key: string,
@@ -218,5 +201,23 @@ export async function saveAttachment(
   } catch (error) {
     console.error("Error saving attachment:", error);
     throw new Error("Failed to save attachment metadata.");
+  }
+}
+
+export async function deleteAttachmentById(
+  attachmentId: number
+): Promise<void> {
+  try {
+    await db
+      .delete(attachmentsTable)
+      .where(eq(attachmentsTable.id, attachmentId));
+
+    console.log(`Attachment with ID ${attachmentId} successfully deleted.`);
+  } catch (error) {
+    console.error(
+      `Failed to delete attachment with ID ${attachmentId}:`,
+      error
+    );
+    throw new Error("Failed to delete attachment.");
   }
 }

@@ -180,12 +180,16 @@ export const UsersTable = pgTable("users", {
  * @property {integer} userId - References the UsersTable.id
  * @property {jsonb} attachments - JSONB field for multiple file attachments
  * @property {timestamp} createdAt - Timestamp for when the record was created
+ * @property {timestamp} updatedAt - Timestamp for when the record was last updated
  */
 export const userIdentificationsTable = pgTable("user_identifications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => UsersTable.id),
+  userId: integer("user_id")
+    .references(() => UsersTable.id)
+    .unique(),
   attachments: jsonb("attachments").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 /**

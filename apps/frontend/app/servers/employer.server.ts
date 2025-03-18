@@ -8,6 +8,7 @@ import {
   jobsTable,
   languagesTable,
   userIdentificationsTable,
+  attachmentsTable,
 } from "../db/drizzle/schemas/schema";
 import { and, eq } from "drizzle-orm";
 import {
@@ -27,6 +28,11 @@ import {
 import { JobStatus } from "~/types/enums";
 import DOMPurify from "isomorphic-dompurify";
 import { redirect } from "@remix-run/react";
+import { saveAttachments } from "./cloudStorage.server";
+import {
+  saveAttachment,
+  deleteAttachmentById,
+} from "~/servers/attachment.server";
 
 /***************************************************
  ************Insert/update employer info************
@@ -117,7 +123,7 @@ export async function handleEmployerOnboardingAction(
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect("/identifying")
+      ? redirect("/identification")
       : Response.json({
           success: false,
           error: { message: "Failed to update onboarding status" },
@@ -514,21 +520,121 @@ export async function getEmployerDashboardData(request: Request) {
 }
 
 /**
- * Create a new identification record for an employer
+ * Creates or updates an employer identification record
  * @param userId The user ID
- * @param attachmentsData The attachments data in JSON format
- * @returns The created identification record
+ * @param attachmentsData Object containing arrays of files for each document type
+ * @returns The created or updated identification record
  */
 export async function createEmployerIdentification(
   userId: number,
-  attachmentsData: any
+  attachmentsData: {
+    identification?: File[];
+    trade_license?: File[];
+    board_resolution?: File[];
+  }
 ) {
   try {
+    // Save identification attachments to the attachments table
+    let identificationIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    let tradeLicenseIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    let boardResolutionIds: { success: boolean; data: number[] } = {
+      success: true,
+      data: [],
+    };
+
+    if (
+      attachmentsData.identification &&
+      attachmentsData.identification.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.identification.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "identification");
+
+        // Check if the attachment uploads failed
+        if (!result.success) {
+          throw new Error("Failed to save attachments");
+        }
+
+        identificationIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Process trade license files if provided
+    if (
+      attachmentsData.trade_license &&
+      attachmentsData.trade_license.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.trade_license.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "trade_license");
+
+        // Check if the attachment uploads failed
+        if (!result.success) {
+          throw new Error("Failed to save trade license attachments");
+        }
+
+        tradeLicenseIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Process board resolution files if provided
+    if (
+      attachmentsData.board_resolution &&
+      attachmentsData.board_resolution.length > 0
+    ) {
+      // Make sure we're passing valid File objects to saveAttachments
+      const validFiles = attachmentsData.board_resolution.filter(
+        (file) => file instanceof File && file.size > 0
+      );
+
+      if (validFiles.length > 0) {
+        const result = await saveAttachments(validFiles, "board_resolution");
+
+        // Check if the attachment uploads failed
+        if (!result.success) {
+          throw new Error("Failed to save board resolution attachments");
+        }
+
+        boardResolutionIds = { success: true, data: result.data || [] };
+      }
+    }
+
+    // Prepare the attachments object with only the new attachments
+    const attachments = {
+      identification: identificationIds.data || [],
+      trade_license: tradeLicenseIds.data || [],
+      board_resolution: boardResolutionIds.data || [],
+    };
+
+    // Use upsert to either insert a new record or update the existing one
     const result = await db
       .insert(userIdentificationsTable)
       .values({
         userId,
-        attachments: attachmentsData,
+        attachments,
+      })
+      .onConflictDoUpdate({
+        target: [userIdentificationsTable.userId],
+        set: {
+          attachments,
+          updatedAt: new Date(),
+        },
       })
       .returning();
 
@@ -541,10 +647,35 @@ export async function createEmployerIdentification(
 
 export async function getEmployerIdentification(userId: number) {
   try {
+    console.log(
+      "DEBUG - getEmployerIdentification called with userId:",
+      userId
+    );
+
     const result = await db
       .select()
       .from(userIdentificationsTable)
       .where(eq(userIdentificationsTable.userId, userId));
+
+    console.log(
+      "DEBUG - Raw DB result for employer identification:",
+      JSON.stringify(result, null, 2)
+    );
+
+    // Check if we have the expected data format
+    if (result.length > 0) {
+      console.log(
+        "DEBUG - Employer attachments found:",
+        result[0].attachments
+          ? JSON.stringify(result[0].attachments, null, 2)
+          : "No attachments"
+      );
+    } else {
+      console.log(
+        "DEBUG - No employer identification record found for userId:",
+        userId
+      );
+    }
 
     return { success: true, data: result[0] || null };
   } catch (error) {
@@ -555,18 +686,154 @@ export async function getEmployerIdentification(userId: number) {
 
 export async function updateEmployerIdentification(
   userId: number,
-  attachmentsData: any
+  attachmentsData: {
+    identification?: File[];
+    trade_license?: File[];
+    board_resolution?: File[];
+    filesToDelete?: number[];
+  }
 ) {
   try {
-    const result = await db
-      .update(userIdentificationsTable)
-      .set({
-        attachments: attachmentsData,
+    // Get existing identification data
+    const existingData = await getEmployerIdentification(userId);
+    let existingAttachments = {
+      identification: [] as number[],
+      trade_license: [] as number[],
+      board_resolution: [] as number[],
+    };
+
+    if (existingData.success && existingData.data) {
+      existingAttachments = existingData.data.attachments as {
+        identification: number[];
+        trade_license: number[];
+        board_resolution: number[];
+      };
+    }
+
+    // Process files to delete if any
+    if (
+      attachmentsData.filesToDelete &&
+      attachmentsData.filesToDelete.length > 0
+    ) {
+      console.log(
+        "DEBUG - Processing files to delete:",
+        attachmentsData.filesToDelete
+      );
+
+      // Filter out deleted file IDs from existing attachments
+      existingAttachments.identification =
+        existingAttachments.identification.filter(
+          (id) => !attachmentsData.filesToDelete?.includes(id)
+        );
+      existingAttachments.trade_license =
+        existingAttachments.trade_license.filter(
+          (id) => !attachmentsData.filesToDelete?.includes(id)
+        );
+      existingAttachments.board_resolution =
+        existingAttachments.board_resolution.filter(
+          (id) => !attachmentsData.filesToDelete?.includes(id)
+        );
+
+      // Delete the files from the attachments table
+      for (const fileId of attachmentsData.filesToDelete) {
+        try {
+          await deleteAttachmentById(fileId);
+          console.log(
+            `DEBUG - Successfully deleted attachment with ID ${fileId}`
+          );
+        } catch (error) {
+          console.error(
+            `DEBUG - Error deleting attachment with ID ${fileId}:`,
+            error
+          );
+          // Continue with other deletions even if one fails
+        }
+      }
+    }
+
+    // Process new files if any
+    const newAttachments = {
+      identification: [...existingAttachments.identification],
+      trade_license: [...existingAttachments.trade_license],
+      board_resolution: [...existingAttachments.board_resolution],
+    };
+
+    // Handle identification files
+    if (
+      attachmentsData.identification &&
+      attachmentsData.identification.length > 0
+    ) {
+      for (const file of attachmentsData.identification) {
+        try {
+          const attachment = await saveAttachment(file.name, {
+            fileSize: file.size,
+            contentType: file.type,
+          });
+          if (attachment && attachment.id) {
+            newAttachments.identification.push(attachment.id);
+          }
+        } catch (error) {
+          console.error("Error saving identification file:", error);
+        }
+      }
+    }
+
+    // Handle trade license files
+    if (
+      attachmentsData.trade_license &&
+      attachmentsData.trade_license.length > 0
+    ) {
+      for (const file of attachmentsData.trade_license) {
+        try {
+          const attachment = await saveAttachment(file.name, {
+            fileSize: file.size,
+            contentType: file.type,
+          });
+          if (attachment && attachment.id) {
+            newAttachments.trade_license.push(attachment.id);
+          }
+        } catch (error) {
+          console.error("Error saving trade license file:", error);
+        }
+      }
+    }
+
+    // Handle board resolution files
+    if (
+      attachmentsData.board_resolution &&
+      attachmentsData.board_resolution.length > 0
+    ) {
+      for (const file of attachmentsData.board_resolution) {
+        try {
+          const attachment = await saveAttachment(file.name, {
+            fileSize: file.size,
+            contentType: file.type,
+          });
+          if (attachment && attachment.id) {
+            newAttachments.board_resolution.push(attachment.id);
+          }
+        } catch (error) {
+          console.error("Error saving board resolution file:", error);
+        }
+      }
+    }
+
+    // Update or create the identification record
+    const [result] = await db
+      .insert(userIdentificationsTable)
+      .values({
+        userId,
+        attachments: newAttachments,
       })
-      .where(eq(userIdentificationsTable.userId, userId))
+      .onConflictDoUpdate({
+        target: [userIdentificationsTable.userId],
+        set: {
+          attachments: newAttachments,
+        },
+      })
       .returning();
 
-    return { success: true, data: result[0] };
+    return { success: true, data: result };
   } catch (error) {
     console.error("Error updating employer identification:", error);
     return { success: false, error };
