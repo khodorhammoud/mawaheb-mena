@@ -5,6 +5,7 @@
     {
       "idx": 0,
       "version": "7",
+<<<<<<< HEAD
       "when": 1742122051226,
       "tag": "0000_conscious_hedge_knight",
       "breakpoints": true
@@ -14,6 +15,10 @@
       "version": "7",
       "when": 1742267901468,
       "tag": "0001_silent_taskmaster",
+=======
+      "when": 1742073928746,
+      "tag": "0000_glossy_magik",
+>>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
       "breakpoints": true
     }
   ]

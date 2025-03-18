@@ -29,10 +29,15 @@ const psqlConnector = postgres({
 });
 
 async function drizzleMigrator() {
+  console.log("Running Drizzle migrations...");
   await migrate(drizzle(psqlConnector), {
     migrationsFolder: "app/db/drizzle/migrations",
   });
 
+<<<<<<< HEAD
+=======
+  console.log("Migrations completed successfully!");
+>>>>>>> 4ad0352 (the database is now working ( 2 databases created in postgres - .env variables updated - seeders/connectors/migrator/drizzle.config.ts are edited - migrate + generate + seed ))
   await psqlConnector.end();
 }
 
