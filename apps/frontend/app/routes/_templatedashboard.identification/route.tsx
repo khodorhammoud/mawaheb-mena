@@ -19,6 +19,7 @@ import {
 } from '~/servers/freelancer.server';
 import { setOnboardedStatus } from '~/servers/user.server';
 import { getAttachmentMetadataById } from '~/servers/cloudStorage.server';
+import { deleteAttachmentById } from '~/servers/attachment.server';
 
 // Add this interface after the imports
 interface AttachmentMetadata {
@@ -84,31 +85,26 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Get files to delete from form data
     const filesToDeleteString = formData.get('filesToDelete') as string;
-    console.log('DEBUG - Action - filesToDelete string from form:', filesToDeleteString);
-    console.log(
-      'DEBUG - Action - Form data entries:',
-      Array.from(formData.entries()).map(([key, value]) => {
-        if (key === 'filesToDelete') {
-          return [key, value];
-        } else if (value instanceof File) {
-          return [key, `File: ${value.name} (${value.size} bytes)`];
-        } else {
-          return [key, value];
-        }
-      })
-    );
-
-    // Safely parse the filesToDelete array with error handling
-    let filesToDelete = [];
+    let filesToDelete: number[] = [];
     try {
       if (filesToDeleteString) {
         filesToDelete = JSON.parse(filesToDeleteString);
-        console.log('DEBUG - Action - Parsed filesToDelete:', filesToDelete);
       }
     } catch (error) {
-      console.error('DEBUG - Action - Error parsing filesToDelete:', error);
-      console.error('DEBUG - Action - Raw filesToDelete string:', filesToDeleteString);
+      console.error('Error parsing filesToDelete:', error);
       filesToDelete = [];
+    }
+
+    // Process file deletions if any
+    if (filesToDelete.length > 0) {
+      for (const fileId of filesToDelete) {
+        try {
+          // Delete the file from the attachments table
+          await deleteAttachmentById(fileId);
+        } catch (error) {
+          console.error(`Error deleting file with ID ${fileId}:`, error);
+        }
+      }
     }
 
     if (
@@ -144,7 +140,7 @@ export async function action({ request }: ActionFunctionArgs) {
         file => file instanceof File && file.size > 0
       );
 
-      // Prepare attachments data with actual File objects
+      // Prepare attachments data with actual File objects and files to delete
       const attachmentsData = {
         identification: validIdentificationFiles,
         trade_license: validTradeLicenseFiles,
@@ -194,7 +190,7 @@ export async function action({ request }: ActionFunctionArgs) {
         file => file instanceof File && file.size > 0
       );
 
-      // Prepare attachments data with actual File objects
+      // Prepare attachments data with actual File objects and files to delete
       const attachmentsData = {
         identification: validIdentificationFiles,
         trade_license: validTradeLicenseFiles,
