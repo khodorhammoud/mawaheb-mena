@@ -1,78 +1,67 @@
-import SettingsHeader from "~/common/settings/header/SettingHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import AccountTab from "~/common/settings/tabs/AccountTab";
-import PrivacyTab from "~/common/settings/tabs/PrivacyTab";
-import NotificationsTab from "~/common/settings/tabs/NotificationsTab";
-import { getCurrentUser } from "~/servers/user.server";
-import {
-  getUserSettings,
-  updateUserSettings,
-  updateUserPassword,
-} from "~/servers/user.server";
-import { hash, compare } from "bcrypt-ts";
+import SettingsHeader from '~/common/settings/header/SettingHeader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import AccountTab from '~/common/settings/tabs/AccountTab';
+import PrivacyTab from '~/common/settings/tabs/PrivacyTab';
+import NotificationsTab from '~/common/settings/tabs/NotificationsTab';
+import PaymentTab from '~/common/settings/tabs/PaymentTab';
+import { getCurrentUser } from '~/servers/user.server';
+import { getUserSettings, updateUserSettings, updateUserPassword } from '~/servers/user.server';
+import { hash, compare } from 'bcrypt-ts';
+import { getUserBankAccount, saveUserBankAccount } from '~/servers/payments.server';
 
 export const action = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
   if (!currentUser) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   const formData = await request.formData();
-  const target = formData.get("formType"); // 🔥 Distinguish between AccountTab & PrivacyTab
+  const target = formData.get('formType'); // 🔥 Distinguish between different tabs
 
-  if (target === "accountTab") {
+  if (target === 'accountTab') {
     // ✅ AccountTab: Only updates user info, not password
-    const phone = formData.get("fullPhone"); // ✅ Stored as "{countryCode}||{phone}"
+    const phone = formData.get('fullPhone'); // ✅ Stored as "{countryCode}||{phone}"
 
     const updatedSettings = {
-      firstName: formData.get("firstName"),
-      lastName: formData.get("lastName"),
-      email: formData.get("email"),
-      country: formData.get("country"),
-      address: formData.get("address"),
-      region: formData.get("region"),
+      firstName: formData.get('firstName'),
+      lastName: formData.get('lastName'),
+      email: formData.get('email'),
+      country: formData.get('country'),
+      address: formData.get('address'),
+      region: formData.get('region'),
       phone, // ✅ Saves in "{countryCode}||{phone}" format
-      websiteURL: formData.get("websiteURL"),
-      socialMediaLinks: JSON.parse(formData.get("socialMediaLinks") || "{}"),
+      websiteURL: formData.get('websiteURL'),
+      socialMediaLinks: JSON.parse(formData.get('socialMediaLinks') || '{}'),
     };
 
     try {
       await updateUserSettings(currentUser.id, updatedSettings);
       return Response.json({ success: true });
     } catch (error) {
-      console.error("Error updating settings:", error);
+      console.error('Error updating settings:', error);
       return Response.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
+          error: error instanceof Error ? error.message : 'An unknown error occurred',
         },
         { status: 500 }
       );
     }
-  } else if (target === "privacyTab") {
+  } else if (target === 'privacyTab') {
     // ✅ PrivacyTab: Only updates password
-    const currentPassword = formData.get("currentPassword");
-    const newPassword = formData.get("newPassword");
-    const confirmPassword = formData.get("confirmPassword");
+    const currentPassword = formData.get('currentPassword');
+    const newPassword = formData.get('newPassword');
+    const confirmPassword = formData.get('confirmPassword');
 
     // Ensure all fields are filled
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return Response.json(
-        { success: false, error: "All fields are required." },
-        { status: 400 }
-      );
+      return Response.json({ success: false, error: 'All fields are required.' }, { status: 400 });
     }
 
     // Ensure new passwords match
     if (newPassword !== confirmPassword) {
       return Response.json(
-        { success: false, error: "New passwords do not match." },
+        { success: false, error: 'New passwords do not match.' },
         { status: 400 }
       );
     }
@@ -80,17 +69,14 @@ export const action = async ({ request }) => {
     // Fetch stored hashed password from DB
     const storedUser = await getCurrentUser(request, true);
     if (!storedUser || !storedUser.passHash) {
-      return Response.json(
-        { success: false, error: "User not found." },
-        { status: 404 }
-      );
+      return Response.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
 
     // Verify current password
     const isPasswordValid = await compare(currentPassword, storedUser.passHash);
     if (!isPasswordValid) {
       return Response.json(
-        { success: false, error: "Incorrect current password." },
+        { success: false, error: 'Incorrect current password.' },
         { status: 401 }
       );
     }
@@ -103,41 +89,73 @@ export const action = async ({ request }) => {
       await updateUserPassword(currentUser.id, hashedNewPassword);
       return Response.json({
         success: true,
-        message: "Password updated successfully.",
+        message: 'Password updated successfully.',
       });
     } catch (error) {
-      console.error("Error updating password:", error);
+      console.error('Error updating password:', error);
       return Response.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
+          error: error instanceof Error ? error.message : 'An unknown error occurred',
+        },
+        { status: 500 }
+      );
+    }
+  } else if (target === 'paymentTab') {
+    // ✅ PaymentTab: Updates bank account information
+    const bankAccountData = {
+      accountHolderName: formData.get('accountHolderName'),
+      accountNumber: formData.get('accountNumber'),
+      iban: formData.get('iban'),
+      bankName: formData.get('bankName'),
+      branchCode: formData.get('branchCode'),
+      swiftCode: formData.get('swiftCode'),
+      currency: formData.get('currency') || 'USD',
+    };
+
+    try {
+      // Ensure userId is a string
+      const userId = String(currentUser.id);
+      await saveUserBankAccount(userId, bankAccountData);
+      return Response.json({
+        success: true,
+        message: 'Bank account updated successfully.',
+      });
+    } catch (error) {
+      console.error('Error updating bank account:', error);
+      return Response.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : 'An unknown error occurred',
         },
         { status: 500 }
       );
     }
   }
 
-  return Response.json(
-    { success: false, error: "Invalid request." },
-    { status: 400 }
-  );
+  return Response.json({ success: false, error: 'Invalid request.' }, { status: 400 });
 };
 
 export const loader = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
   if (!currentUser) {
-    throw new Response("Unauthorized", { status: 401 });
+    throw new Response('Unauthorized', { status: 401 });
   }
 
   const userSettings = await getUserSettings(currentUser.id);
   if (!userSettings) {
-    throw new Response("User settings not found", { status: 404 });
+    throw new Response('User settings not found', { status: 404 });
   }
 
-  return Response.json({ settingsInfo: userSettings });
+  // Get user's bank account information
+  // Ensure userId is a string
+  const userId = String(currentUser.id);
+  const bankAccount = await getUserBankAccount(userId);
+
+  return Response.json({
+    settingsInfo: userSettings,
+    bankAccount: bankAccount || null,
+  });
 };
 
 export default function Settings() {
@@ -147,22 +165,16 @@ export default function Settings() {
       <Tabs defaultValue="account" className="">
         {/* Tabs List */}
         <TabsList className="flex sm:gap-4 gap-2 mb-4 md:w-[70%] lg:ml-0 md:ml-6 ml-0 bg-white">
-          <TabsTrigger
-            value="account"
-            className="flex-grow text-center hover:scale-105"
-          >
+          <TabsTrigger value="account" className="flex-grow text-center hover:scale-105">
             Account
           </TabsTrigger>
-          <TabsTrigger
-            value="privacy"
-            className="flex-grow text-center hover:scale-105"
-          >
+          <TabsTrigger value="privacy" className="flex-grow text-center hover:scale-105">
             Privacy
           </TabsTrigger>
-          <TabsTrigger
-            value="notifications"
-            className="flex-grow text-center hover:scale-105"
-          >
+          <TabsTrigger value="payment" className="flex-grow text-center hover:scale-105">
+            Payment
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex-grow text-center hover:scale-105">
             Notifications
           </TabsTrigger>
         </TabsList>
@@ -174,6 +186,9 @@ export default function Settings() {
           </TabsContent>
           <TabsContent value="privacy" className="w-full">
             <PrivacyTab />
+          </TabsContent>
+          <TabsContent value="payment" className="w-full">
+            <PaymentTab />
           </TabsContent>
           <TabsContent value="notifications" className="w-full">
             <NotificationsTab />

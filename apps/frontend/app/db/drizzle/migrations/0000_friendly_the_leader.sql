@@ -77,6 +77,18 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ CREATE TYPE "public"."payment_status" AS ENUM('pending', 'processing', 'completed', 'failed', 'refunded');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."payment_type" AS ENUM('employer_to_platform', 'platform_to_freelancer');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  CREATE TYPE "public"."project_type" AS ENUM('short-term', 'long-term', 'per-project-basis');
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -141,11 +153,41 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	CONSTRAINT "accounts_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "admin_bank_accounts" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"account_holder_name" text NOT NULL,
+	"account_number" text NOT NULL,
+	"iban" text,
+	"bank_name" text NOT NULL,
+	"branch_code" text,
+	"swift_code" text,
+	"currency" text DEFAULT 'USD' NOT NULL,
+	"gateway_account_id" text,
+	"is_default" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "attachments" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"key" varchar NOT NULL,
 	"metadata" jsonb DEFAULT '{}'::jsonb,
 	"created_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "bank_accounts" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"account_holder_name" text NOT NULL,
+	"account_number" text NOT NULL,
+	"iban" text,
+	"bank_name" text NOT NULL,
+	"branch_code" text,
+	"swift_code" text,
+	"currency" text DEFAULT 'USD' NOT NULL,
+	"gateway_account_id" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "employer_industries" (
@@ -261,6 +303,26 @@ CREATE TABLE IF NOT EXISTS "languages" (
 	"language" varchar(25)
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "payments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"type" "payment_type" NOT NULL,
+	"amount" numeric(10, 2) NOT NULL,
+	"currency" text DEFAULT 'USD' NOT NULL,
+	"status" "payment_status" DEFAULT 'pending' NOT NULL,
+	"description" text,
+	"reference" text,
+	"gateway_payment_id" text,
+	"source_user_id" integer,
+	"destination_user_id" integer,
+	"employer_id" integer,
+	"freelancer_id" integer,
+	"source_bank_account_id" integer,
+	"destination_bank_account_id" integer,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"completed_at" timestamp
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "preferred_working_times" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"account_id" integer,
@@ -369,6 +431,12 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "bank_accounts" ADD CONSTRAINT "bank_accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "employer_industries" ADD CONSTRAINT "employer_industries_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -448,6 +516,42 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "jobs" ADD CONSTRAINT "jobs_job_category_id_job_categories_id_fk" FOREIGN KEY ("job_category_id") REFERENCES "public"."job_categories"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_source_user_id_users_id_fk" FOREIGN KEY ("source_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_destination_user_id_users_id_fk" FOREIGN KEY ("destination_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_employer_id_employers_id_fk" FOREIGN KEY ("employer_id") REFERENCES "public"."employers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_source_bank_account_id_bank_accounts_id_fk" FOREIGN KEY ("source_bank_account_id") REFERENCES "public"."bank_accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "payments" ADD CONSTRAINT "payments_destination_bank_account_id_bank_accounts_id_fk" FOREIGN KEY ("destination_bank_account_id") REFERENCES "public"."bank_accounts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
