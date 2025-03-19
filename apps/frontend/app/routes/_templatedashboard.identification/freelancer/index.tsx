@@ -45,7 +45,7 @@ export default function FreelancerIdentifyingScreen() {
   }>();
 
   // Debug log to check what identificationData contains
-  console.log('DEBUG - Received identificationData:', JSON.stringify(identificationData, null, 2));
+  //   console.log('DEBUG - Received identificationData:', JSON.stringify(identificationData, null, 2));
 
   const actionData = useActionData<{ success: boolean }>();
   const submit = useSubmit();
@@ -68,10 +68,10 @@ export default function FreelancerIdentifyingScreen() {
 
   // Update the useEffect that loads identification data
   useEffect(() => {
-    console.log(
-      'DEBUG - Effect triggered with identificationData:',
-      identificationData ? JSON.stringify(identificationData, null, 2) : 'null'
-    );
+    // console.log(
+    //   'DEBUG - Effect triggered with identificationData:',
+    //   identificationData ? JSON.stringify(identificationData, null, 2) : 'null'
+    // );
 
     if (identificationData && identificationData.attachments) {
       const attachments = identificationData.attachments;

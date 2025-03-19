@@ -55,6 +55,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
   const [inputValue, setInputValue] = useState<any>(value || null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
 
   const formContentRef = useRef<any>(null);
   const fetcher = useFetcher();
@@ -120,21 +121,39 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     }
   }, [value, fieldName]);
 
-  // Update the parent ref whenever selectedFiles changes
+  // Load filesToDelete from localStorage on mount
+  useEffect(() => {
+    const storedFilesToDelete = localStorage.getItem(`${fieldName}-files-to-delete`);
+    if (storedFilesToDelete) {
+      try {
+        const parsedFilesToDelete = JSON.parse(storedFilesToDelete);
+        if (Array.isArray(parsedFilesToDelete) && parsedFilesToDelete.length > 0) {
+          console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
+          setFilesToDelete(parsedFilesToDelete);
+        }
+      } catch (error) {
+        console.error('DEBUG - Error loading filesToDelete from localStorage:', error);
+      }
+    }
+  }, [fieldName]);
+
+  // Update the parent ref whenever selectedFiles or filesToDelete changes
   useEffect(() => {
     if (formRef && formRef.current) {
       formRef.current.filesSelected = selectedFiles;
+      formRef.current.filesToDelete = filesToDelete;
       if (typeof formRef.current.forceUpdate === 'function') {
         formRef.current.forceUpdate();
       }
     }
-  }, [selectedFiles, formRef]);
+  }, [selectedFiles, filesToDelete, formRef]);
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => {
     return {
       getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
       filesSelected: selectedFiles,
+      filesToDelete: filesToDelete,
       setFilesSelected: (files: File[]) => {
         setSelectedFiles(files);
         if (formContentRef.current) {
@@ -143,6 +162,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
       },
       clearFiles: () => {
         setSelectedFiles([]);
+        setFilesToDelete([]);
         if (formContentRef.current) {
           formContentRef.current.setFilesSelected([]);
         }
@@ -171,12 +191,58 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
   // Handle file removal
   const handleFileRemove = (index: number) => {
-    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    console.log('DEBUG - handleFileRemove called with index:', index);
+    const fileToRemove = selectedFiles[index];
+    console.log('DEBUG - File to remove:', {
+      file: fileToRemove,
+      name: fileToRemove.name,
+      isServerFile: (fileToRemove as any).isServerFile,
+      serverId: (fileToRemove as any).serverId,
+      properties: Object.keys(fileToRemove),
+    });
+
+    // If it's a server file, add its ID to filesToDelete
+    if ((fileToRemove as any).isServerFile && (fileToRemove as any).serverId) {
+      const serverId = (fileToRemove as any).serverId;
+      console.log('DEBUG - Adding server ID to filesToDelete:', serverId);
+      setFilesToDelete(prev => {
+        const newFilesToDelete = [...prev, serverId];
+        console.log('DEBUG - Updated filesToDelete:', newFilesToDelete);
+
+        // Store in localStorage
+        try {
+          localStorage.setItem(`${fieldName}-files-to-delete`, JSON.stringify(newFilesToDelete));
+          console.log('DEBUG - Saved filesToDelete to localStorage');
+        } catch (error) {
+          console.error('DEBUG - Error saving filesToDelete to localStorage:', error);
+        }
+
+        return newFilesToDelete;
+      });
+    }
+
+    setSelectedFiles(prevFiles => {
+      const newFiles = prevFiles.filter((_, i) => i !== index);
+      console.log('DEBUG - Updated selectedFiles:', newFiles);
+      return newFiles;
+    });
   };
 
   // Handle dialog close
   const handleDialogClose = () => {
+    console.log('DEBUG - handleDialogClose called');
     setDialogOpen(false);
+
+    // Clean up filesToDelete in localStorage
+    try {
+      localStorage.removeItem(`${fieldName}-files-to-delete`);
+      console.log('DEBUG - Cleaned up filesToDelete from localStorage');
+    } catch (error) {
+      console.error('DEBUG - Error cleaning up filesToDelete from localStorage:', error);
+    }
+
+    // Reset state
+    setFilesToDelete([]);
   };
 
   // Render selected files
@@ -191,6 +257,9 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
             <li key={index} className="py-2 flex justify-between items-center">
               <span className="text-sm text-gray-600">
                 {file.name} ({Math.round(file.size / 1024)} KB)
+                {(file as any).isServerFile && (
+                  <span className="ml-2 text-xs text-blue-500">(from database)</span>
+                )}
               </span>
               <button
                 type="button"
