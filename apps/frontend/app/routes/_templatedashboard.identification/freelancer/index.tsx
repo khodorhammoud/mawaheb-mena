@@ -156,11 +156,10 @@ export default function FreelancerIdentifyingScreen() {
       return;
     }
 
-    // Create a FormData object to submit
     const formData = new FormData();
     formData.append('target-updated', 'freelancer-identification');
 
-    // Get identification files from the dialog component
+    // Add identification files if any
     if (
       identificationFormRef.current &&
       identificationFormRef.current.filesSelected &&
@@ -174,7 +173,7 @@ export default function FreelancerIdentifyingScreen() {
       });
     }
 
-    // Get trade license files from the dialog component
+    // Add trade license files if any
     if (
       tradeLicenseFormRef.current &&
       tradeLicenseFormRef.current.filesSelected &&
@@ -224,11 +223,21 @@ export default function FreelancerIdentifyingScreen() {
       console.error('DEBUG - Error handling filesToDelete from localStorage:', error);
     }
 
-    // Submit using fetcher
+    formData.append('_action', 'freelancer-identification');
+
+    // Submit the form
     fetcher.submit(formData, {
       method: 'post',
       encType: 'multipart/form-data',
     });
+
+    // Clear the form refs after successful submission
+    if (identificationFormRef.current && identificationFormRef.current.clearFiles) {
+      identificationFormRef.current.clearFiles();
+    }
+    if (tradeLicenseFormRef.current && tradeLicenseFormRef.current.clearFiles) {
+      tradeLicenseFormRef.current.clearFiles();
+    }
   };
 
   // Check file inputs when component mounts and after any dialog closes
