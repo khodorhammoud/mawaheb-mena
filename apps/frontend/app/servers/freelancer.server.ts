@@ -349,7 +349,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect('/identifying')
+      ? redirect('/identification')
       : Response.json({
           success: false,
           error: { message: 'Failed to update onboarding status' },

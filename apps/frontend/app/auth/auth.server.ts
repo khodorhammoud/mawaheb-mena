@@ -57,7 +57,7 @@ export async function requireUserAccountStatusPublished(request: Request) {
   const status = await checkUserStatuses(userId, 'accountStatus', AccountStatus.Published);
   if (!status) {
     console.warn('Unauthorized, user is not published');
-    throw redirect('/identifying');
+    throw redirect('/identification');
   }
   return userId;
 }
