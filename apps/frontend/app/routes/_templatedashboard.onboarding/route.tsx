@@ -1,14 +1,11 @@
-import EmployerOnboardingScreen from "./employer";
-import FreelancerOnboardingScreen from "./freelancer";
-import { redirect, useLoaderData } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
-import {
-  getCurrentProfileInfo,
-  getCurrentUserAccountType,
-} from "~/servers/user.server";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Employer, Freelancer } from "~/types/User";
-import { requireUserVerified } from "~/auth/auth.server";
+import EmployerOnboardingScreen from './employer';
+import FreelancerOnboardingScreen from './freelancer';
+import { redirect, useLoaderData } from '@remix-run/react';
+import { AccountType } from '~/types/enums';
+import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { Employer, Freelancer } from '~/types/User';
+import { requireUserVerified } from '~/auth/auth.server';
 import {
   getAccountBio,
   getEmployerIndustries,
@@ -19,16 +16,16 @@ import {
   getEmployerDashboardData,
   getAllLanguages,
   handleEmployerOnboardingAction,
-} from "~/servers/employer.server";
+} from '~/servers/employer.server';
 import {
   getFreelancerAbout,
   getFreelancerLanguages,
   getFreelancerAvailability,
   handleFreelancerOnboardingAction,
   fetchFreelancerSkills,
-} from "~/servers/freelancer.server";
-import { getAttachmentSignedURL } from "~/servers/cloudStorage.server";
-import { fetchSkills } from "~/servers/general.server";
+} from '~/servers/freelancer.server';
+import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
+import { fetchSkills } from '~/servers/general.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   // user must be verified
@@ -47,16 +44,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // FREELANCER
     if (accountType == AccountType.Freelancer) {
-      return handleFreelancerOnboardingAction(
-        formData,
-        userProfile as Freelancer
-      );
+      return handleFreelancerOnboardingAction(formData, userProfile as Freelancer);
     }
     // DEFAULT
-    throw new Error("Unknown target update");
+    throw new Error('Unknown target update');
   } catch (error) {
     return Response.json(
-      { success: false, error: { message: "An unexpected error occurred." } },
+      { success: false, error: { message: 'An unexpected error occurred.' } },
       { status: 500 }
     );
   }
@@ -73,24 +67,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!profile) {
     return Response.json({
       success: false,
-      error: { message: "Profile information not found." },
+      error: { message: 'Profile information not found.' },
       status: 404,
     });
   }
 
   // Redirect to identifying route or dashboard based on onboarding status and account status
   if (profile.account?.user?.isOnboarded) {
-    console.log(
-      "profile.account?.accountStatus",
-      profile.account?.accountStatus
-    );
+    console.log('profile.account?.accountStatus', profile.account?.accountStatus);
     // If account status is published, redirect to dashboard
-    if (profile.account?.accountStatus === "published") {
-      return redirect("/dashboard");
+    if (profile.account?.accountStatus === 'published') {
+      return redirect('/dashboard');
     }
     // If account is onboarded but not published, redirect to identifying route
     else {
-      return redirect("/identification");
+      return redirect('/identifying');
     }
   }
 
@@ -132,14 +123,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Process portfolio
     const portfolio = Array.isArray(profile.portfolio)
       ? profile.portfolio
-      : JSON.parse(profile.portfolio || "[]");
+      : JSON.parse(profile.portfolio || '[]');
 
     const processedPortfolio = await Promise.all(
-      portfolio.map(async (item) => {
+      portfolio.map(async item => {
         if (item.projectImageName) {
-          item.projectImageUrl = await getAttachmentSignedURL(
-            item.projectImageName
-          );
+          item.projectImageUrl = await getAttachmentSignedURL(item.projectImageName);
         }
         return item;
       })
@@ -148,14 +137,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Process certificates
     const certificates = Array.isArray(profile.certificates)
       ? profile.certificates
-      : JSON.parse(profile.certificates || "[]");
+      : JSON.parse(profile.certificates || '[]');
 
     const processedCertificates = await Promise.all(
-      certificates.map(async (item) => {
+      certificates.map(async item => {
         if (item.attachmentName) {
-          item.attachmentUrl = await getAttachmentSignedURL(
-            item.attachmentName
-          );
+          item.attachmentUrl = await getAttachmentSignedURL(item.attachmentName);
         }
         return item;
       })
@@ -169,20 +156,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const allLanguages = await getAllLanguages();
 
     // Get the freelancer availability data
-    const freelancerAvailability = await getFreelancerAvailability(
-      profile.accountId
-    );
+    const freelancerAvailability = await getFreelancerAvailability(profile.accountId);
 
     const availabilityData = {
       availableForWork: freelancerAvailability?.availableForWork ?? false,
       jobsOpenTo: freelancerAvailability?.jobsOpenTo ?? [],
       availableFrom: freelancerAvailability?.availableFrom
-        ? new Date(freelancerAvailability.availableFrom)
-            .toISOString()
-            .split("T")[0]
-        : "",
-      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? "",
-      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? "",
+        ? new Date(freelancerAvailability.availableFrom).toISOString().split('T')[0]
+        : '',
+      hoursAvailableFrom: freelancerAvailability?.hoursAvailableFrom ?? '',
+      hoursAvailableTo: freelancerAvailability?.hoursAvailableTo ?? '',
     };
 
     const initialSkills = await fetchSkills(true, 10);
@@ -211,7 +194,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return Response.json({
     success: false,
-    error: { message: "Account type not found." },
+    error: { message: 'Account type not found.' },
     status: 404,
   });
 }

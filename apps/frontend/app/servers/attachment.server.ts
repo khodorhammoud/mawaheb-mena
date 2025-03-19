@@ -175,10 +175,10 @@
 //   }
 // }
 
-import { db } from "~/db/drizzle/connector";
-import { attachmentsTable } from "~/db/drizzle/schemas/schema";
-import { AttachmentsType } from "~/types/User";
-import { eq } from "drizzle-orm";
+import { db } from '~/db/drizzle/connector';
+import { attachmentsTable } from '~/db/drizzle/schemas/schema';
+import { AttachmentsType } from '~/types/User';
+import { eq } from 'drizzle-orm';
 
 export async function saveAttachment(
   key: string,
@@ -199,25 +199,50 @@ export async function saveAttachment(
 
     return attachment;
   } catch (error) {
-    console.error("Error saving attachment:", error);
-    throw new Error("Failed to save attachment metadata.");
+    console.error('Error saving attachment:', error);
+    throw new Error('Failed to save attachment metadata.');
   }
 }
 
-export async function deleteAttachmentById(
-  attachmentId: number
-): Promise<void> {
+export async function deleteAttachmentById(attachmentId: number): Promise<void> {
+  console.log(`DEBUG - deleteAttachmentById - Starting deletion of attachment ID: ${attachmentId}`);
+
   try {
-    await db
-      .delete(attachmentsTable)
+    // First verify the attachment exists
+    const [attachment] = await db
+      .select()
+      .from(attachmentsTable)
       .where(eq(attachmentsTable.id, attachmentId));
 
-    console.log(`Attachment with ID ${attachmentId} successfully deleted.`);
+    if (attachment) {
+      console.log(`DEBUG - deleteAttachmentById - Found attachment to delete:`, {
+        id: attachment.id,
+        key: attachment.key,
+        metadata: attachment.metadata,
+      });
+
+      // Proceed with deletion from the database
+      const result = await db
+        .delete(attachmentsTable)
+        .where(eq(attachmentsTable.id, attachmentId))
+        .returning({ id: attachmentsTable.id });
+
+      if (result && result.length > 0) {
+        console.log(
+          `DEBUG - deleteAttachmentById - Successfully deleted attachment with ID ${attachmentId}`
+        );
+      } else {
+        console.error(
+          `DEBUG - deleteAttachmentById - Failed to delete attachment with ID ${attachmentId} - no rows affected`
+        );
+      }
+    } else {
+      console.log(
+        `DEBUG - deleteAttachmentById - No attachment found with ID ${attachmentId} - skipping deletion`
+      );
+    }
   } catch (error) {
-    console.error(
-      `Failed to delete attachment with ID ${attachmentId}:`,
-      error
-    );
-    throw new Error("Failed to delete attachment.");
+    console.error(`ERROR - Failed to delete attachment with ID ${attachmentId}:`, error);
+    throw new Error('Failed to delete attachment.');
   }
 }
