@@ -148,6 +148,13 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     }
   }, [selectedFiles, filesToDelete, formRef]);
 
+  // Handle dialog close
+  const handleDialogClose = () => {
+    console.log('DEBUG - handleDialogClose called');
+    setDialogOpen(false);
+    // We no longer clear filesToDelete here, as we want to keep track of files to delete until form submission
+  };
+
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => {
     return {
@@ -163,6 +170,13 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
       clearFiles: () => {
         setSelectedFiles([]);
         setFilesToDelete([]);
+        // Clear localStorage when files are actually cleared (after successful submission)
+        try {
+          localStorage.removeItem(`${fieldName}-files-to-delete`);
+          console.log('DEBUG - Cleared filesToDelete from localStorage after submission');
+        } catch (error) {
+          console.error('DEBUG - Error clearing filesToDelete from localStorage:', error);
+        }
         if (formContentRef.current) {
           formContentRef.current.setFilesSelected([]);
         }
@@ -226,23 +240,6 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
       console.log('DEBUG - Updated selectedFiles:', newFiles);
       return newFiles;
     });
-  };
-
-  // Handle dialog close
-  const handleDialogClose = () => {
-    console.log('DEBUG - handleDialogClose called');
-    setDialogOpen(false);
-
-    // Clean up filesToDelete in localStorage
-    try {
-      localStorage.removeItem(`${fieldName}-files-to-delete`);
-      console.log('DEBUG - Cleaned up filesToDelete from localStorage');
-    } catch (error) {
-      console.error('DEBUG - Error cleaning up filesToDelete from localStorage:', error);
-    }
-
-    // Reset state
-    setFilesToDelete([]);
   };
 
   // Render selected files
