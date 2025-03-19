@@ -116,14 +116,14 @@ export default function EmployerIdentificationScreen() {
 
   // Handle submit action
   const handleSubmitDocuments = () => {
-    console.log('DEBUG - Submitting documents with refs:', {
-      identificationRef: identificationFormRef.current,
-      identificationFiles: identificationFormRef.current?.filesSelected,
-      tradeLicenseRef: tradeLicenseFormRef.current,
-      tradeLicenseFiles: tradeLicenseFormRef.current?.filesSelected,
-      boardResolutionRef: boardResolutionFormRef.current,
-      boardResolutionFiles: boardResolutionFormRef.current?.filesSelected,
-    });
+    // console.log('DEBUG - Submitting documents with refs:', {
+    //   identificationRef: identificationFormRef.current,
+    //   identificationFiles: identificationFormRef.current?.filesSelected,
+    //   tradeLicenseRef: tradeLicenseFormRef.current,
+    //   tradeLicenseFiles: tradeLicenseFormRef.current?.filesSelected,
+    //   boardResolutionRef: boardResolutionFormRef.current,
+    //   boardResolutionFiles: boardResolutionFormRef.current?.filesSelected,
+    // });
 
     if (!hasValidFilesToSubmit()) {
       alert('Please upload all required documents.');
@@ -207,10 +207,10 @@ export default function EmployerIdentificationScreen() {
       }
 
       if (filesToDelete.length > 0) {
-        console.log(
-          'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
-          filesToDelete
-        );
+        // console.log(
+        //   'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
+        //   filesToDelete
+        // );
         formData.append('filesToDelete', JSON.stringify(filesToDelete));
 
         // Clear localStorage after adding to formData
