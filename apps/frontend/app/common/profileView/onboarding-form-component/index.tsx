@@ -128,7 +128,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
       try {
         const parsedFilesToDelete = JSON.parse(storedFilesToDelete);
         if (Array.isArray(parsedFilesToDelete) && parsedFilesToDelete.length > 0) {
-          console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
+          // console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
           setFilesToDelete(parsedFilesToDelete);
         }
       } catch (error) {
@@ -150,7 +150,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
   // Handle dialog close
   const handleDialogClose = () => {
-    console.log('DEBUG - handleDialogClose called');
+    // console.log('DEBUG - handleDialogClose called');
     setDialogOpen(false);
     // We no longer clear filesToDelete here, as we want to keep track of files to delete until form submission
   };
@@ -173,7 +173,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
         // Clear localStorage when files are actually cleared (after successful submission)
         try {
           localStorage.removeItem(`${fieldName}-files-to-delete`);
-          console.log('DEBUG - Cleared filesToDelete from localStorage after submission');
+          // console.log('DEBUG - Cleared filesToDelete from localStorage after submission');
         } catch (error) {
           console.error('DEBUG - Error clearing filesToDelete from localStorage:', error);
         }
@@ -205,28 +205,28 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
   // Handle file removal
   const handleFileRemove = (index: number) => {
-    console.log('DEBUG - handleFileRemove called with index:', index);
+    // console.log('DEBUG - handleFileRemove called with index:', index);
     const fileToRemove = selectedFiles[index];
-    console.log('DEBUG - File to remove:', {
-      file: fileToRemove,
-      name: fileToRemove.name,
-      isServerFile: (fileToRemove as any).isServerFile,
-      serverId: (fileToRemove as any).serverId,
-      properties: Object.keys(fileToRemove),
-    });
+    // console.log('DEBUG - File to remove:', {
+    //   file: fileToRemove,
+    //   name: fileToRemove.name,
+    //   isServerFile: (fileToRemove as any).isServerFile,
+    //   serverId: (fileToRemove as any).serverId,
+    //   properties: Object.keys(fileToRemove),
+    // });
 
     // If it's a server file, add its ID to filesToDelete
     if ((fileToRemove as any).isServerFile && (fileToRemove as any).serverId) {
       const serverId = (fileToRemove as any).serverId;
-      console.log('DEBUG - Adding server ID to filesToDelete:', serverId);
+      // console.log('DEBUG - Adding server ID to filesToDelete:', serverId);
       setFilesToDelete(prev => {
         const newFilesToDelete = [...prev, serverId];
-        console.log('DEBUG - Updated filesToDelete:', newFilesToDelete);
+        // console.log('DEBUG - Updated filesToDelete:', newFilesToDelete);
 
         // Store in localStorage
         try {
           localStorage.setItem(`${fieldName}-files-to-delete`, JSON.stringify(newFilesToDelete));
-          console.log('DEBUG - Saved filesToDelete to localStorage');
+          // console.log('DEBUG - Saved filesToDelete to localStorage');
         } catch (error) {
           console.error('DEBUG - Error saving filesToDelete to localStorage:', error);
         }
@@ -237,7 +237,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
     setSelectedFiles(prevFiles => {
       const newFiles = prevFiles.filter((_, i) => i !== index);
-      console.log('DEBUG - Updated selectedFiles:', newFiles);
+      // console.log('DEBUG - Updated selectedFiles:', newFiles);
       return newFiles;
     });
   };

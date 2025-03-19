@@ -41,7 +41,7 @@ const FormContent = forwardRef<any, FormContentProps>(
 
     // Debug logging for filesToDelete
     useEffect(() => {
-      console.log('DEBUG - filesToDelete state updated:', filesToDelete);
+      // console.log('DEBUG - filesToDelete state updated:', filesToDelete);
     }, [filesToDelete]);
 
     // Local storage key for saving files
@@ -63,12 +63,12 @@ const FormContent = forwardRef<any, FormContentProps>(
           }
         }
 
-        console.log(
-          `DEBUG - saveFilesToLocalStorage - File ${file.name} serverId:`,
-          serverId,
-          'typeof:',
-          typeof serverId
-        );
+        // console.log(
+        //   `DEBUG - saveFilesToLocalStorage - File ${file.name} serverId:`,
+        //   serverId,
+        //   'typeof:',
+        //   typeof serverId
+        // );
 
         return {
           name: file.name,
@@ -81,18 +81,18 @@ const FormContent = forwardRef<any, FormContentProps>(
         };
       });
 
-      console.log('DEBUG - saveFilesToLocalStorage - Saving metadata:', metadata);
-      console.log('DEBUG - saveFilesToLocalStorage - JSON string:', JSON.stringify(metadata));
+      // console.log('DEBUG - saveFilesToLocalStorage - Saving metadata:', metadata);
+      // console.log('DEBUG - saveFilesToLocalStorage - JSON string:', JSON.stringify(metadata));
       localStorage.setItem(`${fieldName}-files`, JSON.stringify(metadata));
 
       // Immediately read back to verify
       const readBack = localStorage.getItem(`${fieldName}-files`);
-      console.log('DEBUG - saveFilesToLocalStorage - Read back raw:', readBack);
+      // console.log('DEBUG - saveFilesToLocalStorage - Read back raw:', readBack);
       try {
         const parsed = JSON.parse(readBack || '[]');
-        console.log('DEBUG - saveFilesToLocalStorage - Read back parsed:', parsed);
+        // console.log('DEBUG - saveFilesToLocalStorage - Read back parsed:', parsed);
       } catch (e) {
-        console.error('DEBUG - saveFilesToLocalStorage - Parse error:', e);
+        // console.error('DEBUG - saveFilesToLocalStorage - Parse error:', e);
       }
     };
 
@@ -100,21 +100,21 @@ const FormContent = forwardRef<any, FormContentProps>(
     const loadFilesFromLocalStorage = () => {
       try {
         const storedData = localStorage.getItem(`${fieldName}-files`);
-        console.log('DEBUG - loadFilesFromLocalStorage - Raw data from localStorage:', storedData);
+        // console.log('DEBUG - loadFilesFromLocalStorage - Raw data from localStorage:', storedData);
         if (!storedData) return null;
 
         const metadata = JSON.parse(storedData);
-        console.log('DEBUG - loadFilesFromLocalStorage - Parsed metadata:', metadata);
+        // console.log('DEBUG - loadFilesFromLocalStorage - Parsed metadata:', metadata);
 
         // Check each item's serverId
         if (Array.isArray(metadata)) {
           metadata.forEach((item, index) => {
-            console.log(
-              `DEBUG - loadFilesFromLocalStorage - Item ${index} serverId:`,
-              item.serverId,
-              'typeof:',
-              typeof item.serverId
-            );
+            // console.log(
+            //   `DEBUG - loadFilesFromLocalStorage - Item ${index} serverId:`,
+            //   item.serverId,
+            //   'typeof:',
+            //   typeof item.serverId
+            // );
           });
         }
 
@@ -127,12 +127,12 @@ const FormContent = forwardRef<any, FormContentProps>(
 
     // Clear a specific file
     const handleRemoveFile = (file: File) => {
-      console.log('DEBUG - handleRemoveFile - Full file object:', file);
-      console.log('DEBUG - handleRemoveFile - Raw direct access:', {
-        directServerId: (file as any).directServerId,
-        serverId: (file as any).serverId,
-        enumerable: Object.keys(file),
-      });
+      // console.log('DEBUG - handleRemoveFile - Full file object:', file);
+      // console.log('DEBUG - handleRemoveFile - Raw direct access:', {
+      //   directServerId: (file as any).directServerId,
+      //   serverId: (file as any).serverId,
+      //   enumerable: Object.keys(file),
+      // });
 
       // First, try to get the serverId from various possible locations
       let fileId = (file as any).directServerId || (file as any).serverId;
@@ -142,7 +142,7 @@ const FormContent = forwardRef<any, FormContentProps>(
         const descriptors = Object.getOwnPropertyDescriptors(file);
         if (descriptors.serverId) {
           fileId = descriptors.serverId.value;
-          console.log('DEBUG - handleRemoveFile - Found serverId in property descriptors:', fileId);
+          // console.log('DEBUG - handleRemoveFile - Found serverId in property descriptors:', fileId);
         }
       }
 
@@ -161,23 +161,23 @@ const FormContent = forwardRef<any, FormContentProps>(
             const matchingServerFile = existingFiles.find(f => f.name === file.name);
             if (matchingServerFile) {
               fileId = matchingServerFile.serverId || matchingServerFile.id;
-              console.log('DEBUG - handleRemoveFile - Found matching server file with ID:', fileId);
+              // console.log('DEBUG - handleRemoveFile - Found matching server file with ID:', fileId);
             }
           }
         }
       }
 
-      console.log('DEBUG - handleRemoveFile - FINAL File ID for deletion:', fileId);
+      // console.log('DEBUG - handleRemoveFile - FINAL File ID for deletion:', fileId);
 
       if (fileId) {
         setFilesToDelete(prev => {
           const newFilesToDelete = [...prev, fileId];
-          console.log('DEBUG - handleRemoveFile - Updated filesToDelete:', newFilesToDelete);
+          // console.log('DEBUG - handleRemoveFile - Updated filesToDelete:', newFilesToDelete);
 
           // Store the updated filesToDelete in localStorage
           try {
             localStorage.setItem(`${fieldName}-files-to-delete`, JSON.stringify(newFilesToDelete));
-            console.log('DEBUG - handleRemoveFile - Saved filesToDelete to localStorage');
+            // console.log('DEBUG - handleRemoveFile - Saved filesToDelete to localStorage');
           } catch (error) {
             console.error('DEBUG - Error saving filesToDelete to localStorage:', error);
           }
@@ -185,7 +185,7 @@ const FormContent = forwardRef<any, FormContentProps>(
           return newFilesToDelete;
         });
       } else {
-        console.log('DEBUG - handleRemoveFile - No serverId found, not adding to filesToDelete');
+        // console.log('DEBUG - handleRemoveFile - No serverId found, not adding to filesToDelete');
       }
 
       // Remove file from UI and local state
@@ -228,21 +228,21 @@ const FormContent = forwardRef<any, FormContentProps>(
 
         // Add files to delete if any
         if (filesToDelete.length > 0) {
-          console.log('DEBUG - prepareFormData - Adding filesToDelete to formData:', filesToDelete);
-          console.log('DEBUG - prepareFormData - filesToDelete type:', typeof filesToDelete);
-          console.log(
-            'DEBUG - prepareFormData - filesToDelete JSON:',
-            JSON.stringify(filesToDelete)
-          );
+          // console.log('DEBUG - prepareFormData - Adding filesToDelete to formData:', filesToDelete);
+          // console.log('DEBUG - prepareFormData - filesToDelete type:', typeof filesToDelete);
+          // console.log(
+          //   'DEBUG - prepareFormData - filesToDelete JSON:',
+          //   JSON.stringify(filesToDelete)
+          // );
           formData.append('filesToDelete', JSON.stringify(filesToDelete));
 
           // Log all form data entries for verification
-          console.log('DEBUG - prepareFormData - All form data entries:');
-          for (const [key, value] of formData.entries()) {
-            console.log(`  ${key}:`, value);
-          }
+          // console.log('DEBUG - prepareFormData - All form data entries:');
+          // for (const [key, value] of formData.entries()) {
+          //   console.log(`  ${key}:`, value);
+          // }
         } else {
-          console.log('DEBUG - prepareFormData - No files to delete');
+          // console.log('DEBUG - prepareFormData - No files to delete');
         }
       }
 
@@ -306,27 +306,27 @@ const FormContent = forwardRef<any, FormContentProps>(
           filesSelected.length === 0 // Only process if we don't already have files
         ) {
           const attachments = (props.value as any).attachments;
-          console.log(
-            'DEBUG - useEffect - Found attachments in props.value:',
-            JSON.stringify(attachments, null, 2)
-          );
+          // console.log(
+          //   'DEBUG - useEffect - Found attachments in props.value:',
+          //   JSON.stringify(attachments, null, 2)
+          // );
           if (attachments && typeof attachments === 'object' && fieldName in attachments) {
             const existingFiles = attachments[fieldName];
-            console.log(
-              'DEBUG - useEffect - Found existing files:',
-              JSON.stringify(existingFiles, null, 2)
-            );
+            // console.log(
+            //   'DEBUG - useEffect - Found existing files:',
+            //   JSON.stringify(existingFiles, null, 2)
+            // );
             if (Array.isArray(existingFiles) && existingFiles.length > 0) {
               // Create File objects from the server data if possible
               const fileObjects = existingFiles
                 .filter(file => !filesSelected.some(f => f.name === file.name))
                 .map(file => {
                   try {
-                    console.log(
-                      'DEBUG - Processing server file (full):',
-                      JSON.stringify(file, null, 2)
-                    );
-                    console.log('DEBUG - File storage object:', file.storage);
+                    // console.log(
+                    //   'DEBUG - Processing server file (full):',
+                    //   JSON.stringify(file, null, 2)
+                    // );
+                    // console.log('DEBUG - File storage object:', file.storage);
 
                     // Create a File object with the actual size from the server
                     const fileObj = new File(
@@ -345,7 +345,7 @@ const FormContent = forwardRef<any, FormContentProps>(
 
                     // Find server ID from multiple possible sources
                     const serverId = file.serverId || file.attachmentId || file.id;
-                    console.log('DEBUG - Extracted server ID:', serverId);
+                    // console.log('DEBUG - Extracted server ID:', serverId);
 
                     // Add server properties directly to the file object
                     Object.defineProperties(fileObj, {
@@ -366,12 +366,12 @@ const FormContent = forwardRef<any, FormContentProps>(
                       },
                     });
 
-                    console.log('DEBUG - Created file object with properties:', {
-                      name: fileObj.name,
-                      serverId: (fileObj as any).serverId,
-                      isServerFile: (fileObj as any).isServerFile,
-                      storageKey: (fileObj as any).storageKey,
-                    });
+                    // console.log('DEBUG - Created file object with properties:', {
+                    //   name: fileObj.name,
+                    //   serverId: (fileObj as any).serverId,
+                    //   isServerFile: (fileObj as any).isServerFile,
+                    //   storageKey: (fileObj as any).storageKey,
+                    // });
 
                     return fileObj;
                   } catch (e) {
@@ -382,15 +382,15 @@ const FormContent = forwardRef<any, FormContentProps>(
                 .filter(Boolean);
 
               if (fileObjects.length > 0) {
-                console.log(
-                  'DEBUG - useEffect - Setting file objects with server IDs:',
-                  fileObjects.map(f => ({
-                    name: f.name,
-                    storageKey: (f as any).storageKey,
-                    serverId: (f as any).serverId,
-                    isServerFile: (f as any).isServerFile,
-                  }))
-                );
+                // console.log(
+                //   'DEBUG - useEffect - Setting file objects with server IDs:',
+                //   fileObjects.map(f => ({
+                //     name: f.name,
+                //     storageKey: (f as any).storageKey,
+                //     serverId: (f as any).serverId,
+                //     isServerFile: (f as any).isServerFile,
+                //   }))
+                // );
                 setFilesSelected(fileObjects);
               }
             }
@@ -400,24 +400,24 @@ const FormContent = forwardRef<any, FormContentProps>(
         // Then check if we have files in localStorage
         const storedFileMetadata = loadFilesFromLocalStorage();
         if (storedFileMetadata && storedFileMetadata.length > 0) {
-          console.log('DEBUG - useEffect - Found stored file metadata:', storedFileMetadata);
+          // console.log('DEBUG - useEffect - Found stored file metadata:', storedFileMetadata);
           // Create File objects from metadata
           const fileObjects = storedFileMetadata
             .map(meta => {
               try {
-                console.log('DEBUG - Creating file from localStorage metadata:', meta);
-                console.log(
-                  'DEBUG - Meta serverId:',
-                  meta.serverId,
-                  'typeof:',
-                  typeof meta.serverId
-                );
+                // console.log('DEBUG - Creating file from localStorage metadata:', meta);
+                // console.log(
+                //   'DEBUG - Meta serverId:',
+                //   meta.serverId,
+                //   'typeof:',
+                //   typeof meta.serverId
+                // );
 
                 // Try to convert string serverId to number if needed
                 let serverId = meta.serverId;
                 if (typeof serverId === 'string' && !isNaN(Number(serverId))) {
                   serverId = Number(serverId);
-                  console.log('DEBUG - Converted string serverId to number:', serverId);
+                  // console.log('DEBUG - Converted string serverId to number:', serverId);
                 }
 
                 const file = new File(
@@ -461,16 +461,16 @@ const FormContent = forwardRef<any, FormContentProps>(
                 });
 
                 // Verify properties were correctly set
-                console.log('DEBUG - Created file from localStorage with properties:', {
-                  name: file.name,
-                  directServerId: (file as any).directServerId,
-                  serverId: (file as any).serverId,
-                  directIsServerFile: (file as any).directIsServerFile,
-                  isServerFile: (file as any).isServerFile,
-                  directStorageKey: (file as any).directStorageKey,
-                  storageKey: (file as any).storageKey,
-                  descriptors: Object.getOwnPropertyDescriptors(file),
-                });
+                // console.log('DEBUG - Created file from localStorage with properties:', {
+                //   name: file.name,
+                //   directServerId: (file as any).directServerId,
+                //   serverId: (file as any).serverId,
+                //   directIsServerFile: (file as any).directIsServerFile,
+                //   isServerFile: (file as any).isServerFile,
+                //   directStorageKey: (file as any).directStorageKey,
+                //   storageKey: (file as any).storageKey,
+                //   descriptors: Object.getOwnPropertyDescriptors(file),
+                // });
 
                 return file;
               } catch (e) {
@@ -502,7 +502,7 @@ const FormContent = forwardRef<any, FormContentProps>(
         // Clear localStorage when form is submitted
         localStorage.removeItem(getLocalStorageKey());
         localStorage.removeItem(`${fieldName}-files-to-delete`);
-        console.log('DEBUG - Form submitted, cleared localStorage');
+        // console.log('DEBUG - Form submitted, cleared localStorage');
       }
     }, [formSubmitted, fieldName, getLocalStorageKey]);
 
@@ -513,7 +513,7 @@ const FormContent = forwardRef<any, FormContentProps>(
         if (storedFilesToDelete) {
           const parsedFilesToDelete = JSON.parse(storedFilesToDelete);
           if (Array.isArray(parsedFilesToDelete) && parsedFilesToDelete.length > 0) {
-            console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
+            // console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
             setFilesToDelete(parsedFilesToDelete);
           }
         }

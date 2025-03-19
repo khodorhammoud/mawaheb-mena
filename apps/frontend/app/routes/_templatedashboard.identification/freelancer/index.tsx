@@ -209,10 +209,10 @@ export default function FreelancerIdentifyingScreen() {
       }
 
       if (filesToDelete.length > 0) {
-        console.log(
-          'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
-          filesToDelete
-        );
+        // console.log(
+        //   'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
+        //   filesToDelete
+        // );
         formData.append('filesToDelete', JSON.stringify(filesToDelete));
 
         // Clear localStorage after adding to formData
