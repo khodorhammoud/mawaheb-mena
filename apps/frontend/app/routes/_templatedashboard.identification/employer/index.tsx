@@ -3,6 +3,9 @@ import { useLoaderData, useFetcher, Form, useSubmit } from '@remix-run/react';
 import { EmployerAccountType } from '~/types/enums';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { useToast } from '~/components/hooks/use-toast';
+import { Button } from '~/components/ui/button';
+import { ToastAction } from '~/components/ui/toast';
 
 // File display component
 interface FileDisplayProps {
@@ -45,6 +48,8 @@ export default function EmployerIdentificationScreen() {
     employerAccountType: EmployerAccountType;
     identificationData: any;
   }>();
+
+  const { toast } = useToast();
 
   const formRef = useRef<HTMLFormElement>(null);
   const fetcher = useFetcher<FetcherData>();
@@ -125,8 +130,15 @@ export default function EmployerIdentificationScreen() {
     //   boardResolutionFiles: boardResolutionFormRef.current?.filesSelected,
     // });
 
+    console.log('Submit button clicked'); // Debugging log
+
     if (!hasValidFilesToSubmit()) {
-      alert('Please upload all required documents.');
+      console.log('Showing toast notification'); // Debugging log
+      toast({
+        variant: 'destructive',
+        title: 'Required Documents Missing',
+        description: 'Please upload all required documents.',
+      });
       return;
     }
 

@@ -3,6 +3,7 @@ import { Form, useActionData, useLoaderData, useSubmit, useFetcher } from '@remi
 import { Freelancer } from '~/types/User';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { useToast } from '~/components/hooks/use-toast';
 
 interface FileDisplayProps {
   files: Array<{ name: string; size?: number }>;
@@ -39,6 +40,7 @@ interface FetcherData {
 }
 
 export default function FreelancerIdentifyingScreen() {
+  const { toast } = useToast();
   const { currentProfile, identificationData } = useLoaderData<{
     currentProfile: Freelancer;
     identificationData: any;
@@ -150,9 +152,12 @@ export default function FreelancerIdentifyingScreen() {
 
     const hasRequiredDocuments = hasIdentificationFiles && hasTradeLicenseFiles;
 
-    // If no files are selected or exist in the database, show an alert and return
     if (!hasRequiredDocuments) {
-      alert('Please upload all required documents.');
+      toast({
+        variant: 'destructive',
+        title: 'Required Documents Missing',
+        description: 'Please upload all required documents.',
+      });
       return;
     }
 
