@@ -594,20 +594,20 @@ export async function getEmployerIdentification(userId: number) {
       .from(userIdentificationsTable)
       .where(eq(userIdentificationsTable.userId, userId));
 
-    console.log(
-      'DEBUG - Raw DB result for employer identification:',
-      JSON.stringify(result, null, 2)
-    );
+    // console.log(
+    //   'DEBUG - Raw DB result for employer identification:',
+    //   JSON.stringify(result, null, 2)
+    // );
 
     // Check if we have the expected data format
-    if (result.length > 0) {
-      console.log(
-        'DEBUG - Employer attachments found:',
-        result[0].attachments ? JSON.stringify(result[0].attachments, null, 2) : 'No attachments'
-      );
-    } else {
-      console.log('DEBUG - No employer identification record found for userId:', userId);
-    }
+    // if (result.length > 0) {
+    //   console.log(
+    //     'DEBUG - Employer attachments found:',
+    //     result[0].attachments ? JSON.stringify(result[0].attachments, null, 2) : 'No attachments'
+    //   );
+    // } else {
+    //   console.log('DEBUG - No employer identification record found for userId:', userId);
+    // }
 
     return { success: true, data: result[0] || null };
   } catch (error) {
@@ -642,15 +642,15 @@ export async function updateEmployerIdentification(
       };
     }
 
-    console.log('DEBUG - updateEmployerIdentification - Starting with existing attachments:', {
-      identification: existingAttachments.identification,
-      trade_license: existingAttachments.trade_license,
-      board_resolution: existingAttachments.board_resolution,
-    });
+    // console.log('DEBUG - updateEmployerIdentification - Starting with existing attachments:', {
+    //   identification: existingAttachments.identification,
+    //   trade_license: existingAttachments.trade_license,
+    //   board_resolution: existingAttachments.board_resolution,
+    // });
 
     // Process files to delete if any
     if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
-      console.log('DEBUG - Processing files to delete:', attachmentsData.filesToDelete);
+      // console.log('DEBUG - Processing files to delete:', attachmentsData.filesToDelete);
 
       // Ensure all IDs are valid numbers
       const validFilesToDelete = attachmentsData.filesToDelete.filter(
@@ -664,14 +664,14 @@ export async function updateEmployerIdentification(
             id => !(typeof id === 'number' && !isNaN(id) && id > 0)
           )
         );
-        console.log('DEBUG - Using filtered list for deletion:', validFilesToDelete);
+        // console.log('DEBUG - Using filtered list for deletion:', validFilesToDelete);
       }
 
-      console.log('DEBUG - Before filtering - Existing attachments:', {
-        identification: existingAttachments.identification,
-        trade_license: existingAttachments.trade_license,
-        board_resolution: existingAttachments.board_resolution,
-      });
+      // console.log('DEBUG - Before filtering - Existing attachments:', {
+      //   identification: existingAttachments.identification,
+      //   trade_license: existingAttachments.trade_license,
+      //   board_resolution: existingAttachments.board_resolution,
+      // });
 
       // Filter out deleted file IDs from existing attachments
       existingAttachments.identification = existingAttachments.identification.filter(id => {
@@ -690,21 +690,21 @@ export async function updateEmployerIdentification(
         return keep;
       });
 
-      console.log('DEBUG - After filtering - Existing attachments:', {
-        identification: existingAttachments.identification,
-        trade_license: existingAttachments.trade_license,
-        board_resolution: existingAttachments.board_resolution,
-      });
+      // console.log('DEBUG - After filtering - Existing attachments:', {
+      //   identification: existingAttachments.identification,
+      //   trade_license: existingAttachments.trade_license,
+      //   board_resolution: existingAttachments.board_resolution,
+      // });
 
       // Delete the files from the attachments table
-      console.log(`DEBUG - Starting deletion of ${validFilesToDelete.length} attachments`);
+      // console.log(`DEBUG - Starting deletion of ${validFilesToDelete.length} attachments`);
       for (const fileId of validFilesToDelete) {
         try {
-          console.log(`DEBUG - Attempting to delete attachment with ID ${fileId}`);
+          // console.log(`DEBUG - Attempting to delete attachment with ID ${fileId}`);
           await deleteAttachmentById(fileId);
-          console.log(
-            `DEBUG - Successfully completed deletion process for attachment ID ${fileId}`
-          );
+          // console.log(
+          //   `DEBUG - Successfully completed deletion process for attachment ID ${fileId}`
+          // );
         } catch (error) {
           console.error(`DEBUG - Error deleting attachment with ID ${fileId}:`, error);
           // Continue with other deletions even if one fails
