@@ -1,5 +1,5 @@
 {
-  "id": "f0bf0128-36ba-4c1b-8908-db15563448cf",
+  "id": "ea6f33f1-8478-40a7-a071-7988f016cc14",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1699,7 +1699,8 @@
         "pending",
         "published",
         "closed",
-        "suspended"
+        "suspended",
+        "deactivated"
       ]
     },
     "public.account_type": {

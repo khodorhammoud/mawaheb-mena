@@ -1,9 +1,9 @@
-import { JobCardData } from "~/types/Job";
-import JobDesignOne from "./JobDesignOne";
-import JobDesignTwo from "./JobDesignTwo";
-import JobDesignThree from "./JobDesignThree";
-import { useState } from "react";
-import { JobStatus } from "~/types/enums";
+import { JobCardData } from '~/types/Job';
+import JobDesignOne from './JobDesignOne';
+import JobDesignTwo from './JobDesignTwo';
+import JobDesignThree from './JobDesignThree';
+import { useState } from 'react';
+import { JobStatus } from '~/types/enums';
 
 interface JobProps {
   data: JobCardData;
@@ -27,66 +27,40 @@ export default function Job({ data, viewMode }: JobProps) {
   }
 
   switch (viewMode) {
-    case "one":
+    case 'one':
       return (
         <>
           {/* Show JobDesignOne on md and larger screens */}
           <div className="hidden md:block">
-            <JobDesignOne
-              data={data}
-              status={jobStatus}
-              onStatusChange={handleStatusChange}
-            />
+            <JobDesignOne data={data} status={jobStatus} onStatusChange={handleStatusChange} />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
           <div className="hidden sm:block md:hidden">
-            <JobDesignTwo
-              data={data}
-              status={jobStatus}
-              onStatusChange={handleStatusChange}
-            />
+            <JobDesignTwo data={data} status={jobStatus} onStatusChange={handleStatusChange} />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
           <div className="block sm:hidden">
-            <JobDesignThree
-              data={data}
-              status={jobStatus}
-              onStatusChange={handleStatusChange}
-            />
+            <JobDesignThree data={data} status={jobStatus} onStatusChange={handleStatusChange} />
           </div>
         </>
       );
 
-    case "two":
+    case 'two':
       return (
         <>
           {/* Show JobDesignTwo on sm and larger screens */}
           <div className="hidden sm:block">
-            <JobDesignTwo
-              data={data}
-              status={jobStatus}
-              onStatusChange={handleStatusChange}
-            />
+            <JobDesignTwo data={data} status={jobStatus} onStatusChange={handleStatusChange} />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
           <div className="block sm:hidden">
-            <JobDesignThree
-              data={data}
-              status={jobStatus}
-              onStatusChange={handleStatusChange}
-            />
+            <JobDesignThree data={data} status={jobStatus} onStatusChange={handleStatusChange} />
           </div>
         </>
       );
 
-    case "three":
-      return (
-        <JobDesignThree
-          data={data}
-          status={jobStatus}
-          onStatusChange={handleStatusChange}
-        />
-      );
+    case 'three':
+      return <JobDesignThree data={data} status={jobStatus} onStatusChange={handleStatusChange} />;
 
     default:
       return null;

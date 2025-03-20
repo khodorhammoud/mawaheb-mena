@@ -1,5 +1,5 @@
-import { hash, compare } from "bcrypt-ts";
-import { db } from "../db/drizzle/connector";
+import { hash, compare } from 'bcrypt-ts';
+import { db } from '../db/drizzle/connector';
 import {
   accountsTable,
   employersTable,
@@ -7,7 +7,7 @@ import {
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
-} from "../db/drizzle/schemas/schema";
+} from '../db/drizzle/schemas/schema';
 import {
   // LoggedInUser,
   User,
@@ -16,12 +16,12 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from "../types/User";
-import { and, eq /* lt, gte, ne */ } from "drizzle-orm";
-import { RegistrationError, ErrorCode } from "../common/errors/UserError";
-import { AccountStatus, AccountType, Provider } from "../types/enums";
+} from '../types/User';
+import { and, eq /* lt, gte, ne */ } from 'drizzle-orm';
+import { RegistrationError, ErrorCode } from '../common/errors/UserError';
+import { AccountStatus, AccountType, Provider } from '../types/enums';
 // import { LoaderFunctionArgs } from "@remix-run/node";
-import { authenticator } from "../auth/auth.server";
+import { authenticator } from '../auth/auth.server';
 
 /****************************************************************
  *                                                              *
@@ -43,25 +43,19 @@ export async function getUser(
 ): Promise<User | null> {
   let user: User = null;
   if (userId) {
-    const userRes = await db
-      .select()
-      .from(UsersTable)
-      .where(eq(UsersTable.id, userId));
+    const userRes = await db.select().from(UsersTable).where(eq(UsersTable.id, userId));
     if (userRes[0]) {
       user = userRes[0] as User;
     }
   } else if (userEmail) {
     userEmail = userEmail.toLowerCase();
     try {
-      const userRes = await db
-        .select()
-        .from(UsersTable)
-        .where(eq(UsersTable.email, userEmail));
+      const userRes = await db.select().from(UsersTable).where(eq(UsersTable.email, userEmail));
       if (userRes.length > 0) {
         user = userRes[0] as User;
       }
     } catch (error) {
-      console.error("error getting user with userEmail", error);
+      console.error('error getting user with userEmail', error);
     }
   }
   if (!user) return null;
@@ -76,10 +70,7 @@ export async function getUser(
  * @returns User | null : the current user from the session or null if the user is not logged in
  */
 
-export async function getCurrentUser(
-  request: Request,
-  withPassword = false
-): Promise<User | null> {
+export async function getCurrentUser(request: Request, withPassword = false): Promise<User | null> {
   const userId = await authenticator.isAuthenticated(request);
   if (!userId) return null;
   const currentUser = await getUser({ userId }, withPassword);
@@ -94,20 +85,13 @@ export async function getCurrentUser(
  * @returns UserAccount | null: the user account with the given id or null if the account does not exist
  */
 export async function getUserAccountInfo(
-  {
-    accountId,
-    userId,
-    userEmail,
-  }: { accountId?: number; userId?: number; userEmail?: string },
+  { accountId, userId, userEmail }: { accountId?: number; userId?: number; userEmail?: string },
   withPassword = false
 ): Promise<UserAccount | null> {
   let user: User = null;
   let account = null;
   if (accountId) {
-    account = await db
-      .select()
-      .from(accountsTable)
-      .where(eq(accountsTable.id, accountId));
+    account = await db.select().from(accountsTable).where(eq(accountsTable.id, accountId));
     if (account.length === 0) return null;
     user = await getUser({ userId: account[0].userId }, withPassword);
     if (!user) return null;
@@ -116,10 +100,7 @@ export async function getUserAccountInfo(
   if (userId || userEmail) {
     user = await getUser({ userId, userEmail }, withPassword);
     if (!user) return null;
-    account = await db
-      .select()
-      .from(accountsTable)
-      .where(eq(accountsTable.userId, user.id));
+    account = await db.select().from(accountsTable).where(eq(accountsTable.userId, user.id));
 
     if (account.length === 0) return null;
   }
@@ -131,13 +112,8 @@ export async function getUserAccountInfo(
  * @param slug : the slug of the account to get the type for
  * @returns UserAccount | null: the account with the given slug or null if the account does not exist
  */
-export async function getAccountBySlug(
-  slug: string
-): Promise<UserAccount | null> {
-  const account = await db
-    .select()
-    .from(accountsTable)
-    .where(eq(accountsTable.slug, slug));
+export async function getAccountBySlug(slug: string): Promise<UserAccount | null> {
+  const account = await db.select().from(accountsTable).where(eq(accountsTable.slug, slug));
   if (account.length === 0) return null;
   return account[0] as unknown as UserAccount;
 }
@@ -186,11 +162,7 @@ export async function getProfileInfo(
   let freelancer = null;
 
   // if the  userId, userEmail, or accountId are provided, get the full info from the user/account
-  if (
-    "userId" in identifier ||
-    "userEmail" in identifier ||
-    "accountId" in identifier
-  ) {
+  if ('userId' in identifier || 'userEmail' in identifier || 'accountId' in identifier) {
     account = await getUserAccountInfo(identifier);
     if (!account) return null;
     // get account type
@@ -246,11 +218,9 @@ export async function getProfileInfoByAccountId(accountId: number) {
  * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
  */
 
-export async function getUserAccountType(
-  userId: number
-): Promise<AccountType | null> {
+export async function getUserAccountType(userId: number): Promise<AccountType | null> {
   const user = await getUser({ userId });
-  if (user?.role === "admin") {
+  if (user?.role === 'admin') {
     return AccountType.Admin;
   }
 
@@ -265,7 +235,7 @@ export async function getUserAccountType(
 }
 
 export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
-  console.warn("using isUserOnboarded_Depricated", user);
+  console.warn('using isUserOnboarded_Depricated', user);
   return null;
   // const users = await db
   //   .select()
@@ -285,7 +255,7 @@ export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
 export async function getUserIdFromEmployerId_Depricated(
   employerId: number
 ): Promise<number | null> {
-  console.warn("using getUserIdFromEmployerId_Depricated", employerId);
+  console.warn('using getUserIdFromEmployerId_Depricated', employerId);
   return null;
   // // join the employers table with the accounts table to get the userId
   // const result = await db
@@ -303,9 +273,7 @@ export async function getUserIdFromEmployerId_Depricated(
  * @returns number: the userId of the freelancer
  */
 
-export async function getUserIdFromFreelancerId(
-  freelancerId: number
-): Promise<number | null> {
+export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
   // join the freelancers table with the accounts table to get the userId
   const result = await db
     .select({ userId: accountsTable.userId })
@@ -321,9 +289,7 @@ export async function getUserIdFromFreelancerId(
  * @param userId : the id of the user to get the freelancerId for
  * @returns number: the freelancerId of the user
  */
-export async function getFreelancerIdFromUserId(
-  userId: number
-): Promise<number | null> {
+export async function getFreelancerIdFromUserId(userId: number): Promise<number | null> {
   // left join freelancers table with accounts table left join with users table on userId
   const result = await db
     .select({ freelancerId: freelancersTable.id })
@@ -339,9 +305,7 @@ export async function getFreelancerIdFromUserId(
  * @param userId : the id of the user to get the employerId for
  * @returns number: the employerId of the user
  */
-export async function getEmployerIdFromUserId(
-  userId: number
-): Promise<number | null> {
+export async function getEmployerIdFromUserId(userId: number): Promise<number | null> {
   const result = await db
     .select({ employerId: employersTable.id })
     .from(employersTable)
@@ -354,7 +318,7 @@ export async function getEmployerIdFromUserId(
 export async function getCurrentEmployerAccountInfo_Depricated(
   request: Request
 ): Promise<Employer | null> {
-  console.warn("using getCurrentEmployerAccountInfo_Depricated", request);
+  console.warn('using getCurrentEmployerAccountInfo_Depricated', request);
   return null;
   // const user = await getCurrentUser(request);
   // const employer = await db
@@ -371,9 +335,7 @@ export async function getCurrentEmployerAccountInfo_Depricated(
  * check if the current user is an employer or a freelancer
  * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
  */
-export async function getCurrentUserAccountType(
-  request: Request
-): Promise<AccountType | null> {
+export async function getCurrentUserAccountType(request: Request): Promise<AccountType | null> {
   // get the current user id from the session
   const currentUser = await getCurrentUser(request);
   if (!currentUser) return null;
@@ -399,7 +361,7 @@ export async function registerEmployer({
   if (!employerAccountType || !account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration"
+      'Missing required fields for registration'
     );
 
   const { firstName, lastName, email, password } = account.user;
@@ -443,14 +405,11 @@ export async function registerEmployer({
  * @param lastName : the last name of the account
  * @returns string: the newly created slug
  */
-export async function createAccountSlug(
-  firstName: string,
-  lastName: string
-): Promise<string> {
+export async function createAccountSlug(firstName: string, lastName: string): Promise<string> {
   let slug = `${firstName}-${lastName}`;
-  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   // remove any trailing hyphens
-  slug = slug.replace(/-+$/, "");
+  slug = slug.replace(/-+$/, '');
   // if the slug is longer than 60 characters, truncate it
   if (slug.length > 60) {
     slug = slug.substring(0, 60);
@@ -458,14 +417,11 @@ export async function createAccountSlug(
   // if the slug already exists, add a random number to the end of the slug
   // failsafe: this should never happen, but if it does, we don't want to get stuck in an infinite loop
   let counter = 0;
-  while (
-    (await db.select().from(accountsTable).where(eq(accountsTable.slug, slug)))
-      .length > 0
-  ) {
+  while ((await db.select().from(accountsTable).where(eq(accountsTable.slug, slug))).length > 0) {
     slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
     counter++;
     if (counter > 1000) {
-      throw new Error("Failed to create a unique slug for the account");
+      throw new Error('Failed to create a unique slug for the account');
     }
   }
   return slug;
@@ -483,7 +439,7 @@ export async function registerFreelancer({
   if (!account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration"
+      'Missing required fields for registration'
     );
 
   const { firstName, lastName, email, password } = account.user;
@@ -543,7 +499,7 @@ export async function createUserAccount(
     if (!userInfo)
       throw new RegistrationError(
         ErrorCode.MISSING_FIELDS,
-        "Missing required fields for registration: userInfo"
+        'Missing required fields for registration: userInfo'
       );
     userInfo.provider = provider;
     const newUser = await registerUser(userInfo);
@@ -566,14 +522,11 @@ export async function createUserAccount(
   if (!user)
     throw new RegistrationError(
       ErrorCode.INTERNAL_ERROR,
-      "Failed to get user after creating account"
+      'Failed to get user after creating account'
     );
   const slug = await createAccountSlug(user.firstName, user.lastName);
   // insert the slug into the freelancers table
-  await db
-    .update(accountsTable)
-    .set({ slug })
-    .where(eq(accountsTable.id, result[0].id));
+  await db.update(accountsTable).set({ slug }).where(eq(accountsTable.id, result[0].id));
   return result[0];
 }
 
@@ -592,16 +545,13 @@ export async function registerUser({
   if (!password && provider === Provider.Credentials)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration: password"
+      'Missing required fields for registration: password'
     );
 
   // check if user exists
   const existingUsers = await getUser({ userEmail: email });
   if (existingUsers)
-    throw new RegistrationError(
-      ErrorCode.EMAIL_ALREADY_EXISTS,
-      "Email already exists"
-    );
+    throw new RegistrationError(ErrorCode.EMAIL_ALREADY_EXISTS, 'Email already exists');
 
   type NewUser = typeof UsersTable.$inferInsert;
   let newUser: NewUser;
@@ -629,10 +579,7 @@ export async function registerUser({
   }
 
   // insert user
-  const result = (await db
-    .insert(UsersTable)
-    .values(newUser)
-    .returning()) as unknown as User;
+  const result = (await db.insert(UsersTable).values(newUser).returning()) as unknown as User;
   return result[0];
 }
 
@@ -642,10 +589,7 @@ export async function registerUser({
  * @param passHash: the hash to verify the password against
  * @returns boolean: true if the password is correct, false otherwise
  */
-export async function verifyPassword(
-  password: string,
-  passHash: string
-): Promise<boolean> {
+export async function verifyPassword(password: string, passHash: string): Promise<boolean> {
   return compare(password, passHash);
 }
 
@@ -656,13 +600,10 @@ export async function verifyPassword(
  * @returns string: the generated verification token
  */
 
-export async function generateVerificationToken(
-  userId: number
-): Promise<string> {
+export async function generateVerificationToken(userId: number): Promise<string> {
   // generate the token hash
   const token = await hash(
-    Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15),
+    Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
   );
   // set the expiry to be an hour from now
@@ -679,11 +620,7 @@ export async function generateVerificationToken(
 
 // Helper function to check if a user exists
 export async function checkUserExists(userId: number) {
-  return await db
-    .select()
-    .from(UsersTable)
-    .where(eq(UsersTable.id, userId))
-    .limit(1);
+  return await db.select().from(UsersTable).where(eq(UsersTable.id, userId)).limit(1);
 }
 
 export async function verifyUserAccount({ userId }: { userId: number }) {
@@ -747,7 +684,7 @@ export async function verifyUserVerificationToken(token: string) {
         message: ErrorCode.INTERNAL_ERROR,
       };
   } catch (e) {
-    console.error("Error verifying user:", e);
+    console.error('Error verifying user:', e);
     return {
       success: false,
       message: ErrorCode.INTERNAL_ERROR,
@@ -755,7 +692,7 @@ export async function verifyUserVerificationToken(token: string) {
   }
   return {
     success: true,
-    message: "User verified successfully",
+    message: 'User verified successfully',
     userId,
   };
 }
@@ -771,19 +708,17 @@ export async function verifyUserVerificationToken(token: string) {
  */
 export async function checkUserStatuses(
   userId: number,
-  checkingWhat: "isVerified" | "isOnboarded" | "accountStatus" | "accountType",
+  checkingWhat: 'isVerified' | 'isOnboarded' | 'accountStatus' | 'accountType',
   checkingFor?: AccountType | AccountStatus | boolean
 ) {
   const user = await getUser({ userId });
   if (!user) return false;
-  if (checkingWhat === "isVerified") return user.isVerified === checkingFor;
-  if (checkingWhat === "isOnboarded") return user.isOnboarded === checkingFor;
-  if (checkingWhat === "accountType" || checkingWhat === "accountStatus") {
+  if (checkingWhat === 'isVerified') return user.isVerified === checkingFor;
+  if (checkingWhat === 'isOnboarded') return user.isOnboarded === checkingFor;
+  if (checkingWhat === 'accountType' || checkingWhat === 'accountStatus') {
     const account = await getUserAccountInfo({ userId: user.id });
-    if (checkingWhat === "accountType")
-      return account.accountType === checkingFor;
-    if (checkingWhat === "accountStatus")
-      return account.accountStatus === checkingFor;
+    if (checkingWhat === 'accountType') return account.accountType === checkingFor;
+    if (checkingWhat === 'accountStatus') return account.accountStatus === checkingFor;
   }
   return false;
 }
@@ -799,12 +734,7 @@ export async function getSocialAccount({
   const socialAccount = await db
     .select()
     .from(socialAccountsTable)
-    .where(
-      and(
-        eq(socialAccountsTable.userId, userId),
-        eq(socialAccountsTable.provider, provider)
-      )
-    );
+    .where(and(eq(socialAccountsTable.userId, userId), eq(socialAccountsTable.provider, provider)));
   if (socialAccount.length === 0) return null;
   return socialAccount[0] as SocialAccount;
 }
@@ -895,14 +825,50 @@ export async function updateUserSettings(userId: number, updatedSettings: any) {
   return { userUpdateResult, accountUpdateResult };
 }
 
-export async function updateUserPassword(
-  userId: number,
-  hashedPassword: string
-) {
+export async function updateUserPassword(userId: number, hashedPassword: string) {
   const result = await db
     .update(UsersTable)
     .set({ passHash: hashedPassword } as unknown)
     .where(eq(UsersTable.id, userId))
     .returning();
   return result.length > 0;
+}
+
+export async function deactivateAccount(userId: number): Promise<boolean> {
+  try {
+    // console.log('🔍 Getting account type for user:', userId);
+    // Get the user's account type
+    const accountType = await getUserAccountType(userId);
+    // console.log('📋 Account type:', accountType);
+
+    if (!accountType) {
+      // console.log('❌ No account type found');
+      return false;
+    }
+
+    // console.log('📝 Updating account status to deactivated...');
+    // Update account status to deactivated in the accountsTable only
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Deactivated })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    // console.log('📊 Account update result:', accountResult);
+
+    // Check if the update returned anything
+    if (!accountResult || accountResult.length === 0) {
+      // console.log('❌ Account update failed');
+      return false;
+    }
+
+    // console.log('✅ Account deactivation completed successfully');
+    return true;
+  } catch (error) {
+    console.error('💥 Error in deactivateAccount:', error);
+    return false;
+  }
 }
