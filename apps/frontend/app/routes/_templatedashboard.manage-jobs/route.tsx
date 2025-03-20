@@ -1,34 +1,28 @@
-import { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { JobCardData } from "~/types/Job";
-import {
-  updateJobStatus,
-  fetchJobsWithApplications,
-} from "~/servers/job.server";
-import { requireUserIsEmployerPublished } from "~/auth/auth.server";
-import { getProfileInfo } from "~/servers/user.server";
-import JobManagement from "./jobs-displaying";
+import { LoaderFunction, ActionFunction } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import { JobCardData } from '~/types/Job';
+import { updateJobStatus, fetchJobsWithApplications } from '~/servers/job.server';
+import { requireUserAccountStatusPublishedOrDeactivated } from '~/auth/auth.server';
+import { getProfileInfo } from '~/servers/user.server';
+import JobManagement from './jobs-displaying';
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const jobId = parseInt(formData.get("jobId") as string, 10);
-  const newStatus = formData.get("status") as string;
+  const jobId = parseInt(formData.get('jobId') as string, 10);
+  const newStatus = formData.get('status') as string;
 
   try {
     await updateJobStatus(jobId, newStatus);
     return Response.json({ success: true });
   } catch (error) {
-    console.error("Failed to update job status:", error);
-    return Response.json(
-      { success: false, error: "Failed to update job status" },
-      { status: 500 }
-    );
+    console.error('Failed to update job status:', error);
+    return Response.json({ success: false, error: 'Failed to update job status' }, { status: 500 });
   }
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Step 1: Verify the user is a published employer
-  const userId = await requireUserIsEmployerPublished(request);
+  const userId = await requireUserAccountStatusPublishedOrDeactivated(request);
 
   // Step 2: Fetch employer profile
   const profile = await getProfileInfo({ userId });
