@@ -3,6 +3,7 @@ import { Form, useActionData, useLoaderData, useSubmit, useFetcher } from '@remi
 import { Freelancer } from '~/types/User';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { useToast } from '~/components/hooks/use-toast';
 
 interface FileDisplayProps {
   files: Array<{ name: string; size?: number }>;
@@ -39,13 +40,14 @@ interface FetcherData {
 }
 
 export default function FreelancerIdentifyingScreen() {
+  const { toast } = useToast();
   const { currentProfile, identificationData } = useLoaderData<{
     currentProfile: Freelancer;
     identificationData: any;
   }>();
 
   // Debug log to check what identificationData contains
-  console.log('DEBUG - Received identificationData:', JSON.stringify(identificationData, null, 2));
+  //   console.log('DEBUG - Received identificationData:', JSON.stringify(identificationData, null, 2));
 
   const actionData = useActionData<{ success: boolean }>();
   const submit = useSubmit();
@@ -68,10 +70,10 @@ export default function FreelancerIdentifyingScreen() {
 
   // Update the useEffect that loads identification data
   useEffect(() => {
-    console.log(
-      'DEBUG - Effect triggered with identificationData:',
-      identificationData ? JSON.stringify(identificationData, null, 2) : 'null'
-    );
+    // console.log(
+    //   'DEBUG - Effect triggered with identificationData:',
+    //   identificationData ? JSON.stringify(identificationData, null, 2) : 'null'
+    // );
 
     if (identificationData && identificationData.attachments) {
       const attachments = identificationData.attachments;
@@ -150,17 +152,19 @@ export default function FreelancerIdentifyingScreen() {
 
     const hasRequiredDocuments = hasIdentificationFiles && hasTradeLicenseFiles;
 
-    // If no files are selected or exist in the database, show an alert and return
     if (!hasRequiredDocuments) {
-      alert('Please upload all required documents.');
+      toast({
+        variant: 'destructive',
+        title: 'Required Documents Missing',
+        description: 'Please upload all required documents.',
+      });
       return;
     }
 
-    // Create a FormData object to submit
     const formData = new FormData();
     formData.append('target-updated', 'freelancer-identification');
 
-    // Get identification files from the dialog component
+    // Add identification files if any
     if (
       identificationFormRef.current &&
       identificationFormRef.current.filesSelected &&
@@ -174,7 +178,7 @@ export default function FreelancerIdentifyingScreen() {
       });
     }
 
-    // Get trade license files from the dialog component
+    // Add trade license files if any
     if (
       tradeLicenseFormRef.current &&
       tradeLicenseFormRef.current.filesSelected &&
@@ -210,10 +214,10 @@ export default function FreelancerIdentifyingScreen() {
       }
 
       if (filesToDelete.length > 0) {
-        console.log(
-          'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
-          filesToDelete
-        );
+        // console.log(
+        //   'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
+        //   filesToDelete
+        // );
         formData.append('filesToDelete', JSON.stringify(filesToDelete));
 
         // Clear localStorage after adding to formData
@@ -224,11 +228,21 @@ export default function FreelancerIdentifyingScreen() {
       console.error('DEBUG - Error handling filesToDelete from localStorage:', error);
     }
 
-    // Submit using fetcher
+    formData.append('_action', 'freelancer-identification');
+
+    // Submit the form
     fetcher.submit(formData, {
       method: 'post',
       encType: 'multipart/form-data',
     });
+
+    // Clear the form refs after successful submission
+    if (identificationFormRef.current && identificationFormRef.current.clearFiles) {
+      identificationFormRef.current.clearFiles();
+    }
+    if (tradeLicenseFormRef.current && tradeLicenseFormRef.current.clearFiles) {
+      tradeLicenseFormRef.current.clearFiles();
+    }
   };
 
   // Check file inputs when component mounts and after any dialog closes

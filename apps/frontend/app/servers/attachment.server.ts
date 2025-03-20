@@ -205,7 +205,7 @@ export async function saveAttachment(
 }
 
 export async function deleteAttachmentById(attachmentId: number): Promise<void> {
-  console.log(`DEBUG - deleteAttachmentById - Starting deletion of attachment ID: ${attachmentId}`);
+  // console.log(`DEBUG - deleteAttachmentById - Starting deletion of attachment ID: ${attachmentId}`);
 
   try {
     // First verify the attachment exists
@@ -215,11 +215,11 @@ export async function deleteAttachmentById(attachmentId: number): Promise<void> 
       .where(eq(attachmentsTable.id, attachmentId));
 
     if (attachment) {
-      console.log(`DEBUG - deleteAttachmentById - Found attachment to delete:`, {
-        id: attachment.id,
-        key: attachment.key,
-        metadata: attachment.metadata,
-      });
+      // console.log(`DEBUG - deleteAttachmentById - Found attachment to delete:`, {
+      //   id: attachment.id,
+      //   key: attachment.key,
+      //   metadata: attachment.metadata,
+      // });
 
       // Proceed with deletion from the database
       const result = await db
@@ -227,19 +227,19 @@ export async function deleteAttachmentById(attachmentId: number): Promise<void> 
         .where(eq(attachmentsTable.id, attachmentId))
         .returning({ id: attachmentsTable.id });
 
-      if (result && result.length > 0) {
-        console.log(
-          `DEBUG - deleteAttachmentById - Successfully deleted attachment with ID ${attachmentId}`
-        );
-      } else {
-        console.error(
-          `DEBUG - deleteAttachmentById - Failed to delete attachment with ID ${attachmentId} - no rows affected`
-        );
-      }
+      // if (result && result.length > 0) {
+      //   console.log(
+      //     `DEBUG - deleteAttachmentById - Successfully deleted attachment with ID ${attachmentId}`
+      //   );
+      // } else {
+      //   console.error(
+      //     `DEBUG - deleteAttachmentById - Failed to delete attachment with ID ${attachmentId} - no rows affected`
+      //   );
+      // }
     } else {
-      console.log(
-        `DEBUG - deleteAttachmentById - No attachment found with ID ${attachmentId} - skipping deletion`
-      );
+      // console.log(
+      //   `DEBUG - deleteAttachmentById - No attachment found with ID ${attachmentId} - skipping deletion`
+      // );
     }
   } catch (error) {
     console.error(`ERROR - Failed to delete attachment with ID ${attachmentId}:`, error);
