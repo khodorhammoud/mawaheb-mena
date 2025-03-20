@@ -11,6 +11,7 @@ import {
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
 import { useToast } from '~/components/hooks/use-toast';
+import { ToastAction } from '~/components/ui/toast';
 import { AccountType } from '~/types/enums';
 
 type SettingsFetcherData = {
@@ -44,18 +45,43 @@ export default function PrivacyTab() {
     if (settingsFetcher.data) {
       const response = settingsFetcher.data as SettingsFetcherData;
 
-      if (!response.success) {
-        setErrorMessage(response.error || 'An error occurred.');
-        setSuccessMessage(null);
-      } else {
-        setErrorMessage(null);
-        setSuccessMessage('Password updated successfully!');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
+      // Only handle password update messages here
+      if (response.formType !== 'deactivateAccount') {
+        if (!response.success) {
+          setErrorMessage(response.error || 'An error occurred.');
+          setSuccessMessage(null);
+        } else {
+          setErrorMessage(null);
+          setSuccessMessage('Password updated successfully!');
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        }
       }
     }
   }, [settingsFetcher.data]);
+
+  // Separate useEffect for handling deactivation responses
+  useEffect(() => {
+    if (settingsFetcher.data && settingsFetcher.data.formType === 'deactivateAccount') {
+      if (settingsFetcher.data.success) {
+        toast({
+          variant: 'default',
+          title: 'Account Deactivated',
+          description:
+            'Your account has been deactivated successfully. Please log out to complete the process.',
+          action: <ToastAction altText="Close">Close</ToastAction>,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: settingsFetcher.data.error || 'Failed to deactivate account',
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+    }
+  }, [settingsFetcher.data, toast]);
 
   // Validation checks
   const isFormValid =
@@ -65,25 +91,6 @@ export default function PrivacyTab() {
     settingsFetcher.submit({ formType: 'deactivateAccount' }, { method: 'POST' });
     setShowDeactivateDialog(false);
   };
-
-  useEffect(() => {
-    if (settingsFetcher.data && settingsFetcher.data.formType === 'deactivateAccount') {
-      if (settingsFetcher.data.success) {
-        toast({
-          title: 'Account Deactivated',
-          description:
-            'Your account has been deactivated successfully. Please log out to complete the process.',
-          variant: 'default',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: settingsFetcher.data.error || 'Failed to deactivate account',
-          variant: 'destructive',
-        });
-      }
-    }
-  }, [settingsFetcher.data]);
 
   const getDeactivationWarning = () => {
     if (user.accountType === AccountType.Employer) {
