@@ -11,11 +11,15 @@ export default function JobDesignThree({
   data,
   status,
   onStatusChange,
+  userAccountStatus,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
+  userAccountStatus?: string;
 }) {
+  console.log('JobDesignThree: User account status:', userAccountStatus);
+
   const applicantsPhotos = [
     'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
     'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
@@ -46,6 +50,7 @@ export default function JobDesignThree({
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
+            userAccountStatus={userAccountStatus}
             className="w-[106px] h-[36px]"
           />
         )}

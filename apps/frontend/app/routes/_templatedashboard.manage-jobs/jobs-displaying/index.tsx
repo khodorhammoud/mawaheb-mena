@@ -2,10 +2,17 @@ import { useState } from 'react';
 import { JobCardData } from '~/types/Job';
 import Job from '../manage-jobs/Job';
 import Header from '../manage-jobs-heading/Header';
-import { JobStatus } from '~/types/enums'; // ✅ Import JobStatus enum
+import { JobStatus, AccountStatus } from '~/types/enums'; // ✅ Import AccountStatus enum
 
-export default function JobManagement({ data }: { data: JobCardData[] }) {
+interface JobManagementProps {
+  data: JobCardData[];
+  userAccountStatus?: string;
+}
+
+export default function JobManagement({ data, userAccountStatus }: JobManagementProps) {
   const [viewMode, setViewMode] = useState('one');
+
+  console.log('JobManagement: User account status:', userAccountStatus);
 
   // ✅ Group jobs by their statuses
   const groupedJobs = data.reduce(
@@ -55,7 +62,12 @@ export default function JobManagement({ data }: { data: JobCardData[] }) {
             >
               {/* Render jobs under the current status */}
               {groupedJobs[status].map(jobCardData => (
-                <Job key={jobCardData.job.id} data={jobCardData} viewMode={viewMode} />
+                <Job
+                  key={jobCardData.job.id}
+                  data={jobCardData}
+                  viewMode={viewMode}
+                  userAccountStatus={userAccountStatus}
+                />
               ))}
             </div>
           </div>
