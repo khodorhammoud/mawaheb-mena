@@ -1,6 +1,6 @@
-import { useFetcher } from '@remix-run/react';
-import { useState } from 'react';
-import { JobStatus } from '~/types/enums';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useState, useEffect } from 'react';
+import { JobStatus, AccountStatus } from '~/types/enums';
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
 } from '~/components/ui/dropdown-menu';
 import { FaChevronDown } from 'react-icons/fa';
+import { useToast } from '~/components/hooks/use-toast';
 
 interface StatusButtonProps {
   status: JobStatus;
@@ -24,7 +25,25 @@ export default function JobStateButton({
   className, // Accept custom styles
 }: StatusButtonProps) {
   const fetcher = useFetcher();
+  const { toast } = useToast();
   const [selectedStatus, setSelectedStatus] = useState<JobStatus>(status);
+  const [isDeactivated, setIsDeactivated] = useState(false);
+
+  // Check if the user account is deactivated
+  useEffect(() => {
+    // Check the user's status from API
+    fetcher.load('/api/check-user-status');
+  }, []);
+
+  // Update isDeactivated when we get data back
+  useEffect(() => {
+    if (fetcher.data) {
+      const userData = fetcher.data as { accountStatus?: string };
+      if (userData.accountStatus === AccountStatus.Deactivated) {
+        setIsDeactivated(true);
+      }
+    }
+  }, [fetcher.data]);
 
   const statusStyles: Record<JobStatus, string> = {
     active: 'bg-green-800 text-white hover:!bg-green-900',
@@ -32,9 +51,20 @@ export default function JobStateButton({
     paused: 'bg-yellow-600 text-white hover:!bg-yellow-700',
     closed: 'bg-red-900 text-white hover:!bg-red-800',
     deleted: 'bg-red-800 text-white hover:!bg-red-900',
+    completed: 'bg-blue-700 text-white hover:!bg-blue-800', // Added completed style to fix linter error
   };
 
   const handleStatusChange = (newStatus: JobStatus) => {
+    // If the user is deactivated, show toast message and prevent status change
+    if (isDeactivated) {
+      toast({
+        variant: 'destructive',
+        title: 'Action Not Allowed',
+        description: "You can't change a state while your account is deactivated",
+      });
+      return; // Early return to prevent status change
+    }
+
     setSelectedStatus(newStatus);
     if (onStatusChange) {
       onStatusChange(newStatus);
