@@ -14,11 +14,15 @@ export default function JobDesignTwo({
   data,
   status,
   onStatusChange,
+  userAccountStatus,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
+  userAccountStatus?: string;
 }) {
+  console.log('JobDesignTwo: User account status:', userAccountStatus);
+
   const { job } = data;
 
   const formattedDate = parseDate(job.createdAt);
@@ -42,7 +46,12 @@ export default function JobDesignTwo({
         {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
         <div className={`${status === JobStatus.Draft ? 'hidden' : 'flex items-center mb-7'}`}>
           {status && (
-            <JobStateButton status={status} onStatusChange={onStatusChange} jobId={job.id} />
+            <JobStateButton
+              status={status}
+              onStatusChange={onStatusChange}
+              jobId={job.id}
+              userAccountStatus={userAccountStatus}
+            />
           )}
           {status === JobStatus.Draft && (
             <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
@@ -160,6 +169,7 @@ export default function JobDesignTwo({
             onStatusChange={onStatusChange}
             jobId={job.id}
             className="w-[106px] h-[36px]"
+            userAccountStatus={userAccountStatus}
           />
         )}
       </div>

@@ -1,5 +1,5 @@
-import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { useFetcher } from '@remix-run/react';
+import { useState } from 'react';
 import { JobStatus, AccountStatus } from '~/types/enums';
 import { Button } from '~/components/ui/button';
 import {
@@ -16,6 +16,7 @@ interface StatusButtonProps {
   jobId: number;
   onStatusChange?: (newStatus: JobStatus) => void;
   className?: string;
+  userAccountStatus?: string;
 }
 
 export default function JobStateButton({
@@ -23,27 +24,17 @@ export default function JobStateButton({
   jobId,
   onStatusChange,
   className, // Accept custom styles
+  userAccountStatus,
 }: StatusButtonProps) {
   const fetcher = useFetcher();
   const { toast } = useToast();
   const [selectedStatus, setSelectedStatus] = useState<JobStatus>(status);
-  const [isDeactivated, setIsDeactivated] = useState(false);
 
-  // Check if the user account is deactivated
-  useEffect(() => {
-    // Check the user's status from API
-    fetcher.load('/api/check-user-status');
-  }, []);
+  // Check if deactivated based on props
+  const isDeactivated = userAccountStatus === AccountStatus.Deactivated;
 
-  // Update isDeactivated when we get data back
-  useEffect(() => {
-    if (fetcher.data) {
-      const userData = fetcher.data as { accountStatus?: string };
-      if (userData.accountStatus === AccountStatus.Deactivated) {
-        setIsDeactivated(true);
-      }
-    }
-  }, [fetcher.data]);
+  console.log('JobStateButton: User account status:', userAccountStatus);
+  console.log('JobStateButton: Is deactivated?', isDeactivated);
 
   const statusStyles: Record<JobStatus, string> = {
     active: 'bg-green-800 text-white hover:!bg-green-900',
@@ -55,8 +46,12 @@ export default function JobStateButton({
   };
 
   const handleStatusChange = (newStatus: JobStatus) => {
+    console.log('Trying to change status to:', newStatus);
+    console.log('Current user account status:', userAccountStatus);
+
     // If the user is deactivated, show toast message and prevent status change
     if (isDeactivated) {
+      console.log('User is deactivated, showing toast');
       toast({
         variant: 'destructive',
         title: 'Action Not Allowed',
@@ -65,6 +60,7 @@ export default function JobStateButton({
       return; // Early return to prevent status change
     }
 
+    console.log('User is NOT deactivated, proceeding with status change');
     setSelectedStatus(newStatus);
     if (onStatusChange) {
       onStatusChange(newStatus);

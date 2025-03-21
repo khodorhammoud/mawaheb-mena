@@ -28,21 +28,34 @@ export const loader: LoaderFunction = async ({ request }) => {
   const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
 
+  console.log('Route loader: User profile data', {
+    accountStatus: profile.account?.accountStatus,
+    employerId,
+  });
+
   // For each job, fetch applicants
   const jobsWithApplications = await fetchJobsWithApplications(employerId);
 
-  // Return the fetched data
-  return Response.json(jobsWithApplications);
+  // Return the fetched data along with the account status
+  return Response.json({
+    jobs: jobsWithApplications,
+    userAccountStatus: profile.account?.accountStatus,
+  });
 };
 
 // Layout component
 export default function Layout() {
   // Get the data from the loader with the correct type
-  const jobsWithApplications = useLoaderData<JobCardData[]>();
+  const loaderData = useLoaderData<{
+    jobs: JobCardData[];
+    userAccountStatus: string;
+  }>();
+
+  console.log('Layout component: User account status', loaderData.userAccountStatus);
 
   return (
     <div className="xl:p-8 p-2 mx-2 font-['Switzer-Regular'] w-full">
-      <JobManagement data={jobsWithApplications} />
+      <JobManagement data={loaderData.jobs} userAccountStatus={loaderData.userAccountStatus} />
     </div>
   );
 }

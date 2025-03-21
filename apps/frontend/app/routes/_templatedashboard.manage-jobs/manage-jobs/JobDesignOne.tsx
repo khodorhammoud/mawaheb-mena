@@ -5,7 +5,7 @@ import Calendar from '~/common/calender/Calender';
 import SkillBadgeList from '~/common/skill/SkillBadge';
 import JobStateButton from '../../../common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
-import { JobStatus } from '~/types/enums';
+import { JobStatus, AccountStatus } from '~/types/enums';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
 
@@ -13,12 +13,16 @@ export default function JobDesignOne({
   data,
   status,
   onStatusChange,
+  userAccountStatus,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
+  userAccountStatus?: string;
 }) {
   const { job } = data;
+
+  console.log('JobDesignOne: User account status:', userAccountStatus);
 
   const formattedDate = parseDate(job.createdAt);
 
@@ -28,6 +32,9 @@ export default function JobDesignOne({
   ];
 
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
+
+  // Check if the account is deactivated
+  const isDeactivated = userAccountStatus === AccountStatus.Deactivated;
 
   return !data ? (
     <p>Job details are not available.</p>
@@ -129,6 +136,7 @@ export default function JobDesignOne({
             onStatusChange={onStatusChange}
             jobId={job.id}
             className="w-[106px] h-[36px]" // 👈 Now it matches the Edit button
+            userAccountStatus={userAccountStatus}
           />
         )}
       </div>
