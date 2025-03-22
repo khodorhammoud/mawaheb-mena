@@ -33,8 +33,8 @@ export default function JobStateButton({
   // Check if deactivated based on props
   const isDeactivated = userAccountStatus === AccountStatus.Deactivated;
 
-  console.log('JobStateButton: User account status:', userAccountStatus);
-  console.log('JobStateButton: Is deactivated?', isDeactivated);
+  // console.log('JobStateButton: User account status:', userAccountStatus);
+  // console.log('JobStateButton: Is deactivated?', isDeactivated);
 
   const statusStyles: Record<JobStatus, string> = {
     active: 'bg-green-800 text-white hover:!bg-green-900',
@@ -46,12 +46,12 @@ export default function JobStateButton({
   };
 
   const handleStatusChange = (newStatus: JobStatus) => {
-    console.log('Trying to change status to:', newStatus);
-    console.log('Current user account status:', userAccountStatus);
+    // console.log('Trying to change status to:', newStatus);
+    // console.log('Current user account status:', userAccountStatus);
 
     // If the user is deactivated, show toast message and prevent status change
     if (isDeactivated) {
-      console.log('User is deactivated, showing toast');
+      // console.log('User is deactivated, showing toast');
       toast({
         variant: 'destructive',
         title: 'Action Not Allowed',
@@ -60,7 +60,7 @@ export default function JobStateButton({
       return; // Early return to prevent status change
     }
 
-    console.log('User is NOT deactivated, proceeding with status change');
+    // console.log('User is NOT deactivated, proceeding with status change');
     setSelectedStatus(newStatus);
     if (onStatusChange) {
       onStatusChange(newStatus);

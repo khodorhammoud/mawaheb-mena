@@ -12,7 +12,7 @@ interface JobManagementProps {
 export default function JobManagement({ data, userAccountStatus }: JobManagementProps) {
   const [viewMode, setViewMode] = useState('one');
 
-  console.log('JobManagement: User account status:', userAccountStatus);
+  // console.log('JobManagement: User account status:', userAccountStatus);
 
   // ✅ Group jobs by their statuses
   const groupedJobs = data.reduce(

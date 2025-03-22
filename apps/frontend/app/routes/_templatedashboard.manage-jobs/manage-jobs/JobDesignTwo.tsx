@@ -21,7 +21,7 @@ export default function JobDesignTwo({
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
 }) {
-  console.log('JobDesignTwo: User account status:', userAccountStatus);
+  // console.log('JobDesignTwo: User account status:', userAccountStatus);
 
   const { job } = data;
 
