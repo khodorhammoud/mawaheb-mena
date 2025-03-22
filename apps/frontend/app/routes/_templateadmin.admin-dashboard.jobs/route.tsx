@@ -81,10 +81,10 @@ import { getBasicJobs, getAllApplications } from '~/servers/admin.server';
  */
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // First get jobs with their basic info (moved to admin.server.ts)
+  // Get jobs with their basic info
   const jobs = await getBasicJobs();
 
-  // Then get all applications with freelancer info (also in admin.server.ts)
+  // Get all applications with freelancer info
   const applications = await getAllApplications();
 
   // Format jobs and include their applications
@@ -93,8 +93,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       id: job.jobId,
       title: job.jobTitle,
       budget: job.jobBudget,
-      status: job.jobStatus,
-      createdAt: job.jobCreatedAt,
+      status: job.jobStatus as JobStatus,
+      createdAt:
+        job.jobCreatedAt instanceof Date ? job.jobCreatedAt.toISOString() : job.jobCreatedAt,
       workingHoursPerWeek: job.jobWorkingHours,
       locationPreference: job.jobLocation,
     },
@@ -102,29 +103,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? {
           id: job.employerId,
           user: {
-            firstName: job.employerFirstName,
-            lastName: job.employerLastName,
+            firstName: job.employerFirstName || 'Unknown',
+            lastName: job.employerLastName || 'Employer',
           },
-          accountStatus: job.employerAccountStatus,
+          accountStatus: (job.employerAccountStatus as AccountStatus) || AccountStatus.Draft,
         }
       : null,
     category: job.categoryId
       ? {
           id: job.categoryId,
-          label: job.categoryLabel,
+          label: job.categoryLabel || 'Uncategorized',
         }
       : null,
-    applicationCount: Number(job.applicationCount),
+    applicationCount: Number(job.applicationCount) || 0,
     applications: applications
       .filter(app => app.jobId === job.jobId)
       .map(app => ({
         id: app.id,
-        status: app.status,
-        createdAt: app.createdAt,
+        status: app.status as JobApplicationStatus,
+        createdAt: app.createdAt instanceof Date ? app.createdAt.toISOString() : app.createdAt,
+        matchScore: app.matchScore || 0,
         freelancer: {
           id: app.freelancerId,
-          firstName: app.freelancerFirstName,
-          lastName: app.freelancerLastName,
+          firstName: app.freelancerFirstName || 'Unknown',
+          lastName: app.freelancerLastName || 'Freelancer',
         },
       })),
   }));
@@ -184,6 +186,7 @@ export default function JobsList() {
                     id: app.id,
                     status: app.status as JobApplicationStatus,
                     createdAt: app.createdAt,
+                    matchScore: app.matchScore || 0,
                   },
                   freelancer: {
                     id: app.freelancer.id,
@@ -193,8 +196,22 @@ export default function JobsList() {
                       email: '',
                     },
                   },
+                  employer: job.employer
+                    ? {
+                        id: job.employer.id,
+                        user: {
+                          firstName: job.employer.user.firstName,
+                          lastName: job.employer.user.lastName,
+                          email: '',
+                        },
+                        accountStatus: job.employer.accountStatus,
+                      }
+                    : undefined,
                 }))}
                 showJob={false}
+                showEmployer={true}
+                showEmployerStatus={true}
+                showMatchScore={true}
               />
             </div>
           )}
