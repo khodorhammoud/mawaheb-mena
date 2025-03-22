@@ -18,7 +18,7 @@ export default function JobDesignThree({
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
 }) {
-  console.log('JobDesignThree: User account status:', userAccountStatus);
+  // console.log('JobDesignThree: User account status:', userAccountStatus);
 
   const applicantsPhotos = [
     'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',

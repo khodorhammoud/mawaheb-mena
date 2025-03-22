@@ -14,7 +14,7 @@ interface JobProps {
 export default function Job({ data, viewMode, userAccountStatus }: JobProps) {
   const { job } = data;
 
-  console.log('Job component: User account status:', userAccountStatus);
+  // console.log('Job component: User account status:', userAccountStatus);
 
   // State to manage job status, including "close" as a selectable option
   const [jobStatus, setJobStatus] = useState<JobStatus>(

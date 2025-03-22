@@ -22,7 +22,7 @@ export default function JobDesignOne({
 }) {
   const { job } = data;
 
-  console.log('JobDesignOne: User account status:', userAccountStatus);
+  // console.log('JobDesignOne: User account status:', userAccountStatus);
 
   const formattedDate = parseDate(job.createdAt);
 

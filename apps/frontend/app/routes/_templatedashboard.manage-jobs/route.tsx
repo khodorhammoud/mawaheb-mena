@@ -28,10 +28,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
 
-  console.log('Route loader: User profile data', {
-    accountStatus: profile.account?.accountStatus,
-    employerId,
-  });
+  // console.log('Route loader: User profile data', {
+  //   accountStatus: profile.account?.accountStatus,
+  //   employerId,
+  // });
 
   // For each job, fetch applicants
   const jobsWithApplications = await fetchJobsWithApplications(employerId);
@@ -51,7 +51,7 @@ export default function Layout() {
     userAccountStatus: string;
   }>();
 
-  console.log('Layout component: User account status', loaderData.userAccountStatus);
+  // console.log('Layout component: User account status', loaderData.userAccountStatus);
 
   return (
     <div className="xl:p-8 p-2 mx-2 font-['Switzer-Regular'] w-full">
