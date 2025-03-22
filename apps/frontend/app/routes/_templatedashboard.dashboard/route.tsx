@@ -158,6 +158,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return Response.json({
       accountType,
+      accountStatus: currentProfile.account.accountStatus,
       bioInfo,
       currentProfile: processedProfile,
       about,
@@ -191,8 +192,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 // Layout component
 export default function Layout() {
-  const { accountType } = useLoaderData<{
+  const { accountType, accountStatus } = useLoaderData<{
     accountType: AccountType;
+    accountStatus: string;
   }>();
 
   return (
