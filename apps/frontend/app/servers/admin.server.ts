@@ -1,5 +1,5 @@
-import { eq, aliasedTable, and, desc, sql, count } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
+import { eq, aliasedTable, and, desc, sql, count } from 'drizzle-orm';
+import { db } from '~/db/drizzle/connector';
 import {
   accountsTable,
   UsersTable,
@@ -10,14 +10,9 @@ import {
   jobCategoriesTable,
   skillsTable,
   jobSkillsTable,
-} from "~/db/drizzle/schemas/schema";
-import {
-  AccountType,
-  AccountStatus,
-  JobApplicationStatus,
-  JobStatus,
-} from "~/types/enums";
-import type { Account } from "~/common/admin-pages/tables/AccountsTable";
+} from '~/db/drizzle/schemas/schema';
+import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '~/types/enums';
+import type { Account } from '~/common/admin-pages/tables/AccountsTable';
 import {
   Portfolio,
   Certificate,
@@ -25,8 +20,8 @@ import {
   WorkHistory,
   FreelancerData,
   JobApplication,
-} from "~/common/admin-pages/types";
-import { getApplicationMatchScore } from "~/servers/job.server";
+} from '~/common/admin-pages/types';
+import { getApplicationMatchScore } from '~/servers/job.server';
 
 // Types
 type DbJobApplication = typeof jobApplicationsTable.$inferSelect;
@@ -75,7 +70,7 @@ export async function getFreelancerAccounts(): Promise<Account[]> {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(accountsTable.accountType, AccountType.Freelancer));
 
-  return data.map((row) => ({
+  return data.map(row => ({
     id: row.id,
     account: {
       user: row.user,
@@ -103,7 +98,7 @@ export async function getEmployerAccounts(): Promise<Account[]> {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(accountsTable.accountType, AccountType.Employer));
 
-  return data.map((row) => ({
+  return data.map(row => ({
     id: row.id,
     account: {
       user: row.user,
@@ -119,10 +114,10 @@ export async function getApplications(params: {
   freelancerId?: string;
 }) {
   // Create aliased tables for complex joins
-  const freelancerUser = aliasedTable(UsersTable, "freelancerUser");
-  const freelancerAccount = aliasedTable(accountsTable, "freelancerAccount");
-  const employerUser = aliasedTable(UsersTable, "employerUser");
-  const employerAccount = aliasedTable(accountsTable, "employerAccount");
+  const freelancerUser = aliasedTable(UsersTable, 'freelancerUser');
+  const freelancerAccount = aliasedTable(accountsTable, 'freelancerAccount');
+  const employerUser = aliasedTable(UsersTable, 'employerUser');
+  const employerAccount = aliasedTable(accountsTable, 'employerAccount');
 
   // Build the base query
   const query = db
@@ -157,14 +152,8 @@ export async function getApplications(params: {
     })
     .from(jobApplicationsTable)
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
-    .leftJoin(
-      freelancerAccount,
-      eq(freelancersTable.accountId, freelancerAccount.id)
-    )
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
+    .leftJoin(freelancerAccount, eq(freelancersTable.accountId, freelancerAccount.id))
     .leftJoin(freelancerUser, eq(freelancerAccount.userId, freelancerUser.id))
     .leftJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
     .leftJoin(employerAccount, eq(employersTable.accountId, employerAccount.id))
@@ -175,27 +164,22 @@ export async function getApplications(params: {
   const conditions = [];
 
   if (params.status) {
-    conditions.push(
-      eq(jobApplicationsTable.status, params.status as JobApplicationStatus)
-    );
+    conditions.push(eq(jobApplicationsTable.status, params.status as JobApplicationStatus));
   }
   if (params.employerId) {
     conditions.push(eq(jobsTable.employerId, parseInt(params.employerId)));
   }
   if (params.freelancerId) {
-    conditions.push(
-      eq(jobApplicationsTable.freelancerId, parseInt(params.freelancerId))
-    );
+    conditions.push(eq(jobApplicationsTable.freelancerId, parseInt(params.freelancerId)));
   }
 
   // Apply filters if any
-  const finalQuery =
-    conditions.length > 0 ? query.where(and(...conditions)) : query;
+  const finalQuery = conditions.length > 0 ? query.where(and(...conditions)) : query;
 
   const results = await finalQuery;
 
   // Format dates in the results
-  return results.map((result) => ({
+  return results.map(result => ({
     ...result,
     application: {
       ...result.application,
@@ -247,7 +231,7 @@ export async function getEmployerDetails(employerId: string) {
 
   // Get application counts for each job
   const applicationCounts = await Promise.all(
-    jobs.map(async (job) => {
+    jobs.map(async job => {
       const result = await db
         .select({ count: count() })
         .from(jobApplicationsTable)
@@ -268,10 +252,7 @@ export async function getEmployerDetails(employerId: string) {
 }
 
 // Update employer account status
-export async function updateEmployerAccountStatus(
-  employerId: string,
-  status: AccountStatus
-) {
+export async function updateEmployerAccountStatus(employerId: string, status: AccountStatus) {
   try {
     // Get the account ID for this employer
     const employer = await db
@@ -280,7 +261,7 @@ export async function updateEmployerAccountStatus(
       .where(eq(employersTable.id, parseInt(employerId)));
 
     if (employer.length === 0) {
-      return { success: false, error: "Employer not found" };
+      return { success: false, error: 'Employer not found' };
     }
 
     // Update the account status
@@ -291,8 +272,8 @@ export async function updateEmployerAccountStatus(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating account status:", error);
-    return { success: false, error: "Failed to update account status" };
+    console.error('Error updating account status:', error);
+    return { success: false, error: 'Failed to update account status' };
   }
 }
 
@@ -333,10 +314,7 @@ export async function getEmployerApplications(employerId: string) {
     })
     .from(jobApplicationsTable)
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(jobsTable.employerId, parseInt(employerId)));
@@ -348,8 +326,7 @@ export async function getEmployerApplications(employerId: string) {
         id: app.job_applications.id,
         status: app.job_applications.status as JobApplicationStatus,
         createdAt:
-          app.job_applications.createdAt &&
-          typeof app.job_applications.createdAt === "object"
+          app.job_applications.createdAt && typeof app.job_applications.createdAt === 'object'
             ? (app.job_applications.createdAt as Date).toISOString()
             : app.job_applications.createdAt,
       },
@@ -360,9 +337,9 @@ export async function getEmployerApplications(employerId: string) {
       freelancer: {
         id: app.freelancers.id,
         user: {
-          firstName: app.users.firstName || "",
-          lastName: app.users.lastName || "",
-          email: app.users.email || "",
+          firstName: app.users.firstName || '',
+          lastName: app.users.lastName || '',
+          email: app.users.email || '',
         },
         account: {
           id: app.accounts.id,
@@ -375,10 +352,7 @@ export async function getEmployerApplications(employerId: string) {
   // Calculate match scores for each application
   for (const app of mappedApplications) {
     try {
-      const matchScore = await getApplicationMatchScore(
-        app.job.id,
-        app.freelancer.id
-      );
+      const matchScore = await getApplicationMatchScore(app.job.id, app.freelancer.id);
       app.application.matchScore = matchScore;
     } catch (error) {
       console.error(`Error calculating match score: ${error}`);
@@ -401,10 +375,7 @@ export async function getJobApplications(employerId: string, jobId: string) {
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.jobId, parseInt(jobId)))
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
@@ -412,12 +383,7 @@ export async function getJobApplications(employerId: string, jobId: string) {
   const jobDetails = await db
     .select()
     .from(jobsTable)
-    .where(
-      and(
-        eq(jobsTable.id, parseInt(jobId)),
-        eq(jobsTable.employerId, parseInt(employerId))
-      )
-    );
+    .where(and(eq(jobsTable.id, parseInt(jobId)), eq(jobsTable.employerId, parseInt(employerId))));
 
   if (jobDetails.length === 0) {
     return null;
@@ -439,9 +405,9 @@ export async function getJobApplications(employerId: string, jobId: string) {
         freelancer: {
           id: app.freelancers.id,
           user: {
-            firstName: app.users.firstName || "",
-            lastName: app.users.lastName || "",
-            email: app.users.email || "",
+            firstName: app.users.firstName || '',
+            lastName: app.users.lastName || '',
+            email: app.users.email || '',
           },
           account: {
             id: app.accounts.id,
@@ -454,22 +420,19 @@ export async function getJobApplications(employerId: string, jobId: string) {
 }
 
 /** Helper to safely parse JSON from DB fields */
-export function safeParseJSON<T>(
-  jsonString: string | null | undefined,
-  defaultValue: T
-): T {
+export function safeParseJSON<T>(jsonString: string | null | undefined, defaultValue: T): T {
   if (!jsonString) return defaultValue;
 
   // If it's already an object or array, return it directly
-  if (typeof jsonString === "object") {
+  if (typeof jsonString === 'object') {
     return jsonString as unknown as T;
   }
 
   try {
     return JSON.parse(jsonString) as T;
   } catch (error) {
-    console.error("Error parsing JSON:", error);
-    console.error("Failed to parse:", jsonString);
+    console.error('Error parsing JSON:', error);
+    console.error('Failed to parse:', jsonString);
     return defaultValue;
   }
 }
@@ -514,12 +477,9 @@ export async function getFreelancerApplications(freelancerId: number) {
 
   // Calculate match scores for each application
   const appsWithScores = await Promise.all(
-    apps.map(async (app) => {
+    apps.map(async app => {
       try {
-        const matchScore = await getApplicationMatchScore(
-          app.jobId,
-          freelancerId
-        );
+        const matchScore = await getApplicationMatchScore(app.jobId, freelancerId);
         return {
           ...app,
           matchScore,
@@ -548,7 +508,7 @@ export async function updateFreelancerAccountStatus(
     .where(eq(freelancersTable.id, freelancerId));
 
   if (freelancer.length === 0) {
-    return { success: false, error: "Freelancer not found" };
+    return { success: false, error: 'Freelancer not found' };
   }
 
   // Update the account status
@@ -595,10 +555,7 @@ export async function getJobDetails(jobId: number) {
     .leftJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
     .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .leftJoin(
-      jobCategoriesTable,
-      eq(jobsTable.jobCategoryId, jobCategoriesTable.id)
-    );
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id));
 
   // Return the first row or `null` if none found
   if (jobDetails.length === 0) {
@@ -607,13 +564,11 @@ export async function getJobDetails(jobId: number) {
 
   // Format dates before returning
   const result = jobDetails[0];
-  if (result.job.createdAt && typeof result.job.createdAt === "object") {
+  if (result.job.createdAt && typeof result.job.createdAt === 'object') {
     // Use type assertion to handle the mixed type
     result.job = {
       ...result.job,
-      createdAt: (
-        result.job.createdAt as Date
-      ).toISOString() as unknown as Date,
+      createdAt: (result.job.createdAt as Date).toISOString() as unknown as Date,
     };
   }
 
@@ -661,29 +616,22 @@ export async function getJobApplicationsBasic(jobId: number) {
     })
     .from(jobApplicationsTable)
     .where(eq(jobApplicationsTable.jobId, jobId))
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
   // Calculate match scores for each application
   const applicationsWithScores = await Promise.all(
-    applications.map(async (app) => {
+    applications.map(async app => {
       try {
-        const matchScore = await getApplicationMatchScore(
-          jobId,
-          app.freelancer.id
-        );
+        const matchScore = await getApplicationMatchScore(jobId, app.freelancer.id);
         return {
           ...app,
           application: {
             ...app.application,
             matchScore,
             createdAt:
-              app.application.createdAt &&
-              typeof app.application.createdAt === "object"
+              app.application.createdAt && typeof app.application.createdAt === 'object'
                 ? (app.application.createdAt as Date).toISOString()
                 : app.application.createdAt,
           },
@@ -695,8 +643,7 @@ export async function getJobApplicationsBasic(jobId: number) {
           application: {
             ...app.application,
             createdAt:
-              app.application.createdAt &&
-              typeof app.application.createdAt === "object"
+              app.application.createdAt && typeof app.application.createdAt === 'object'
                 ? (app.application.createdAt as Date).toISOString()
                 : app.application.createdAt,
           },
@@ -732,6 +679,7 @@ export async function getBasicJobs() {
       employerId: employersTable.id,
       employerFirstName: UsersTable.firstName,
       employerLastName: UsersTable.lastName,
+      employerAccountStatus: accountsTable.accountStatus,
       categoryId: jobCategoriesTable.id,
       categoryLabel: jobCategoriesTable.label,
       applicationCount: sql<number>`count(${jobApplicationsTable.id})::int`,
@@ -740,14 +688,8 @@ export async function getBasicJobs() {
     .leftJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
     .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
-    .leftJoin(
-      jobCategoriesTable,
-      eq(jobsTable.jobCategoryId, jobCategoriesTable.id)
-    )
-    .leftJoin(
-      jobApplicationsTable,
-      eq(jobsTable.id, jobApplicationsTable.jobId)
-    )
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id))
+    .leftJoin(jobApplicationsTable, eq(jobsTable.id, jobApplicationsTable.jobId))
     .groupBy(
       jobsTable.id,
       jobsTable.title,
@@ -759,6 +701,7 @@ export async function getBasicJobs() {
       employersTable.id,
       UsersTable.firstName,
       UsersTable.lastName,
+      accountsTable.accountStatus,
       jobCategoriesTable.id,
       jobCategoriesTable.label
     )
@@ -781,10 +724,7 @@ export async function getAllApplications() {
       freelancerLastName: UsersTable.lastName,
     })
     .from(jobApplicationsTable)
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    )
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
     .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
