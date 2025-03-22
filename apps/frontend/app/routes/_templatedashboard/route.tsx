@@ -23,6 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     isOnboarded: profile?.account?.user?.isOnboarded,
     profile,
     is_published_or_deactivated,
+    accountStatus: profile?.account?.accountStatus,
   });
 }
 export default function Layout() {
