@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { Link, useLoaderData, Outlet } from "@remix-run/react";
+import { LoaderFunctionArgs, json } from '@remix-run/node';
+import { Link, useLoaderData, Outlet } from '@remix-run/react';
 // import { eq, sql } from "drizzle-orm";
 // import { db } from "~/db/drizzle/connector";
 // import {
@@ -12,10 +12,10 @@ import { Link, useLoaderData, Outlet } from "@remix-run/react";
 //   freelancersTable,
 // } from "~/db/drizzle/schemas/schema";
 // import { ChevronRightIcon } from "@heroicons/react/24/solid";
-import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
-import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
-import { JobStatus, JobApplicationStatus } from "~/types/enums";
-import { getBasicJobs, getAllApplications } from "~/servers/admin.server";
+import { JobsTable } from '~/common/admin-pages/tables/JobsTable';
+import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
+import { JobStatus, JobApplicationStatus, AccountStatus } from '~/types/enums';
+import { getBasicJobs, getAllApplications } from '~/servers/admin.server';
 
 /* function ApplicationsTable({ applications }: { applications: any[] }) {
   if (applications.length === 0) return null;
@@ -88,7 +88,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const applications = await getAllApplications();
 
   // Format jobs and include their applications
-  const formattedJobs = jobs.map((job) => ({
+  const formattedJobs = jobs.map(job => ({
     job: {
       id: job.jobId,
       title: job.jobTitle,
@@ -105,6 +105,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             firstName: job.employerFirstName,
             lastName: job.employerLastName,
           },
+          accountStatus: job.employerAccountStatus,
         }
       : null,
     category: job.categoryId
@@ -115,8 +116,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : null,
     applicationCount: Number(job.applicationCount),
     applications: applications
-      .filter((app) => app.jobId === job.jobId)
-      .map((app) => ({
+      .filter(app => app.jobId === job.jobId)
+      .map(app => ({
         id: app.id,
         status: app.status,
         createdAt: app.createdAt,
@@ -142,7 +143,7 @@ export default function JobsList() {
 
       <Outlet />
 
-      {jobs.map((job) => (
+      {jobs.map(job => (
         <div
           key={job.job.id}
           className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
@@ -161,6 +162,7 @@ export default function JobsList() {
                       id: job.employer.id,
                       firstName: job.employer.user.firstName,
                       lastName: job.employer.user.lastName,
+                      accountStatus: job.employer.accountStatus,
                     }
                   : undefined,
                 category: job.category
@@ -175,11 +177,9 @@ export default function JobsList() {
 
           {job.applications.length > 0 && (
             <div className="bg-gray-50 pt-2">
-              <div className="px-6 py-2 text-sm font-medium text-gray-700">
-                Applications
-              </div>
+              <div className="px-6 py-2 text-sm font-medium text-gray-700">Applications</div>
               <ApplicationsTable
-                applications={job.applications.map((app) => ({
+                applications={job.applications.map(app => ({
                   application: {
                     id: app.id,
                     status: app.status as JobApplicationStatus,
@@ -190,7 +190,7 @@ export default function JobsList() {
                     user: {
                       firstName: app.freelancer.firstName,
                       lastName: app.freelancer.lastName,
-                      email: "",
+                      email: '',
                     },
                   },
                 }))}
