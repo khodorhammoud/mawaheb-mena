@@ -1,13 +1,7 @@
-import {
-  forwardRef,
-  useState,
-  useRef,
-  useImperativeHandle,
-  useEffect,
-} from "react";
-import { useFetcher } from "@remix-run/react";
+import { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import { useFetcher } from '@remix-run/react';
 
-import { Card } from "~/common/header/card";
+import { Card } from '~/common/header/card';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +10,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { IoPencilSharp } from "react-icons/io5";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { IoPencilSharp } from 'react-icons/io5';
 
 // Hooks used by the second snippet
-import { useFormState } from "./hooks/useFormState";
-import { useFormSubmission } from "./hooks/useFormSubmission";
+import { useFormState } from './hooks/useFormState';
+import { useFormSubmission } from './hooks/useFormSubmission';
 
 // The shared FormContent + FieldTemplates that both snippets rely on
-import FormContent, { getFormData } from "./formFields/FormContent";
-import { FieldTemplates } from "./formFields/fieldTemplates";
+import FormContent, { getFormData } from './formFields/FormContent';
+import { FieldTemplates } from './formFields/fieldTemplates';
 
 // Types
 import type {
@@ -34,467 +28,307 @@ import type {
   RepeatableInputType,
   GeneralizableFormCardProps,
   FormType,
-} from "./types";
+} from './types';
 
 /* =====================================================================
  *  1) The forwardRef-based component for "file" formType ONLY
  * =====================================================================
  */
-const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
-  (props, ref) => {
-    const {
-      cardTitle,
-      cardSubtitle,
-      popupTitle,
-      triggerLabel,
-      formType,
-      formName,
-      fieldName,
-      value,
-      acceptedFileTypes,
-      multiple,
-      editable = true,
-      showStatusMessage = true,
-      showLoadingOnSubmit = false,
-      formRef,
-      // ... any other props you may want to spread
-    } = props;
+const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) => {
+  const {
+    cardTitle,
+    cardSubtitle,
+    popupTitle,
+    triggerLabel,
+    formType,
+    formName,
+    fieldName,
+    value,
+    acceptedFileTypes,
+    multiple,
+    editable = true,
+    showStatusMessage = true,
+    showLoadingOnSubmit = false,
+    formRef,
+  } = props;
 
-    // Since we only want to handle "file" here, we ignore "repeatable" logic:
-    // We'll keep some local states and references:
-    const [inputValue, setInputValue] = useState<any>(value || null);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [inputValue, setInputValue] = useState<any>(value || null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
 
-    const formContentRef = useRef<any>(null);
-    const fetcher = useFetcher();
+  const formContentRef = useRef<any>(null);
+  const fetcher = useFetcher();
 
-    console.log(
-      "DEBUG - FileFormCard rendering with value:",
-      value && typeof value === "object" && "attachments" in value
-        ? JSON.stringify((value as any).attachments, null, 2)
-        : "null"
-    );
-
-    // Update the parent ref whenever selectedFiles changes
-    useEffect(() => {
-      if (formRef && formRef.current) {
-        formRef.current.filesSelected = selectedFiles;
-        if (typeof formRef.current.forceUpdate === "function") {
-          formRef.current.forceUpdate();
-        }
-      }
-    }, [selectedFiles, formRef]);
-
-    // Expose methods to parent via ref (if parent needs them)
-    useImperativeHandle(ref, () => {
-      return {
-        getFormData: (form: HTMLFormElement) =>
-          getFormData(formContentRef.current, form),
-        filesSelected: selectedFiles,
-        setFilesSelected: (files: File[]) => {
-          setSelectedFiles(files);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected(files);
-          }
-        },
-        // Add a method to clear files after submission
-        clearFiles: () => {
-          setSelectedFiles([]);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected([]);
-          }
-        },
-      };
-    });
-
-    // Handle the actual submit
-    const handleSubmit = (e: React.FormEvent, formData: FormData) => {
-      e.preventDefault();
-
-      // For identification pages, just close the dialog without submitting
+  // Load existing files from the server
+  useEffect(() => {
+    if (value && typeof value === 'object' && 'attachments' in value) {
+      const attachments = (value as any).attachments;
       if (
-        formName === "employer-identification" ||
-        formName === "freelancer-identification"
+        attachments &&
+        typeof attachments === 'object' &&
+        fieldName in attachments &&
+        Array.isArray(attachments[fieldName]) &&
+        attachments[fieldName].length > 0
       ) {
-        // Extract files from the form data
-        const filesFromForm = formData.getAll(fieldName);
-
-        // Filter to ensure we only have File objects
-        const validFiles = filesFromForm.filter(
-          (file): file is File => file instanceof File
-        );
-
-        // Store the files in state and in the formContentRef
-        if (validFiles.length > 0) {
-          // Get existing files
-          const existingFiles = [...selectedFiles];
-
-          // Add new files (avoiding duplicates)
-          const newFiles = validFiles.filter(
-            (newFile) =>
-              !existingFiles.some(
-                (existingFile) => existingFile.name === newFile.name
-              )
-          );
-
-          // Update the filesSelected array
-          if (newFiles.length > 0) {
-            const updatedFiles = [...existingFiles, ...newFiles];
-            setSelectedFiles(updatedFiles);
-
-            if (formContentRef.current) {
-              formContentRef.current.setFilesSelected(updatedFiles);
-            }
-          }
-        }
-
-        // Close the dialog
-        setDialogOpen(false);
-        return;
-      }
-
-      // For other form types, continue with the normal submission
-      fetcher.submit(formData, {
-        method: "post",
-        encType: "multipart/form-data",
-      });
-    };
-
-    // Initialize from existing files in value on component mount
-    useEffect(() => {
-      // Only run this once on mount, when the value is set but we don't have any files yet
-      if (value && typeof value === "object" && selectedFiles.length === 0) {
-        console.log("DEBUG - Initializing files from value on mount");
-
-        if ("attachments" in value) {
-          const attachments = (value as any).attachments;
-
-          if (
-            attachments &&
-            typeof attachments === "object" &&
-            fieldName in attachments &&
-            Array.isArray(attachments[fieldName]) &&
-            attachments[fieldName].length > 0
-          ) {
-            console.log(
-              "DEBUG - Found attachments for",
-              fieldName,
-              ":",
-              attachments[fieldName].length,
-              "files"
-            );
-
-            // Create File-like objects for display
-            const fileObjects = attachments[fieldName]
-              .map((fileInfo: any) => {
-                try {
-                  // Create a File object with the actual size from the server
-                  const file = new File(
-                    [
-                      // Create a blob with the actual size if available
-                      new Blob(
-                        // Use a larger buffer for the file content to ensure size is preserved
-                        [
-                          new Uint8Array(
-                            new ArrayBuffer(fileInfo.size || 143 * 1024)
-                          ).fill(1),
-                        ],
-                        { type: fileInfo.type || "application/octet-stream" }
-                      ),
-                    ],
-                    fileInfo.name || "unknown-file.pdf",
-                    {
-                      type: fileInfo.type || "application/octet-stream",
-                      lastModified: fileInfo.lastModified || Date.now(),
-                    }
-                  );
-
-                  // Add serverId for tracking if it exists
-                  if (fileInfo.serverId) {
-                    Object.defineProperty(file, "serverId", {
-                      value: fileInfo.serverId,
-                      writable: true,
-                      enumerable: true,
-                    });
-                  }
-
-                  Object.defineProperty(file, "isServerFile", {
-                    value: true,
-                    writable: true,
-                    enumerable: true,
-                  });
-
-                  return file;
-                } catch (e) {
-                  console.error("Error creating File object:", e, fileInfo);
-                  return null;
+        const fileObjects = attachments[fieldName]
+          .map((fileInfo: any) => {
+            try {
+              const file = new File(
+                [
+                  new Blob([new Uint8Array(new ArrayBuffer(fileInfo.size || 143 * 1024)).fill(1)], {
+                    type: fileInfo.type || 'application/octet-stream',
+                  }),
+                ],
+                fileInfo.name || 'unknown-file.pdf',
+                {
+                  type: fileInfo.type || 'application/octet-stream',
+                  lastModified: fileInfo.lastModified || Date.now(),
                 }
-              })
-              .filter(Boolean);
-
-            if (fileObjects.length > 0) {
-              console.log(
-                "DEBUG - Created",
-                fileObjects.length,
-                "File objects from attachments"
               );
-              setSelectedFiles(fileObjects);
-              if (formContentRef.current) {
-                formContentRef.current.setFilesSelected(fileObjects);
+
+              // Add serverId for tracking
+              if (fileInfo.serverId) {
+                Object.defineProperty(file, 'serverId', {
+                  value: fileInfo.serverId,
+                  writable: true,
+                  enumerable: true,
+                });
               }
+
+              // Mark as server file
+              Object.defineProperty(file, 'isServerFile', {
+                value: true,
+                writable: true,
+                enumerable: true,
+              });
+
+              return file;
+            } catch (e) {
+              console.error('Error creating File object:', e, fileInfo);
+              return null;
             }
+          })
+          .filter(Boolean);
+
+        if (fileObjects.length > 0) {
+          setSelectedFiles(fileObjects);
+          if (formContentRef.current) {
+            formContentRef.current.setFilesSelected(fileObjects);
           }
         }
       }
-    }, [value, fieldName]); // Only re-run if value or fieldName changes
+    }
+  }, [value, fieldName]);
 
-    // Keep the dialog effect separate
-    useEffect(() => {
-      if (dialogOpen && formContentRef.current) {
-        // When dialog opens, sync the form content ref with our state
-        formContentRef.current.setFilesSelected(selectedFiles);
+  // Load filesToDelete from localStorage on mount
+  useEffect(() => {
+    const storedFilesToDelete = localStorage.getItem(`${fieldName}-files-to-delete`);
+    if (storedFilesToDelete) {
+      try {
+        const parsedFilesToDelete = JSON.parse(storedFilesToDelete);
+        if (Array.isArray(parsedFilesToDelete) && parsedFilesToDelete.length > 0) {
+          // console.log('DEBUG - Loading filesToDelete from localStorage:', parsedFilesToDelete);
+          setFilesToDelete(parsedFilesToDelete);
+        }
+      } catch (error) {
+        console.error('DEBUG - Error loading filesToDelete from localStorage:', error);
       }
-    }, [dialogOpen, selectedFiles]);
+    }
+  }, [fieldName]);
 
-    // Decide if the card is "filled" or "empty"
-    const isCardFilled = (() => {
-      if (value == null) return false;
-
-      // If it's already a File object
-      if (value instanceof File) {
-        return true;
+  // Update the parent ref whenever selectedFiles or filesToDelete changes
+  useEffect(() => {
+    if (formRef && formRef.current) {
+      formRef.current.filesSelected = selectedFiles;
+      formRef.current.filesToDelete = filesToDelete;
+      if (typeof formRef.current.forceUpdate === 'function') {
+        formRef.current.forceUpdate();
       }
+    }
+  }, [selectedFiles, filesToDelete, formRef]);
 
-      // Handle server-side file data: e.g., attachments
-      if (formType === "file" && typeof value === "object" && value !== null) {
-        // Check attachments format
-        if ("attachments" in (value as object)) {
-          const attachments = (value as any).attachments;
-          if (attachments && typeof attachments === "object") {
-            // Check if any attachment type has files
-            if (fieldName in attachments) {
-              return (
-                Array.isArray(attachments[fieldName]) &&
-                attachments[fieldName].length > 0
-              );
-            }
-            return Object.values(attachments).some(
-              (files: any) => Array.isArray(files) && files.length > 0
-            );
+  // Handle dialog close
+  const handleDialogClose = () => {
+    // console.log('DEBUG - handleDialogClose called');
+    setDialogOpen(false);
+    // We no longer clear filesToDelete here, as we want to keep track of files to delete until form submission
+  };
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => {
+    return {
+      getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
+      filesSelected: selectedFiles,
+      filesToDelete: filesToDelete,
+      setFilesSelected: (files: File[]) => {
+        setSelectedFiles(files);
+        if (formContentRef.current) {
+          formContentRef.current.setFilesSelected(files);
+        }
+      },
+      clearFiles: () => {
+        setSelectedFiles([]);
+        setFilesToDelete([]);
+        // Clear localStorage when files are actually cleared (after successful submission)
+        try {
+          localStorage.removeItem(`${fieldName}-files-to-delete`);
+          // console.log('DEBUG - Cleared filesToDelete from localStorage after submission');
+        } catch (error) {
+          console.error('DEBUG - Error clearing filesToDelete from localStorage:', error);
+        }
+        if (formContentRef.current) {
+          formContentRef.current.setFilesSelected([]);
+        }
+      },
+    };
+  });
+
+  // Handle file selection
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setSelectedFiles(prevFiles => {
+        const updatedFiles = [...prevFiles];
+        newFiles.forEach(file => {
+          const existingIndex = updatedFiles.findIndex(f => f.name === file.name);
+          if (existingIndex >= 0) {
+            updatedFiles[existingIndex] = file;
+          } else {
+            updatedFiles.push(file);
           }
+        });
+        return updatedFiles;
+      });
+    }
+  };
+
+  // Handle file removal
+  const handleFileRemove = (index: number) => {
+    // console.log('DEBUG - handleFileRemove called with index:', index);
+    const fileToRemove = selectedFiles[index];
+    // console.log('DEBUG - File to remove:', {
+    //   file: fileToRemove,
+    //   name: fileToRemove.name,
+    //   isServerFile: (fileToRemove as any).isServerFile,
+    //   serverId: (fileToRemove as any).serverId,
+    //   properties: Object.keys(fileToRemove),
+    // });
+
+    // If it's a server file, add its ID to filesToDelete
+    if ((fileToRemove as any).isServerFile && (fileToRemove as any).serverId) {
+      const serverId = (fileToRemove as any).serverId;
+      // console.log('DEBUG - Adding server ID to filesToDelete:', serverId);
+      setFilesToDelete(prev => {
+        const newFilesToDelete = [...prev, serverId];
+        // console.log('DEBUG - Updated filesToDelete:', newFilesToDelete);
+
+        // Store in localStorage
+        try {
+          localStorage.setItem(`${fieldName}-files-to-delete`, JSON.stringify(newFilesToDelete));
+          // console.log('DEBUG - Saved filesToDelete to localStorage');
+        } catch (error) {
+          console.error('DEBUG - Error saving filesToDelete to localStorage:', error);
         }
 
-        // Check direct field format
-        if (fieldName in value) {
-          return Array.isArray(value[fieldName]) && value[fieldName].length > 0;
-        }
-      }
+        return newFilesToDelete;
+      });
+    }
 
-      return Boolean(value);
-    })();
+    setSelectedFiles(prevFiles => {
+      const newFiles = prevFiles.filter((_, i) => i !== index);
+      // console.log('DEBUG - Updated selectedFiles:', newFiles);
+      return newFiles;
+    });
+  };
 
-    // We only need a file template:
-    const templateKey = "file";
-    const Template = FieldTemplates[templateKey];
-    if (!Template) return null;
-
-    const TemplateComponent = isCardFilled
-      ? Template.FilledState
-      : Template.EmptyState;
-
-    // Prepare value for the template
-    const prepareValueForRendering = () => {
-      if (value === null || value === undefined) {
-        return "" as FormStateType;
-      }
-      if (value instanceof File) {
-        return `File: ${value.name}` as FormStateType;
-      }
-      // Handle server-side file data
-      if (
-        formType === "file" &&
-        typeof value === "object" &&
-        value !== null &&
-        "attachments" in (value as object)
-      ) {
-        const attachments = (value as any).attachments;
-        if (
-          attachments &&
-          typeof attachments === "object" &&
-          fieldName in attachments
-        ) {
-          return attachments[fieldName];
-        }
-      }
-
-      // Handle identificationData format
-      if (typeof value === "object" && value !== null && fieldName in value) {
-        return value[fieldName];
-      }
-
-      // fallback
-      return value as FormStateType;
-    };
-
-    // Get file information to display
-    const getFileList = () => {
-      const files = [];
-
-      // Check if we have attachments in the value
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        "attachments" in (value as object)
-      ) {
-        const attachments = (value as any).attachments;
-        if (
-          attachments &&
-          typeof attachments === "object" &&
-          fieldName in attachments &&
-          Array.isArray(attachments[fieldName])
-        ) {
-          return attachments[fieldName];
-        }
-      }
-
-      // Check if we have direct file array in the value
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        fieldName in value &&
-        Array.isArray(value[fieldName])
-      ) {
-        return value[fieldName];
-      }
-
-      return files;
-    };
-
-    const fileList = getFileList();
-    const areExistingFiles = fileList && fileList.length > 0;
-
-    // Decide if the card is "filled" or "empty"
-    const hasFiles = selectedFiles.length > 0;
-    const displayAsFilled = hasFiles || isCardFilled;
-    const displayFilesFromServer = areExistingFiles || hasFiles;
+  // Render selected files
+  const renderSelectedFiles = () => {
+    if (selectedFiles.length === 0) return null;
 
     return (
-      <Card
-        className={`border-2 rounded-xl flex flex-col h-full ${
-          displayAsFilled
-            ? "bg-[#F1F0F3]"
-            : "bg-gray-100 border-gray-300 border-dashed"
-        }`}
-      >
-        <div className={`flex flex-col relative pt-8 pb-6 pl-7 pr-10`}>
-          <h3 className="text-lg font-semibold">{cardTitle}</h3>
-          <p className="text-sm text-gray-600">{cardSubtitle}</p>
-
-          {/* Display the file names when there are files */}
-          {selectedFiles.length > 0 && (
-            <div className="mt-3 mb-2">
-              <p className="text-sm font-medium text-gray-700">
-                Uploaded files:
-              </p>
-              <ul className="list-disc pl-5 mt-1">
-                {selectedFiles.map((file, index) => (
-                  <li key={index} className="text-sm text-gray-600">
-                    {file.name}
-                    <span className="text-xs text-gray-500 ml-1">
-                      ({Math.round((file.size || 0) / 1024)} KB)
-                    </span>
-                    {/* Show an indicator for server files */}
-                    {(file as any).isServerFile && (
-                      <span className="ml-1 text-xs text-blue-500">
-                        (from database)
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {editable && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant={displayAsFilled ? "outline" : "default"}
-                  size="sm"
-                  className={`absolute top-4 right-4 ${
-                    displayAsFilled
-                      ? "bg-white hover:bg-gray-50"
-                      : "bg-blue-500 hover:bg-blue-700 text-white"
-                  }`}
-                >
-                  {displayAsFilled ? (
-                    <IoPencilSharp className="h-4 w-4" />
-                  ) : (
-                    triggerLabel
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{popupTitle}</DialogTitle>
-                </DialogHeader>
-                <FormContent
-                  ref={formContentRef}
-                  formType="file"
-                  formName={formName}
-                  fieldName={fieldName}
-                  onSubmit={handleSubmit}
-                  acceptedFileTypes={acceptedFileTypes}
-                  multiple={multiple}
-                  fetcher={fetcher}
-                  showStatusMessage={showStatusMessage}
-                  showLoadingOnSubmit={showLoadingOnSubmit}
-                  formState={{
-                    inputValue: null,
-                    setInputValue: () => {},
-                    repeatableInputValues: [],
-                    repeatableInputFiles: [],
-                    handleAddRepeatableField: () => {},
-                    handleRemoveRepeatableField: () => {},
-                    handleDataChange: () => {},
-                    expandedIndex: null,
-                    setExpandedIndex: () => {},
-                  }}
-                  cardTitle={cardTitle}
-                  popupTitle={popupTitle}
-                  triggerLabel={triggerLabel}
-                />
-                <DialogFooter className="sm:justify-start">
-                  <DialogClose asChild>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setDialogOpen(false)}
-                    >
-                      Close
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-
-        <div className="text-gray-700 px-7 pb-4">
-          <p className="text-sm text-gray-500">
-            {selectedFiles.length > 0 ? selectedFiles.length + " " : "no "}
-            {selectedFiles.length > 1 ? "files " : "file "}
-            selected
-          </p>
-        </div>
-      </Card>
+      <div className="mt-4">
+        <h3 className="text-sm font-medium text-gray-700">Selected files:</h3>
+        <ul className="mt-2 divide-y divide-gray-200">
+          {selectedFiles.map((file, index) => (
+            <li key={index} className="py-2 flex justify-between items-center">
+              <span className="text-sm text-gray-600">
+                {file.name} ({Math.round(file.size / 1024)} KB)
+                {(file as any).isServerFile && (
+                  <span className="ml-2 text-xs text-blue-500">(from database)</span>
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleFileRemove(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     );
-  }
-);
+  };
 
-FileFormCard.displayName = "FileFormCard";
+  return (
+    <Card className="w-full">
+      <div className="px-7 py-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">{cardTitle}</h3>
+            {cardSubtitle && <p className="text-sm text-gray-500">{cardSubtitle}</p>}
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                {triggerLabel}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{popupTitle}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <input
+                  type="file"
+                  accept={acceptedFileTypes}
+                  multiple={multiple}
+                  onChange={handleFileSelection}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                />
+                {renderSelectedFiles()}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary" onClick={handleDialogClose}>
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <div className="text-gray-700 px-7 pb-4">
+        <p className="text-sm text-gray-500">
+          {selectedFiles.length > 0 ? selectedFiles.length + ' ' : 'no '}
+          {selectedFiles.length > 1 ? 'files ' : 'file '}
+          selected
+        </p>
+      </div>
+    </Card>
+  );
+});
+
+FileFormCard.displayName = 'FileFormCard';
 
 /* =====================================================================
  *  2) The default component for ALL other form types (non-file)
@@ -508,84 +342,123 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
     showStatusMessage: localShowStatusMessage,
   } = useFormSubmission();
   const formState = useFormState(props.formType, props.fieldName);
-  const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
 
-  // Get values from formState
+  // Dialog open state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Reset formSubmitted when dialog opens
+  useEffect(() => {
+    if (dialogOpen) {
+      setFormSubmitted(false);
+    }
+  }, [dialogOpen]);
+
+  // Use the provided fetcher or the local one
+  const fetcher = props.fetcher || localFetcher;
+
+  // Custom submit that closes the dialog after submission
+  const handleSubmit = (e: React.FormEvent, formData: FormData) => {
+    localHandleSubmit(e, formData);
+    setFormSubmitted(true);
+
+    // close dialog after successful submission
+    setTimeout(() => {
+      if (fetcher.state !== 'submitting') {
+        setDialogOpen(false);
+      }
+    }, 500);
+  };
+
+  const showStatusMessage = localShowStatusMessage;
+
+  // Extract from formState
   const { inputValue, repeatableInputValues } = formState;
 
-  // console.log("🛠️ [GeneralizableFormCard] inputValue:", inputValue);
-
-  // Fix: Ensure inputValue does not overwrite props.value with incorrect data
+  // Make sure we don't overwrite props.value incorrectly
   const value =
-    props.formType === "repeatable"
+    props.formType === 'repeatable'
       ? Array.isArray(repeatableInputValues) && repeatableInputValues.length > 0
         ? repeatableInputValues
         : Array.isArray(props.value)
           ? props.value
           : []
-      : inputValue && inputValue !== "this is the about me section..."
+      : inputValue && inputValue !== 'this is the about me section...'
         ? inputValue
         : props.value;
 
-  const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
+  // Decide if the card is "filled" or "empty" (excluding file logic here)
+  const isFilled = (() => {
+    if (value === null || value === undefined) {
+      return false;
+    }
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return Boolean(value);
+  })();
+
+  // Choose the correct template
   const templateKey =
-    props.formType === "repeatable"
-      ? `repeatable_${props.repeatableFieldName}`
-      : props.formType;
+    props.formType === 'repeatable' ? `repeatable_${props.repeatableFieldName}` : props.formType;
 
   const Template = FieldTemplates[templateKey];
   if (!Template) return null;
 
-  const TemplateComponent = isFilled
-    ? Template.FilledState
-    : Template.EmptyState;
+  const TemplateComponent = isFilled ? Template.FilledState : Template.EmptyState;
 
-  // console.log("🔍 [GeneralizableFormCard] Props on First Render:", props);
-  // console.log(
-  //   "🚀 [GeneralizableFormCard] Before Passing to TemplateComponent:",
-  //   {
-  //     fieldName: props.fieldName,
-  //     value,
-  //     type: typeof value,
-  //     isArray: Array.isArray(value),
-  //   }
-  // );
+  // Prepare for rendering
+  const prepareValueForRendering = () => {
+    if (value === null || value === undefined) {
+      return '' as FormStateType;
+    }
+    if (Array.isArray(value)) {
+      return value as RepeatableInputType[];
+    }
+    // fallback
+    return value as FormStateType;
+  };
+
+  // Handle button click to open the dialog
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDialogOpen(true);
+  };
 
   return (
     <Card
       className={`border-2 rounded-xl flex flex-col h-full ${
-        isFilled ? "bg-[#F1F0F3]" : "bg-gray-100 border-gray-300 border-dashed"
+        isFilled ? 'bg-[#F1F0F3]' : 'bg-gray-100 border-gray-300 border-dashed'
       }`}
     >
       <div
         className={`flex flex-col relative ${
-          props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"
+          props.formType === 'video' && value ? '' : 'pt-8 pb-6 pl-7 pr-10'
         }`}
       >
         <TemplateComponent
-          value={
-            Array.isArray(value)
-              ? (value as RepeatableInputType[])
-              : (value as FormStateType)
-          }
+          value={prepareValueForRendering()}
           fieldName={props.fieldName}
           cardTitle={props.cardTitle}
           cardSubtitle={props.cardSubtitle}
         />
         {props.editable && (
-          <Dialog>
-            <DialogTrigger>
-              {isFilled ? (
-                <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
-              ) : (
-                <Button
-                  variant="outline"
-                  className="text-primaryColor border-gray-300"
-                >
-                  {props.triggerIcon} {props.triggerLabel}
-                </Button>
-              )}
-            </DialogTrigger>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            {isFilled ? (
+              <button type="button" className="absolute top-3 right-3" onClick={handleButtonClick}>
+                <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
+              </button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-primaryColor border-gray-300"
+                onClick={handleButtonClick}
+              >
+                {props.triggerIcon} {props.triggerLabel}
+              </Button>
+            )}
             <DialogContent>
               <DialogTitle>{props.popupTitle}</DialogTitle>
               <FormContent
@@ -595,6 +468,13 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
+              {formSubmitted && (
+                <DialogFooter className="mt-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                  </DialogClose>
+                </DialogFooter>
+              )}
             </DialogContent>
           </Dialog>
         )}
@@ -603,4 +483,18 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
   );
 }
 
-export default DefaultFormCard;
+/* =====================================================================
+ *  3) The SINGLE exported component that decides which one to render
+ * =====================================================================
+ */
+function GeneralizableFormCard(props: GeneralizableFormCardProps) {
+  // If the formType is "file", use the forwardRef-based version:
+  if (props.formType === 'file') {
+    return <FileFormCard {...props} />;
+  }
+
+  // Otherwise, use the default version from snippet #2:
+  return <DefaultFormCard {...props} />;
+}
+
+export default GeneralizableFormCard;

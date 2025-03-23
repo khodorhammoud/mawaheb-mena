@@ -204,6 +204,11 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  // Redirect from the old URL to the new one if needed
+  if (new URL(request.url).pathname === '/identifying') {
+    return redirect('/identification');
+  }
+
   // Ensure the user is verified
   await requireUserVerified(request);
 
@@ -224,11 +229,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/onboarding');
   }
 
-  // If account status is published or deactivated, redirect to dashboard
-  if (
-    profile.account?.accountStatus === AccountStatus.Published ||
-    profile.account?.accountStatus === AccountStatus.Deactivated
-  ) {
+  // If account status is published, redirect to dashboard
+  if (profile.account?.accountStatus === AccountStatus.Published) {
     return redirect('/dashboard');
   }
 
