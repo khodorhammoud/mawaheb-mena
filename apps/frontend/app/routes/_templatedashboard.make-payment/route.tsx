@@ -1,9 +1,10 @@
 import { json, ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Form, useLoaderData, useActionData, useNavigation } from '@remix-run/react';
-import { getCurrentUser } from '~/servers/user.server';
+import { getCurrentUser, getEmployerIdFromUserId, getUserAccountType } from '~/servers/user.server';
 import { getUserBankAccount, createEmployerPayment } from '~/servers/payments.server';
 import { Button } from '~/components/ui/button';
 import { AlertCircle, ChevronRight } from 'lucide-react';
+import { AccountType } from '~/types/enums';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const currentUser = await getCurrentUser(request);
@@ -12,10 +13,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // Verify the user is an employer
-  const userId = String(currentUser.id);
-  const userRole = currentUser.role;
+  const userId = currentUser.id;
+  const accountType = await getUserAccountType(userId);
 
-  if (userRole !== 'employer') {
+  if (accountType !== 'employer') {
     throw new Response('Only employers can make payments', { status: 403 });
   }
 
@@ -23,17 +24,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const bankAccount = await getUserBankAccount(userId);
 
   // Get employer ID
-  const employer = await import('~/servers/employer.server').then(module =>
-    module.getEmployerByUserId(userId)
-  );
+  const employerId = await getEmployerIdFromUserId(userId);
 
-  if (!employer) {
+  if (!employerId) {
     throw new Response('Employer profile not found', { status: 404 });
   }
 
   return json({
     userId,
-    employerId: employer.id,
+    employerId,
     bankAccount,
     hasBankAccount: !!bankAccount,
   });
@@ -61,20 +60,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const paymentData = {
       amount: parseFloat(amount as string),
       description: (description as string) || 'Payment to platform',
+      fromAccountId: 'manual-payment', // Add this for manual payments
     };
 
-    const result = await createEmployerPayment(employerId as string, paymentData);
+    // Convert employerId to number
+    const employerIdNumber = parseInt(employerId as string, 10);
 
-    if (result.redirectUrl) {
-      // Redirect to the payment gateway
-      return redirect(result.redirectUrl);
-    }
+    // Create a pending payment record
+    const result = await createEmployerPayment(employerIdNumber, paymentData);
 
-    return json({
-      success: true,
-      message: 'Payment initiated successfully',
-      paymentId: result.paymentId,
-    });
+    // For manual payments, we don't redirect to a payment gateway
+    // Instead, we return success and redirect to payments history
+    return redirect(
+      '/payments?success=true&message=Your+payment+has+been+submitted+and+will+be+processed+manually'
+    );
   } catch (error) {
     console.error('Error creating payment:', error);
     return json({

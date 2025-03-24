@@ -1,8 +1,8 @@
-import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { vitePlugin as remix } from '@remix-run/dev';
+import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
-declare module "@remix-run/node" {
+declare module '@remix-run/node' {
   // or cloudflare, deno, etc.
   interface Future {
     v3_singleFetch: true;
@@ -11,7 +11,7 @@ declare module "@remix-run/node" {
 
 export default defineConfig({
   optimizeDeps: {
-    include: ["dompurify"],
+    include: ['dompurify'],
   },
   plugins: [
     remix({
@@ -22,28 +22,28 @@ export default defineConfig({
         v3_lazyRouteDiscovery: true,
         v3_singleFetch: true,
       },
-      // routes(defineRoutes) {
-      //   return defineRoutes((route) => {
-      //     route(
-      //       "dashboard",
-      //       "routes/_templatedashboard.dashboard/dashboard/Dashboard.tsx"
-      //     ),
-      //       // Dashboard index route
+      //   routes(defineRoutes) {
+      //     return defineRoutes(route => {
       //       route(
-      //         "dashboard/jobs",
-      //         "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
+      //         'admin-dashboard/payments',
+      //         'routes/_templateadmin.admin-dashboard.payments2/route.tsx'
       //       );
+      //       //       // Dashboard index route
+      //       //       route(
+      //       //         "dashboard/jobs",
+      //       //         "routes/_templatedashboard.dashboard/jobs/JobsList.tsx"
+      //       //       );
 
-      //     route(
-      //       "dashboard/jobs:jobId",
-      //       "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
-      //     );
-      //     route(
-      //       "dashboard/jobs/new",
-      //       "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
-      //     );
-      //   });
-      // },
+      //       //     route(
+      //       //       "dashboard/jobs:jobId",
+      //       //       "routes/_templatedashboard.dashboard/jobs/JobDetails.tsx"
+      //       //     );
+      //       //     route(
+      //       //       "dashboard/jobs/new",
+      //       //       "routes/_templatedashboard.dashboard/jobs/NewJob.tsx"
+      //       //     );
+      //     });
+      //   },
     }),
     tsconfigPaths(),
   ],

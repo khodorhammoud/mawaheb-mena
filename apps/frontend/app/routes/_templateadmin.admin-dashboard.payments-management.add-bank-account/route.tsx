@@ -63,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AddAdminBankAccount() {
   return (
     <div className="max-w-4xl mx-auto">
-      {/* <div className="mb-6">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">Add Admin Bank Account</h1>
         <p className="text-gray-500 mt-1">Add a new bank account for handling platform payments</p>
       </div>
@@ -74,7 +74,7 @@ export default function AddAdminBankAccount() {
           submitLabel="Add Bank Account"
           showDefaultOption={true}
         />
-      </div> */}
+      </div>
     </div>
   );
 }

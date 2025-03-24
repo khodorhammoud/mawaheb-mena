@@ -166,6 +166,80 @@ export async function getAdminBankAccounts() {
 }
 
 /**
+ * Get admin bank account by ID
+ */
+export async function getAdminBankAccountById(accountId: string) {
+  try {
+    const account = await db.query.adminBankAccountsTable.findFirst({
+      where: eq(adminBankAccountsTable.id, accountId),
+    });
+    return account;
+  } catch (error) {
+    console.error('Error getting admin bank account by ID:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update admin bank account
+ */
+export async function updateAdminBankAccount(
+  accountId: string,
+  bankAccountData: BankAccountInput & { isDefault?: boolean }
+) {
+  try {
+    const { isDefault, ...accountData } = bankAccountData;
+
+    // Update the account
+    const [updatedAccount] = await db
+      .update(adminBankAccountsTable)
+      .set({
+        accountHolderName: accountData.accountHolderName,
+        accountNumber: accountData.accountNumber,
+        iban: accountData.iban,
+        bankName: accountData.bankName,
+        branchCode: accountData.branchCode,
+        swiftCode: accountData.swiftCode,
+        currency: accountData.currency || 'USD',
+        isDefault: isDefault || false,
+        updatedAt: new Date(),
+      })
+      .where(eq(adminBankAccountsTable.id, accountId))
+      .returning();
+
+    // If this account is set as default, unset any other default accounts
+    if (isDefault) {
+      await db
+        .update(adminBankAccountsTable)
+        .set({ isDefault: false })
+        .where(
+          and(
+            eq(adminBankAccountsTable.isDefault, true),
+            not(eq(adminBankAccountsTable.id, accountId))
+          )
+        );
+    }
+
+    // Update with payment gateway if available
+    if (tarabutService && updatedAccount.gatewayAccountId) {
+      try {
+        await tarabutService.updateBankAccount(
+          updatedAccount.gatewayAccountId,
+          accountData as BankAccount
+        );
+      } catch (gatewayError) {
+        console.error('Failed to update admin account with payment gateway:', gatewayError);
+      }
+    }
+
+    return updatedAccount;
+  } catch (error) {
+    console.error('Error updating admin bank account:', error);
+    throw error;
+  }
+}
+
+/**
  * Get default admin bank account
  */
 export async function getDefaultAdminBankAccount() {

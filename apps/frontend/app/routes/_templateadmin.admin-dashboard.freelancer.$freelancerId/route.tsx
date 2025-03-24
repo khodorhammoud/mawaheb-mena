@@ -1,32 +1,50 @@
 // ~/routes/freelancer/$freelancerId.tsx
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
-import {
-  useLoaderData,
-  useActionData,
-  Link,
-  Form,
-  Outlet,
-} from "@remix-run/react";
-import { AccountStatus, CompensationType } from "~/types/enums";
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import { useLoaderData, useActionData, Link, Form, Outlet } from '@remix-run/react';
+import { AccountStatus, CompensationType } from '~/types/enums';
 import {
   getFreelancerDetails,
   getFreelancerApplications,
   updateFreelancerAccountStatus,
   safeParseJSON,
-} from "~/servers/admin.server";
+} from '~/servers/admin.server';
+import { getUserBankAccount } from '~/servers/payments.server';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, LockKeyhole, Eye, EyeOff, Building } from 'lucide-react';
 
 import type {
   ActionResponse,
-  LoaderData,
+  LoaderData as BaseLoaderData,
   FreelancerData,
   JobApplication,
   Portfolio,
   Certificate,
   Education,
   WorkHistory,
-} from "~/common/admin-pages/types";
+} from '~/common/admin-pages/types';
 
-import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
+import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
+
+// Define the proper type that matches JSON representation
+type JsonifiedBankAccount = {
+  id: number;
+  userId: number;
+  accountHolderName: string;
+  accountNumber: string;
+  iban?: string | null;
+  bankName: string;
+  branchCode?: string | null;
+  swiftCode?: string | null;
+  currency: string;
+  gatewayAccountId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Extend the base LoaderData type to include bankAccount
+type LoaderData = BaseLoaderData & {
+  bankAccount: JsonifiedBankAccount | null;
+};
 
 /* function getStatusColor(status: JobApplicationStatus) {
   switch (status) {
@@ -47,14 +65,15 @@ import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const freelancerId = params.freelancerId;
+
   if (!freelancerId) {
-    throw new Response("Freelancer ID is required", { status: 400 });
+    throw new Response('Freelancer ID is required', { status: 400 });
   }
 
   // 1) Fetch the main freelancer row
   const detailRow = await getFreelancerDetails(+freelancerId);
   if (!detailRow) {
-    throw new Response("Freelancer not found", { status: 404 });
+    throw new Response('Freelancer not found', { status: 404 });
   }
 
   // 2) Fetch all job applications
@@ -72,29 +91,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
     ...freelancer,
     fieldsOfExpertise: Array.isArray(freelancer.fieldsOfExpertise)
       ? freelancer.fieldsOfExpertise
-      : safeParseJSON<string[]>(
-          freelancer.fieldsOfExpertise as unknown as string,
-          []
-        ),
+      : safeParseJSON<string[]>(freelancer.fieldsOfExpertise as unknown as string, []),
     jobsOpenTo: Array.isArray(freelancer.jobsOpenTo)
       ? freelancer.jobsOpenTo
       : safeParseJSON<string[]>(freelancer.jobsOpenTo as unknown as string, []),
     preferredProjectTypes: Array.isArray(freelancer.preferredProjectTypes)
       ? freelancer.preferredProjectTypes
-      : safeParseJSON<string[]>(
-          freelancer.preferredProjectTypes as unknown as string,
-          []
-        ),
+      : safeParseJSON<string[]>(freelancer.preferredProjectTypes as unknown as string, []),
     portfolio: safeParseJSON<Portfolio[]>(freelancer.portfolio as string, []),
-    certificates: safeParseJSON<Certificate[]>(
-      freelancer.certificates as string,
-      []
-    ),
+    certificates: safeParseJSON<Certificate[]>(freelancer.certificates as string, []),
     educations: safeParseJSON<Education[]>(freelancer.educations as string, []),
-    workHistory: safeParseJSON<WorkHistory[]>(
-      freelancer.workHistory as string,
-      []
-    ),
+    workHistory: safeParseJSON<WorkHistory[]>(freelancer.workHistory as string, []),
   };
 
   // console.log("Parsed portfolio:", parsedFreelancer.portfolio);
@@ -103,7 +110,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // console.log("Parsed certificates:", parsedFreelancer.certificates);
 
   // 4) Convert application date to ISO
-  const jobApplications = apps.map((app) => ({
+  const jobApplications = apps.map(app => ({
     id: app?.id,
     jobId: app?.jobId,
     jobTitle: app?.jobTitle,
@@ -113,6 +120,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
     matchScore: (app as any)?.matchScore,
   }));
 
+  // Fetch bank account information
+  const userId = detailRow.user.id;
+  let bankAccount = null;
+
+  try {
+    bankAccount = await getUserBankAccount(userId);
+  } catch (error) {
+    console.error('Error fetching bank account info:', error);
+    // Continue without bank account info
+  }
+
   return json<LoaderData>({
     freelancer: {
       ...detailRow,
@@ -120,18 +138,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
     } as unknown as FreelancerData,
     applications: jobApplications as JobApplication[],
     applicationCount: jobApplications.length,
+    bankAccount,
   });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const status = formData.get("accountStatus") as AccountStatus;
+  const status = formData.get('accountStatus') as AccountStatus;
   const freelancerId = params.freelancerId;
 
   if (!freelancerId || !status) {
     return json<ActionResponse>({
       success: false,
-      error: "Missing required fields",
+      error: 'Missing required fields',
     });
   }
 
@@ -141,8 +160,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function FreelancerDetails() {
-  const { freelancer, applications, applicationCount } =
-    useLoaderData<LoaderData>();
+  const { freelancer, applications, applicationCount, bankAccount } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<ActionResponse>();
   const accountStatusValues = Object.values(AccountStatus) as AccountStatus[];
 
@@ -165,6 +184,9 @@ export default function FreelancerDetails() {
       {/* Applications Section */}
       <ApplicationsArea applications={applications} />
 
+      {/* Bank account information */}
+      <BankAccountInfo bankAccount={bankAccount} />
+
       <Outlet />
     </div>
   );
@@ -175,9 +197,7 @@ function HeaderSection({ applicationCount }: { applicationCount: number }) {
   return (
     <div className="flex justify-between items-center">
       <h1 className="text-2xl font-bold">Freelancer Details</h1>
-      <span className="text-sm text-gray-500">
-        Total Applications: {applicationCount}
-      </span>
+      <span className="text-sm text-gray-500">Total Applications: {applicationCount}</span>
     </div>
   );
 }
@@ -186,33 +206,24 @@ function HeaderSection({ applicationCount }: { applicationCount: number }) {
 function UserAccountSection({ freelancer }: { freelancer: FreelancerData }) {
   return (
     <>
-      <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          User Information
-        </h3>
+      <div className="px-6 py-5">
+        <PersonalInfo freelancer={freelancer} />
       </div>
 
-      <div className="px-6 py-5 grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Basic Personal Info */}
-        <PersonalInfo freelancer={freelancer} />
+      <div className="border-t border-gray-200">
+        <div className="grid md:grid-cols-2 gap-6 px-6 py-5">
+          <AccountInfo freelancer={freelancer} />
+          <OnlinePresence freelancer={freelancer} />
+        </div>
+      </div>
 
-        {/* Account Info */}
-        <AccountInfo freelancer={freelancer} />
-
+      <div className="border-t border-gray-200 px-6 py-5">
         {/* Professional Info */}
         <ProfessionalInfo freelancer={freelancer} />
+      </div>
 
-        {/* Portfolio */}
-        <PortfolioSection freelancer={freelancer} />
-
-        {/* Work History */}
-        <WorkHistorySection freelancer={freelancer} />
-
-        {/* Education */}
-        <EducationSection freelancer={freelancer} />
-
-        {/* Certificates */}
-        <CertificatesSection freelancer={freelancer} />
+      <div className="border-t border-gray-200 px-6 py-5">
+        <WorkInfo freelancer={freelancer} />
       </div>
     </>
   );
@@ -234,9 +245,7 @@ function PersonalInfo({ freelancer }: { freelancer: FreelancerData }) {
       </div>
 
       <div className="col-span-2">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Account Information
-        </h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
       </div>
     </>
   );
@@ -248,27 +257,19 @@ function AccountInfo({ freelancer }: { freelancer: FreelancerData }) {
     <>
       <div>
         <h4 className="text-sm font-medium text-gray-500">Country</h4>
-        <p className="mt-1 text-sm text-gray-900">
-          {freelancer.account.country || "Not provided"}
-        </p>
+        <p className="mt-1 text-sm text-gray-900">{freelancer.account.country || 'Not provided'}</p>
       </div>
       <div>
         <h4 className="text-sm font-medium text-gray-500">Address</h4>
-        <p className="mt-1 text-sm text-gray-900">
-          {freelancer.account.address || "Not provided"}
-        </p>
+        <p className="mt-1 text-sm text-gray-900">{freelancer.account.address || 'Not provided'}</p>
       </div>
       <div>
         <h4 className="text-sm font-medium text-gray-500">Region</h4>
-        <p className="mt-1 text-sm text-gray-900">
-          {freelancer.account.region || "Not provided"}
-        </p>
+        <p className="mt-1 text-sm text-gray-900">{freelancer.account.region || 'Not provided'}</p>
       </div>
       <div>
         <h4 className="text-sm font-medium text-gray-500">Phone</h4>
-        <p className="mt-1 text-sm text-gray-900">
-          {freelancer.account.phone || "Not provided"}
-        </p>
+        <p className="mt-1 text-sm text-gray-900">{freelancer.account.phone || 'Not provided'}</p>
       </div>
 
       <OnlinePresence freelancer={freelancer} />
@@ -296,23 +297,21 @@ function OnlinePresence({ freelancer }: { freelancer: FreelancerData }) {
           </>
         )}
         {freelancer.account.socialMediaLinks &&
-          Object.entries(freelancer.account.socialMediaLinks).map(
-            ([platform, url], index) => (
-              <div key={platform} className="inline-flex items-center gap-2">
-                {index > 0 || freelancer.account.websiteURL ? (
-                  <span className="text-gray-400">-</span>
-                ) : null}
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primaryColor hover:text-primaryColor/80"
-                >
-                  {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                </a>
-              </div>
-            )
-          )}
+          Object.entries(freelancer.account.socialMediaLinks).map(([platform, url], index) => (
+            <div key={platform} className="inline-flex items-center gap-2">
+              {index > 0 || freelancer.account.websiteURL ? (
+                <span className="text-gray-400">-</span>
+              ) : null}
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primaryColor hover:text-primaryColor/80"
+              >
+                {platform.charAt(0).toUpperCase() + platform.slice(1)}
+              </a>
+            </div>
+          ))}
         {!freelancer.account.websiteURL &&
           (!freelancer.account.socialMediaLinks ||
             Object.keys(freelancer.account.socialMediaLinks).length === 0) && (
@@ -332,8 +331,8 @@ function AccountStatusBadge({ status }: { status: AccountStatus }) {
         <span
           className={`inline-flex rounded-full px-2 text-xs font-semibold ${
             status === AccountStatus.Published
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
+              ? 'bg-green-100 text-green-800'
+              : 'bg-yellow-100 text-yellow-800'
           }`}
         >
           {status}
@@ -348,17 +347,13 @@ function ProfessionalInfo({ freelancer }: { freelancer: FreelancerData }) {
   return (
     <>
       <div className="col-span-2">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Professional Information
-        </h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Information</h3>
       </div>
 
       <div>
-        <h4 className="text-sm font-medium text-gray-500">
-          Fields of Expertise
-        </h4>
+        <h4 className="text-sm font-medium text-gray-500">Fields of Expertise</h4>
         <div className="mt-1 flex flex-wrap gap-2">
-          {freelancer.freelancer.fieldsOfExpertise.map((field) => (
+          {freelancer.freelancer.fieldsOfExpertise.map(field => (
             <span
               key={field}
               className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -370,42 +365,32 @@ function ProfessionalInfo({ freelancer }: { freelancer: FreelancerData }) {
       </div>
 
       <div>
-        <h4 className="text-sm font-medium text-gray-500">
-          Years of Experience
-        </h4>
-        <p className="mt-1 text-sm text-gray-900">
-          {freelancer.freelancer.yearsOfExperience}
-        </p>
+        <h4 className="text-sm font-medium text-gray-500">Years of Experience</h4>
+        <p className="mt-1 text-sm text-gray-900">{freelancer.freelancer.yearsOfExperience}</p>
       </div>
 
       <div>
         <h4 className="text-sm font-medium text-gray-500">Rate</h4>
         <p className="mt-1 text-sm text-gray-900">
-          ${freelancer.freelancer.hourlyRate}/
-          {freelancer.freelancer.compensationType} (
-          {freelancer.freelancer.compensationType ===
-          CompensationType.HourlyRate
-            ? "Hourly"
-            : "Fixed"}
+          ${freelancer.freelancer.hourlyRate}/{freelancer.freelancer.compensationType} (
+          {freelancer.freelancer.compensationType === CompensationType.HourlyRate
+            ? 'Hourly'
+            : 'Fixed'}
           )
         </p>
       </div>
 
       <div>
-        <h4 className="text-sm font-medium text-gray-500">
-          Availability Status
-        </h4>
+        <h4 className="text-sm font-medium text-gray-500">Availability Status</h4>
         <p className="mt-1">
           <span
             className={`inline-flex rounded-full px-2 text-xs font-semibold ${
               freelancer.freelancer.availableForWork
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
             }`}
           >
-            {freelancer.freelancer.availableForWork
-              ? "Available"
-              : "Not Available"}
+            {freelancer.freelancer.availableForWork ? 'Available' : 'Not Available'}
           </span>
         </p>
       </div>
@@ -413,15 +398,14 @@ function ProfessionalInfo({ freelancer }: { freelancer: FreelancerData }) {
       <div>
         <h4 className="text-sm font-medium text-gray-500">Available From</h4>
         <p className="mt-1 text-sm text-gray-900">
-          {freelancer.freelancer.dateAvailableFrom || "Not specified"}
+          {freelancer.freelancer.dateAvailableFrom || 'Not specified'}
         </p>
       </div>
 
       <div>
         <h4 className="text-sm font-medium text-gray-500">Working Hours</h4>
         <p className="mt-1 text-sm text-gray-900">
-          {freelancer.freelancer.hoursAvailableFrom} -{" "}
-          {freelancer.freelancer.hoursAvailableTo}
+          {freelancer.freelancer.hoursAvailableFrom} - {freelancer.freelancer.hoursAvailableTo}
         </p>
       </div>
 
@@ -445,12 +429,12 @@ function AboutSection({ about }: { about: string }) {
         {/* Method 1: Using dangerouslySetInnerHTML */}
         <span
           dangerouslySetInnerHTML={{
-            __html: about || "No description provided",
+            __html: about || 'No description provided',
           }}
         />
 
         {/* Method 2: Using regex to strip HTML tags */}
-        {(about || "No description provided").replace(/<[^>]*>/g, "")}
+        {(about || 'No description provided').replace(/<[^>]*>/g, '')}
       </p>
     </div>
   );
@@ -462,7 +446,7 @@ function JobsOpenToSection({ jobsOpenTo }: { jobsOpenTo: string[] }) {
     <div className="col-span-2">
       <h4 className="text-sm font-medium text-gray-500">Jobs Open To</h4>
       <div className="mt-1 flex flex-wrap gap-2">
-        {jobsOpenTo.map((job) => (
+        {jobsOpenTo.map(job => (
           <span
             key={job}
             className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -487,11 +471,9 @@ function PreferredProjectTypesSection({
 }) {
   return (
     <div className="col-span-2">
-      <h4 className="text-sm font-medium text-gray-500">
-        Preferred Project Types
-      </h4>
+      <h4 className="text-sm font-medium text-gray-500">Preferred Project Types</h4>
       <div className="mt-1 flex flex-wrap gap-2">
-        {types.map((type) => (
+        {types.map(type => (
           <span
             key={type}
             className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -516,14 +498,12 @@ function PreferredProjectTypesSection({
                 View CV
               </a>
             ) : (
-              "Not provided"
+              'Not provided'
             )}
           </p>
         </div>
         <div>
-          <h4 className="text-sm font-medium text-gray-500">
-            Introduction Video
-          </h4>
+          <h4 className="text-sm font-medium text-gray-500">Introduction Video</h4>
           <p className="mt-1 text-sm text-gray-900">
             {videoLink ? (
               <a
@@ -535,7 +515,7 @@ function PreferredProjectTypesSection({
                 Watch Video
               </a>
             ) : (
-              "Not provided"
+              'Not provided'
             )}
           </p>
         </div>
@@ -556,18 +536,12 @@ function PortfolioSection({ freelancer }: { freelancer: FreelancerData }) {
           <div key={index} className="border rounded-lg p-4 bg-gray-50">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Project Name
-                </h4>
-                <p className="mt-1 text-sm text-gray-900">
-                  {project.projectName}
-                </p>
+                <h4 className="text-sm font-medium text-gray-500">Project Name</h4>
+                <p className="mt-1 text-sm text-gray-900">{project.projectName}</p>
               </div>
               {project.projectLink && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Project Link
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-500">Project Link</h4>
                   <p className="mt-1 text-sm text-gray-900">
                     <a
                       href={project.projectLink}
@@ -581,9 +555,7 @@ function PortfolioSection({ freelancer }: { freelancer: FreelancerData }) {
                 </div>
               )}
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Description
-                </h4>
+                <h4 className="text-sm font-medium text-gray-500">Description</h4>
                 <div
                   className="mt-1 text-sm text-gray-900"
                   dangerouslySetInnerHTML={{
@@ -593,9 +565,7 @@ function PortfolioSection({ freelancer }: { freelancer: FreelancerData }) {
               </div>
               {project.projectImageUrl && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Project Image
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-500">Project Image</h4>
                   <img
                     src={project.projectImageUrl}
                     alt={project.projectName}
@@ -607,9 +577,7 @@ function PortfolioSection({ freelancer }: { freelancer: FreelancerData }) {
           </div>
         ))}
         {freelancer.freelancer.portfolio.length === 0 && (
-          <p className="text-sm text-gray-500">
-            No portfolio projects provided
-          </p>
+          <p className="text-sm text-gray-500">No portfolio projects provided</p>
         )}
       </div>
     </>
@@ -638,16 +606,14 @@ function WorkHistorySection({ freelancer }: { freelancer: FreelancerData }) {
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Duration</h4>
                 <p className="mt-1 text-sm text-gray-900">
-                  {new Date(work.startDate).toLocaleDateString()} -{" "}
+                  {new Date(work.startDate).toLocaleDateString()} -{' '}
                   {work.currentlyWorkingThere
-                    ? "Present"
+                    ? 'Present'
                     : new Date(work.endDate).toLocaleDateString()}
                 </p>
               </div>
               <div className="md:col-span-2">
-                <h4 className="text-sm font-medium text-gray-500">
-                  Description
-                </h4>
+                <h4 className="text-sm font-medium text-gray-500">Description</h4>
                 <div
                   className="mt-1 text-sm text-gray-900"
                   dangerouslySetInnerHTML={{ __html: work.jobDescription }}
@@ -680,20 +646,12 @@ function EducationSection({ freelancer }: { freelancer: FreelancerData }) {
                 <p className="mt-1 text-sm text-gray-900">{education.degree}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Institution
-                </h4>
-                <p className="mt-1 text-sm text-gray-900">
-                  {education.institution}
-                </p>
+                <h4 className="text-sm font-medium text-gray-500">Institution</h4>
+                <p className="mt-1 text-sm text-gray-900">{education.institution}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Graduation Year
-                </h4>
-                <p className="mt-1 text-sm text-gray-900">
-                  {education.graduationYear}
-                </p>
+                <h4 className="text-sm font-medium text-gray-500">Graduation Year</h4>
+                <p className="mt-1 text-sm text-gray-900">{education.graduationYear}</p>
               </div>
             </div>
           </div>
@@ -718,28 +676,20 @@ function CertificatesSection({ freelancer }: { freelancer: FreelancerData }) {
           <div key={index} className="border rounded-lg p-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Certificate Name
-                </h4>
-                <p className="mt-1 text-sm text-gray-900">
-                  {cert.certificateName}
-                </p>
+                <h4 className="text-sm font-medium text-gray-500">Certificate Name</h4>
+                <p className="mt-1 text-sm text-gray-900">{cert.certificateName}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Issued By</h4>
                 <p className="mt-1 text-sm text-gray-900">{cert.issuedBy}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
-                  Year Issued
-                </h4>
+                <h4 className="text-sm font-medium text-gray-500">Year Issued</h4>
                 <p className="mt-1 text-sm text-gray-900">{cert.yearIssued}</p>
               </div>
               {cert.attachmentUrl && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Certificate
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-500">Certificate</h4>
                   <p className="mt-1 text-sm text-gray-900">
                     <a
                       href={cert.attachmentUrl}
@@ -775,15 +725,11 @@ function UpdateAccountStatus({
 }) {
   return (
     <div className="px-6 py-5 border-t border-gray-200">
-      <h4 className="text-sm font-medium text-gray-500">
-        Update Account Status
-      </h4>
+      <h4 className="text-sm font-medium text-gray-500">Update Account Status</h4>
 
       {actionData?.success && (
         <div className="mt-2 rounded-md bg-green-50 p-4">
-          <p className="text-sm font-medium text-green-800">
-            Account status updated successfully
-          </p>
+          <p className="text-sm font-medium text-green-800">Account status updated successfully</p>
         </div>
       )}
 
@@ -800,7 +746,7 @@ function UpdateAccountStatus({
             defaultValue={currentStatus}
             className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primaryColor focus:ring-primaryColor sm:max-w-xs sm:text-sm"
           >
-            {accountStatusValues.map((status) => (
+            {accountStatusValues.map(status => (
               <option key={status} value={status}>
                 {status}
               </option>
@@ -819,11 +765,7 @@ function UpdateAccountStatus({
 }
 
 /** Subcomponent: Renders the "Applications" section */
-function ApplicationsArea({
-  applications,
-}: {
-  applications: JobApplication[];
-}) {
+function ApplicationsArea({ applications }: { applications: JobApplication[] }) {
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -834,7 +776,7 @@ function ApplicationsArea({
         <div className="px-6 py-5">
           {applications.length > 0 ? (
             <ApplicationsTable
-              applications={applications.map((app) => ({
+              applications={applications.map(app => ({
                 application: {
                   id: app.id,
                   status: app.status,
@@ -856,6 +798,129 @@ function ApplicationsArea({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** New component: Banking Information (collapsible for security) */
+function BankAccountInfo({ bankAccount }: { bankAccount: JsonifiedBankAccount | null }) {
+  const [showDetails, setShowDetails] = useState(false);
+
+  if (!bankAccount) {
+    return (
+      <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+            <Building className="w-5 h-5 mr-2 text-gray-500" />
+            Banking Information
+          </h3>
+        </div>
+        <div className="px-6 py-5">
+          <p className="text-sm text-gray-500">No bank account information available.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+      <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+          <Building className="w-5 h-5 mr-2 text-gray-500" />
+          Banking Information
+        </h3>
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="inline-flex items-center px-2 py-1 border border-transparent text-sm rounded-md text-gray-500 hover:bg-gray-100"
+          aria-label={showDetails ? 'Hide bank details' : 'Show bank details'}
+        >
+          {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+
+      <div className="px-6 py-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Account Holder</h4>
+            <p className="mt-1 text-sm text-gray-900">{bankAccount.accountHolderName}</p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Bank Name</h4>
+            <p className="mt-1 text-sm text-gray-900">{bankAccount.bankName}</p>
+          </div>
+
+          {showDetails && (
+            <>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Account Number</h4>
+                <p className="mt-1 text-sm text-gray-900">{bankAccount.accountNumber}</p>
+              </div>
+
+              {bankAccount.iban && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">IBAN</h4>
+                  <p className="mt-1 text-sm text-gray-900">{bankAccount.iban}</p>
+                </div>
+              )}
+
+              {bankAccount.branchCode && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Branch Code</h4>
+                  <p className="mt-1 text-sm text-gray-900">{bankAccount.branchCode}</p>
+                </div>
+              )}
+
+              {bankAccount.swiftCode && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">SWIFT Code</h4>
+                  <p className="mt-1 text-sm text-gray-900">{bankAccount.swiftCode}</p>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Currency</h4>
+                <p className="mt-1 text-sm text-gray-900">{bankAccount.currency}</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primaryColor"
+          >
+            {showDetails ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-1" /> Hide details
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-1" /> Show details
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Payment Info - Remove the second BankAccountInfo component */
+function PaymentInfo() {
+  // This component has been replaced by the BankAccountInfo component
+  return null;
+}
+
+/** Combines portfolio, work history, education, and certificates in one section */
+function WorkInfo({ freelancer }: { freelancer: FreelancerData }) {
+  return (
+    <div className="grid grid-cols-1 gap-8">
+      <PortfolioSection freelancer={freelancer} />
+      <WorkHistorySection freelancer={freelancer} />
+      <EducationSection freelancer={freelancer} />
+      <CertificatesSection freelancer={freelancer} />
     </div>
   );
 }

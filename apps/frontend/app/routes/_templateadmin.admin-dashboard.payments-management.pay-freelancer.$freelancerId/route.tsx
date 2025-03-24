@@ -48,7 +48,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       toAccountId: `bank-${freelancerId}`,
     };
 
-    await createFreelancerPayment(freelancerId, paymentData);
+    const freelancerIdNumber = parseInt(freelancerId, 10);
+
+    await createFreelancerPayment(freelancerIdNumber, paymentData);
 
     return redirect(
       '/admin-dashboard/payments?success=true&message=Payment+to+freelancer+initiated+successfully'

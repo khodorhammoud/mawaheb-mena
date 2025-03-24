@@ -15,26 +15,33 @@ import BankAccountForm from '~/common/payment/BankAccountForm';
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireAdmin(request);
 
+  // Get success and error messages from URL parameters
+  const url = new URL(request.url);
+  const successMessage = url.searchParams.get('success');
+  const errorMessage = url.searchParams.get('error');
+
   try {
     const [payments, adminAccounts] = await Promise.all([getAllPayments(), getAdminBankAccounts()]);
 
     return json({
       payments,
       adminAccounts,
-      error: null,
+      successMessage,
+      errorMessage,
     });
   } catch (error) {
     console.error('Error loading payment data:', error);
     return json({
       payments: [],
       adminAccounts: [],
-      error: 'Failed to load payment data',
+      successMessage,
+      errorMessage: errorMessage || 'Failed to load payment data',
     });
   }
 }
 
 export default function AdminPaymentsDashboard() {
-  const { payments, adminAccounts, error } = useLoaderData<typeof loader>();
+  const { payments, adminAccounts, successMessage, errorMessage } = useLoaderData<typeof loader>();
   const [selectedPayments, setSelectedPayments] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
 
@@ -73,7 +80,7 @@ export default function AdminPaymentsDashboard() {
   };
 
   const handleMakePayment = (freelancerId: string) => {
-    navigate(`/admin-dashboard/payments/pay-freelancer/${freelancerId}`);
+    navigate(`/admin-dashboard/payments-management/pay-freelancer/${freelancerId}`);
   };
 
   return (
@@ -82,17 +89,23 @@ export default function AdminPaymentsDashboard() {
         <h1 className="text-2xl font-bold">Payment Management</h1>
         <div className="flex gap-2">
           <Link
-            to="/admin-dashboard/payments/bank-accounts"
+            to="/admin-dashboard/payments-management/add-bank-account"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primaryColor hover:bg-primaryColor/90"
           >
-            Manage Bank Accounts
+            Add Bank Account
           </Link>
         </div>
       </div>
 
-      {error && (
+      {errorMessage && (
         <div className="p-4 bg-red-50 text-red-800 rounded-md mb-6">
-          <p className="font-semibold">{error}</p>
+          <p className="font-semibold">{errorMessage}</p>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="p-4 bg-green-50 text-green-800 rounded-md mb-6">
+          <p className="font-semibold">{successMessage}</p>
         </div>
       )}
 
@@ -183,7 +196,7 @@ export default function AdminPaymentsDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <Link
-                            to={`/admin-dashboard/payments/${payment.id}`}
+                            to={`/admin-dashboard/payments-management/${payment.id}`}
                             className="text-primaryColor hover:text-primaryColor/80 mr-3"
                           >
                             View Details
@@ -216,7 +229,7 @@ export default function AdminPaymentsDashboard() {
               <div className="text-center p-4 bg-gray-50 rounded-md">
                 <p className="text-gray-500">No bank accounts configured</p>
                 <Link
-                  to="/admin-dashboard/payments/add-bank-account"
+                  to="/admin-dashboard/payments-management/add-bank-account"
                   className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primaryColor hover:bg-primaryColor/90"
                 >
                   Add Bank Account
@@ -247,14 +260,14 @@ export default function AdminPaymentsDashboard() {
 
                       <div className="mt-4 flex justify-end gap-2">
                         <Link
-                          to={`/admin-dashboard/payments/edit-bank-account/${account.id}`}
+                          to={`/admin-dashboard-management/edit-bank-account/${account.id}`}
                           className="text-sm text-primaryColor hover:text-primaryColor/80"
                         >
                           Edit
                         </Link>
                         {!account.isDefault && (
                           <Link
-                            to={`/admin-dashboard/payments/set-default-account/${account.id}`}
+                            to={`/admin-dashboard/payments-management/set-default-account/${account.id}`}
                             className="text-sm text-green-600 hover:text-green-800"
                           >
                             Set as Default
@@ -265,7 +278,7 @@ export default function AdminPaymentsDashboard() {
                   ))}
 
                   <Link
-                    to="/admin-dashboard/payments/add-bank-account"
+                    to="/admin-dashboard/payments-management/add-bank-account"
                     className="flex flex-col items-center justify-center p-4 border border-dashed border-gray-300 rounded-md hover:border-primaryColor"
                   >
                     <div className="h-12 w-12 rounded-full bg-primaryColor/10 flex items-center justify-center">
