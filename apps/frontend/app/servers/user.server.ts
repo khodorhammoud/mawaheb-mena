@@ -836,17 +836,17 @@ export async function updateUserPassword(userId: number, hashedPassword: string)
 
 export async function deactivateAccount(userId: number): Promise<boolean> {
   try {
-    // console.log('🔍 Getting account type for user:', userId);
+    console.log('🔍 Getting account type for user:', userId);
     // Get the user's account type
     const accountType = await getUserAccountType(userId);
-    // console.log('📋 Account type:', accountType);
+    console.log('📋 Account type:', accountType);
 
     if (!accountType) {
-      // console.log('❌ No account type found');
+      console.log('❌ No account type found');
       return false;
     }
 
-    // console.log('📝 Updating account status to deactivated...');
+    console.log('📝 Updating account status to deactivated...');
     // Update account status to deactivated in the accountsTable only
     const accountResult = await db
       .update(accountsTable)
@@ -857,15 +857,15 @@ export async function deactivateAccount(userId: number): Promise<boolean> {
         accountStatus: accountsTable.accountStatus,
       });
 
-    // console.log('📊 Account update result:', accountResult);
+    console.log('📊 Account update result:', accountResult);
 
     // Check if the update returned anything
     if (!accountResult || accountResult.length === 0) {
-      // console.log('❌ Account update failed');
+      console.log('❌ Account update failed');
       return false;
     }
 
-    // console.log('✅ Account deactivation completed successfully');
+    console.log('✅ Account deactivation completed successfully');
     return true;
   } catch (error) {
     console.error('💥 Error in deactivateAccount:', error);
