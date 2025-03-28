@@ -1,8 +1,9 @@
-import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { vitePlugin as remix } from '@remix-run/dev';
+import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { resolve } from 'path';
 
-declare module "@remix-run/node" {
+declare module '@remix-run/node' {
   // or cloudflare, deno, etc.
   interface Future {
     v3_singleFetch: true;
@@ -11,7 +12,7 @@ declare module "@remix-run/node" {
 
 export default defineConfig({
   optimizeDeps: {
-    include: ["dompurify"],
+    include: ['dompurify'],
   },
   plugins: [
     remix({
