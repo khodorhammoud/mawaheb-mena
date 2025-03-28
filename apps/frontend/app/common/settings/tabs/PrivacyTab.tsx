@@ -12,25 +12,74 @@ import {
 import { Button } from '~/components/ui/button';
 import { useToast } from '~/components/hooks/use-toast';
 import { ToastAction } from '~/components/ui/toast';
-import { AccountType } from '~/types/enums';
+import { AccountType, AccountStatus } from '~/types/enums';
 
 type SettingsFetcherData = {
   success?: boolean;
   error?: string;
   formType?: string;
+  isDeactivated?: boolean;
 };
 
 type LoaderData = {
   user: {
     accountType: AccountType;
   };
+  userAccountStatus: AccountStatus;
 };
 
 export default function PrivacyTab() {
-  const { user } = useLoaderData<LoaderData>();
+  const { user, userAccountStatus: initialAccountStatus } = useLoaderData<LoaderData>();
   const settingsFetcher = useFetcher<SettingsFetcherData>();
   const { toast } = useToast();
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [currentAccountStatus, setCurrentAccountStatus] = useState<AccountStatus>(
+    initialAccountStatus || AccountStatus.Published
+  );
+
+  // Update from initialAccountStatus when it's different
+  useEffect(() => {
+    if (
+      initialAccountStatus &&
+      initialAccountStatus !== currentAccountStatus &&
+      !settingsFetcher.data
+    ) {
+      setCurrentAccountStatus(initialAccountStatus);
+    }
+  }, [initialAccountStatus, currentAccountStatus, settingsFetcher.data]);
+
+  // Handle form submission response
+  useEffect(() => {
+    if (settingsFetcher.data && settingsFetcher.data.formType === 'deactivateAccount') {
+      if (settingsFetcher.data.success) {
+        const newStatus = settingsFetcher.data.isDeactivated
+          ? AccountStatus.Deactivated
+          : AccountStatus.Published;
+        setCurrentAccountStatus(newStatus);
+
+        toast({
+          variant: 'default',
+          title: settingsFetcher.data.isDeactivated ? 'Account Deactivated' : 'Account Reactivated',
+          description: settingsFetcher.data.isDeactivated
+            ? 'Your account has been deactivated successfully'
+            : 'Your account has been reactivated successfully',
+          action: <ToastAction altText="Close">Close</ToastAction>,
+        });
+        // Only close dialog after successful response
+        setShowDeactivateDialog(false);
+      } else {
+        setCurrentAccountStatus(initialAccountStatus);
+
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: settingsFetcher.data.error || 'Failed to update account status',
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+        // Keep dialog open on error so user can try again
+      }
+    }
+  }, [settingsFetcher.data, toast, initialAccountStatus]);
 
   // State for password fields
   const [currentPassword, setCurrentPassword] = useState('');
@@ -61,35 +110,17 @@ export default function PrivacyTab() {
     }
   }, [settingsFetcher.data]);
 
-  // Separate useEffect for handling deactivation responses
-  useEffect(() => {
-    if (settingsFetcher.data && settingsFetcher.data.formType === 'deactivateAccount') {
-      if (settingsFetcher.data.success) {
-        toast({
-          variant: 'default',
-          title: 'Account Deactivated',
-          description:
-            'Your account has been deactivated successfully. Please log out to complete the process.',
-          action: <ToastAction altText="Close">Close</ToastAction>,
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: settingsFetcher.data.error || 'Failed to deactivate account',
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      }
-    }
-  }, [settingsFetcher.data, toast]);
-
   // Validation checks
   const isFormValid =
     currentPassword && newPassword && confirmPassword && newPassword === confirmPassword;
 
   const handleDeactivateAccount = () => {
-    settingsFetcher.submit({ formType: 'deactivateAccount' }, { method: 'POST' });
-    setShowDeactivateDialog(false);
+    settingsFetcher.submit(
+      {
+        formType: 'deactivateAccount',
+      },
+      { method: 'POST' }
+    );
   };
 
   const getDeactivationWarning = () => {
@@ -215,52 +246,90 @@ export default function PrivacyTab() {
           </div>
 
           {/* Deactivate Account */}
-          <div className="">
-            <div className="text-base mt-1 mb-2">Deactivate my account</div>
-            <div className="grid md:grid-cols-[50%_50%] xl:gap-8 lg:gap-10 md:gap-6 gap-4 items-center">
-              <p className="text-sm text-gray-500">
-                Mawaheb makes it easy to deactivate your account and all data associated with it.
-                You can undo this at any time.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowDeactivateDialog(true)}
-                className="border border-gray-200 text-primaryColor sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs w-7/12 md:w-8/12 lg:w-3/5 xl:w-1/2"
-              >
-                Deactivate Account
-              </button>
+          <div>
+            <div className="text-base mt-1">
+              {currentAccountStatus === AccountStatus.Deactivated
+                ? 'Reactivate my account'
+                : 'Deactivate my account'}
             </div>
-          </div>
 
-          <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Deactivate Account</DialogTitle>
-                <DialogDescription className="space-y-4">
-                  <div className="mt-4">
-                    {getDeactivationWarning()}
-                    <p>Are you sure you want to deactivate your account?</p>
-                  </div>
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>
-                  Cancel
-                </Button>
+            {currentAccountStatus === AccountStatus.Deactivated ? (
+              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
+                <p className="text-sm text-gray-700">
+                  Your account is currently deactivated. You can reactivate it when you want.
+                </p>
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeactivateDialog(true)}
+                    className="text-primaryColor hover:bg-red-50"
+                  >
+                    Reactivate Account
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
+                <p className="text-sm text-gray-700 mt-2">
+                  Mawaheb makes it easy to deactivate your account and all data associated with it.
+                  You can undo this at any time.
+                </p>
                 <Button
-                  variant="destructive"
-                  onClick={handleDeactivateAccount}
-                  disabled={settingsFetcher.state === 'submitting'}
+                  variant="outline"
+                  onClick={() => setShowDeactivateDialog(true)}
+                  className="text-primaryColor hover:bg-red-50"
                 >
-                  {settingsFetcher.state === 'submitting'
-                    ? 'Deactivating...'
-                    : 'Deactivate Account'}
+                  Deactivate Account
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </div>
+            )}
+          </div>
         </div>
       </section>
+
+      <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {currentAccountStatus === AccountStatus.Deactivated
+                ? 'Reactivate Account'
+                : 'Deactivate Account'}
+            </DialogTitle>
+            <DialogDescription className="space-y-4">
+              <div className="mt-4">
+                {currentAccountStatus === AccountStatus.Deactivated ? (
+                  <p>Are you sure you want to reactivate your account?</p>
+                ) : (
+                  <>
+                    {getDeactivationWarning()}
+                    <p>Are you sure you want to deactivate your account?</p>
+                  </>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={
+                currentAccountStatus === AccountStatus.Deactivated ? 'default' : 'destructive'
+              }
+              onClick={handleDeactivateAccount}
+              disabled={settingsFetcher.state === 'submitting'}
+            >
+              {settingsFetcher.state === 'submitting'
+                ? currentAccountStatus === AccountStatus.Deactivated
+                  ? 'Reactivating...'
+                  : 'Deactivating...'
+                : currentAccountStatus === AccountStatus.Deactivated
+                  ? 'Reactivate Account'
+                  : 'Deactivate Account'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
