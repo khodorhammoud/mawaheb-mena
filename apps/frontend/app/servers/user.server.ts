@@ -125,17 +125,13 @@ export async function getAccountBySlug(slug: string): Promise<UserAccount | null
  * @returns UserAccount | null: the current user account info from the session or null if the user is not logged in
  */
 
-let currentAccount: UserAccount = null;
 export async function getCurrentUserAccountInfo(
   request: Request,
   withPassword = false
 ): Promise<UserAccount | null> {
-  if (!currentAccount) {
-    const user = await getCurrentUser(request, withPassword);
-    if (!user) return null;
-    currentAccount = await getUserAccountInfo({ userId: user.id });
-  }
-  return currentAccount;
+  const user = await getCurrentUser(request, withPassword);
+  if (!user) return null;
+  return await getUserAccountInfo({ userId: user.id });
 }
 
 /**
@@ -869,6 +865,35 @@ export async function deactivateAccount(userId: number): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('💥 Error in deactivateAccount:', error);
+    return false;
+  }
+}
+
+export async function reactivateAccount(userId: number): Promise<boolean> {
+  try {
+    const accountType = await getUserAccountType(userId);
+
+    if (!accountType) {
+      return false;
+    }
+
+    // Update account status to published in the accountsTable
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Published })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    if (!accountResult || accountResult.length === 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('💥 Error in reactivateAccount:', error);
     return false;
   }
 }
