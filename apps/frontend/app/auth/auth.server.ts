@@ -4,7 +4,7 @@
 import { sessionStorage, getSession } from './session.server';
 import { Authenticator } from 'remix-auth';
 import { registerationStrategy, loginStrategy } from './strategies';
-import { checkUserStatuses, getUser } from '~/servers/user.server';
+import { checkUserStatuses, getUser, getCurrentProfileInfo } from '~/servers/user.server';
 import { AccountStatus, AccountType } from '~/types/enums';
 import { redirect } from '@remix-run/node';
 
@@ -112,6 +112,27 @@ export async function requireAdmin(request: Request) {
 
   if (!user || user.role !== 'admin') {
     throw redirect('/login-admin');
+  }
+
+  return userId;
+}
+
+// use this to check if the user is published or deactivated
+export async function requireUserAccountStatusPublishedOrDeactivated(request: Request) {
+  const userId = await requireUserOnboarded(request);
+  const profile = await getCurrentProfileInfo(request);
+
+  if (!profile || !profile.account) {
+    throw redirect('/identification');
+  }
+
+  // Allow both published and deactivated accounts to access the dashboard
+  if (
+    profile.account.accountStatus !== AccountStatus.Published &&
+    profile.account.accountStatus !== AccountStatus.Deactivated
+  ) {
+    console.warn('Unauthorized, user is not published or deactivated');
+    throw redirect('/identification');
   }
 
   return userId;

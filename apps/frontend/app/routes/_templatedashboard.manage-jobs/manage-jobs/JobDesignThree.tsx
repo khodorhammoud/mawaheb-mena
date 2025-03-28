@@ -1,24 +1,28 @@
-import { JobCardData } from "~/types/Job";
-import JobStateButton from "~/common/job-state-button/JobStateButton";
-import ProfilePhotosSection from "~/common/profile-photos-list/ProfilePhotosSection";
-import { Link } from "@remix-run/react";
-import { JobStatus } from "~/types/enums";
-import { parseDate } from "~/lib/utils";
-import { formatTimeAgo } from "~/utils/formatTimeAgo";
-import { IoPencilSharp } from "react-icons/io5";
+import { JobCardData } from '~/types/Job';
+import JobStateButton from '~/common/job-state-button/JobStateButton';
+import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
+import { Link } from '@remix-run/react';
+import { JobStatus } from '~/types/enums';
+import { parseDate } from '~/lib/utils';
+import { formatTimeAgo } from '~/utils/formatTimeAgo';
+import { IoPencilSharp } from 'react-icons/io5';
 
 export default function JobDesignThree({
   data,
   status,
   onStatusChange,
+  userAccountStatus,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
+  userAccountStatus?: string;
 }) {
+  // console.log('JobDesignThree: User account status:', userAccountStatus);
+
   const applicantsPhotos = [
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
-    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg",
+    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
+    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
   ];
 
   const { job } = data;
@@ -46,6 +50,7 @@ export default function JobDesignThree({
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
+            userAccountStatus={userAccountStatus}
             className="w-[106px] h-[36px]"
           />
         )}
@@ -57,13 +62,11 @@ export default function JobDesignThree({
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
-          Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : "N/A"}
+          Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
           <div>
-            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">
-              ${job.budget}
-            </p>
+            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">${job.budget}</p>
             <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
           </div>
           <div>
@@ -77,16 +80,14 @@ export default function JobDesignThree({
 
       {/* APPLICANTS SECTION */}
       {/* Applicants ProfilePhotosSection */}
-      <div
-        className={`${status === JobStatus.Draft ? "hidden" : "flex lg:gap-8 gap-4"}`}
-      >
+      <div className={`${status === JobStatus.Draft ? 'hidden' : 'flex lg:gap-8 gap-4'}`}>
         <ProfilePhotosSection
           label="Applicants"
           images={applicantsPhotos}
           profiles={data.applications}
         />
 
-        <div className={`${status === JobStatus.Active ? "hidden" : ""}`}>
+        <div className={`${status === JobStatus.Active ? 'hidden' : ''}`}>
           <ProfilePhotosSection
             label="Hired"
             images={applicantsPhotos}

@@ -1,7 +1,7 @@
-import { Link } from "@remix-run/react";
-import { JobStatus } from "~/types/enums";
-import { DataTable } from "./DataTable";
-import { ChevronRightIcon } from "@heroicons/react/24/solid";
+import { Link } from '@remix-run/react';
+import { JobStatus, AccountStatus } from '~/types/enums';
+import { DataTable } from './DataTable';
+import { ChevronRightIcon } from '@heroicons/react/24/solid';
 
 interface Job {
   id: number;
@@ -15,6 +15,7 @@ interface Job {
     id: number;
     firstName?: string;
     lastName?: string;
+    accountStatus?: AccountStatus | string;
   };
   category?: {
     id: number;
@@ -30,32 +31,56 @@ interface JobsTableProps {
   showBudget?: boolean;
   showWorkingHours?: boolean;
   showCreatedAt?: boolean;
+  showEmployerStatus?: boolean;
   emptyMessage?: string;
 }
 
 function getStatusColor(status: JobStatus) {
   switch (status) {
     case JobStatus.Draft:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
     case JobStatus.Active:
-      return "bg-green-100 text-green-800";
+      return 'bg-green-100 text-green-800';
     case JobStatus.Closed:
-      return "bg-red-100 text-red-800";
+      return 'bg-red-100 text-red-800';
     case JobStatus.Completed:
-      return "bg-blue-100 text-blue-800";
+      return 'bg-blue-100 text-blue-800';
+    case JobStatus.Paused:
+      return 'bg-yellow-100 text-yellow-800';
+    case JobStatus.Deleted:
+      return 'bg-black-100 text-white-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
+  }
+}
+
+function getEmployerStatusColor(status: string) {
+  switch (status?.toLowerCase()) {
+    case AccountStatus.Published.toLowerCase():
+      return 'bg-green-100 text-green-800';
+    case AccountStatus.Pending.toLowerCase():
+      return 'bg-yellow-100 text-yellow-800';
+    case AccountStatus.Draft.toLowerCase():
+      return 'bg-gray-100 text-gray-800';
+    case AccountStatus.Closed.toLowerCase():
+      return 'bg-red-100 text-red-800';
+    case AccountStatus.Suspended.toLowerCase():
+      return 'bg-purple-100 text-purple-800';
+    case AccountStatus.Deactivated.toLowerCase():
+      return 'bg-orange-300 text-orange-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
 // Helper function to safely format dates
 function formatDate(date: string | Date | null | undefined): string {
-  if (!date) return "-";
+  if (!date) return '-';
   try {
     return new Date(date).toLocaleDateString();
   } catch (error) {
-    console.error("Error formatting date:", error);
-    return "-";
+    console.error('Error formatting date:', error);
+    return '-';
   }
 }
 
@@ -67,11 +92,12 @@ export function JobsTable({
   showBudget = true,
   showWorkingHours = true,
   showCreatedAt = true,
-  emptyMessage = "No jobs found",
+  showEmployerStatus = true,
+  emptyMessage = 'No jobs found',
 }: JobsTableProps) {
   const columns = [
     {
-      header: "Job Title",
+      header: 'Job Title',
       accessor: (job: Job) => (
         <Link
           to={`/admin-dashboard/job/${job.id}`}
@@ -81,12 +107,12 @@ export function JobsTable({
           {job.title}
         </Link>
       ),
-      className: "font-medium text-gray-900",
+      className: 'font-medium text-gray-900',
     },
     ...(showEmployer
       ? [
           {
-            header: "Employer",
+            header: 'Employer',
             accessor: (job: Job) =>
               job.employer ? (
                 <Link
@@ -96,13 +122,32 @@ export function JobsTable({
                   {job.employer.firstName} {job.employer.lastName}
                 </Link>
               ) : (
-                "-"
+                '-'
+              ),
+          },
+        ]
+      : []),
+    ...(showEmployerStatus
+      ? [
+          {
+            header: 'Employer Status',
+            accessor: (job: Job) =>
+              job.employer?.accountStatus ? (
+                <span
+                  className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getEmployerStatusColor(
+                    job.employer.accountStatus
+                  )}`}
+                >
+                  {job.employer.accountStatus}
+                </span>
+              ) : (
+                '-'
               ),
           },
         ]
       : []),
     {
-      header: "Status",
+      header: 'Job Status',
       accessor: (job: Job) => (
         <span
           className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(
@@ -116,46 +161,46 @@ export function JobsTable({
     ...(showCategory
       ? [
           {
-            header: "Category",
-            accessor: (job: Job) => job.category?.label || "-",
+            header: 'Category',
+            accessor: (job: Job) => job.category?.label || '-',
           },
         ]
       : []),
     ...(showBudget
       ? [
           {
-            header: "Budget",
-            accessor: (job: Job) => (job.budget ? `$${job.budget}` : "-"),
+            header: 'Budget',
+            accessor: (job: Job) => (job.budget ? `$${job.budget}` : '-'),
           },
         ]
       : []),
     ...(showWorkingHours
       ? [
           {
-            header: "Hours/Week",
+            header: 'Hours/Week',
             accessor: (job: Job) =>
-              job.workingHoursPerWeek ? `${job.workingHoursPerWeek} hrs` : "-",
+              job.workingHoursPerWeek ? `${job.workingHoursPerWeek} hrs` : '-',
           },
         ]
       : []),
     ...(showApplicationCount
       ? [
           {
-            header: "Applications",
+            header: 'Applications',
             accessor: (job: Job) => job.applicationCount || 0,
           },
         ]
       : []),
-    ...(showCreatedAt && jobs.some((job) => job.createdAt)
+    ...(showCreatedAt && jobs.some(job => job.createdAt)
       ? [
           {
-            header: "Created Date",
+            header: 'Created Date',
             accessor: (job: Job) => formatDate(job.createdAt),
           },
         ]
       : []),
     {
-      header: "Actions",
+      header: 'Actions',
       accessor: (job: Job) => (
         <Link
           to={`/admin-dashboard/job/${job.id}`}
@@ -171,7 +216,7 @@ export function JobsTable({
     <DataTable
       columns={columns}
       data={jobs}
-      keyExtractor={(job) => job.id}
+      keyExtractor={job => job.id}
       emptyMessage={emptyMessage}
     />
   );
