@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { Link, useLoaderData, Outlet } from "@remix-run/react";
+import { LoaderFunctionArgs, json } from '@remix-run/node';
+import { Link, useLoaderData, Outlet } from '@remix-run/react';
 // import { eq, sql } from "drizzle-orm";
 // import { db } from "~/db/drizzle/connector";
 // import {
@@ -12,10 +12,10 @@ import { Link, useLoaderData, Outlet } from "@remix-run/react";
 //   freelancersTable,
 // } from "~/db/drizzle/schemas/schema";
 // import { ChevronRightIcon } from "@heroicons/react/24/solid";
-import { JobsTable } from "~/common/admin-pages/tables/JobsTable";
-import { ApplicationsTable } from "~/common/admin-pages/tables/ApplicationsTable";
-import { JobStatus, JobApplicationStatus } from "~/types/enums";
-import { getBasicJobs, getAllApplications } from "~/servers/admin.server";
+import { JobsTable } from '~/common/admin-pages/tables/JobsTable';
+import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
+import { JobStatus, JobApplicationStatus, AccountStatus } from '~/types/enums';
+import { getBasicJobs, getAllApplications } from '~/servers/admin.server';
 
 /* function ApplicationsTable({ applications }: { applications: any[] }) {
   if (applications.length === 0) return null;
@@ -81,20 +81,21 @@ import { getBasicJobs, getAllApplications } from "~/servers/admin.server";
  */
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // First get jobs with their basic info (moved to admin.server.ts)
+  // Get jobs with their basic info
   const jobs = await getBasicJobs();
 
-  // Then get all applications with freelancer info (also in admin.server.ts)
+  // Get all applications with freelancer info
   const applications = await getAllApplications();
 
   // Format jobs and include their applications
-  const formattedJobs = jobs.map((job) => ({
+  const formattedJobs = jobs.map(job => ({
     job: {
       id: job.jobId,
       title: job.jobTitle,
       budget: job.jobBudget,
-      status: job.jobStatus,
-      createdAt: job.jobCreatedAt,
+      status: job.jobStatus as JobStatus,
+      createdAt:
+        job.jobCreatedAt instanceof Date ? job.jobCreatedAt.toISOString() : job.jobCreatedAt,
       workingHoursPerWeek: job.jobWorkingHours,
       locationPreference: job.jobLocation,
     },
@@ -102,28 +103,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? {
           id: job.employerId,
           user: {
-            firstName: job.employerFirstName,
-            lastName: job.employerLastName,
+            firstName: job.employerFirstName || 'Unknown',
+            lastName: job.employerLastName || 'Employer',
           },
+          accountStatus: (job.employerAccountStatus as AccountStatus) || AccountStatus.Draft,
         }
       : null,
     category: job.categoryId
       ? {
           id: job.categoryId,
-          label: job.categoryLabel,
+          label: job.categoryLabel || 'Uncategorized',
         }
       : null,
-    applicationCount: Number(job.applicationCount),
+    applicationCount: Number(job.applicationCount) || 0,
     applications: applications
-      .filter((app) => app.jobId === job.jobId)
-      .map((app) => ({
+      .filter(app => app.jobId === job.jobId)
+      .map(app => ({
         id: app.id,
-        status: app.status,
-        createdAt: app.createdAt,
+        status: app.status as JobApplicationStatus,
+        createdAt: app.createdAt instanceof Date ? app.createdAt.toISOString() : app.createdAt,
+        matchScore: app.matchScore || 0,
         freelancer: {
           id: app.freelancerId,
-          firstName: app.freelancerFirstName,
-          lastName: app.freelancerLastName,
+          firstName: app.freelancerFirstName || 'Unknown',
+          lastName: app.freelancerLastName || 'Freelancer',
         },
       })),
   }));
@@ -142,7 +145,7 @@ export default function JobsList() {
 
       <Outlet />
 
-      {jobs.map((job) => (
+      {jobs.map(job => (
         <div
           key={job.job.id}
           className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
@@ -161,6 +164,7 @@ export default function JobsList() {
                       id: job.employer.id,
                       firstName: job.employer.user.firstName,
                       lastName: job.employer.user.lastName,
+                      accountStatus: job.employer.accountStatus,
                     }
                   : undefined,
                 category: job.category
@@ -175,26 +179,39 @@ export default function JobsList() {
 
           {job.applications.length > 0 && (
             <div className="bg-gray-50 pt-2">
-              <div className="px-6 py-2 text-sm font-medium text-gray-700">
-                Applications
-              </div>
+              <div className="px-6 py-2 text-sm font-medium text-gray-700">Applications</div>
               <ApplicationsTable
-                applications={job.applications.map((app) => ({
+                applications={job.applications.map(app => ({
                   application: {
                     id: app.id,
                     status: app.status as JobApplicationStatus,
                     createdAt: app.createdAt,
+                    matchScore: app.matchScore || 0,
                   },
                   freelancer: {
                     id: app.freelancer.id,
                     user: {
                       firstName: app.freelancer.firstName,
                       lastName: app.freelancer.lastName,
-                      email: "",
+                      email: '',
                     },
                   },
+                  employer: job.employer
+                    ? {
+                        id: job.employer.id,
+                        user: {
+                          firstName: job.employer.user.firstName,
+                          lastName: job.employer.user.lastName,
+                          email: '',
+                        },
+                        accountStatus: job.employer.accountStatus,
+                      }
+                    : undefined,
                 }))}
                 showJob={false}
+                showEmployer={true}
+                showEmployerStatus={true}
+                showMatchScore={true}
               />
             </div>
           )}

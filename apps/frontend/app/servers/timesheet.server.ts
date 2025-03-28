@@ -1,13 +1,13 @@
-import { and, lte, eq, gte, inArray } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
+import { and, lte, eq, gte, inArray } from 'drizzle-orm';
+import { db } from '~/db/drizzle/connector';
 
 import {
   timesheetEntriesTable,
   TimesheetSubmissionEntriesTable,
   timesheetSubmissionsTable,
-} from "~/db/drizzle/schemas/schema";
-import { TimesheetStatus } from "~/types/enums";
-import { TimesheetEntry } from "~/types/Timesheet";
+} from '~/db/drizzle/schemas/schema';
+import { TimesheetStatus } from '~/types/enums';
+import { TimesheetEntry } from '~/types/Timesheet';
 
 export async function getTimesheetEntriesFromDatabase(
   freelancerId: number,
@@ -26,7 +26,7 @@ export async function getTimesheetEntriesFromDatabase(
         lte(timesheetEntriesTable.date, toTime.toISOString())
       )
     );
-  return timesheetEntries.map((entry) => ({
+  return timesheetEntries.map(entry => ({
     ...entry,
     date: new Date(entry.date),
   }));
@@ -107,7 +107,7 @@ export async function submitTimesheetDay(
   );
 
   if (entries.length === 0) {
-    throw new Error("Cannot submit a day with no entries");
+    throw new Error('Cannot submit a day with no entries');
   }
 
   const toDate = new Date(submissionDate);
@@ -122,7 +122,7 @@ export async function submitTimesheetDay(
   );
 
   if (existingSubmissions.length > 0) {
-    throw new Error("This day has already been submitted");
+    throw new Error('This day has already been submitted');
   }
 
   // calculate total hours from entries
@@ -132,7 +132,7 @@ export async function submitTimesheetDay(
   }, 0);
 
   if (totalHours <= 0) {
-    throw new Error("Cannot submit a day with no entries");
+    throw new Error('Cannot submit a day with no entries');
   }
 
   type NewTimesheetSubmission = typeof timesheetSubmissionsTable.$inferInsert;
@@ -150,15 +150,13 @@ export async function submitTimesheetDay(
     .returning();
 
   // prepare entries to be inserted in the TimesheetSubmissionEntriesTable
-  const timesheetSubmissionEntries = entries.map((entry) => ({
+  const timesheetSubmissionEntries = entries.map(entry => ({
     timesheetSubmissionId: insertedTimesheetSubmission.id,
     timesheetEntryId: entry.id,
   }));
 
   // insert the entries into the TimesheetSubmissionEntriesTable
-  await db
-    .insert(TimesheetSubmissionEntriesTable)
-    .values(timesheetSubmissionEntries);
+  await db.insert(TimesheetSubmissionEntriesTable).values(timesheetSubmissionEntries);
 
   return insertedTimesheetSubmission;
 }
@@ -206,10 +204,7 @@ export async function updateTimesheetEntriesStatus(
     .where(
       and(
         eq(timesheetSubmissionsTable.jobApplicationId, jobApplicationId),
-        gte(
-          timesheetSubmissionsTable.submissionDate,
-          startOfDay.toDateString()
-        ),
+        gte(timesheetSubmissionsTable.submissionDate, startOfDay.toDateString()),
         lte(timesheetSubmissionsTable.submissionDate, endOfDay.toDateString())
       )
     );

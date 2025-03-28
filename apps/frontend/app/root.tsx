@@ -9,7 +9,7 @@ import {
   isRouteErrorResponse,
   useRouteError,
 } from '@remix-run/react';
-import { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import { LinksFunction, LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node';
 import stylesheet from './tailwind.css?url';
 import appStylesheet from './styles/app-global.css?url';
 import i18nServer, { localeCookie } from '~/lib/i18n.server';
@@ -19,9 +19,16 @@ import { Toaster } from '~/components/ui/toaster';
 
 export const handle = { i18n: ['translation'] };
 
+type LoaderData = {
+  locale: string;
+};
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18nServer.getLocale(request);
-  return { locale };
+  return json<LoaderData>(
+    { locale },
+    { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
+  );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
