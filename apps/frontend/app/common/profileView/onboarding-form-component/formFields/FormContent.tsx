@@ -56,7 +56,6 @@ const FormContent = forwardRef<any, FormContentProps>(
         isServerFile: (file as any).isServerFile || false,
       }));
 
-      console.log('DEBUG - saveFilesToLocalStorage - Saving metadata:', metadata);
       localStorage.setItem(`${fieldName}-files`, JSON.stringify(metadata));
     };
 
@@ -67,7 +66,6 @@ const FormContent = forwardRef<any, FormContentProps>(
         if (!storedData) return null;
 
         const metadata = JSON.parse(storedData);
-        console.log('DEBUG - loadFilesFromLocalStorage - Loaded metadata:', metadata);
         return metadata;
       } catch (error) {
         console.error('Error loading files from localStorage:', error);
@@ -106,10 +104,8 @@ const FormContent = forwardRef<any, FormContentProps>(
 
         // Add files to delete if any
         if (filesToDelete.length > 0) {
-          console.log('DEBUG - prepareFormData - Adding filesToDelete to formData:', filesToDelete);
           formData.append('filesToDelete', JSON.stringify(filesToDelete));
         } else {
-          console.log('DEBUG - prepareFormData - No files to delete');
         }
       }
 
@@ -120,11 +116,7 @@ const FormContent = forwardRef<any, FormContentProps>(
     useImperativeHandle(ref, () => ({
       prepareFormData,
       filesSelected,
-      setFilesSelected: (files: File[]) => {
-        setFilesSelected(files);
-        // Save files to localStorage when they're set
-        saveFilesToLocalStorage(files);
-      },
+      setFilesSelected,
       formSubmitted,
       setFormSubmitted,
       // Add method to clear localStorage when form is submitted
@@ -148,28 +140,14 @@ const FormContent = forwardRef<any, FormContentProps>(
           filesSelected.length === 0 // Only process if we don't already have files
         ) {
           const attachments = (props.value as any).attachments;
-          console.log(
-            'DEBUG - useEffect - Found attachments in props.value:',
-            JSON.stringify(attachments, null, 2)
-          );
           if (attachments && typeof attachments === 'object' && fieldName in attachments) {
             const existingFiles = attachments[fieldName];
-            console.log(
-              'DEBUG - useEffect - Found existing files:',
-              JSON.stringify(existingFiles, null, 2)
-            );
             if (Array.isArray(existingFiles) && existingFiles.length > 0) {
               // Create File objects from the server data if possible
               const fileObjects = existingFiles
                 .filter(file => !filesSelected.some(f => f.name === file.name))
                 .map(file => {
                   try {
-                    console.log(
-                      'DEBUG - Processing server file (full):',
-                      JSON.stringify(file, null, 2)
-                    );
-                    console.log('DEBUG - File storage object:', file.storage);
-
                     // Create a File object with the actual size from the server
                     const fileObj = new File(
                       [
@@ -190,12 +168,6 @@ const FormContent = forwardRef<any, FormContentProps>(
                       (fileObj as any).storageKey = file.storage.key;
                       (fileObj as any).serverId = file.attachmentId; // Try to get the actual attachment ID
                       (fileObj as any).isServerFile = true;
-                      console.log('DEBUG - useEffect - File details:', {
-                        name: file.name,
-                        storageKey: file.storage.key,
-                        attachmentId: file.attachmentId,
-                        fullFile: file,
-                      });
                     }
 
                     return fileObj;
@@ -207,15 +179,6 @@ const FormContent = forwardRef<any, FormContentProps>(
                 .filter(Boolean);
 
               if (fileObjects.length > 0) {
-                console.log(
-                  'DEBUG - useEffect - Setting file objects with server IDs:',
-                  fileObjects.map(f => ({
-                    name: f.name,
-                    storageKey: (f as any).storageKey,
-                    serverId: (f as any).serverId,
-                    isServerFile: (f as any).isServerFile,
-                  }))
-                );
                 setFilesSelected(fileObjects);
               }
             }
@@ -225,7 +188,6 @@ const FormContent = forwardRef<any, FormContentProps>(
         // Then check if we have files in localStorage
         const storedFileMetadata = loadFilesFromLocalStorage();
         if (storedFileMetadata && storedFileMetadata.length > 0) {
-          console.log('DEBUG - useEffect - Found stored file metadata:', storedFileMetadata);
           // Create File objects from metadata
           const fileObjects = storedFileMetadata
             .map(meta => {
@@ -246,10 +208,6 @@ const FormContent = forwardRef<any, FormContentProps>(
                 if (meta.id) {
                   (file as any).serverId = meta.id;
                   (file as any).isServerFile = true;
-                  console.log(
-                    'DEBUG - useEffect - Preserved server ID from localStorage:',
-                    meta.id
-                  );
                 }
                 return file;
               } catch (e) {
@@ -370,20 +328,11 @@ const FormContent = forwardRef<any, FormContentProps>(
 
     // Remove a file from the selected files
     const handleRemoveFile = (file: File) => {
-      console.log('DEBUG - handleRemoveFile - File to remove:', {
-        name: file.name,
-        storageKey: (file as any).storageKey,
-        serverId: (file as any).serverId,
-        isServerFile: (file as any).isServerFile,
-      });
-
       const fileId = (file as any).serverId;
-      console.log('DEBUG - handleRemoveFile - File ID:', fileId);
 
       if (fileId) {
         setFilesToDelete(prev => {
           const newFilesToDelete = [...prev, fileId];
-          console.log('DEBUG - handleRemoveFile - Updated filesToDelete:', newFilesToDelete);
           return newFilesToDelete;
         });
       }
@@ -455,7 +404,7 @@ const FormContent = forwardRef<any, FormContentProps>(
       if (formType !== 'file' || filesSelected.length === 0) return null;
 
       return (
-        <div className="mt-4">
+        <div className="mt-4 ">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Files:</h3>
           <div className="space-y-2">
             {filesSelected.map((file, index) => (

@@ -455,7 +455,18 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
         ? inputValue
         : props.value;
 
-  const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
+  // Decide if the card is "filled" or "empty" (excluding file logic here)
+  const isFilled = (() => {
+    if (value === null || value === undefined) {
+      return false;
+    }
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return Boolean(value);
+  })();
+
+  // Choose the correct template
   const templateKey =
     props.formType === 'repeatable' ? `repeatable_${props.repeatableFieldName}` : props.formType;
 
@@ -501,8 +512,8 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
                 </Button>
               )}
             </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>{props.popupTitle}</DialogTitle>
+            <DialogContent className="py-6">
+              <DialogTitle className="mb-8">{props.popupTitle}</DialogTitle>
               <FormContent
                 {...props}
                 formState={formState}
@@ -516,6 +527,13 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
+              {/* {formSubmitted && ( */}
+              {/* <DialogFooter className="mt-2">
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
+              </DialogFooter> */}
+              {/* )} */}
             </DialogContent>
           </Dialog>
         )}

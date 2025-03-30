@@ -1,19 +1,19 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUser,
-} from "~/servers/user.server";
+} from '~/servers/user.server';
 import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   Employer,
   Freelancer,
-} from "~/types/User";
-import EmployerDashboard from "./employer";
-import FreelancerDashboard from "./freelancer";
-import { useLoaderData } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
+} from '~/types/User';
+import EmployerDashboard from './employer';
+import FreelancerDashboard from './freelancer';
+import { useLoaderData } from '@remix-run/react';
+import { AccountType } from '~/types/enums';
 import {
   getAllIndustries,
   getAccountBio,
@@ -24,19 +24,19 @@ import {
   getEmployerDashboardData,
   getAllLanguages,
   handleEmployerOnboardingAction,
-} from "~/servers/employer.server";
+} from '~/servers/employer.server';
 import {
   getFreelancerAbout,
   getFreelancerAvailability,
   getFreelancerLanguages,
   handleFreelancerOnboardingAction,
   getFreelancerSkills,
-} from "~/servers/freelancer.server";
-import Header from "../_templatedashboard/header";
+} from '~/servers/freelancer.server';
+import Header from '../_templatedashboard/header';
 import {
-  requireUserAccountStatusPublished,
+  requireUserAccountStatusPublishedOrDeactivated,
   requireUserVerified,
-} from "~/auth/auth.server";
+} from '~/auth/auth.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   await requireUserVerified(request);
@@ -52,24 +52,21 @@ export async function action({ request }: ActionFunctionArgs) {
       return handleEmployerOnboardingAction(formData, userProfile as Employer);
     }
     if (accountType == AccountType.Freelancer) {
-      return handleFreelancerOnboardingAction(
-        formData,
-        userProfile as Freelancer
-      );
+      return handleFreelancerOnboardingAction(formData, userProfile as Freelancer);
     }
     // DEFAULT
-    throw new Error("Unknown target update");
+    throw new Error('Unknown target update');
   } catch (error) {
     return Response.json(
-      { success: false, error: { message: "An unexpected error occurred." } },
+      { success: false, error: { message: 'An unexpected error occurred.' } },
       { status: 500 }
     );
   }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // Ensure user is verified and has published account status
-  await requireUserAccountStatusPublished(request);
+  // Ensure user is verified and has either published or deactivated account status
+  await requireUserAccountStatusPublishedOrDeactivated(request);
 
   // Determine account type (Freelancer/Employer)
   const accountType: AccountType = await getCurrentUserAccountType(request);
@@ -79,7 +76,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const currentUser = await getCurrentUser(request);
   if (!currentUser) {
-    throw new Error("User not authenticated");
+    throw new Error('User not authenticated');
   }
 
   // Check if current user owns the account
@@ -132,9 +129,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const safeParseArray = (data: any): any[] => {
       try {
-        return Array.isArray(data) ? data : JSON.parse(data ?? "[]");
+        return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
       } catch {
-        console.error("Error parsing array:", data);
+        console.error('Error parsing array:', data);
         return [];
       }
     };
@@ -161,6 +158,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return Response.json({
       accountType,
+      accountStatus: currentProfile.account.accountStatus,
       bioInfo,
       currentProfile: processedProfile,
       about,
@@ -178,35 +176,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
       freelancerAvailability: {
         availableForWork: profile.availableForWork ?? false,
         jobsOpenTo: profile.jobsOpenTo ?? [],
-        availableFrom: profile.availableFrom ?? "",
-        hoursAvailableFrom: profile.hoursAvailableFrom ?? "",
-        hoursAvailableTo: profile.hoursAvailableTo ?? "",
+        availableFrom: profile.availableFrom ?? '',
+        hoursAvailableFrom: profile.hoursAvailableFrom ?? '',
+        hoursAvailableTo: profile.hoursAvailableTo ?? '',
       },
     });
   }
 
   return Response.json({
     success: false,
-    error: { message: "Account type not found." },
+    error: { message: 'Account type not found.' },
     status: 404,
   });
 }
 
 // Layout component
 export default function Layout() {
-  const { accountType } = useLoaderData<{
+  const { accountType, accountStatus } = useLoaderData<{
     accountType: AccountType;
+    accountStatus: string;
   }>();
 
   return (
     <div>
       {/* adding the header like that shall be temporary, and i shall ask about it */}
       <Header />
-      {accountType === AccountType.Employer ? (
-        <EmployerDashboard />
-      ) : (
-        <FreelancerDashboard />
-      )}
+      {accountType === AccountType.Employer ? <EmployerDashboard /> : <FreelancerDashboard />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { db } from "../db/drizzle/connector";
+import { db } from '../db/drizzle/connector';
 import {
   accountsTable,
   employerIndustriesTable,
@@ -9,65 +9,51 @@ import {
   languagesTable,
   userIdentificationsTable,
   attachmentsTable,
-} from "../db/drizzle/schemas/schema";
-import { and, eq } from "drizzle-orm";
+} from '../db/drizzle/schemas/schema';
+import { and, eq } from 'drizzle-orm';
 import {
   Employer,
   AccountBio,
   AccountSocialMediaLinks,
   Industry,
   UserAccount,
-} from "../types/User";
-import { SuccessVerificationLoaderStatus } from "~/types/misc";
-import {
-  checkUserExists,
-  getCurrentProfileInfo,
-  updateOnboardingStatus,
-} from "./user.server";
+} from '../types/User';
+import { SuccessVerificationLoaderStatus } from '~/types/misc';
+import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
 // import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from "~/types/enums";
-import DOMPurify from "isomorphic-dompurify";
-import { redirect } from "@remix-run/react";
-import { saveAttachments } from "./cloudStorage.server";
-import {
-  saveAttachment,
-  deleteAttachmentById,
-} from "~/servers/attachment.server";
+import { JobStatus } from '~/types/enums';
+import DOMPurify from 'isomorphic-dompurify';
+import { redirect } from '@remix-run/react';
+import { saveAttachments } from './cloudStorage.server';
+import { saveAttachment, deleteAttachmentById } from '~/servers/attachment.server';
 
 /***************************************************
  ************Insert/update employer info************
  *************************************************** */
 
-export async function handleEmployerOnboardingAction(
-  formData: FormData,
-  employer: Employer
-) {
-  const target = formData.get("target-updated") as string;
+export async function handleEmployerOnboardingAction(formData: FormData, employer: Employer) {
+  const target = formData.get('target-updated') as string;
   const userId = employer.account.user.id;
 
   async function handleEmployerAbout(formData: FormData, employer: Employer) {
-    const aboutContent = formData.get("about") as string;
+    const aboutContent = formData.get('about') as string;
     const aboutStatus = await updateEmployerAbout(employer, aboutContent);
     return Response.json({ success: aboutStatus.success });
   }
 
-  async function handleEmployerBio(
-    formData: FormData,
-    userId: number,
-    employer: Employer
-  ) {
+  async function handleEmployerBio(formData: FormData, userId: number, employer: Employer) {
     const bio = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
-      address: formData.get("address") as string,
-      country: formData.get("country") as string,
-      websiteURL: formData.get("website") as string,
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      address: formData.get('address') as string,
+      country: formData.get('country') as string,
+      websiteURL: formData.get('website') as string,
       socialMediaLinks: {
-        linkedin: formData.get("linkedin") as string,
-        github: formData.get("github") as string,
-        gitlab: formData.get("gitlab") as string,
-        dribbble: formData.get("dribbble") as string,
-        stackoverflow: formData.get("stackoverflow") as string,
+        linkedin: formData.get('linkedin') as string,
+        github: formData.get('github') as string,
+        gitlab: formData.get('gitlab') as string,
+        dribbble: formData.get('dribbble') as string,
+        stackoverflow: formData.get('stackoverflow') as string,
       },
       userId: userId,
     };
@@ -75,37 +61,22 @@ export async function handleEmployerOnboardingAction(
     return Response.json({ success: bioStatus.success });
   }
 
-  async function handleEmployerIndustries(
-    formData: FormData,
-    employer: Employer
-  ) {
-    const industries = formData.get("employer-industries") as string;
-    const industriesIds = industries
-      .split(",")
-      .map((industry) => parseInt(industry));
-    const industriesStatus = await updateEmployerIndustries(
-      employer,
-      industriesIds
-    );
+  async function handleEmployerIndustries(formData: FormData, employer: Employer) {
+    const industries = formData.get('employer-industries') as string;
+    const industriesIds = industries.split(',').map(industry => parseInt(industry));
+    const industriesStatus = await updateEmployerIndustries(employer, industriesIds);
     return Response.json({ success: industriesStatus.success });
   }
 
-  async function handleEmployerYearsInBusiness(
-    formData: FormData,
-    employer: Employer
-  ) {
-    const yearsInBusiness =
-      parseInt(formData.get("yearsInBusiness") as string) || 0;
+  async function handleEmployerYearsInBusiness(formData: FormData, employer: Employer) {
+    const yearsInBusiness = parseInt(formData.get('yearsInBusiness') as string) || 0;
 
-    const yearsStatus = await updateEmployerYearsInBusiness(
-      employer,
-      yearsInBusiness
-    );
+    const yearsStatus = await updateEmployerYearsInBusiness(employer, yearsInBusiness);
     return Response.json({ success: yearsStatus.success });
   }
 
   async function handleEmployerBudget(formData: FormData, employer: Employer) {
-    const budgetValue = formData.get("employerBudget");
+    const budgetValue = formData.get('employerBudget');
     const budget = parseInt(budgetValue as string, 10);
 
     const budgetStatus = await updateEmployerBudget(employer, budget);
@@ -117,36 +88,36 @@ export async function handleEmployerOnboardingAction(
     if (!userExists.length)
       return Response.json({
         success: false,
-        error: { message: "User not found." },
+        error: { message: 'User not found.' },
         status: 404,
       });
 
     const result = await updateOnboardingStatus(userId);
     return result.length
-      ? redirect("/identification")
+      ? redirect('/identification')
       : Response.json({
           success: false,
-          error: { message: "Failed to update onboarding status" },
+          error: { message: 'Failed to update onboarding status' },
 
           status: 500,
         });
   }
 
   switch (target) {
-    case "employer-about":
+    case 'employer-about':
       return handleEmployerAbout(formData, employer);
-    case "employer-bio":
+    case 'employer-bio':
       return handleEmployerBio(formData, userId, employer);
-    case "employer-industries":
+    case 'employer-industries':
       return handleEmployerIndustries(formData, employer);
-    case "employer-years-in-business":
+    case 'employer-years-in-business':
       return handleEmployerYearsInBusiness(formData, employer);
-    case "employer-budget":
+    case 'employer-budget':
       return handleEmployerBudget(formData, employer);
-    case "employer-onboard":
+    case 'employer-onboard':
       return handleEmployerOnboard(userId);
     default:
-      throw new Error("Unknown target update");
+      throw new Error('Unknown target update');
   }
 }
 
@@ -186,10 +157,10 @@ export async function updateAccountBio(
       .returning({ id: accountsTable.id });
 
     if (!res1.length || !res2.length || !res3.length) {
-      throw new Error("Failed to update employer bio");
+      throw new Error('Failed to update employer bio');
     }
   } catch (error) {
-    console.error("Error updating employer bio", error);
+    console.error('Error updating employer bio', error);
     throw error;
   }
 
@@ -218,7 +189,7 @@ export async function updateEmployerIndustries(
       });
     }
   } catch (error) {
-    console.error("Error updating employer industries", error);
+    console.error('Error updating employer industries', error);
     throw error;
   }
   return { success: true };
@@ -231,20 +202,20 @@ export async function updateEmployerYearsInBusiness(
   const accountId = employer.accountId;
   try {
     if (isNaN(yearsInBusiness)) {
-      throw new Error("Years in business must be a number");
+      throw new Error('Years in business must be a number');
     }
     if (yearsInBusiness < 0) {
-      throw new Error("Years in business must be a positive number");
+      throw new Error('Years in business must be a positive number');
     }
     if (yearsInBusiness > 30) {
-      throw new Error("Years in business must be less than 30");
+      throw new Error('Years in business must be less than 30');
     }
     await db
       .update(employersTable)
       .set({ yearsInBusiness })
       .where(eq(employersTable.accountId, accountId));
   } catch (error) {
-    console.error("Error updating employer years in business", error);
+    console.error('Error updating employer years in business', error);
     throw error;
   }
   return { success: true };
@@ -263,7 +234,7 @@ export async function updateEmployerBudget(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating employer budget", error);
+    console.error('Error updating employer budget', error);
     throw error;
   }
 }
@@ -286,7 +257,7 @@ export async function updateEmployerAbout(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating employer about section", error);
+    console.error('Error updating employer about section', error);
     return { success: false }; // Return failure status
   }
 }
@@ -340,26 +311,24 @@ export async function getAccountBio(account: UserAccount): Promise<AccountBio> {
       .where(eq(UsersTable.id, userId));
 
     if (!user || !emp) {
-      throw new Error("Failed to get employer bio");
+      throw new Error('Failed to get employer bio');
     }
     return emp[0] as AccountBio;
   } catch (error) {
-    console.error("Error getting employer bio", error);
+    console.error('Error getting employer bio', error);
     throw error;
   }
 }
 
-export async function getAllLanguages(): Promise<
-  { id: number; name: string }[]
-> {
+export async function getAllLanguages(): Promise<{ id: number; name: string }[]> {
   try {
     const languages = await db.select().from(languagesTable);
     if (!languages) {
-      throw new Error("Failed to get languages");
+      throw new Error('Failed to get languages');
     }
-    return languages.map((lang) => ({ id: lang.id, name: lang.language }));
+    return languages.map(lang => ({ id: lang.id, name: lang.language }));
   } catch (error) {
-    console.error("Error getting languages", error);
+    console.error('Error getting languages', error);
     throw error;
   }
 }
@@ -368,18 +337,16 @@ export async function getAllIndustries(): Promise<Industry[]> {
   try {
     const industries = await db.select().from(industriesTable);
     if (!industries) {
-      throw new Error("Failed to get industries");
+      throw new Error('Failed to get industries');
     }
     return industries;
   } catch (error) {
-    console.error("Error getting industries", error);
+    console.error('Error getting industries', error);
     throw error;
   }
 }
 
-export const getEmployerIndustries = async (
-  employer: Employer
-): Promise<Industry[]> => {
+export const getEmployerIndustries = async (employer: Employer): Promise<Industry[]> => {
   const employerId = employer.id;
   try {
     const industries = await db
@@ -389,24 +356,19 @@ export const getEmployerIndustries = async (
         metadata: industriesTable.metadata,
       })
       .from(industriesTable)
-      .leftJoin(
-        employerIndustriesTable,
-        eq(employerIndustriesTable.industryId, industriesTable.id)
-      )
+      .leftJoin(employerIndustriesTable, eq(employerIndustriesTable.industryId, industriesTable.id))
       .where(eq(employerIndustriesTable.employerId, employerId));
     if (!industries) {
-      throw new Error("Failed to get employer industries");
+      throw new Error('Failed to get employer industries');
     }
     return industries;
   } catch (error) {
-    console.error("Error getting employer industries", error);
+    console.error('Error getting employer industries', error);
     throw error;
   }
 };
 
-export async function getEmployerYearsInBusiness(
-  employer: Employer
-): Promise<number> {
+export async function getEmployerYearsInBusiness(employer: Employer): Promise<number> {
   const accountId = employer.accountId;
 
   try {
@@ -420,14 +382,12 @@ export async function getEmployerYearsInBusiness(
 
     return result[0]?.yearsInBusiness ?? 0;
   } catch (error) {
-    console.error("Error fetching employer years in business", error);
+    console.error('Error fetching employer years in business', error);
     throw error;
   }
 }
 
-export async function getEmployerBudget(
-  employer: Employer
-): Promise<string | null> {
+export async function getEmployerBudget(employer: Employer): Promise<string | null> {
   const accountId = employer.accountId;
 
   try {
@@ -442,7 +402,7 @@ export async function getEmployerBudget(
     // ✅ Return null if the budget is 0 or undefined
     return result[0]?.budget ? String(result[0].budget) : null;
   } catch (error) {
-    console.error("Error fetching employer budget", error);
+    console.error('Error fetching employer budget', error);
     throw error;
   }
 }
@@ -460,9 +420,9 @@ export async function getEmployerAbout(employer: Employer): Promise<string> {
       .limit(1); // Limit to 1 row since we're expecting one result
 
     // Return the fetched about content or default to an empty string if no result
-    return result[0]?.about ? String(result[0].about) : "";
+    return result[0]?.about ? String(result[0].about) : '';
   } catch (error) {
-    console.error("Error fetching employer about section", error);
+    console.error('Error fetching employer about section', error);
     throw error; // Re-throw error for further handling
   }
 }
@@ -472,7 +432,7 @@ export async function getEmployerDashboardData(request: Request) {
     // Fetch the current employer information based on the request
     const currentProfile = (await getCurrentProfileInfo(request)) as Employer;
     if (!currentProfile) {
-      throw new Error("Current user not found.");
+      throw new Error('Current user not found.');
     }
 
     // Fetch counts for active, drafted, and closed jobs
@@ -481,28 +441,19 @@ export async function getEmployerDashboardData(request: Request) {
         .select()
         .from(jobsTable)
         .where(
-          and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.status, JobStatus.Active)
-          )
+          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Active))
         ),
       db
         .select()
         .from(jobsTable)
         .where(
-          and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.status, JobStatus.Draft)
-          )
+          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Draft))
         ),
       db
         .select()
         .from(jobsTable)
         .where(
-          and(
-            eq(jobsTable.employerId, currentProfile.id),
-            eq(jobsTable.status, JobStatus.Closed)
-          )
+          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Closed))
         ),
     ]);
 
@@ -514,25 +465,18 @@ export async function getEmployerDashboardData(request: Request) {
     // Return the job counts
     return { activeJobCount, draftedJobCount, closedJobCount };
   } catch (error) {
-    console.error("Error fetching employer dashboard data:", error);
+    console.error('Error fetching employer dashboard data:', error);
     throw error; // Re-throw the error for further handling
   }
 }
 
 /**
- * Creates or updates an employer identification record
+ * Create a new identification record for an employer
  * @param userId The user ID
- * @param attachmentsData Object containing arrays of files for each document type
- * @returns The created or updated identification record
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The created identification record
  */
-export async function createEmployerIdentification(
-  userId: number,
-  attachmentsData: {
-    identification?: File[];
-    trade_license?: File[];
-    board_resolution?: File[];
-  }
-) {
+export async function createEmployerIdentification(userId: number, attachmentsData: any) {
   try {
     // Save identification attachments to the attachments table
     let identificationIds: { success: boolean; data: number[] } = {
@@ -550,21 +494,18 @@ export async function createEmployerIdentification(
       data: [],
     };
 
-    if (
-      attachmentsData.identification &&
-      attachmentsData.identification.length > 0
-    ) {
+    if (attachmentsData.identification && attachmentsData.identification.length > 0) {
       // Make sure we're passing valid File objects to saveAttachments
       const validFiles = attachmentsData.identification.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
 
       if (validFiles.length > 0) {
-        const result = await saveAttachments(validFiles, "identification");
+        const result = await saveAttachments(validFiles, 'identification');
 
         // Check if the attachment uploads failed
         if (!result.success) {
-          throw new Error("Failed to save attachments");
+          throw new Error('Failed to save attachments');
         }
 
         identificationIds = { success: true, data: result.data || [] };
@@ -572,21 +513,18 @@ export async function createEmployerIdentification(
     }
 
     // Process trade license files if provided
-    if (
-      attachmentsData.trade_license &&
-      attachmentsData.trade_license.length > 0
-    ) {
+    if (attachmentsData.trade_license && attachmentsData.trade_license.length > 0) {
       // Make sure we're passing valid File objects to saveAttachments
       const validFiles = attachmentsData.trade_license.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
 
       if (validFiles.length > 0) {
-        const result = await saveAttachments(validFiles, "trade_license");
+        const result = await saveAttachments(validFiles, 'trade_license');
 
         // Check if the attachment uploads failed
         if (!result.success) {
-          throw new Error("Failed to save trade license attachments");
+          throw new Error('Failed to save trade license attachments');
         }
 
         tradeLicenseIds = { success: true, data: result.data || [] };
@@ -594,21 +532,18 @@ export async function createEmployerIdentification(
     }
 
     // Process board resolution files if provided
-    if (
-      attachmentsData.board_resolution &&
-      attachmentsData.board_resolution.length > 0
-    ) {
+    if (attachmentsData.board_resolution && attachmentsData.board_resolution.length > 0) {
       // Make sure we're passing valid File objects to saveAttachments
       const validFiles = attachmentsData.board_resolution.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
 
       if (validFiles.length > 0) {
-        const result = await saveAttachments(validFiles, "board_resolution");
+        const result = await saveAttachments(validFiles, 'board_resolution');
 
         // Check if the attachment uploads failed
         if (!result.success) {
-          throw new Error("Failed to save board resolution attachments");
+          throw new Error('Failed to save board resolution attachments');
         }
 
         boardResolutionIds = { success: true, data: result.data || [] };
@@ -627,72 +562,60 @@ export async function createEmployerIdentification(
       .insert(userIdentificationsTable)
       .values({
         userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
-          attachments,
-          updatedAt: new Date(),
-        },
+        attachments: attachmentsData,
       })
       .returning();
 
     return { success: true, data: result[0] };
   } catch (error) {
-    console.error("Error creating employer identification:", error);
+    console.error('Error creating employer identification:', error);
     return { success: false, error };
   }
 }
 
+/**
+ * Get the identification record for an employer
+ * @param userId The user ID
+ * @returns The identification record
+ */
 export async function getEmployerIdentification(userId: number) {
   try {
-    console.log(
-      "DEBUG - getEmployerIdentification called with userId:",
-      userId
-    );
+    // console.log('DEBUG - getEmployerIdentification called with userId:', userId);
 
     const result = await db
       .select()
       .from(userIdentificationsTable)
       .where(eq(userIdentificationsTable.userId, userId));
 
-    console.log(
-      "DEBUG - Raw DB result for employer identification:",
-      JSON.stringify(result, null, 2)
-    );
+    // console.log(
+    //   'DEBUG - Raw DB result for employer identification:',
+    //   JSON.stringify(result, null, 2)
+    // );
 
     // Check if we have the expected data format
-    if (result.length > 0) {
-      console.log(
-        "DEBUG - Employer attachments found:",
-        result[0].attachments
-          ? JSON.stringify(result[0].attachments, null, 2)
-          : "No attachments"
-      );
-    } else {
-      console.log(
-        "DEBUG - No employer identification record found for userId:",
-        userId
-      );
-    }
+    // if (result.length > 0) {
+    // console.log(
+    // 'DEBUG - Employer attachments found:',
+    // result[0].attachments ? JSON.stringify(result[0].attachments, null, 2) : 'No attachments'
+    // );
+    // } else {
+    // console.log('DEBUG - No employer identification record found for userId:', userId);
+    // }
 
     return { success: true, data: result[0] || null };
   } catch (error) {
-    console.error("Error getting employer identification:", error);
+    console.error('Error getting employer identification:', error);
     return { success: false, error };
   }
 }
 
-export async function updateEmployerIdentification(
-  userId: number,
-  attachmentsData: {
-    identification?: File[];
-    trade_license?: File[];
-    board_resolution?: File[];
-    filesToDelete?: number[];
-  }
-) {
+/**
+ * Update the identification record for an employer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The updated identification record
+ */
+export async function updateEmployerIdentification(userId: number, attachmentsData: any) {
   try {
     // Get existing identification data
     const existingData = await getEmployerIdentification(userId);
@@ -711,41 +634,27 @@ export async function updateEmployerIdentification(
     }
 
     // Process files to delete if any
-    if (
-      attachmentsData.filesToDelete &&
-      attachmentsData.filesToDelete.length > 0
-    ) {
-      console.log(
-        "DEBUG - Processing files to delete:",
-        attachmentsData.filesToDelete
-      );
+    if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
+      // console.log('DEBUG - Processing files to delete:', attachmentsData.filesToDelete);
 
       // Filter out deleted file IDs from existing attachments
-      existingAttachments.identification =
-        existingAttachments.identification.filter(
-          (id) => !attachmentsData.filesToDelete?.includes(id)
-        );
-      existingAttachments.trade_license =
-        existingAttachments.trade_license.filter(
-          (id) => !attachmentsData.filesToDelete?.includes(id)
-        );
-      existingAttachments.board_resolution =
-        existingAttachments.board_resolution.filter(
-          (id) => !attachmentsData.filesToDelete?.includes(id)
-        );
+      existingAttachments.identification = existingAttachments.identification.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
+      );
+      existingAttachments.trade_license = existingAttachments.trade_license.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
+      );
+      existingAttachments.board_resolution = existingAttachments.board_resolution.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
+      );
 
       // Delete the files from the attachments table
       for (const fileId of attachmentsData.filesToDelete) {
         try {
           await deleteAttachmentById(fileId);
-          console.log(
-            `DEBUG - Successfully deleted attachment with ID ${fileId}`
-          );
+          // console.log(`DEBUG - Successfully deleted attachment with ID ${fileId}`);
         } catch (error) {
-          console.error(
-            `DEBUG - Error deleting attachment with ID ${fileId}:`,
-            error
-          );
+          console.error(`DEBUG - Error deleting attachment with ID ${fileId}:`, error);
           // Continue with other deletions even if one fails
         }
       }
@@ -759,10 +668,7 @@ export async function updateEmployerIdentification(
     };
 
     // Handle identification files
-    if (
-      attachmentsData.identification &&
-      attachmentsData.identification.length > 0
-    ) {
+    if (attachmentsData.identification && attachmentsData.identification.length > 0) {
       for (const file of attachmentsData.identification) {
         try {
           const attachment = await saveAttachment(file.name, {
@@ -773,16 +679,13 @@ export async function updateEmployerIdentification(
             newAttachments.identification.push(attachment.id);
           }
         } catch (error) {
-          console.error("Error saving identification file:", error);
+          console.error('Error saving identification file:', error);
         }
       }
     }
 
     // Handle trade license files
-    if (
-      attachmentsData.trade_license &&
-      attachmentsData.trade_license.length > 0
-    ) {
+    if (attachmentsData.trade_license && attachmentsData.trade_license.length > 0) {
       for (const file of attachmentsData.trade_license) {
         try {
           const attachment = await saveAttachment(file.name, {
@@ -793,16 +696,13 @@ export async function updateEmployerIdentification(
             newAttachments.trade_license.push(attachment.id);
           }
         } catch (error) {
-          console.error("Error saving trade license file:", error);
+          console.error('Error saving trade license file:', error);
         }
       }
     }
 
     // Handle board resolution files
-    if (
-      attachmentsData.board_resolution &&
-      attachmentsData.board_resolution.length > 0
-    ) {
+    if (attachmentsData.board_resolution && attachmentsData.board_resolution.length > 0) {
       for (const file of attachmentsData.board_resolution) {
         try {
           const attachment = await saveAttachment(file.name, {
@@ -813,7 +713,7 @@ export async function updateEmployerIdentification(
             newAttachments.board_resolution.push(attachment.id);
           }
         } catch (error) {
-          console.error("Error saving board resolution file:", error);
+          console.error('Error saving board resolution file:', error);
         }
       }
     }
@@ -833,26 +733,31 @@ export async function updateEmployerIdentification(
       })
       .returning();
 
-    return { success: true, data: result };
+    return { success: true, data: result[0] };
   } catch (error) {
-    console.error("Error updating employer identification:", error);
+    console.error('Error updating employer identification:', error);
     return { success: false, error };
   }
 }
 
+/**
+ * Update the account status to pending after identification submission
+ * @param accountId The account ID
+ * @returns Success status
+ */
 export async function updateEmployerAccountStatusToPending(accountId: number) {
   try {
     const result = await db
       .update(accountsTable)
       .set({
-        accountStatus: "pending",
+        accountStatus: 'pending',
       })
       .where(eq(accountsTable.id, accountId))
       .returning();
 
     return { success: true, data: result[0] };
   } catch (error) {
-    console.error("Error updating employer account status:", error);
+    console.error('Error updating employer account status:', error);
     return { success: false, error };
   }
 }
