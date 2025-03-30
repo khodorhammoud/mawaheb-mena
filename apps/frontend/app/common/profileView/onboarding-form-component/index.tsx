@@ -1,13 +1,7 @@
-import {
-  forwardRef,
-  useState,
-  useRef,
-  useImperativeHandle,
-  useEffect,
-} from "react";
-import { useFetcher } from "@remix-run/react";
+import { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import { useFetcher } from '@remix-run/react';
 
-import { Card } from "~/common/header/card";
+import { Card } from '~/common/header/card';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +10,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { IoPencilSharp } from "react-icons/io5";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { IoPencilSharp } from 'react-icons/io5';
 
 // Hooks used by the second snippet
-import { useFormState } from "./hooks/useFormState";
-import { useFormSubmission } from "./hooks/useFormSubmission";
+import { useFormState } from './hooks/useFormState';
+import { useFormSubmission } from './hooks/useFormSubmission';
 
 // The shared FormContent + FieldTemplates that both snippets rely on
-import FormContent, { getFormData } from "./formFields/FormContent";
-import { FieldTemplates } from "./formFields/fieldTemplates";
+import FormContent, { getFormData } from './formFields/FormContent';
+import { FieldTemplates } from './formFields/fieldTemplates';
 
 // Types
 import type {
@@ -34,467 +28,403 @@ import type {
   RepeatableInputType,
   GeneralizableFormCardProps,
   FormType,
-} from "./types";
+} from './types';
 
 /* =====================================================================
  *  1) The forwardRef-based component for "file" formType ONLY
  * =====================================================================
  */
-const FileFormCard = forwardRef<any, GeneralizableFormCardProps>(
-  (props, ref) => {
-    const {
-      cardTitle,
-      cardSubtitle,
-      popupTitle,
-      triggerLabel,
-      formType,
-      formName,
-      fieldName,
-      value,
-      acceptedFileTypes,
-      multiple,
-      editable = true,
-      showStatusMessage = true,
-      showLoadingOnSubmit = false,
-      formRef,
-      // ... any other props you may want to spread
-    } = props;
+const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) => {
+  const {
+    cardTitle,
+    cardSubtitle,
+    popupTitle,
+    triggerLabel,
+    formType,
+    formName,
+    fieldName,
+    value,
+    acceptedFileTypes,
+    multiple,
+    editable = true,
+    showStatusMessage = true,
+    showLoadingOnSubmit = false,
+    formRef,
+    // ... any other props you may want to spread
+  } = props;
 
-    // Since we only want to handle "file" here, we ignore "repeatable" logic:
-    // We'll keep some local states and references:
-    const [inputValue, setInputValue] = useState<any>(value || null);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // Since we only want to handle "file" here, we ignore "repeatable" logic:
+  // We'll keep some local states and references:
+  const [inputValue, setInputValue] = useState<any>(value || null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-    const formContentRef = useRef<any>(null);
-    const fetcher = useFetcher();
+  const formContentRef = useRef<any>(null);
+  const fetcher = useFetcher();
 
-    console.log(
-      "DEBUG - FileFormCard rendering with value:",
-      value && typeof value === "object" && "attachments" in value
-        ? JSON.stringify((value as any).attachments, null, 2)
-        : "null"
-    );
-
-    // Update the parent ref whenever selectedFiles changes
-    useEffect(() => {
-      if (formRef && formRef.current) {
-        formRef.current.filesSelected = selectedFiles;
-        if (typeof formRef.current.forceUpdate === "function") {
-          formRef.current.forceUpdate();
-        }
+  // Update the parent ref whenever selectedFiles changes
+  useEffect(() => {
+    if (formRef && formRef.current) {
+      formRef.current.filesSelected = selectedFiles;
+      if (typeof formRef.current.forceUpdate === 'function') {
+        formRef.current.forceUpdate();
       }
-    }, [selectedFiles, formRef]);
+    }
+  }, [selectedFiles, formRef]);
 
-    // Expose methods to parent via ref (if parent needs them)
-    useImperativeHandle(ref, () => {
-      return {
-        getFormData: (form: HTMLFormElement) =>
-          getFormData(formContentRef.current, form),
-        filesSelected: selectedFiles,
-        setFilesSelected: (files: File[]) => {
-          setSelectedFiles(files);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected(files);
-          }
-        },
-        // Add a method to clear files after submission
-        clearFiles: () => {
-          setSelectedFiles([]);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected([]);
-          }
-        },
-      };
-    });
+  // Expose methods to parent via ref (if parent needs them)
+  useImperativeHandle(ref, () => {
+    return {
+      getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
+      filesSelected: selectedFiles,
+      setFilesSelected: (files: File[]) => {
+        setSelectedFiles(files);
+        if (formContentRef.current) {
+          formContentRef.current.setFilesSelected(files);
+        }
+      },
+      // Add a method to clear files after submission
+      clearFiles: () => {
+        setSelectedFiles([]);
+        if (formContentRef.current) {
+          formContentRef.current.setFilesSelected([]);
+        }
+      },
+    };
+  });
 
-    // Handle the actual submit
-    const handleSubmit = (e: React.FormEvent, formData: FormData) => {
-      e.preventDefault();
+  // Handle the actual submit
+  const handleSubmit = (e: React.FormEvent, formData: FormData) => {
+    e.preventDefault();
 
-      // For identification pages, just close the dialog without submitting
-      if (
-        formName === "employer-identification" ||
-        formName === "freelancer-identification"
-      ) {
-        // Extract files from the form data
-        const filesFromForm = formData.getAll(fieldName);
+    // For identification pages, just close the dialog without submitting
+    if (formName === 'employer-identification' || formName === 'freelancer-identification') {
+      // Extract files from the form data
+      const filesFromForm = formData.getAll(fieldName);
 
-        // Filter to ensure we only have File objects
-        const validFiles = filesFromForm.filter(
-          (file): file is File => file instanceof File
+      // Filter to ensure we only have File objects
+      const validFiles = filesFromForm.filter((file): file is File => file instanceof File);
+
+      // Store the files in state and in the formContentRef
+      if (validFiles.length > 0) {
+        // Get existing files
+        const existingFiles = [...selectedFiles];
+
+        // Add new files (avoiding duplicates)
+        const newFiles = validFiles.filter(
+          newFile => !existingFiles.some(existingFile => existingFile.name === newFile.name)
         );
 
-        // Store the files in state and in the formContentRef
-        if (validFiles.length > 0) {
-          // Get existing files
-          const existingFiles = [...selectedFiles];
+        // Update the filesSelected array
+        if (newFiles.length > 0) {
+          const updatedFiles = [...existingFiles, ...newFiles];
+          setSelectedFiles(updatedFiles);
 
-          // Add new files (avoiding duplicates)
-          const newFiles = validFiles.filter(
-            (newFile) =>
-              !existingFiles.some(
-                (existingFile) => existingFile.name === newFile.name
-              )
-          );
-
-          // Update the filesSelected array
-          if (newFiles.length > 0) {
-            const updatedFiles = [...existingFiles, ...newFiles];
-            setSelectedFiles(updatedFiles);
-
-            if (formContentRef.current) {
-              formContentRef.current.setFilesSelected(updatedFiles);
-            }
+          if (formContentRef.current) {
+            formContentRef.current.setFilesSelected(updatedFiles);
           }
         }
-
-        // Close the dialog
-        setDialogOpen(false);
-        return;
       }
 
-      // For other form types, continue with the normal submission
-      fetcher.submit(formData, {
-        method: "post",
-        encType: "multipart/form-data",
-      });
-    };
+      // Close the dialog
+      setDialogOpen(false);
+      return;
+    }
 
-    // Initialize from existing files in value on component mount
-    useEffect(() => {
-      // Only run this once on mount, when the value is set but we don't have any files yet
-      if (value && typeof value === "object" && selectedFiles.length === 0) {
-        console.log("DEBUG - Initializing files from value on mount");
+    // For other form types, continue with the normal submission
+    fetcher.submit(formData, {
+      method: 'post',
+      encType: 'multipart/form-data',
+    });
+  };
 
-        if ("attachments" in value) {
-          const attachments = (value as any).attachments;
+  // Initialize from existing files in value on component mount
+  useEffect(() => {
+    // Only run this once on mount, when the value is set but we don't have any files yet
+    if (value && typeof value === 'object' && selectedFiles.length === 0) {
+      if ('attachments' in value) {
+        const attachments = (value as any).attachments;
 
-          if (
-            attachments &&
-            typeof attachments === "object" &&
-            fieldName in attachments &&
-            Array.isArray(attachments[fieldName]) &&
-            attachments[fieldName].length > 0
-          ) {
-            console.log(
-              "DEBUG - Found attachments for",
-              fieldName,
-              ":",
-              attachments[fieldName].length,
-              "files"
-            );
-
-            // Create File-like objects for display
-            const fileObjects = attachments[fieldName]
-              .map((fileInfo: any) => {
-                try {
-                  // Create a File object with the actual size from the server
-                  const file = new File(
-                    [
-                      // Create a blob with the actual size if available
-                      new Blob(
-                        // Use a larger buffer for the file content to ensure size is preserved
-                        [
-                          new Uint8Array(
-                            new ArrayBuffer(fileInfo.size || 143 * 1024)
-                          ).fill(1),
-                        ],
-                        { type: fileInfo.type || "application/octet-stream" }
-                      ),
-                    ],
-                    fileInfo.name || "unknown-file.pdf",
-                    {
-                      type: fileInfo.type || "application/octet-stream",
-                      lastModified: fileInfo.lastModified || Date.now(),
-                    }
-                  );
-
-                  // Add serverId for tracking if it exists
-                  if (fileInfo.serverId) {
-                    Object.defineProperty(file, "serverId", {
-                      value: fileInfo.serverId,
-                      writable: true,
-                      enumerable: true,
-                    });
+        if (
+          attachments &&
+          typeof attachments === 'object' &&
+          fieldName in attachments &&
+          Array.isArray(attachments[fieldName]) &&
+          attachments[fieldName].length > 0
+        ) {
+          // Create File-like objects for display
+          const fileObjects = attachments[fieldName]
+            .map((fileInfo: any) => {
+              try {
+                // Create a File object with the actual size from the server
+                const file = new File(
+                  [
+                    // Create a blob with the actual size if available
+                    new Blob(
+                      // Use a larger buffer for the file content to ensure size is preserved
+                      [new Uint8Array(new ArrayBuffer(fileInfo.size || 143 * 1024)).fill(1)],
+                      { type: fileInfo.type || 'application/octet-stream' }
+                    ),
+                  ],
+                  fileInfo.name || 'unknown-file.pdf',
+                  {
+                    type: fileInfo.type || 'application/octet-stream',
+                    lastModified: fileInfo.lastModified || Date.now(),
                   }
+                );
 
-                  Object.defineProperty(file, "isServerFile", {
-                    value: true,
+                // Add serverId for tracking if it exists
+                if (fileInfo.serverId) {
+                  Object.defineProperty(file, 'serverId', {
+                    value: fileInfo.serverId,
                     writable: true,
                     enumerable: true,
                   });
-
-                  return file;
-                } catch (e) {
-                  console.error("Error creating File object:", e, fileInfo);
-                  return null;
                 }
-              })
-              .filter(Boolean);
 
-            if (fileObjects.length > 0) {
-              console.log(
-                "DEBUG - Created",
-                fileObjects.length,
-                "File objects from attachments"
-              );
-              setSelectedFiles(fileObjects);
-              if (formContentRef.current) {
-                formContentRef.current.setFilesSelected(fileObjects);
+                Object.defineProperty(file, 'isServerFile', {
+                  value: true,
+                  writable: true,
+                  enumerable: true,
+                });
+
+                return file;
+              } catch (e) {
+                console.error('Error creating File object:', e, fileInfo);
+                return null;
               }
+            })
+            .filter(Boolean);
+
+          if (fileObjects.length > 0) {
+            setSelectedFiles(fileObjects);
+            if (formContentRef.current) {
+              formContentRef.current.setFilesSelected(fileObjects);
             }
           }
         }
       }
-    }, [value, fieldName]); // Only re-run if value or fieldName changes
+    }
+  }, [value, fieldName]); // Only re-run if value or fieldName changes
 
-    // Keep the dialog effect separate
-    useEffect(() => {
-      if (dialogOpen && formContentRef.current) {
-        // When dialog opens, sync the form content ref with our state
-        formContentRef.current.setFilesSelected(selectedFiles);
-      }
-    }, [dialogOpen, selectedFiles]);
+  // Keep the dialog effect separate
+  useEffect(() => {
+    if (dialogOpen && formContentRef.current) {
+      // When dialog opens, sync the form content ref with our state
+      formContentRef.current.setFilesSelected(selectedFiles);
+    }
+  }, [dialogOpen, selectedFiles]);
 
-    // Decide if the card is "filled" or "empty"
-    const isCardFilled = (() => {
-      if (value == null) return false;
+  // Decide if the card is "filled" or "empty"
+  const isCardFilled = (() => {
+    if (value == null) return false;
 
-      // If it's already a File object
-      if (value instanceof File) {
-        return true;
-      }
+    // If it's already a File object
+    if (value instanceof File) {
+      return true;
+    }
 
-      // Handle server-side file data: e.g., attachments
-      if (formType === "file" && typeof value === "object" && value !== null) {
-        // Check attachments format
-        if ("attachments" in (value as object)) {
-          const attachments = (value as any).attachments;
-          if (attachments && typeof attachments === "object") {
-            // Check if any attachment type has files
-            if (fieldName in attachments) {
-              return (
-                Array.isArray(attachments[fieldName]) &&
-                attachments[fieldName].length > 0
-              );
-            }
-            return Object.values(attachments).some(
-              (files: any) => Array.isArray(files) && files.length > 0
-            );
+    // Handle server-side file data: e.g., attachments
+    if (formType === 'file' && typeof value === 'object' && value !== null) {
+      // Check attachments format
+      if ('attachments' in (value as object)) {
+        const attachments = (value as any).attachments;
+        if (attachments && typeof attachments === 'object') {
+          // Check if any attachment type has files
+          if (fieldName in attachments) {
+            return Array.isArray(attachments[fieldName]) && attachments[fieldName].length > 0;
           }
-        }
-
-        // Check direct field format
-        if (fieldName in value) {
-          return Array.isArray(value[fieldName]) && value[fieldName].length > 0;
+          return Object.values(attachments).some(
+            (files: any) => Array.isArray(files) && files.length > 0
+          );
         }
       }
 
-      return Boolean(value);
-    })();
-
-    // We only need a file template:
-    const templateKey = "file";
-    const Template = FieldTemplates[templateKey];
-    if (!Template) return null;
-
-    const TemplateComponent = isCardFilled
-      ? Template.FilledState
-      : Template.EmptyState;
-
-    // Prepare value for the template
-    const prepareValueForRendering = () => {
-      if (value === null || value === undefined) {
-        return "" as FormStateType;
+      // Check direct field format
+      if (fieldName in value) {
+        return Array.isArray(value[fieldName]) && value[fieldName].length > 0;
       }
-      if (value instanceof File) {
-        return `File: ${value.name}` as FormStateType;
+    }
+
+    return Boolean(value);
+  })();
+
+  // We only need a file template:
+  const templateKey = 'file';
+  const Template = FieldTemplates[templateKey];
+  if (!Template) return null;
+
+  const TemplateComponent = isCardFilled ? Template.FilledState : Template.EmptyState;
+
+  // Prepare value for the template
+  const prepareValueForRendering = () => {
+    if (value === null || value === undefined) {
+      return '' as FormStateType;
+    }
+    if (value instanceof File) {
+      return `File: ${value.name}` as FormStateType;
+    }
+    // Handle server-side file data
+    if (
+      formType === 'file' &&
+      typeof value === 'object' &&
+      value !== null &&
+      'attachments' in (value as object)
+    ) {
+      const attachments = (value as any).attachments;
+      if (attachments && typeof attachments === 'object' && fieldName in attachments) {
+        return attachments[fieldName];
       }
-      // Handle server-side file data
+    }
+
+    // Handle identificationData format
+    if (typeof value === 'object' && value !== null && fieldName in value) {
+      return value[fieldName];
+    }
+
+    // fallback
+    return value as FormStateType;
+  };
+
+  // Get file information to display
+  const getFileList = () => {
+    const files = [];
+
+    // Check if we have attachments in the value
+    if (typeof value === 'object' && value !== null && 'attachments' in (value as object)) {
+      const attachments = (value as any).attachments;
       if (
-        formType === "file" &&
-        typeof value === "object" &&
-        value !== null &&
-        "attachments" in (value as object)
+        attachments &&
+        typeof attachments === 'object' &&
+        fieldName in attachments &&
+        Array.isArray(attachments[fieldName])
       ) {
-        const attachments = (value as any).attachments;
-        if (
-          attachments &&
-          typeof attachments === "object" &&
-          fieldName in attachments
-        ) {
-          return attachments[fieldName];
-        }
+        return attachments[fieldName];
       }
+    }
 
-      // Handle identificationData format
-      if (typeof value === "object" && value !== null && fieldName in value) {
-        return value[fieldName];
-      }
+    // Check if we have direct file array in the value
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      fieldName in value &&
+      Array.isArray(value[fieldName])
+    ) {
+      return value[fieldName];
+    }
 
-      // fallback
-      return value as FormStateType;
-    };
+    return files;
+  };
 
-    // Get file information to display
-    const getFileList = () => {
-      const files = [];
+  const fileList = getFileList();
+  const areExistingFiles = fileList && fileList.length > 0;
 
-      // Check if we have attachments in the value
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        "attachments" in (value as object)
-      ) {
-        const attachments = (value as any).attachments;
-        if (
-          attachments &&
-          typeof attachments === "object" &&
-          fieldName in attachments &&
-          Array.isArray(attachments[fieldName])
-        ) {
-          return attachments[fieldName];
-        }
-      }
+  // Decide if the card is "filled" or "empty"
+  const hasFiles = selectedFiles.length > 0;
+  const displayAsFilled = hasFiles || isCardFilled;
+  const displayFilesFromServer = areExistingFiles || hasFiles;
 
-      // Check if we have direct file array in the value
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        fieldName in value &&
-        Array.isArray(value[fieldName])
-      ) {
-        return value[fieldName];
-      }
+  return (
+    <Card
+      className={`border-2 rounded-xl flex flex-col h-full ${
+        displayAsFilled ? 'bg-[#F1F0F3]' : 'bg-gray-100 border-gray-300 border-dashed'
+      }`}
+    >
+      <div className={`flex flex-col relative pt-8 pb-6 pl-7 pr-10`}>
+        <h3 className="text-lg font-semibold">{cardTitle}</h3>
+        <p className="text-sm text-gray-600">{cardSubtitle}</p>
 
-      return files;
-    };
-
-    const fileList = getFileList();
-    const areExistingFiles = fileList && fileList.length > 0;
-
-    // Decide if the card is "filled" or "empty"
-    const hasFiles = selectedFiles.length > 0;
-    const displayAsFilled = hasFiles || isCardFilled;
-    const displayFilesFromServer = areExistingFiles || hasFiles;
-
-    return (
-      <Card
-        className={`border-2 rounded-xl flex flex-col h-full ${
-          displayAsFilled
-            ? "bg-[#F1F0F3]"
-            : "bg-gray-100 border-gray-300 border-dashed"
-        }`}
-      >
-        <div className={`flex flex-col relative pt-8 pb-6 pl-7 pr-10`}>
-          <h3 className="text-lg font-semibold">{cardTitle}</h3>
-          <p className="text-sm text-gray-600">{cardSubtitle}</p>
-
-          {/* Display the file names when there are files */}
-          {selectedFiles.length > 0 && (
-            <div className="mt-3 mb-2">
-              <p className="text-sm font-medium text-gray-700">
-                Uploaded files:
-              </p>
-              <ul className="list-disc pl-5 mt-1">
-                {selectedFiles.map((file, index) => (
-                  <li key={index} className="text-sm text-gray-600">
-                    {file.name}
-                    <span className="text-xs text-gray-500 ml-1">
-                      ({Math.round((file.size || 0) / 1024)} KB)
-                    </span>
-                    {/* Show an indicator for server files */}
-                    {(file as any).isServerFile && (
-                      <span className="ml-1 text-xs text-blue-500">
-                        (from database)
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {editable && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant={displayAsFilled ? "outline" : "default"}
-                  size="sm"
-                  className={`absolute top-4 right-4 ${
-                    displayAsFilled
-                      ? "bg-white hover:bg-gray-50"
-                      : "bg-blue-500 hover:bg-blue-700 text-white"
-                  }`}
-                >
-                  {displayAsFilled ? (
-                    <IoPencilSharp className="h-4 w-4" />
-                  ) : (
-                    triggerLabel
+        {/* Display the file names when there are files */}
+        {selectedFiles.length > 0 && (
+          <div className="mt-3 mb-2">
+            <p className="text-sm font-medium text-gray-700">Uploaded files:</p>
+            <ul className="list-disc pl-5 mt-1">
+              {selectedFiles.map((file, index) => (
+                <li key={index} className="text-sm text-gray-600">
+                  {file.name}
+                  <span className="text-xs text-gray-500 ml-1">
+                    ({Math.round((file.size || 0) / 1024)} KB)
+                  </span>
+                  {/* Show an indicator for server files */}
+                  {(file as any).isServerFile && (
+                    <span className="ml-1 text-xs text-blue-500">(from database)</span>
                   )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{popupTitle}</DialogTitle>
-                </DialogHeader>
-                <FormContent
-                  ref={formContentRef}
-                  formType="file"
-                  formName={formName}
-                  fieldName={fieldName}
-                  onSubmit={handleSubmit}
-                  acceptedFileTypes={acceptedFileTypes}
-                  multiple={multiple}
-                  fetcher={fetcher}
-                  showStatusMessage={showStatusMessage}
-                  showLoadingOnSubmit={showLoadingOnSubmit}
-                  formState={{
-                    inputValue: null,
-                    setInputValue: () => {},
-                    repeatableInputValues: [],
-                    repeatableInputFiles: [],
-                    handleAddRepeatableField: () => {},
-                    handleRemoveRepeatableField: () => {},
-                    handleDataChange: () => {},
-                    expandedIndex: null,
-                    setExpandedIndex: () => {},
-                  }}
-                  cardTitle={cardTitle}
-                  popupTitle={popupTitle}
-                  triggerLabel={triggerLabel}
-                />
-                <DialogFooter className="sm:justify-start">
-                  <DialogClose asChild>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setDialogOpen(false)}
-                    >
-                      Close
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        <div className="text-gray-700 px-7 pb-4">
-          <p className="text-sm text-gray-500">
-            {selectedFiles.length > 0 ? selectedFiles.length + " " : "no "}
-            {selectedFiles.length > 1 ? "files " : "file "}
-            selected
-          </p>
-        </div>
-      </Card>
-    );
-  }
-);
+        {editable && (
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant={displayAsFilled ? 'outline' : 'default'}
+                size="sm"
+                className={`absolute top-4 right-4 ${
+                  displayAsFilled
+                    ? 'bg-white hover:bg-gray-50'
+                    : 'bg-blue-500 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {displayAsFilled ? <IoPencilSharp className="h-4 w-4" /> : triggerLabel}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{popupTitle}</DialogTitle>
+              </DialogHeader>
+              <FormContent
+                ref={formContentRef}
+                formType="file"
+                formName={formName}
+                fieldName={fieldName}
+                onSubmit={handleSubmit}
+                acceptedFileTypes={acceptedFileTypes}
+                multiple={multiple}
+                fetcher={fetcher}
+                showStatusMessage={showStatusMessage}
+                showLoadingOnSubmit={showLoadingOnSubmit}
+                formState={{
+                  inputValue: null,
+                  setInputValue: () => {},
+                  repeatableInputValues: [],
+                  repeatableInputFiles: [],
+                  handleAddRepeatableField: () => {},
+                  handleRemoveRepeatableField: () => {},
+                  handleDataChange: () => {},
+                  expandedIndex: null,
+                  setExpandedIndex: () => {},
+                }}
+                cardTitle={cardTitle}
+                popupTitle={popupTitle}
+                triggerLabel={triggerLabel}
+              />
+              <DialogFooter className="sm:justify-start">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
 
-FileFormCard.displayName = "FileFormCard";
+      <div className="text-gray-700 px-7 pb-4">
+        <p className="text-sm text-gray-500">
+          {selectedFiles.length > 0 ? selectedFiles.length + ' ' : 'no '}
+          {selectedFiles.length > 1 ? 'files ' : 'file '}
+          selected
+        </p>
+      </div>
+    </Card>
+  );
+});
+
+FileFormCard.displayName = 'FileFormCard';
 
 /* =====================================================================
  *  2) The default component for ALL other form types (non-file)
@@ -509,79 +439,64 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
   } = useFormSubmission();
   const formState = useFormState(props.formType, props.fieldName);
   const { handleSubmit, fetcher, showStatusMessage } = useFormSubmission();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Get values from formState
   const { inputValue, repeatableInputValues } = formState;
 
-  // console.log("🛠️ [GeneralizableFormCard] inputValue:", inputValue);
-
-  // Fix: Ensure inputValue does not overwrite props.value with incorrect data
   const value =
-    props.formType === "repeatable"
+    props.formType === 'repeatable'
       ? Array.isArray(repeatableInputValues) && repeatableInputValues.length > 0
         ? repeatableInputValues
         : Array.isArray(props.value)
           ? props.value
           : []
-      : inputValue && inputValue !== "this is the about me section..."
+      : inputValue && inputValue !== 'this is the about me section...'
         ? inputValue
         : props.value;
 
   const isFilled = Array.isArray(value) ? value.length > 0 : Boolean(value);
   const templateKey =
-    props.formType === "repeatable"
-      ? `repeatable_${props.repeatableFieldName}`
-      : props.formType;
+    props.formType === 'repeatable' ? `repeatable_${props.repeatableFieldName}` : props.formType;
 
   const Template = FieldTemplates[templateKey];
   if (!Template) return null;
 
-  const TemplateComponent = isFilled
-    ? Template.FilledState
-    : Template.EmptyState;
-
-  // console.log("🔍 [GeneralizableFormCard] Props on First Render:", props);
-  // console.log(
-  //   "🚀 [GeneralizableFormCard] Before Passing to TemplateComponent:",
-  //   {
-  //     fieldName: props.fieldName,
-  //     value,
-  //     type: typeof value,
-  //     isArray: Array.isArray(value),
-  //   }
-  // );
+  const TemplateComponent = isFilled ? Template.FilledState : Template.EmptyState;
 
   return (
     <Card
       className={`border-2 rounded-xl flex flex-col h-full ${
-        isFilled ? "bg-[#F1F0F3]" : "bg-gray-100 border-gray-300 border-dashed"
+        isFilled ? 'bg-[#F1F0F3]' : 'bg-gray-100 border-gray-300 border-dashed'
       }`}
     >
       <div
         className={`flex flex-col relative ${
-          props.formType === "video" && value ? "" : "pt-8 pb-6 pl-7 pr-10"
+          props.formType === 'video' && value ? '' : 'pt-8 pb-6 pl-7 pr-10'
         }`}
       >
         <TemplateComponent
-          value={
-            Array.isArray(value)
-              ? (value as RepeatableInputType[])
-              : (value as FormStateType)
-          }
+          value={Array.isArray(value) ? (value as RepeatableInputType[]) : (value as FormStateType)}
           fieldName={props.fieldName}
           cardTitle={props.cardTitle}
           cardSubtitle={props.cardSubtitle}
         />
         {props.editable && (
-          <Dialog>
-            <DialogTrigger>
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={open => {
+              // Only allow closing if it's not a repeatable field or if we're not adding a new field
+              if (!open && props.formType === 'repeatable' && fetcher.state === 'submitting') {
+                return;
+              }
+              setDialogOpen(open);
+            }}
+          >
+            <DialogTrigger asChild>
               {isFilled ? (
                 <IoPencilSharp className="h-7 w-7 absolute top-3 right-3 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
               ) : (
-                <Button
-                  variant="outline"
-                  className="text-primaryColor border-gray-300"
-                >
+                <Button variant="outline" className="text-primaryColor border-gray-300">
                   {props.triggerIcon} {props.triggerLabel}
                 </Button>
               )}
@@ -591,7 +506,13 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
               <FormContent
                 {...props}
                 formState={formState}
-                onSubmit={handleSubmit}
+                onSubmit={(e, formData) => {
+                  handleSubmit(e, formData);
+                  // Only close the dialog after successful submission
+                  if (fetcher.data?.success) {
+                    setDialogOpen(false);
+                  }
+                }}
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
