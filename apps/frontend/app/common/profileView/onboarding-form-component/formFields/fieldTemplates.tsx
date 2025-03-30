@@ -1,10 +1,10 @@
-import React from "react";
-import { RepeatableInputType } from "../types";
-import type { FieldTemplateState, FormStateType } from "../types";
-import { IoBriefcaseSharp } from "react-icons/io5";
-import { RiAwardFill } from "react-icons/ri";
-import { FaTimes, FaGraduationCap } from "react-icons/fa";
-import { parseHtmlContent } from "~/utils/api-helpers";
+import React from 'react';
+import { RepeatableInputType } from '../types';
+import type { FieldTemplateState, FormStateType } from '../types';
+import { IoBriefcaseSharp } from 'react-icons/io5';
+import { RiAwardFill } from 'react-icons/ri';
+import { FaTimes, FaGraduationCap } from 'react-icons/fa';
+import { parseHtmlContent } from '~/utils/api-helpers';
 
 interface FieldTemplateProps {
   value: FormStateType | RepeatableInputType[];
@@ -15,8 +15,8 @@ export const TextFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
     // console.log("🔍 Received Value in Template:", value); // Debugging
 
-    if (typeof value !== "string") {
-      console.warn("⚠️ Expected string but got:", typeof value, value);
+    if (typeof value !== 'string') {
+      console.warn('⚠️ Expected string but got:', typeof value, value);
       value = JSON.stringify(value); // Ensure string type
     }
 
@@ -40,9 +40,7 @@ export const TextFieldTemplate: FieldTemplateState = {
 
     return (
       <div className="flex flex-col ">
-        <span className="lg:text-lg text-base font-medium text-left">
-          {cardTitle}
-        </span>
+        <span className="lg:text-lg text-base font-medium text-left">{cardTitle}</span>
         <div className="text-sm font-medium mt-4 text-gray-400 text-left">
           {isHtml ? (
             <div
@@ -68,9 +66,7 @@ export const TextFieldTemplate: FieldTemplateState = {
 export const TextAreaFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col py-8 pl-5 pr-8">
-      <span className="lg:text-lg text-base font-medium text-left">
-        {cardTitle}
-      </span>
+      <span className="lg:text-lg text-base font-medium text-left">{cardTitle}</span>
       {value ? (
         <div
           className="text-sm font-medium mt-4 text-gray-600 text-left"
@@ -108,9 +104,7 @@ export const NumberFieldTemplate: FieldTemplateState = {
 
 const Project_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    const portfolio = Array.isArray(value)
-      ? (value as RepeatableInputType[])
-      : [];
+    const portfolio = Array.isArray(value) ? (value as RepeatableInputType[]) : [];
 
     if (portfolio.length === 0) {
       return (
@@ -123,9 +117,7 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="lg:text-lg text-base font-medium text-left">
-          Projects
-        </span>
+        <span className="lg:text-lg text-base font-medium text-left">Projects</span>
         {portfolio.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex w-full rounded-xl mt-4 bg-white">
@@ -133,13 +125,13 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                 className="w-1/4 object-cover rounded-l-xl"
                 src={
                   item.projectImageUrl ||
-                  "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                  'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg'
                 }
-                alt={item.projectName || "Portfolio Image"}
+                alt={item.projectName || 'Portfolio Image'}
               />
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
                 <h1 className="xl:text-xl lg:text-lg text-base mb-4">
-                  {item.projectName || "Unnamed Project"}
+                  {item.projectName || 'Unnamed Project'}
                   {item.projectLink && (
                     <a
                       href={item.projectLink}
@@ -176,9 +168,7 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
 
 const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    const workHistory = Array.isArray(value)
-      ? (value as RepeatableInputType[])
-      : [];
+    const workHistory = Array.isArray(value) ? (value as RepeatableInputType[]) : [];
 
     if (workHistory.length === 0) {
       return (
@@ -191,32 +181,28 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="lg:text-lg text-base font-medium text-left">
-          Work History
-        </span>
+        <span className="lg:text-lg text-base font-medium text-left">Work History</span>
         {workHistory.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex flex-col w-full rounded-xl md:mt-4 mt-2 bg-white lg:p-6 p-4 md:gap-3 gap-1">
               <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 md:gap-2 gap-1">
                 <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
-                {item.title || "Job Title"}
+                {item.title || 'Job Title'}
               </h1>
               <div className="flex gap-3 items-center">
-                <p>{item.company || "Company Name"}</p>
-                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
-                  |
-                </span>
+                <p>{item.company || 'Company Name'}</p>
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
                 <p className="md:text-sm text-xs">
-                  {new Date(item.startDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}{" "}
-                  -{" "}
+                  {new Date(item.startDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    year: 'numeric',
+                  })}{' '}
+                  -{' '}
                   {item.currentlyWorkingThere
-                    ? "Present"
-                    : new Date(item.endDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
+                    ? 'Present'
+                    : new Date(item.endDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: 'numeric',
                       })}
                 </p>
               </div>
@@ -242,9 +228,7 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
 
 const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    const certificates = Array.isArray(value)
-      ? (value as RepeatableInputType[])
-      : [];
+    const certificates = Array.isArray(value) ? (value as RepeatableInputType[]) : [];
 
     if (certificates.length === 0) {
       return (
@@ -257,9 +241,7 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="xl:text-lg text-base font-medium text-left">
-          Certificates
-        </span>
+        <span className="xl:text-lg text-base font-medium text-left">Certificates</span>
         <div className="grid grid-cols-2 xl:gap-4 gap-2 text-left">
           {certificates.map((item, index) => (
             <div
@@ -268,16 +250,14 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
             >
               <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
                 <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {item.certificateName || "Certificate Name"}
+                {item.certificateName || 'Certificate Name'}
               </h1>
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
-                <p>{item.issuedBy || "Issuer Name"}</p>
+                <p>{item.issuedBy || 'Issuer Name'}</p>
                 <span className="xl:text-2xl lg:text-xl text-lg text-gray-200 font-extralight">
                   |
                 </span>
-                <p className="md:text-sm text-xs">
-                  {item.yearIssued || "Year"}
-                </p>
+                <p className="md:text-sm text-xs">{item.yearIssued || 'Year'}</p>
               </div>
             </div>
           ))}
@@ -295,9 +275,7 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
 
 const Education_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
-    const educations = Array.isArray(value)
-      ? (value as RepeatableInputType[])
-      : [];
+    const educations = Array.isArray(value) ? (value as RepeatableInputType[]) : [];
 
     if (!educations.length) {
       return (
@@ -310,9 +288,7 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
 
     return (
       <>
-        <span className="xl:text-lg text-base font-medium text-left">
-          Education
-        </span>
+        <span className="xl:text-lg text-base font-medium text-left">Education</span>
         <div className="grid grid-cols-2 gap-4 text-left">
           {educations.map(({ degree, institution, graduationYear }, index) => (
             <div
@@ -321,15 +297,13 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
             >
               <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
                 <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {degree ?? "Degree Name"}
+                {degree ?? 'Degree Name'}
                 {institution && `, ${institution}`}
               </h1>
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
-                <p>{institution ?? "Institution Name"}</p>
-                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">
-                  |
-                </span>
-                <p className="md:text-sm text-xs">{graduationYear ?? "Year"}</p>
+                <p>{institution ?? 'Institution Name'}</p>
+                <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
+                <p className="md:text-sm text-xs">{graduationYear ?? 'Year'}</p>
               </div>
             </div>
           ))}
@@ -353,7 +327,7 @@ export const IncrementFieldTemplate: FieldTemplateState = {
         <span className="lg:text-lg test-base">{cardTitle}</span>
         <span className="lg:text-xl text-lg mt-4">
           {value as number} year
-          {(value as number) > 1 || (value as number) == 0 ? "s" : ""}
+          {(value as number) > 1 || (value as number) == 0 ? 's' : ''}
         </span>
       </div>
     </div>
@@ -376,8 +350,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
     // Generate thumbnail on mount for non-YouTube videos
-    const isYouTube =
-      videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
+    const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
 
     // States
     const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -385,18 +358,18 @@ export const VideoFieldTemplate: FieldTemplateState = {
 
     // Generate a thumbnail for non-YouTube videos
     const captureThumbnail = (url: string) => {
-      const video = document.createElement("video");
+      const video = document.createElement('video');
       video.src = url;
-      video.crossOrigin = "anonymous";
+      video.crossOrigin = 'anonymous';
       video.currentTime = 1;
 
-      video.addEventListener("loadeddata", () => {
-        const canvas = document.createElement("canvas");
+      video.addEventListener('loadeddata', () => {
+        const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        const context = canvas.getContext("2d");
+        const context = canvas.getContext('2d');
         context?.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const thumbnailUrl = canvas.toDataURL("image/png");
+        const thumbnailUrl = canvas.toDataURL('image/png');
         setThumbnail(thumbnailUrl);
       });
     };
@@ -411,8 +384,8 @@ export const VideoFieldTemplate: FieldTemplateState = {
 
     // Validate if the URL is a valid video file
     const isValidVideoUrl = (url: string) => {
-      const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".mkv"];
-      return videoExtensions.some((ext) => url.endsWith(ext));
+      const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
+      return videoExtensions.some(ext => url.endsWith(ext));
     };
 
     if (!isYouTube && !isValidVideoUrl(videoUrl)) {
@@ -428,7 +401,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
       const regex =
         /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
       const match = url.match(regex);
-      return match ? match[1] : "";
+      return match ? match[1] : '';
     };
 
     const videoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
@@ -441,10 +414,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
           {/* YouTube Video Stylings */}
           {isYouTube && videoId ? (
-            <button
-              onClick={openModal}
-              className="block w-full h-full focus:outline-none"
-            >
+            <button onClick={openModal} className="block w-full h-full focus:outline-none">
               <img
                 className="w-full h-full object-cover"
                 src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
@@ -490,7 +460,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
             <div
               className="relative bg-primaryColor shadow-2xl max-w-4xl w-full p-7 transform scale-100 transition-all duration-300"
               style={{
-                animation: "fadeIn 0.3s ease-in-out",
+                animation: 'fadeIn 0.3s ease-in-out',
               }}
             >
               {/* Close Button */}
@@ -498,7 +468,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
                 onClick={closeModal}
                 className="absolute -top-1 -right-1 rounded-full focus:outline-none hover:scale-105 transition-transform bg-transparent"
                 style={{
-                  padding: "8px",
+                  padding: '8px',
                 }}
               >
                 <FaTimes className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-white hover:text-primaryColor" />
@@ -513,11 +483,7 @@ export const VideoFieldTemplate: FieldTemplateState = {
                     title="YouTube Video"
                   />
                 ) : (
-                  <video
-                    className="w-full h-full object-cover rounded-lg"
-                    controls
-                    autoPlay
-                  >
+                  <video className="w-full h-full object-cover rounded-lg" controls autoPlay>
                     <source src={videoUrl} type="video/mp4" />
                     <track kind="captions" src="" label="English captions" />
                     Your browser does not support the video tag.
@@ -548,18 +514,11 @@ export const FileFieldTemplate: FieldTemplateState = {
           size: Math.round(fileValue.size / 1024),
           type: fileValue.type,
         };
-      } else if (
-        typeof fileValue === "string" &&
-        fileValue.startsWith("File:")
-      ) {
+      } else if (typeof fileValue === 'string' && fileValue.startsWith('File:')) {
         // Extract file name from string representation
         const fileName = fileValue.substring(6).trim();
         return { name: fileName, size: null, type: null };
-      } else if (
-        typeof fileValue === "object" &&
-        fileValue !== null &&
-        "name" in fileValue
-      ) {
+      } else if (typeof fileValue === 'object' && fileValue !== null && 'name' in fileValue) {
         // Handle file objects from the server
         return {
           name: fileValue.name,
@@ -576,7 +535,7 @@ export const FileFieldTemplate: FieldTemplateState = {
 
     if (Array.isArray(value)) {
       // Handle array of files
-      files = value.map((file) => getFileInfo(file)).filter(Boolean);
+      files = value.map(file => getFileInfo(file)).filter(Boolean);
     } else {
       // Handle single file
       const fileInfo = getFileInfo(value);
@@ -597,7 +556,7 @@ export const FileFieldTemplate: FieldTemplateState = {
                 className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex-shrink-0 mr-3">
-                  {file.type && file.type.includes("image") ? (
+                  {file.type && file.type.includes('image') ? (
                     <svg
                       className="w-5 h-5 text-blue-500"
                       xmlns="http://www.w3.org/2000/svg"
@@ -612,7 +571,7 @@ export const FileFieldTemplate: FieldTemplateState = {
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                  ) : file.type && file.type.includes("pdf") ? (
+                  ) : file.type && file.type.includes('pdf') ? (
                     <svg
                       className="w-5 h-5 text-red-500"
                       xmlns="http://www.w3.org/2000/svg"
@@ -645,12 +604,8 @@ export const FileFieldTemplate: FieldTemplateState = {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {file.name}
-                  </p>
-                  {file.size && (
-                    <p className="text-xs text-gray-500">{file.size} KB</p>
-                  )}
+                  <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                  {file.size && <p className="text-xs text-gray-500">{file.size} KB</p>}
                 </div>
               </div>
             ))}
@@ -674,9 +629,7 @@ export const RangeFieldTemplate: FieldTemplateState = {
     <div className="flex items-center">
       <div className="flex flex-col gap-1">
         <span className="lg:text-lg text-base font-medium">{cardTitle}</span>
-        <span className="lg:text-xl text-lg font-medium mt-4">
-          ${value as number}.00 / hour
-        </span>
+        <span className="lg:text-xl text-lg font-medium mt-4">${value as number}.00 / hour</span>
       </div>
     </div>
   ),
@@ -698,9 +651,7 @@ export const CustomFieldTemplate: FieldTemplateState = {
   EmptyState: ({ cardTitle }: FieldTemplateProps) => (
     <div className="flex flex-col pb-4">
       <span className="text-lg font-medium">{cardTitle}</span>
-      <span className="text-base text-gray-400 italic">
-        No custom field added
-      </span>
+      <span className="text-base text-gray-400 italic">No custom field added</span>
     </div>
   ),
 };

@@ -1,27 +1,24 @@
-import { redirect, useLoaderData } from "@remix-run/react";
-import { AccountType, AccountStatus, EmployerAccountType } from "~/types/enums";
-import {
-  getCurrentProfileInfo,
-  getCurrentUserAccountType,
-} from "~/servers/user.server";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Employer, Freelancer } from "~/types/User";
-import { requireUserVerified } from "~/auth/auth.server";
-import FreelancerIdentificationScreen from "./freelancer";
-import EmployerIdentificationScreen from "./employer";
+import { redirect, useLoaderData } from '@remix-run/react';
+import { AccountType, AccountStatus, EmployerAccountType } from '~/types/enums';
+import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { Employer, Freelancer } from '~/types/User';
+import { requireUserVerified } from '~/auth/auth.server';
+import FreelancerIdentificationScreen from './freelancer';
+import EmployerIdentificationScreen from './employer';
 import {
   createEmployerIdentification,
   getEmployerIdentification,
   updateEmployerIdentification,
   updateEmployerAccountStatusToPending,
-} from "~/servers/employer.server";
+} from '~/servers/employer.server';
 import {
   getFreelancerIdentification,
   updateFreelancerIdentification,
   updateFreelancerAccountStatusToPending,
-} from "~/servers/freelancer.server";
-import { setOnboardedStatus } from "~/servers/user.server";
-import { getAttachmentMetadataById } from "~/servers/cloudStorage.server";
+} from '~/servers/freelancer.server';
+import { setOnboardedStatus } from '~/servers/user.server';
+import { getAttachmentMetadataById } from '~/servers/cloudStorage.server';
 
 // Add this interface after the imports
 interface AttachmentMetadata {
@@ -53,10 +50,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const userProfile = await getCurrentProfileInfo(request);
     const currentProfile = await getCurrentProfileInfo(request);
     const accountType = currentProfile.account.accountType;
-    const targetUpdated = formData.get("target-updated") as string;
+    const targetUpdated = formData.get('target-updated') as string;
 
     // Check if this is a request to go back to account info
-    if (targetUpdated === "back-to-account-info") {
+    if (targetUpdated === 'back-to-account-info') {
       const userId = currentProfile.account.user.id;
 
       // Update the isOnboarded flag to false
@@ -65,27 +62,25 @@ export async function action({ request }: ActionFunctionArgs) {
       if (!result.success) {
         return Response.json({
           success: false,
-          error: "Failed to update onboarded status",
+          error: 'Failed to update onboarded status',
         });
       }
 
-      return redirect("/onboarding");
+      return redirect('/onboarding');
     }
 
     // Check if this is an identification form submission
     const isIdentificationForm =
-      targetUpdated === "identification-form" ||
-      targetUpdated === "freelancer-identification" ||
-      targetUpdated === "employer-identification";
+      targetUpdated === 'identification-form' ||
+      targetUpdated === 'freelancer-identification' ||
+      targetUpdated === 'employer-identification';
 
     // Get files to delete from form data
-    const filesToDelete = JSON.parse(
-      (formData.get("filesToDelete") as string) || "[]"
-    );
+    const filesToDelete = JSON.parse((formData.get('filesToDelete') as string) || '[]');
 
     if (
       accountType === AccountType.Employer &&
-      (targetUpdated === "employer-identification" ||
+      (targetUpdated === 'employer-identification' ||
         (isIdentificationForm && accountType === AccountType.Employer))
     ) {
       const userId = currentProfile.account.user.id;
@@ -93,28 +88,27 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // Get employer account type from the profile or form data
       const employerAccountType =
-        accountType === AccountType.Employer &&
-        "employerAccountType" in currentProfile
+        accountType === AccountType.Employer && 'employerAccountType' in currentProfile
           ? (currentProfile as Employer).employerAccountType
-          : (formData.get("employerAccountType") as string);
+          : (formData.get('employerAccountType') as string);
 
       // Get file uploads
-      const identificationFiles = formData.getAll("identification") as File[];
-      const tradeLicenseFiles = formData.getAll("trade_license") as File[];
+      const identificationFiles = formData.getAll('identification') as File[];
+      const tradeLicenseFiles = formData.getAll('trade_license') as File[];
       const boardResolutionFiles =
         employerAccountType === EmployerAccountType.Company
-          ? (formData.getAll("board_resolution") as File[])
+          ? (formData.getAll('board_resolution') as File[])
           : [];
 
       // Filter out empty files (if any)
       const validIdentificationFiles = identificationFiles.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
       const validTradeLicenseFiles = tradeLicenseFiles.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
       const validBoardResolutionFiles = boardResolutionFiles.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
 
       // Prepare attachments data with actual File objects
@@ -128,47 +122,43 @@ export async function action({ request }: ActionFunctionArgs) {
       };
 
       // Use createEmployerIdentification which now handles both create and update
-      const result = await createEmployerIdentification(
-        userId,
-        attachmentsData
-      );
+      const result = await createEmployerIdentification(userId, attachmentsData);
 
       if (!result.success) {
         return Response.json({
           success: false,
-          error: "Failed to save employer identification",
+          error: 'Failed to save employer identification',
         });
       }
 
-      const statusResult =
-        await updateEmployerAccountStatusToPending(accountId);
+      const statusResult = await updateEmployerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
         return Response.json({
           success: false,
-          error: "Failed to update employer account status",
+          error: 'Failed to update employer account status',
         });
       }
 
       return Response.json({ success: true });
     } else if (
       accountType === AccountType.Freelancer &&
-      (targetUpdated === "freelancer-identification" ||
+      (targetUpdated === 'freelancer-identification' ||
         (isIdentificationForm && accountType === AccountType.Freelancer))
     ) {
       const userId = currentProfile.account.user.id;
       const accountId = currentProfile.account.id;
 
       // Get file uploads
-      const identificationFiles = formData.getAll("identification") as File[];
-      const tradeLicenseFiles = formData.getAll("trade_license") as File[];
+      const identificationFiles = formData.getAll('identification') as File[];
+      const tradeLicenseFiles = formData.getAll('trade_license') as File[];
 
       // Filter out empty files (if any)
       const validIdentificationFiles = identificationFiles.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
       const validTradeLicenseFiles = tradeLicenseFiles.filter(
-        (file) => file instanceof File && file.size > 0
+        file => file instanceof File && file.size > 0
       );
 
       // Prepare attachments data with actual File objects
@@ -179,25 +169,21 @@ export async function action({ request }: ActionFunctionArgs) {
       };
 
       // Use updateFreelancerIdentification which now handles both create and update
-      const result = await updateFreelancerIdentification(
-        userId,
-        attachmentsData
-      );
+      const result = await updateFreelancerIdentification(userId, attachmentsData);
 
       if (!result.success) {
         return Response.json({
           success: false,
-          error: "Failed to save freelancer identification",
+          error: 'Failed to save freelancer identification',
         });
       }
 
-      const statusResult =
-        await updateFreelancerAccountStatusToPending(accountId);
+      const statusResult = await updateFreelancerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
         return Response.json({
           success: false,
-          error: "Failed to update freelancer account status",
+          error: 'Failed to update freelancer account status',
         });
       }
 
@@ -206,22 +192,21 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return Response.json({
       success: false,
-      error: "Invalid request",
+      error: 'Invalid request',
     });
   } catch (error) {
-    console.error("Error in identification action:", error);
+    console.error('Error in identification action:', error);
     return Response.json({
       success: false,
-      error:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
     });
   }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // Redirect from the old URL to the new one if needed
-  if (new URL(request.url).pathname === "/identifying") {
-    return redirect("/identification");
+  if (new URL(request.url).pathname === '/identifying') {
+    return redirect('/identification');
   }
 
   // Ensure the user is verified
@@ -234,19 +219,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!profile) {
     return Response.json({
       success: false,
-      error: { message: "Profile information not found." },
+      error: { message: 'Profile information not found.' },
       status: 404,
     });
   }
 
   // If user is not onboarded, redirect to onboarding
   if (!profile.account?.user?.isOnboarded) {
-    return redirect("/onboarding");
+    return redirect('/onboarding');
   }
 
   // If account status is published, redirect to dashboard
   if (profile.account?.accountStatus === AccountStatus.Published) {
-    return redirect("/dashboard");
+    return redirect('/dashboard');
   }
 
   // If account status is pending, show pending message
@@ -260,31 +245,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (accountType === AccountType.Employer) {
       const result = await getEmployerIdentification(userId);
       console.log(
-        "DEBUG - Employer identification raw data from getEmployerIdentification:",
+        'DEBUG - Employer identification raw data from getEmployerIdentification:',
         JSON.stringify(result, null, 2)
       );
 
       if (result.success && result.data) {
         // Get the raw identification data
         const rawData = result.data;
-        console.log("DEBUG - rawData structure:", Object.keys(rawData));
+        console.log('DEBUG - rawData structure:', Object.keys(rawData));
         console.log(
-          "DEBUG - rawData.attachments:",
+          'DEBUG - rawData.attachments:',
           typeof rawData.attachments,
-          rawData.attachments
-            ? JSON.stringify(rawData.attachments, null, 2)
-            : "null"
+          rawData.attachments ? JSON.stringify(rawData.attachments, null, 2) : 'null'
         );
 
         // CRITICAL FIX: Handle raw attachments correctly whether it's a string, object, or null
         let parsedAttachments = null;
 
         if (rawData.attachments) {
-          if (typeof rawData.attachments === "string") {
+          if (typeof rawData.attachments === 'string') {
             try {
               parsedAttachments = JSON.parse(rawData.attachments);
             } catch (e) {
-              console.error("DEBUG - Failed to parse attachments string:", e);
+              console.error('DEBUG - Failed to parse attachments string:', e);
               // Default to empty arrays if parsing fails
               parsedAttachments = {
                 identification: [],
@@ -306,7 +289,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           // Cast attachments to a Record to avoid type errors
           const attachments = enhancedData.attachments as Record<string, any>;
           console.log(
-            "DEBUG - Processed attachments object:",
+            'DEBUG - Processed attachments object:',
             JSON.stringify(attachments, null, 2)
           );
 
@@ -316,11 +299,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           if (!attachments.board_resolution) attachments.board_resolution = [];
 
           // For each attachment type (identification, trade_license, board_resolution)
-          for (const attachmentType of [
-            "identification",
-            "trade_license",
-            "board_resolution",
-          ]) {
+          for (const attachmentType of ['identification', 'trade_license', 'board_resolution']) {
             if (
               attachments[attachmentType] &&
               Array.isArray(attachments[attachmentType]) &&
@@ -338,7 +317,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                     const metadata = result.data as AttachmentMetadata;
 
                     // Try to get the file name from multiple possible locations
-                    let name = "unknown-file";
+                    let name = 'unknown-file';
 
                     // Check if metadata.name exists directly in metadata object
                     if (metadata.name) {
@@ -351,13 +330,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
                     // Fallback to using key if metadata.name doesn't exist
                     else if (metadata.key) {
                       // Extract filename from the key (prefix-filename format)
-                      const keyParts = metadata.key.split("-");
+                      const keyParts = metadata.key.split('-');
                       // If key has the prefix-filename format, extract the filename part
                       if (keyParts.length > 1) {
-                        name = keyParts.slice(1).join("-");
+                        name = keyParts.slice(1).join('-');
                       } else {
                         // If no prefix-filename format, just use the last part of the path
-                        name = metadata.key.split("/").pop() || "unknown-file";
+                        name = metadata.key.split('/').pop() || 'unknown-file';
                       }
                     }
 
@@ -374,9 +353,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                       serverId: id,
                       isServerFile: true,
                       size: metadata.metadata?.size || 143 * 1024,
-                      type:
-                        metadata.metadata?.contentType ||
-                        "application/octet-stream",
+                      type: metadata.metadata?.contentType || 'application/octet-stream',
                       lastModified: metadata.createdAt
                         ? new Date(metadata.createdAt).getTime()
                         : Date.now(),
@@ -392,7 +369,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
               // Add debug logging for the processed files
               console.log(
                 `DEBUG - Processed ${attachmentType} files:`,
-                attachments[attachmentType].map((file) => ({
+                attachments[attachmentType].map(file => ({
                   name: file.name,
                   size: file.size,
                   isServerFile: file.isServerFile,
@@ -403,23 +380,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           identificationData = enhancedData;
           console.log(
-            "DEBUG - Final enhanced employer identification data:",
+            'DEBUG - Final enhanced employer identification data:',
             JSON.stringify(
               {
                 ...identificationData,
                 attachments: {
                   identification:
-                    attachments.identification?.map((a) => ({
+                    attachments.identification?.map(a => ({
                       name: a.name,
                       size: a.size,
                     })) || [],
                   trade_license:
-                    attachments.trade_license?.map((a) => ({
+                    attachments.trade_license?.map(a => ({
                       name: a.name,
                       size: a.size,
                     })) || [],
                   board_resolution:
-                    attachments.board_resolution?.map((a) => ({
+                    attachments.board_resolution?.map(a => ({
                       name: a.name,
                       size: a.size,
                     })) || [],
@@ -444,31 +421,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     } else if (accountType === AccountType.Freelancer) {
       const result = await getFreelancerIdentification(userId);
       console.log(
-        "DEBUG - Freelancer identification raw data from getFreelancerIdentification:",
+        'DEBUG - Freelancer identification raw data from getFreelancerIdentification:',
         JSON.stringify(result, null, 2)
       );
 
       if (result.success && result.data) {
         // Get the raw identification data
         const rawData = result.data;
-        console.log("DEBUG - rawData structure:", Object.keys(rawData));
+        console.log('DEBUG - rawData structure:', Object.keys(rawData));
         console.log(
-          "DEBUG - rawData.attachments:",
+          'DEBUG - rawData.attachments:',
           typeof rawData.attachments,
-          rawData.attachments
-            ? JSON.stringify(rawData.attachments, null, 2)
-            : "null"
+          rawData.attachments ? JSON.stringify(rawData.attachments, null, 2) : 'null'
         );
 
         // CRITICAL FIX: Handle raw attachments correctly whether it's a string, object, or null
         let parsedAttachments = null;
 
         if (rawData.attachments) {
-          if (typeof rawData.attachments === "string") {
+          if (typeof rawData.attachments === 'string') {
             try {
               parsedAttachments = JSON.parse(rawData.attachments);
             } catch (e) {
-              console.error("DEBUG - Failed to parse attachments string:", e);
+              console.error('DEBUG - Failed to parse attachments string:', e);
               // Default to empty arrays if parsing fails
               parsedAttachments = {
                 identification: [],
@@ -489,7 +464,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           // Get the attachment IDs
           const attachments = enhancedData.attachments as Record<string, any>;
           console.log(
-            "DEBUG - Processed attachments object:",
+            'DEBUG - Processed attachments object:',
             JSON.stringify(attachments, null, 2)
           );
 
@@ -498,7 +473,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           if (!attachments.trade_license) attachments.trade_license = [];
 
           // For each attachment type (identification, trade_license)
-          for (const attachmentType of ["identification", "trade_license"]) {
+          for (const attachmentType of ['identification', 'trade_license']) {
             if (
               attachments[attachmentType] &&
               Array.isArray(attachments[attachmentType]) &&
@@ -516,7 +491,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                     const metadata = result.data as AttachmentMetadata;
 
                     // Try to get the file name from multiple possible locations
-                    let name = "unknown-file";
+                    let name = 'unknown-file';
 
                     // Check if metadata.name exists directly in metadata object
                     if (metadata.name) {
@@ -529,13 +504,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
                     // Fallback to using key if metadata.name doesn't exist
                     else if (metadata.key) {
                       // Extract filename from the key (prefix-filename format)
-                      const keyParts = metadata.key.split("-");
+                      const keyParts = metadata.key.split('-');
                       // If key has the prefix-filename format, extract the filename part
                       if (keyParts.length > 1) {
-                        name = keyParts.slice(1).join("-");
+                        name = keyParts.slice(1).join('-');
                       } else {
                         // If no prefix-filename format, just use the last part of the path
-                        name = metadata.key.split("/").pop() || "unknown-file";
+                        name = metadata.key.split('/').pop() || 'unknown-file';
                       }
                     }
 
@@ -552,9 +527,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                       serverId: id,
                       isServerFile: true,
                       size: metadata.metadata?.size || 143 * 1024,
-                      type:
-                        metadata.metadata?.contentType ||
-                        "application/octet-stream",
+                      type: metadata.metadata?.contentType || 'application/octet-stream',
                       lastModified: metadata.createdAt
                         ? new Date(metadata.createdAt).getTime()
                         : Date.now(),
@@ -570,7 +543,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
               // Add debug logging for the processed files
               console.log(
                 `DEBUG - Processed ${attachmentType} files for freelancer:`,
-                attachments[attachmentType].map((file) => ({
+                attachments[attachmentType].map(file => ({
                   name: file.name,
                   size: file.size,
                   isServerFile: file.isServerFile,
@@ -581,18 +554,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           identificationData = enhancedData;
           console.log(
-            "DEBUG - Final enhanced freelancer identification data:",
+            'DEBUG - Final enhanced freelancer identification data:',
             JSON.stringify(
               {
                 ...identificationData,
                 attachments: {
                   identification:
-                    attachments.identification?.map((a) => ({
+                    attachments.identification?.map(a => ({
                       name: a.name,
                       size: a.size,
                     })) || [],
                   trade_license:
-                    attachments.trade_license?.map((a) => ({
+                    attachments.trade_license?.map(a => ({
                       name: a.name,
                       size: a.size,
                     })) || [],
@@ -667,7 +640,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return Response.json({
     success: false,
-    error: { message: "Account type not found." },
+    error: { message: 'Account type not found.' },
     status: 404,
   });
 }
@@ -702,12 +675,10 @@ export default function Layout() {
                 />
               </svg>
             </div>
-            <p className="text-lg font-medium text-gray-800">
-              Your account is being validated
-            </p>
+            <p className="text-lg font-medium text-gray-800">Your account is being validated</p>
             <p className="text-gray-600 mt-2">
-              We're reviewing your submitted documents. This process typically
-              takes 1-2 business days.
+              We're reviewing your submitted documents. This process typically takes 1-2 business
+              days.
             </p>
           </div>
           <p className="text-sm text-gray-500">

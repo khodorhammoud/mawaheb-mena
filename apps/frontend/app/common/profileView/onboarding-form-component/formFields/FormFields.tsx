@@ -1,14 +1,14 @@
-import { Input } from "~/components/ui/input";
-import RangeComponent from "./RangeComponent";
-import AppFormField from "~/common/form-fields";
-import { FaLink } from "react-icons/fa";
-import type { FormFieldProps } from "../types";
-import VideoUpload from "~/common/upload/videoUpload";
-import Or from "~/common/or/Or";
-import RichTextEditor from "~/components/ui/richTextEditor";
-import DOMPurify from "dompurify";
-import FileUpload from "~/common/upload/fileUpload";
-import { getWordCount } from "~/lib/utils";
+import { Input } from '~/components/ui/input';
+import RangeComponent from './RangeComponent';
+import AppFormField from '~/common/form-fields';
+import { FaLink } from 'react-icons/fa';
+import type { FormFieldProps } from '../types';
+import VideoUpload from '~/common/upload/videoUpload';
+import Or from '~/common/or/Or';
+import RichTextEditor from '~/components/ui/richTextEditor';
+import DOMPurify from 'dompurify';
+import FileUpload from '~/common/upload/fileUpload';
+import { getWordCount } from '~/lib/utils';
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -31,7 +31,7 @@ export const FormFields = {
       placeholder="Enter a number"
       onChange={onChange}
       className="no-spinner"
-      defaultValue={value ? value.toString() : ""}
+      defaultValue={value ? value.toString() : ''}
     />
   ),
 
@@ -50,9 +50,7 @@ export const FormFields = {
         />
         <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
       </div>
-      <p className="mb-14 text-base">
-        The median {props.popupTitle} for a designer is:
-      </p>
+      <p className="mb-14 text-base">The median {props.popupTitle} for a designer is:</p>
       <RangeComponent minVal={props.minVal} maxVal={props.maxVal} />
     </div>
   ),
@@ -63,8 +61,8 @@ export const FormFields = {
       {props?.useRichText ? (
         <RichTextEditor
           name={name} // Ensure the name attribute is included
-          value={(value as string) || ""} // Ensure value is a string
-          onChange={(content) => {
+          value={(value as string) || ''} // Ensure value is a string
+          onChange={content => {
             const event = {
               target: {
                 value: content,
@@ -76,8 +74,8 @@ export const FormFields = {
           placeholder="Add content to describe yourself"
           className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
           style={{
-            wordBreak: "break-word",
-            hyphens: "auto",
+            wordBreak: 'break-word',
+            hyphens: 'auto',
           }}
         />
       ) : (
@@ -105,7 +103,7 @@ export const FormFields = {
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
-          style={{ borderRight: "none" }} // Remove the right border of the - button
+          style={{ borderRight: 'none' }} // Remove the right border of the - button
           onClick={() => handleIncrement(-1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
@@ -113,14 +111,14 @@ export const FormFields = {
 
         {/* Input Display */}
         <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
-          {typeof value === "number" || typeof value === "string" ? value : ""}
+          {typeof value === 'number' || typeof value === 'string' ? value : ''}
         </div>
 
         {/* + Button */}
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
-          style={{ borderLeft: "none" }} // Remove the left border of the + button
+          style={{ borderLeft: 'none' }} // Remove the left border of the + button
           onClick={() => handleIncrement(1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
@@ -146,7 +144,7 @@ export const FormFields = {
     return (
       <div className="">
         {/* UPLOAD */}
-        <VideoUpload onFileChange={(fileUrl) => handleVideoUpload(fileUrl)} />
+        <VideoUpload onFileChange={fileUrl => handleVideoUpload(fileUrl)} />
 
         {/* OR */}
         <Or />
@@ -160,7 +158,7 @@ export const FormFields = {
               name={name} // Ensure name matches "videoLink"
               label="Paste YouTube URL or upload video"
               placeholder="Paste YouTube URL or upload video"
-              defaultValue={typeof value === "string" ? value : ""}
+              defaultValue={typeof value === 'string' ? value : ''}
               onChange={onChange}
               className=""
             />
@@ -182,13 +180,7 @@ export const FormFields = {
   ),
 };
 
-export const FileField = ({
-  value,
-  onChange,
-  name,
-  props,
-  handleIncrement,
-}: FormFieldProps) => {
+export const FileField = ({ value, onChange, name, props, handleIncrement }: FormFieldProps) => {
   // Get file info for display
   const getFileInfo = (fileValue: any) => {
     if (fileValue instanceof File) {
@@ -220,13 +212,12 @@ export const FileField = ({
           ></path>
         </svg>
         <p className="mb-2 text-sm text-gray-500">
-          <span className="font-semibold">Click to upload</span> or drag and
-          drop
+          <span className="font-semibold">Click to upload</span> or drag and drop
         </p>
         <p className="text-xs text-gray-500">
           {props?.acceptedFileTypes
             ? `Supported formats: ${props.acceptedFileTypes}`
-            : "PDF, JPG, PNG, etc."}
+            : 'PDF, JPG, PNG, etc.'}
         </p>
 
         <Input
@@ -250,9 +241,7 @@ export const FileField = ({
       {fileInfo && (
         <div className="mt-4 p-3 bg-gray-50 rounded-md">
           <p className="text-sm font-medium">{fileInfo.name}</p>
-          {fileInfo.size && (
-            <p className="text-xs text-gray-500">{fileInfo.size} KB</p>
-          )}
+          {fileInfo.size && <p className="text-xs text-gray-500">{fileInfo.size} KB</p>}
         </div>
       )}
     </div>
