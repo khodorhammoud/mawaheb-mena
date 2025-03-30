@@ -1,10 +1,10 @@
-import { Button } from "~/components/ui/button";
-import { DialogFooter, DialogClose } from "~/components/ui/dialog";
-import { FormFields } from "./FormFields";
-import RepeatableFields from "./RepeatableFields";
-import type { FormContentProps } from "../types";
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { X } from "lucide-react";
+import { Button } from '~/components/ui/button';
+import { DialogFooter, DialogClose } from '~/components/ui/dialog';
+import { FormFields } from './FormFields';
+import RepeatableFields from './RepeatableFields';
+import type { FormContentProps } from '../types';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { X } from 'lucide-react';
 
 const FormContent = forwardRef<any, FormContentProps>(
   (
@@ -46,7 +46,7 @@ const FormContent = forwardRef<any, FormContentProps>(
     const saveFilesToLocalStorage = (files: File[]) => {
       if (!files) return;
 
-      const metadata = files.map((file) => ({
+      const metadata = files.map(file => ({
         name: file.name,
         type: file.type,
         size: file.size,
@@ -56,10 +56,7 @@ const FormContent = forwardRef<any, FormContentProps>(
         isServerFile: (file as any).isServerFile || false,
       }));
 
-      console.log(
-        "DEBUG - saveFilesToLocalStorage - Saving metadata:",
-        metadata
-      );
+      console.log('DEBUG - saveFilesToLocalStorage - Saving metadata:', metadata);
       localStorage.setItem(`${fieldName}-files`, JSON.stringify(metadata));
     };
 
@@ -70,46 +67,12 @@ const FormContent = forwardRef<any, FormContentProps>(
         if (!storedData) return null;
 
         const metadata = JSON.parse(storedData);
-        console.log(
-          "DEBUG - loadFilesFromLocalStorage - Loaded metadata:",
-          metadata
-        );
+        console.log('DEBUG - loadFilesFromLocalStorage - Loaded metadata:', metadata);
         return metadata;
       } catch (error) {
-        console.error("Error loading files from localStorage:", error);
+        console.error('Error loading files from localStorage:', error);
         return null;
       }
-    };
-
-    // Clear a specific file
-    const handleRemoveFile = (file: File) => {
-      console.log("DEBUG - handleRemoveFile - File to remove:", {
-        name: file.name,
-        storageKey: (file as any).storageKey,
-        serverId: (file as any).serverId,
-        isServerFile: (file as any).isServerFile,
-      });
-
-      const fileId = (file as any).serverId;
-      console.log("DEBUG - handleRemoveFile - File ID:", fileId);
-
-      if (fileId) {
-        setFilesToDelete((prev) => {
-          const newFilesToDelete = [...prev, fileId];
-          console.log(
-            "DEBUG - handleRemoveFile - Updated filesToDelete:",
-            newFilesToDelete
-          );
-          return newFilesToDelete;
-        });
-      }
-
-      setFilesSelected((prev) => {
-        const updatedFiles = prev.filter((f) => f.name !== file.name);
-        // Update localStorage with remaining files
-        saveFilesToLocalStorage(updatedFiles);
-        return updatedFiles;
-      });
     };
 
     // Prepare form data for submission
@@ -117,45 +80,36 @@ const FormContent = forwardRef<any, FormContentProps>(
       const formData = new FormData(form);
 
       // Add target-updated field
-      formData.append("target-updated", formName);
+      formData.append('target-updated', formName);
 
       // Handle repeatable fields
-      if (formType === "repeatable") {
-        formData.append(
-          repeatableFieldName,
-          JSON.stringify(repeatableInputValues)
-        );
+      if (formType === 'repeatable') {
+        formData.append(repeatableFieldName, JSON.stringify(repeatableInputValues));
 
         // Append files
         repeatableInputFiles.forEach((file, index) => {
           if (file) {
-            formData.append(
-              `${repeatableFieldName}-attachment[${index}]`,
-              file
-            );
+            formData.append(`${repeatableFieldName}-attachment[${index}]`, file);
           }
         });
       }
 
       // For file type, append all selected files to formData
-      if (formType === "file") {
+      if (formType === 'file') {
         // Clear any existing files with the same name
         formData.delete(fieldName);
 
         // Add all selected files
-        filesSelected.forEach((file) => {
+        filesSelected.forEach(file => {
           formData.append(fieldName, file);
         });
 
         // Add files to delete if any
         if (filesToDelete.length > 0) {
-          console.log(
-            "DEBUG - prepareFormData - Adding filesToDelete to formData:",
-            filesToDelete
-          );
-          formData.append("filesToDelete", JSON.stringify(filesToDelete));
+          console.log('DEBUG - prepareFormData - Adding filesToDelete to formData:', filesToDelete);
+          formData.append('filesToDelete', JSON.stringify(filesToDelete));
         } else {
-          console.log("DEBUG - prepareFormData - No files to delete");
+          console.log('DEBUG - prepareFormData - No files to delete');
         }
       }
 
@@ -183,87 +137,50 @@ const FormContent = forwardRef<any, FormContentProps>(
       },
     }));
 
-    // Handle file selection from the file input
-    const handleFileSelection = (newFiles: FileList | null) => {
-      if (!newFiles || newFiles.length === 0) return;
-
-      const fileArray = Array.from(newFiles);
-
-      // Combine with existing files, avoiding duplicates by name
-      const updatedFiles = [...filesSelected];
-
-      fileArray.forEach((file) => {
-        // Check if file with same name already exists
-        const existingIndex = updatedFiles.findIndex(
-          (f) => f.name === file.name
-        );
-        if (existingIndex >= 0) {
-          // Replace existing file
-          updatedFiles[existingIndex] = file;
-        } else {
-          // Add new file
-          updatedFiles.push(file);
-        }
-      });
-
-      setFilesSelected(updatedFiles);
-      saveFilesToLocalStorage(updatedFiles);
-    };
-
     // Update filesSelected when inputValue changes (for existing files)
     useEffect(() => {
-      if (formType === "file") {
+      if (formType === 'file') {
         // If we have existing files from the server in props.value
         if (
           props.value &&
-          typeof props.value === "object" &&
-          "attachments" in props.value &&
+          typeof props.value === 'object' &&
+          'attachments' in props.value &&
           filesSelected.length === 0 // Only process if we don't already have files
         ) {
           const attachments = (props.value as any).attachments;
           console.log(
-            "DEBUG - useEffect - Found attachments in props.value:",
+            'DEBUG - useEffect - Found attachments in props.value:',
             JSON.stringify(attachments, null, 2)
           );
-          if (
-            attachments &&
-            typeof attachments === "object" &&
-            fieldName in attachments
-          ) {
+          if (attachments && typeof attachments === 'object' && fieldName in attachments) {
             const existingFiles = attachments[fieldName];
             console.log(
-              "DEBUG - useEffect - Found existing files:",
+              'DEBUG - useEffect - Found existing files:',
               JSON.stringify(existingFiles, null, 2)
             );
             if (Array.isArray(existingFiles) && existingFiles.length > 0) {
               // Create File objects from the server data if possible
               const fileObjects = existingFiles
-                .filter(
-                  (file) => !filesSelected.some((f) => f.name === file.name)
-                )
-                .map((file) => {
+                .filter(file => !filesSelected.some(f => f.name === file.name))
+                .map(file => {
                   try {
                     console.log(
-                      "DEBUG - Processing server file (full):",
+                      'DEBUG - Processing server file (full):',
                       JSON.stringify(file, null, 2)
                     );
-                    console.log("DEBUG - File storage object:", file.storage);
+                    console.log('DEBUG - File storage object:', file.storage);
 
                     // Create a File object with the actual size from the server
                     const fileObj = new File(
                       [
                         new Blob(
-                          [
-                            new Uint8Array(
-                              new ArrayBuffer(file.size || 143 * 1024)
-                            ).fill(1),
-                          ],
-                          { type: file.type || "application/octet-stream" }
+                          [new Uint8Array(new ArrayBuffer(file.size || 143 * 1024)).fill(1)],
+                          { type: file.type || 'application/octet-stream' }
                         ),
                       ],
                       file.name,
                       {
-                        type: file.type || "application/octet-stream",
+                        type: file.type || 'application/octet-stream',
                         lastModified: file.lastModified || Date.now(),
                       }
                     );
@@ -273,7 +190,7 @@ const FormContent = forwardRef<any, FormContentProps>(
                       (fileObj as any).storageKey = file.storage.key;
                       (fileObj as any).serverId = file.attachmentId; // Try to get the actual attachment ID
                       (fileObj as any).isServerFile = true;
-                      console.log("DEBUG - useEffect - File details:", {
+                      console.log('DEBUG - useEffect - File details:', {
                         name: file.name,
                         storageKey: file.storage.key,
                         attachmentId: file.attachmentId,
@@ -283,7 +200,7 @@ const FormContent = forwardRef<any, FormContentProps>(
 
                     return fileObj;
                   } catch (e) {
-                    console.error("Error creating File object:", e);
+                    console.error('Error creating File object:', e);
                     return null;
                   }
                 })
@@ -291,8 +208,8 @@ const FormContent = forwardRef<any, FormContentProps>(
 
               if (fileObjects.length > 0) {
                 console.log(
-                  "DEBUG - useEffect - Setting file objects with server IDs:",
-                  fileObjects.map((f) => ({
+                  'DEBUG - useEffect - Setting file objects with server IDs:',
+                  fileObjects.map(f => ({
                     name: f.name,
                     storageKey: (f as any).storageKey,
                     serverId: (f as any).serverId,
@@ -308,23 +225,20 @@ const FormContent = forwardRef<any, FormContentProps>(
         // Then check if we have files in localStorage
         const storedFileMetadata = loadFilesFromLocalStorage();
         if (storedFileMetadata && storedFileMetadata.length > 0) {
-          console.log(
-            "DEBUG - useEffect - Found stored file metadata:",
-            storedFileMetadata
-          );
+          console.log('DEBUG - useEffect - Found stored file metadata:', storedFileMetadata);
           // Create File objects from metadata
           const fileObjects = storedFileMetadata
-            .map((meta) => {
+            .map(meta => {
               try {
                 const file = new File(
                   [
                     new Blob([new ArrayBuffer(meta.size || 143 * 1024)], {
-                      type: meta.type || "application/octet-stream",
+                      type: meta.type || 'application/octet-stream',
                     }),
                   ],
                   meta.name,
                   {
-                    type: meta.type || "application/octet-stream",
+                    type: meta.type || 'application/octet-stream',
                     lastModified: meta.lastModified || Date.now(),
                   }
                 );
@@ -333,27 +247,24 @@ const FormContent = forwardRef<any, FormContentProps>(
                   (file as any).serverId = meta.id;
                   (file as any).isServerFile = true;
                   console.log(
-                    "DEBUG - useEffect - Preserved server ID from localStorage:",
+                    'DEBUG - useEffect - Preserved server ID from localStorage:',
                     meta.id
                   );
                 }
                 return file;
               } catch (e) {
-                console.error(
-                  "Error creating File object from localStorage:",
-                  e
-                );
+                console.error('Error creating File object from localStorage:', e);
                 return null;
               }
             })
             .filter(Boolean);
 
           if (fileObjects.length > 0) {
-            setFilesSelected((prev) => {
+            setFilesSelected(prev => {
               // Combine with existing files, avoiding duplicates
               const combined = [...prev];
-              fileObjects.forEach((file) => {
-                if (!combined.some((f) => f.name === file.name)) {
+              fileObjects.forEach(file => {
+                if (!combined.some(f => f.name === file.name)) {
                   combined.push(file);
                 }
               });
@@ -372,9 +283,250 @@ const FormContent = forwardRef<any, FormContentProps>(
       }
     }, [formSubmitted]);
 
-    // Handle file input change
+    // Handle form submission
+    const handleFormSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+
+      // For file uploads, validate that at least one file is selected
+      if (formType === 'file' && filesSelected.length === 0 && !(inputValue instanceof File)) {
+        alert('Please select at least one file before saving.');
+        return;
+      }
+
+      const formData = prepareFormData(e.target as HTMLFormElement);
+
+      // Mark form as submitted
+      setFormSubmitted(true);
+
+      // Pass the formData to the onSubmit callback
+      onSubmit(e, formData);
+    };
+
+    const handleIncrement = (step: number) => {
+      const currentValue = inputValue;
+
+      if (typeof currentValue === 'number') {
+        // Increment the number
+        const newValue = currentValue + step;
+        // Only submit for increment type, not for file uploads
+        if (formType === 'increment') {
+          fetcher.submit(
+            {
+              'target-updated': formName,
+              [fieldName]: newValue.toString(),
+            },
+            { method: 'post' }
+          );
+        }
+        setInputValue(newValue);
+      } else if (currentValue === null) {
+        // If the current value is null, start from the step value
+        setInputValue(step);
+      } else if (currentValue instanceof File) {
+        // If it's a File, keep it unchanged
+        setInputValue(currentValue);
+      } else {
+        // Handle unexpected types (like strings)
+        setInputValue(currentValue);
+      }
+    };
+
+    // Numeric validation handler
+    const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      const numericValue = value.replace(/[^0-9.]/g, ''); // Remove non-numeric characters
+      setInputValue(numericValue);
+    };
+
+    // Handle file input change without auto-submission
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleFileSelection(e.target.files);
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        // Convert FileList to array
+        const fileArray = Array.from(files);
+
+        // Add new files to existing files, avoiding duplicates by name
+        const newFiles = fileArray.filter(
+          newFile => !filesSelected.some(existingFile => existingFile.name === newFile.name)
+        );
+
+        if (newFiles.length > 0) {
+          // Update state with all selected files
+          setFilesSelected(prev => {
+            const updated = [...prev, ...newFiles];
+            // Save to localStorage
+            saveFilesToLocalStorage(updated);
+            return updated;
+          });
+
+          // Set the first new file as inputValue for backward compatibility
+          setInputValue(newFiles[0]);
+        }
+
+        // Prevent form submission
+        e.stopPropagation();
+      }
+    };
+
+    // Remove a file from the selected files
+    const handleRemoveFile = (file: File) => {
+      console.log('DEBUG - handleRemoveFile - File to remove:', {
+        name: file.name,
+        storageKey: (file as any).storageKey,
+        serverId: (file as any).serverId,
+        isServerFile: (file as any).isServerFile,
+      });
+
+      const fileId = (file as any).serverId;
+      console.log('DEBUG - handleRemoveFile - File ID:', fileId);
+
+      if (fileId) {
+        setFilesToDelete(prev => {
+          const newFilesToDelete = [...prev, fileId];
+          console.log('DEBUG - handleRemoveFile - Updated filesToDelete:', newFilesToDelete);
+          return newFilesToDelete;
+        });
+      }
+
+      setFilesSelected(prev => {
+        const updatedFiles = prev.filter(f => f.name !== file.name);
+        // Update localStorage with remaining files
+        saveFilesToLocalStorage(updatedFiles);
+        return updatedFiles;
+      });
+
+      // Update inputValue if we removed the current inputValue
+      if (filesSelected.length > 1) {
+        setInputValue(filesSelected[0]);
+      } else {
+        setInputValue(null);
+      }
+    };
+
+    // Determine if the Save button should be disabled
+    const isSaveButtonDisabled = () => {
+      if (showLoadingOnSubmit && fetcher.state === 'submitting') {
+        return true;
+      }
+
+      // For file inputs, disable the Save button if no file is selected
+      if (formType === 'file' && filesSelected.length === 0 && !(inputValue instanceof File)) {
+        return true;
+      }
+
+      return false;
+    };
+
+    // Safely render form field based on type
+    const renderFormField = () => {
+      if (formType === 'repeatable') {
+        return (
+          <RepeatableFields
+            fieldName={repeatableFieldName}
+            values={repeatableInputValues}
+            files={repeatableInputFiles}
+            expandedIndex={expandedIndex}
+            onAdd={handleAddRepeatableField}
+            onRemove={handleRemoveRepeatableField}
+            onDataChange={handleDataChange}
+            onToggleExpand={setExpandedIndex}
+            {...props}
+          />
+        );
+      }
+
+      const FormField = FormFields[formType];
+      if (!FormField) return null;
+
+      return FormField({
+        value: inputValue,
+        onChange:
+          formType === 'file'
+            ? handleFileChange
+            : e => setInputValue(formType === 'number' ? Number(e.target.value) : e.target.value),
+        handleIncrement: handleIncrement,
+        name: fieldName,
+        props,
+      });
+    };
+
+    // Render selected files
+    const renderSelectedFiles = () => {
+      if (formType !== 'file' || filesSelected.length === 0) return null;
+
+      return (
+        <div className="mt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Files:</h3>
+          <div className="space-y-2">
+            {filesSelected.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-200"
+              >
+                <div className="flex-shrink-0 mr-3">
+                  {file.type.includes('image') ? (
+                    <svg
+                      className="w-6 h-6 text-blue-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  ) : file.type.includes('pdf') ? (
+                    <svg
+                      className="w-6 h-6 text-red-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-6 h-6 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                  <p className="text-xs text-gray-500">{Math.round(file.size / 1024)} KB</p>
+                </div>
+                <button
+                  type="button"
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleRemoveFile(file)}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
     };
 
     // Render status messages (error/success)
@@ -384,9 +536,7 @@ const FormContent = forwardRef<any, FormContentProps>(
       if (fetcher.data?.error) {
         return (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-2">
-            <span className="block sm:inline">
-              {fetcher.data.error.message}
-            </span>
+            <span className="block sm:inline">{fetcher.data.error.message}</span>
           </div>
         );
       }
@@ -400,116 +550,34 @@ const FormContent = forwardRef<any, FormContentProps>(
       }
     };
 
-    // Render selected files
-    const renderSelectedFiles = () => {
-      if (formType !== "file" || filesSelected.length === 0) return null;
-
-      return (
-        <div className="mt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Selected Files:
-          </h3>
-          <div className="space-y-2">
-            {filesSelected.map((file, index) => (
-              <div key={index} className="flex items-center mt-2">
-                <span className="text-sm text-gray-600">{file.name}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFile(file)}
-                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    };
-
     return (
       <div className="">
         <form
           method="post"
           className="space-y-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit(e, prepareFormData(e.target as HTMLFormElement));
-          }}
+          onSubmit={handleFormSubmit}
           encType={
-            formType === "repeatable" || formType === "file"
-              ? "multipart/form-data"
-              : undefined
+            formType === 'repeatable' || formType === 'file' ? 'multipart/form-data' : undefined
           }
-          onChange={(e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.type === "file") {
-              handleFileChange(
-                e as unknown as React.ChangeEvent<HTMLInputElement>
-              );
-            }
-          }}
         >
           {renderStatusMessages()}
 
-          {formType === "repeatable" ? (
-            <RepeatableFields
-              fieldName={repeatableFieldName || ""}
-              values={repeatableInputValues}
-              onAdd={handleAddRepeatableField}
-              onRemove={handleRemoveRepeatableField}
-              onDataChange={handleDataChange}
-              expandedIndex={expandedIndex}
-              onToggleExpand={setExpandedIndex}
-              {...props}
-            />
-          ) : (
-            <div className="form-field-container">
-              {formType === "file" ? (
-                <input
-                  type="file"
-                  name={fieldName}
-                  onChange={handleFileChange}
-                  multiple={props.multiple}
-                  accept={props.acceptedFileTypes}
-                />
-              ) : formType === "textArea" ? (
-                <textarea
-                  name={fieldName}
-                  value={inputValue as string}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md"
-                />
-              ) : (
-                <input
-                  type={formType === "number" ? "number" : "text"}
-                  name={fieldName}
-                  value={inputValue as string}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md"
-                />
-              )}
-            </div>
-          )}
+          {renderFormField()}
 
           {renderSelectedFiles()}
 
           {/* Only show buttons for non-file types or non-identification forms */}
-          {formType !== "increment" && formType !== "file" && (
+          {formType !== 'increment' && formType !== 'file' && (
             <DialogFooter>
               <div className="flex justify-end gap-2">
                 <Button
                   type="submit"
                   className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-                  disabled={
-                    fetcher.state === "submitting" && showLoadingOnSubmit
-                  }
+                  disabled={isSaveButtonDisabled()}
                 >
-                  {fetcher.state === "submitting" && showLoadingOnSubmit
-                    ? "Saving..."
-                    : "Save"}
+                  {showLoadingOnSubmit && fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
                 </Button>
-                {formSubmitted && fetcher.state !== "submitting" && (
+                {formSubmitted && fetcher.state !== 'submitting' && (
                   <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                   </DialogClose>
@@ -519,19 +587,15 @@ const FormContent = forwardRef<any, FormContentProps>(
           )}
 
           {/* For file types, just show a close button */}
-          {formType === "file" && (
+          {formType === 'file' && (
             <DialogFooter>
               <div className="flex justify-end gap-2">
                 <Button
                   type="submit"
                   className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
-                  disabled={
-                    fetcher.state === "submitting" && showLoadingOnSubmit
-                  }
+                  disabled={isSaveButtonDisabled()}
                 >
-                  {fetcher.state === "submitting" && showLoadingOnSubmit
-                    ? "Saving..."
-                    : "Save"}
+                  {showLoadingOnSubmit && fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
                 </Button>
                 <DialogClose asChild>
                   <Button variant="outline">Close</Button>
@@ -545,7 +609,7 @@ const FormContent = forwardRef<any, FormContentProps>(
   }
 );
 
-FormContent.displayName = "FormContent";
+FormContent.displayName = 'FormContent';
 
 // Export a function to get form data from the component
 export const getFormData = (formContent: any, form: HTMLFormElement) => {
