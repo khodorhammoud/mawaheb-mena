@@ -4,6 +4,7 @@ export enum AccountStatus {
   Published = 'published',
   Closed = 'closed',
   Suspended = 'suspended',
+  Deactivated = 'deactivated',
   Deleted = 'deleted',
 }
 

@@ -26,8 +26,7 @@ export const action = async ({ request }) => {
   const action = formData.get('action');
 
   if (target === 'accountTab') {
-    // ✅ AccountTab: Only updates user info, not password
-    const phone = formData.get('fullPhone'); // ✅ Stored as "{countryCode}||{phone}"
+    const phone = formData.get('fullPhone');
 
     const updatedSettings = {
       firstName: formData.get('firstName'),
@@ -36,7 +35,7 @@ export const action = async ({ request }) => {
       country: formData.get('country'),
       address: formData.get('address'),
       region: formData.get('region'),
-      phone, // ✅ Saves in "{countryCode}||{phone}" format
+      phone,
       websiteURL: formData.get('websiteURL'),
       socialMediaLinks: JSON.parse(formData.get('socialMediaLinks') || '{}'),
     };
@@ -71,13 +70,11 @@ export const action = async ({ request }) => {
       }
     } else if (action === 'deleteAccount') {
       try {
-        // First save the feedback if provided
         const feedback = formData.get('feedback');
         if (feedback) {
           await saveExitFeedback(currentUser.id, feedback as string);
         }
 
-        // Then request account deletion
         const result = await requestAccountDeletion(currentUser.id);
         if (!result.success) {
           return Response.json({
@@ -86,13 +83,62 @@ export const action = async ({ request }) => {
           });
         }
 
-        // If successful, redirect to logout
         return Response.redirect('/logout');
       } catch (error) {
         return Response.json({
           success: false,
           error: error instanceof Error ? error.message : 'An unknown error occurred',
         });
+      }
+    } else {
+      const currentPassword = formData.get('currentPassword');
+      const newPassword = formData.get('newPassword');
+      const confirmPassword = formData.get('confirmPassword');
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return Response.json(
+          { success: false, error: 'All fields are required.' },
+          { status: 400 }
+        );
+      }
+
+      if (newPassword !== confirmPassword) {
+        return Response.json(
+          { success: false, error: 'New passwords do not match.' },
+          { status: 400 }
+        );
+      }
+
+      const storedUser = await getCurrentUser(request, true);
+      if (!storedUser || !storedUser.passHash) {
+        return Response.json({ success: false, error: 'User not found.' }, { status: 404 });
+      }
+
+      const isPasswordValid = await compare(currentPassword, storedUser.passHash);
+      if (!isPasswordValid) {
+        return Response.json(
+          { success: false, error: 'Incorrect current password.' },
+          { status: 401 }
+        );
+      }
+
+      const hashedNewPassword = await hash(newPassword, 10);
+
+      try {
+        await updateUserPassword(currentUser.id, hashedNewPassword);
+        return Response.json({
+          success: true,
+          message: 'Password updated successfully.',
+        });
+      } catch (error) {
+        console.error('Error updating password:', error);
+        return Response.json(
+          {
+            success: false,
+            error: error instanceof Error ? error.message : 'An unknown error occurred',
+          },
+          { status: 500 }
+        );
       }
     }
   } else if (target === 'exportData') {
@@ -138,7 +184,6 @@ export default function Settings() {
     <div className="">
       <SettingsHeader />
       <Tabs defaultValue="account" className="">
-        {/* Tabs List */}
         <TabsList className="flex sm:gap-4 gap-2 mb-4 md:w-[70%] lg:ml-0 md:ml-6 ml-0 bg-white">
           <TabsTrigger value="account" className="flex-grow text-center hover:scale-105">
             Account
@@ -151,7 +196,6 @@ export default function Settings() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tabs Content */}
         <div className="">
           <TabsContent value="account" className="w-full">
             <AccountTab />

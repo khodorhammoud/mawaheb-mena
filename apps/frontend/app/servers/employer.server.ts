@@ -471,19 +471,12 @@ export async function getEmployerDashboardData(request: Request) {
 }
 
 /**
- * Creates or updates an employer identification record
+ * Create a new identification record for an employer
  * @param userId The user ID
- * @param attachmentsData Object containing arrays of files for each document type
- * @returns The created or updated identification record
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The created identification record
  */
-export async function createEmployerIdentification(
-  userId: number,
-  attachmentsData: {
-    identification?: File[];
-    trade_license?: File[];
-    board_resolution?: File[];
-  }
-) {
+export async function createEmployerIdentification(userId: number, attachmentsData: any) {
   try {
     // Save identification attachments to the attachments table
     let identificationIds: { success: boolean; data: number[] } = {
@@ -569,14 +562,7 @@ export async function createEmployerIdentification(
       .insert(userIdentificationsTable)
       .values({
         userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
-          attachments,
-          updatedAt: new Date(),
-        },
+        attachments: attachmentsData,
       })
       .returning();
 
@@ -587,8 +573,15 @@ export async function createEmployerIdentification(
   }
 }
 
+/**
+ * Get the identification record for an employer
+ * @param userId The user ID
+ * @returns The identification record
+ */
 export async function getEmployerIdentification(userId: number) {
   try {
+    // console.log('DEBUG - getEmployerIdentification called with userId:', userId);
+
     const result = await db
       .select()
       .from(userIdentificationsTable)
@@ -601,12 +594,12 @@ export async function getEmployerIdentification(userId: number) {
 
     // Check if we have the expected data format
     // if (result.length > 0) {
-    //   console.log(
-    //     'DEBUG - Employer attachments found:',
-    //     result[0].attachments ? JSON.stringify(result[0].attachments, null, 2) : 'No attachments'
-    //   );
+    // console.log(
+    // 'DEBUG - Employer attachments found:',
+    // result[0].attachments ? JSON.stringify(result[0].attachments, null, 2) : 'No attachments'
+    // );
     // } else {
-    //   console.log('DEBUG - No employer identification record found for userId:', userId);
+    // console.log('DEBUG - No employer identification record found for userId:', userId);
     // }
 
     return { success: true, data: result[0] || null };
@@ -616,15 +609,13 @@ export async function getEmployerIdentification(userId: number) {
   }
 }
 
-export async function updateEmployerIdentification(
-  userId: number,
-  attachmentsData: {
-    identification?: File[];
-    trade_license?: File[];
-    board_resolution?: File[];
-    filesToDelete?: number[];
-  }
-) {
+/**
+ * Update the identification record for an employer
+ * @param userId The user ID
+ * @param attachmentsData The attachments data in JSON format
+ * @returns The updated identification record
+ */
+export async function updateEmployerIdentification(userId: number, attachmentsData: any) {
   try {
     // Get existing identification data
     const existingData = await getEmployerIdentification(userId);
@@ -642,69 +633,26 @@ export async function updateEmployerIdentification(
       };
     }
 
-    // console.log('DEBUG - updateEmployerIdentification - Starting with existing attachments:', {
-    //   identification: existingAttachments.identification,
-    //   trade_license: existingAttachments.trade_license,
-    //   board_resolution: existingAttachments.board_resolution,
-    // });
-
     // Process files to delete if any
     if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
       // console.log('DEBUG - Processing files to delete:', attachmentsData.filesToDelete);
 
-      // Ensure all IDs are valid numbers
-      const validFilesToDelete = attachmentsData.filesToDelete.filter(
-        id => typeof id === 'number' && !isNaN(id) && id > 0
+      // Filter out deleted file IDs from existing attachments
+      existingAttachments.identification = existingAttachments.identification.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
+      );
+      existingAttachments.trade_license = existingAttachments.trade_license.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
+      );
+      existingAttachments.board_resolution = existingAttachments.board_resolution.filter(
+        id => !attachmentsData.filesToDelete?.includes(id)
       );
 
-      if (validFilesToDelete.length !== attachmentsData.filesToDelete.length) {
-        console.warn(
-          'DEBUG - Some filesToDelete IDs are invalid:',
-          attachmentsData.filesToDelete.filter(
-            id => !(typeof id === 'number' && !isNaN(id) && id > 0)
-          )
-        );
-        // console.log('DEBUG - Using filtered list for deletion:', validFilesToDelete);
-      }
-
-      // console.log('DEBUG - Before filtering - Existing attachments:', {
-      //   identification: existingAttachments.identification,
-      //   trade_license: existingAttachments.trade_license,
-      //   board_resolution: existingAttachments.board_resolution,
-      // });
-
-      // Filter out deleted file IDs from existing attachments
-      existingAttachments.identification = existingAttachments.identification.filter(id => {
-        const keep = !validFilesToDelete.includes(id);
-        if (!keep) console.log(`DEBUG - Removing ID ${id} from identification attachments`);
-        return keep;
-      });
-      existingAttachments.trade_license = existingAttachments.trade_license.filter(id => {
-        const keep = !validFilesToDelete.includes(id);
-        if (!keep) console.log(`DEBUG - Removing ID ${id} from trade_license attachments`);
-        return keep;
-      });
-      existingAttachments.board_resolution = existingAttachments.board_resolution.filter(id => {
-        const keep = !validFilesToDelete.includes(id);
-        if (!keep) console.log(`DEBUG - Removing ID ${id} from board_resolution attachments`);
-        return keep;
-      });
-
-      // console.log('DEBUG - After filtering - Existing attachments:', {
-      //   identification: existingAttachments.identification,
-      //   trade_license: existingAttachments.trade_license,
-      //   board_resolution: existingAttachments.board_resolution,
-      // });
-
       // Delete the files from the attachments table
-      // console.log(`DEBUG - Starting deletion of ${validFilesToDelete.length} attachments`);
-      for (const fileId of validFilesToDelete) {
+      for (const fileId of attachmentsData.filesToDelete) {
         try {
-          // console.log(`DEBUG - Attempting to delete attachment with ID ${fileId}`);
           await deleteAttachmentById(fileId);
-          // console.log(
-          //   `DEBUG - Successfully completed deletion process for attachment ID ${fileId}`
-          // );
+          // console.log(`DEBUG - Successfully deleted attachment with ID ${fileId}`);
         } catch (error) {
           console.error(`DEBUG - Error deleting attachment with ID ${fileId}:`, error);
           // Continue with other deletions even if one fails
@@ -785,13 +733,18 @@ export async function updateEmployerIdentification(
       })
       .returning();
 
-    return { success: true, data: result };
+    return { success: true, data: result[0] };
   } catch (error) {
     console.error('Error updating employer identification:', error);
     return { success: false, error };
   }
 }
 
+/**
+ * Update the account status to pending after identification submission
+ * @param accountId The account ID
+ * @returns Success status
+ */
 export async function updateEmployerAccountStatusToPending(accountId: number) {
   try {
     const result = await db
