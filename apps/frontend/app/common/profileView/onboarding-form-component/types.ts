@@ -1,16 +1,16 @@
-import { FetcherWithComponents } from "@remix-run/react";
-import { MutableRefObject } from "react";
+import { FetcherWithComponents } from '@remix-run/react';
+import { MutableRefObject } from 'react';
 
 export type FormType =
-  | "text"
-  | "number"
-  | "range"
-  | "textArea"
-  | "increment"
-  | "video"
-  | "file"
-  | "repeatable"
-  | "custom";
+  | 'text'
+  | 'number'
+  | 'range'
+  | 'textArea'
+  | 'increment'
+  | 'video'
+  | 'file'
+  | 'repeatable'
+  | 'custom';
 
 export interface GeneralizableFormCardProps {
   fetcher?: FetcherWithComponents<any>; // Make fetcher optional
@@ -38,15 +38,15 @@ export interface GeneralizableFormCardProps {
 
 export interface FilledGeneralizableFormCardProps {
   formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
+    | 'text'
+    | 'number'
+    | 'range'
+    | 'textArea'
+    | 'increment'
+    | 'video'
+    | 'file'
+    | 'repeatable'
+    | 'custom';
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
