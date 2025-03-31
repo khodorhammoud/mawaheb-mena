@@ -13,7 +13,7 @@ import {
   date,
   numeric,
   pgEnum,
-} from "drizzle-orm/pg-core";
+} from 'drizzle-orm/pg-core';
 
 /** Import custom enums and types from the schemaTypes file. */
 /* import {
@@ -37,7 +37,7 @@ import {
   userRoleEnum,
 } from "./schemaTypes"; */
 
-import { sql } from "drizzle-orm";
+import { sql } from 'drizzle-orm';
 // import { TimesheetStatus } from "~/types/enums";
 
 /* enums definitions */
@@ -60,82 +60,76 @@ import {
   JobsOpenTo,
   Provider,
   AttachmentBelongsTo,
-} from "~/types/enums";
+} from '~/types/enums';
 
-export const providerEnum = pgEnum(
-  "provider",
-  Object.values(Provider) as [string, ...string[]]
-);
+export const providerEnum = pgEnum('provider', Object.values(Provider) as [string, ...string[]]);
 
 export const accountStatusEnum = pgEnum(
-  "account_status",
+  'account_status',
   Object.values(AccountStatus) as [string, ...string[]]
 );
 
 export const employerAccountTypeEnum = pgEnum(
-  "eployer_account_type",
+  'eployer_account_type',
   Object.values(EmployerAccountType) as [string, ...string[]]
 );
 export const accountTypeEnum = pgEnum(
-  "account_type",
+  'account_type',
   Object.values(AccountType) as [string, ...string[]]
 );
 
 export const timesheetStatusEnum = pgEnum(
-  "timesheet_status",
+  'timesheet_status',
   Object.values(TimesheetStatus) as [string, ...string[]]
 );
 
-export const languageEnum = pgEnum(
-  "language",
-  Object.values(Language) as [string, ...string[]]
-);
+export const languageEnum = pgEnum('language', Object.values(Language) as [string, ...string[]]);
 
 export const jobApplicationStatusEnum = pgEnum(
-  "job_application_status",
+  'job_application_status',
   Object.values(JobApplicationStatus) as [string, ...string[]]
 );
 
 export const countryEnum = pgEnum(
   // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
-  "country", // this name is not depending on any other name for now !
+  'country', // this name is not depending on any other name for now !
   Object.values(Country) as [string, ...string[]] // List of all valid country values from the Country enum
 );
 export const dayOfWeekEnum = pgEnum(
-  "day_of_week",
+  'day_of_week',
   Object.values(DayOfWeek) as [string, ...string[]]
 );
 export const projectTypeEnum = pgEnum(
-  "project_type",
+  'project_type',
   Object.values(ProjectType) as [string, ...string[]]
 );
 export const compensationTypeEnum = pgEnum(
-  "compensation_type",
+  'compensation_type',
   Object.values(CompensationType) as [string, ...string[]]
 );
 
 export const locationPreferenceTypeEnum = pgEnum(
-  "location_preference_type",
+  'location_preference_type',
   Object.values(LocationPreferenceType) as [string, ...string[]]
 );
 
 export const experienceLevelEnum = pgEnum(
-  "experience_level",
+  'experience_level',
   Object.values(ExperienceLevel) as [string, ...string[]]
 );
 
 export const jobStatusEnum = pgEnum(
-  "job_status",
+  'job_status',
   Object.values(JobStatus) as [string, ...string[]]
 );
 
 export const jobsOpenToEnum = pgEnum(
-  "jobs_open_to",
+  'jobs_open_to',
   Object.values(JobsOpenTo) as [string, ...string[]]
 );
 
 export const belongsToEnum = pgEnum(
-  "belongs_to",
+  'belongs_to',
   Object.values(AttachmentBelongsTo) as [string, ...string[]]
 );
 /* const jobApplicationStatusEnum = pgEnum(
@@ -144,7 +138,7 @@ export const belongsToEnum = pgEnum(
 );
  */
 
-export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);
 
 /**
  * Definition of the Users table.
@@ -161,16 +155,18 @@ export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 // each of these are tables, and in each tables, and each row here represent a column in our db schema (in neon)
 // the first word 'firstName' represent the keyword we wil use in our code (our code reference), and the second name 'first_name' is the name of the column that appears in our db (the standart naming for postgres is fname_lname)
 
-export const UsersTable = pgTable("users", {
-  id: serial("id").primaryKey(),
-  firstName: varchar("first_name", { length: 80 }),
-  lastName: varchar("last_name", { length: 80 }),
-  email: varchar("email", { length: 150 }).unique().notNull(),
-  passHash: varchar("password_hash"),
-  isVerified: boolean("is_verified").default(false),
-  isOnboarded: boolean("is_onboarded").default(false),
-  provider: providerEnum("provider"),
-  role: userRoleEnum("role").default("user"),
+export const UsersTable = pgTable('users', {
+  id: serial('id').primaryKey(),
+  firstName: varchar('first_name', { length: 80 }),
+  lastName: varchar('last_name', { length: 80 }),
+  email: varchar('email', { length: 150 }).unique().notNull(),
+  passHash: varchar('password_hash').notNull(),
+  isVerified: boolean('is_verified').default(false),
+  deletionRequestedAt: timestamp('deletion_requested_at'),
+  finalDeletionAt: timestamp('final_deletion_at'),
+  isOnboarded: boolean('is_onboarded').default(false),
+  provider: providerEnum('provider'),
+  role: userRoleEnum('role').default('user'),
 });
 
 /**
@@ -182,14 +178,14 @@ export const UsersTable = pgTable("users", {
  * @property {timestamp} createdAt - Timestamp for when the record was created
  * @property {timestamp} updatedAt - Timestamp for when the record was last updated
  */
-export const userIdentificationsTable = pgTable("user_identifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
+export const userIdentificationsTable = pgTable('user_identifications', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
     .references(() => UsersTable.id)
     .unique(),
-  attachments: jsonb("attachments").default(sql`'{}'::jsonb`),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  attachments: jsonb('attachments').default(sql`'{}'::jsonb`),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 /**
@@ -203,15 +199,15 @@ export const userIdentificationsTable = pgTable("user_identifications", {
  * @property refresh_token -  the refresh token of the user's account on the social media platform
  * @property expires_at - timestamp, the expiration date of the access token
  */
-export const socialAccountsTable = pgTable("social_accounts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => UsersTable.id),
-  provider: varchar("provider", { length: 50 }),
-  providerAccountId: varchar("provider_account_id", { length: 255 }),
-  profileUrl: varchar("profile_url", { length: 255 }),
-  accessToken: varchar("access_token", { length: 500 }),
-  refreshToken: varchar("refresh_token", { length: 500 }),
-  expiresAt: timestamp("expires_at"),
+export const socialAccountsTable = pgTable('social_accounts', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  provider: varchar('provider', { length: 50 }),
+  providerAccountId: varchar('provider_account_id', { length: 255 }),
+  profileUrl: varchar('profile_url', { length: 255 }),
+  accessToken: varchar('access_token', { length: 500 }),
+  refreshToken: varchar('refresh_token', { length: 500 }),
+  expiresAt: timestamp('expires_at'),
 });
 
 /**
@@ -229,19 +225,19 @@ export const socialAccountsTable = pgTable("social_accounts", {
  * @property website_url - text
  * @property social_media_links - text array with default ''
  */
-export const accountsTable = pgTable("accounts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => UsersTable.id),
-  slug: varchar("slug", { length: 60 }).unique(),
-  accountType: accountTypeEnum("account_type"),
-  country: varchar("country", { length: 100 }),
-  address: varchar("address", { length: 150 }),
-  region: varchar("region", { length: 100 }),
-  accountStatus: accountStatusEnum("account_status"),
-  phone: varchar("phone", { length: 30 }),
-  websiteURL: text("website_url"),
-  socialMediaLinks: jsonb("social_media_links").default(sql`'{}'::jsonb`),
-  isCreationComplete: boolean("is_creation_complete").default(false),
+export const accountsTable = pgTable('accounts', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  slug: varchar('slug', { length: 60 }).unique(),
+  accountType: accountTypeEnum('account_type'),
+  country: varchar('country', { length: 100 }),
+  address: varchar('address', { length: 150 }),
+  region: varchar('region', { length: 100 }),
+  accountStatus: accountStatusEnum('account_status'),
+  phone: varchar('phone', { length: 30 }),
+  websiteURL: text('website_url'),
+  socialMediaLinks: jsonb('social_media_links').default(sql`'{}'::jsonb`),
+  isCreationComplete: boolean('is_creation_complete').default(false),
 });
 
 /**
@@ -253,12 +249,12 @@ export const accountsTable = pgTable("accounts", {
  * @property start_time - time
  * @property end_time - time
  */
-export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
-  id: serial("id").primaryKey(),
-  accountId: integer("account_id").references(() => accountsTable.id),
-  dayOfWeek: dayOfWeekEnum("day"),
-  startTime: time("start_time"),
-  endTime: time("end_time"),
+export const preferredWorkingTimesTable = pgTable('preferred_working_times', {
+  id: serial('id').primaryKey(),
+  accountId: integer('account_id').references(() => accountsTable.id),
+  dayOfWeek: dayOfWeekEnum('day'),
+  startTime: time('start_time'),
+  endTime: time('end_time'),
 });
 
 /**
@@ -278,32 +274,32 @@ export const preferredWorkingTimesTable = pgTable("preferred_working_times", {
  * @property hourlyRate - integer
  * @property compensation_type - compensationTypeEnum
  */
-export const freelancersTable = pgTable("freelancers", {
-  id: serial("id").primaryKey(),
-  accountId: integer("account_id").references(() => accountsTable.id),
-  about: text("about"),
-  fieldsOfExpertise: text("fields_of_expertise")
+export const freelancersTable = pgTable('freelancers', {
+  id: serial('id').primaryKey(),
+  accountId: integer('account_id').references(() => accountsTable.id),
+  about: text('about'),
+  fieldsOfExpertise: text('fields_of_expertise')
     .array()
     .default(sql`'{}'::text[]`),
-  portfolio: jsonb("portfolio").default(sql`'[]'::jsonb`),
-  workHistory: jsonb("work_history").default(sql`'[]'::jsonb`),
-  cvLink: text("cv_link"),
-  videoLink: text("video_link"),
-  certificates: jsonb("certificates").default(sql`'[]'::jsonb`),
-  educations: jsonb("educations").default(sql`'[]'::jsonb`),
-  yearsOfExperience: integer("years_of_experience"),
-  preferredProjectTypes: projectTypeEnum("preferred_project_types")
+  portfolio: jsonb('portfolio').default(sql`'[]'::jsonb`),
+  workHistory: jsonb('work_history').default(sql`'[]'::jsonb`),
+  cvLink: text('cv_link'),
+  videoLink: text('video_link'),
+  certificates: jsonb('certificates').default(sql`'[]'::jsonb`),
+  educations: jsonb('educations').default(sql`'[]'::jsonb`),
+  yearsOfExperience: integer('years_of_experience'),
+  preferredProjectTypes: projectTypeEnum('preferred_project_types')
     .array()
     .default(sql`ARRAY[]::project_type[]`),
-  hourlyRate: integer("hourly_rate"),
-  compensationType: compensationTypeEnum("compensation_type"),
-  availableForWork: boolean("available_for_work").default(false),
-  dateAvailableFrom: date("available_from"),
-  jobsOpenTo: jobsOpenToEnum("jobs_open_to")
+  hourlyRate: integer('hourly_rate'),
+  compensationType: compensationTypeEnum('compensation_type'),
+  availableForWork: boolean('available_for_work').default(false),
+  dateAvailableFrom: date('available_from'),
+  jobsOpenTo: jobsOpenToEnum('jobs_open_to')
     .array()
     .default(sql`ARRAY[]::jobs_open_to[]`), // array that allows only the enum
-  hoursAvailableFrom: time("hours_available_from"),
-  hoursAvailableTo: time("hours_available_to"),
+  hoursAvailableFrom: time('hours_available_from'),
+  hoursAvailableTo: time('hours_available_to'),
 });
 
 /**
@@ -314,11 +310,11 @@ export const freelancersTable = pgTable("freelancers", {
  * @property language_id - integer referencing the languagesTable id
  * @property timestamp - timestamp
  */
-export const freelancerLanguagesTable = pgTable("freelancer_languages", {
-  id: serial("id").primaryKey(),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  languageId: integer("language_id").references(() => languagesTable.id),
-  createdAt: timestamp("timestamp").default(sql`now()`),
+export const freelancerLanguagesTable = pgTable('freelancer_languages', {
+  id: serial('id').primaryKey(),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  languageId: integer('language_id').references(() => languagesTable.id),
+  createdAt: timestamp('timestamp').default(sql`now()`),
 });
 
 /**
@@ -341,25 +337,25 @@ export const freelancerLanguagesTable = pgTable("freelancer_languages", {
  * @property business_license_link - text
  * @property certification_of_incorporation_link - text
  */
-export const employersTable = pgTable("employers", {
-  id: serial("id").primaryKey(),
-  accountId: integer("account_id").references(() => accountsTable.id),
-  budget: integer("budget"),
-  employerAccountType: employerAccountTypeEnum("employerAccountType"),
-  companyName: varchar("company_name", { length: 100 }),
-  employerName: varchar("employer_name", { length: 100 }),
-  companyEmail: varchar("company_email", { length: 150 }),
-  about: text("about"),
-  industrySector: text("industry_sector"),
-  yearsInBusiness: integer("years_in_business"),
-  companyRepName: varchar("company_rep_name", { length: 100 }),
-  companyRepEmail: varchar("company_rep_email", { length: 150 }),
-  companyRepPosition: varchar("company_rep_position", { length: 60 }),
-  companyRepPhone: varchar("company_rep_phone", { length: 30 }),
-  taxIdNumber: varchar("tax_id_number"),
-  taxIdDocumentLink: text("tax_id_document_link"),
-  businessLicenseLink: text("business_license_link"),
-  certificationOfIncorporationLink: text("certification_of_incorporation_link"),
+export const employersTable = pgTable('employers', {
+  id: serial('id').primaryKey(),
+  accountId: integer('account_id').references(() => accountsTable.id),
+  budget: integer('budget'),
+  employerAccountType: employerAccountTypeEnum('employerAccountType'),
+  companyName: varchar('company_name', { length: 100 }),
+  employerName: varchar('employer_name', { length: 100 }),
+  companyEmail: varchar('company_email', { length: 150 }),
+  about: text('about'),
+  industrySector: text('industry_sector'),
+  yearsInBusiness: integer('years_in_business'),
+  companyRepName: varchar('company_rep_name', { length: 100 }),
+  companyRepEmail: varchar('company_rep_email', { length: 150 }),
+  companyRepPosition: varchar('company_rep_position', { length: 60 }),
+  companyRepPhone: varchar('company_rep_phone', { length: 30 }),
+  taxIdNumber: varchar('tax_id_number'),
+  taxIdDocumentLink: text('tax_id_document_link'),
+  businessLicenseLink: text('business_license_link'),
+  certificationOfIncorporationLink: text('certification_of_incorporation_link'),
 });
 
 /**
@@ -368,9 +364,9 @@ export const employersTable = pgTable("employers", {
  * @property id - serial primary key
  * @property name - varchar with length 25
  */
-export const languagesTable = pgTable("languages", {
-  id: serial("id").primaryKey(),
-  language: varchar("language", { length: 25 }),
+export const languagesTable = pgTable('languages', {
+  id: serial('id').primaryKey(),
+  language: varchar('language', { length: 25 }),
 });
 
 /**
@@ -380,10 +376,10 @@ export const languagesTable = pgTable("languages", {
  * @property account_id - integer referencing the accountsTable id
  * @property language_id - integer referencing the languagesTable id
  */
-export const accountLanguagesTable = pgTable("account_languages", {
-  id: serial("id").primaryKey(),
-  accountId: integer("account_id").references(() => accountsTable.id),
-  languageId: integer("language_id").references(() => languagesTable.id),
+export const accountLanguagesTable = pgTable('account_languages', {
+  id: serial('id').primaryKey(),
+  accountId: integer('account_id').references(() => accountsTable.id),
+  languageId: integer('language_id').references(() => languagesTable.id),
 });
 
 /**
@@ -398,13 +394,13 @@ export const accountLanguagesTable = pgTable("account_languages", {
  * @property created_at - timestamp
  */
 
-export const userVerificationsTable = pgTable("user_verifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => UsersTable.id),
-  token: varchar("token", { length: 256 }),
-  expiry: timestamp("expiry"),
-  isUsed: boolean("is_used").default(false),
-  createdAt: timestamp("created_at").default(sql`now()`),
+export const userVerificationsTable = pgTable('user_verifications', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  token: varchar('token', { length: 256 }),
+  expiry: timestamp('expiry'),
+  isUsed: boolean('is_used').default(false),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
 
 /**
@@ -414,10 +410,10 @@ export const userVerificationsTable = pgTable("user_verifications", {
  * @property label - string with length 50 saves the industry name
  * @property metadata - list of strings, saves the industry metadata which are other search labels for the industry
  */
-export const industriesTable = pgTable("industries", {
-  id: serial("id").primaryKey(),
-  label: text("label").unique(),
-  metadata: text("metadata").array(),
+export const industriesTable = pgTable('industries', {
+  id: serial('id').primaryKey(),
+  label: text('label').unique(),
+  metadata: text('metadata').array(),
 });
 
 /**
@@ -427,11 +423,11 @@ export const industriesTable = pgTable("industries", {
  * @property industry_id - integer referencing the industriesTable id
  * @property timestamp - timestamp
  */
-export const employerIndustriesTable = pgTable("employer_industries", {
-  id: serial("id").primaryKey(),
-  employerId: integer("employer_id").references(() => employersTable.id),
-  industryId: integer("industry_id").references(() => industriesTable.id),
-  createdAt: timestamp("timestamp").default(sql`now()`),
+export const employerIndustriesTable = pgTable('employer_industries', {
+  id: serial('id').primaryKey(),
+  employerId: integer('employer_id').references(() => employersTable.id),
+  industryId: integer('industry_id').references(() => industriesTable.id),
+  createdAt: timestamp('timestamp').default(sql`now()`),
 });
 
 /**
@@ -441,10 +437,10 @@ export const employerIndustriesTable = pgTable("employer_industries", {
  * @property label - text
  * @property createdAt - timestamp
  */
-export const jobCategoriesTable = pgTable("job_categories", {
-  id: serial("id").primaryKey(),
-  label: text("label"),
-  createdAt: timestamp("timestamp").default(sql`now()`),
+export const jobCategoriesTable = pgTable('job_categories', {
+  id: serial('id').primaryKey(),
+  label: text('label'),
+  createdAt: timestamp('timestamp').default(sql`now()`),
 });
 
 /**
@@ -466,23 +462,21 @@ export const jobCategoriesTable = pgTable("job_categories", {
  * @property fulfilledAt - timestamp
  */
 
-export const jobsTable = pgTable("jobs", {
-  id: serial("id").primaryKey(),
-  employerId: integer("employer_id").references(() => employersTable.id),
-  title: text("title"),
-  description: text("description"),
-  jobCategoryId: integer("job_category_id").references(
-    () => jobCategoriesTable.id
-  ),
-  workingHoursPerWeek: integer("working_hours_per_week"),
-  locationPreference: text("location_preference"),
+export const jobsTable = pgTable('jobs', {
+  id: serial('id').primaryKey(),
+  employerId: integer('employer_id').references(() => employersTable.id),
+  title: text('title'),
+  description: text('description'),
+  jobCategoryId: integer('job_category_id').references(() => jobCategoriesTable.id),
+  workingHoursPerWeek: integer('working_hours_per_week'),
+  locationPreference: text('location_preference'),
   //locationPreferenceTypeEnum("location_preference_type"),
-  projectType: projectTypeEnum("project_type"),
-  budget: integer("budget"),
-  experienceLevel: experienceLevelEnum("experience_level"),
-  status: text("status"), //jobStatusEnum("status"),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  fulfilledAt: timestamp("fulfilled_at"),
+  projectType: projectTypeEnum('project_type'),
+  budget: integer('budget'),
+  experienceLevel: experienceLevelEnum('experience_level'),
+  status: text('status'), //jobStatusEnum("status"),
+  createdAt: timestamp('created_at').default(sql`now()`),
+  fulfilledAt: timestamp('fulfilled_at'),
 });
 
 /**
@@ -492,12 +486,12 @@ export const jobsTable = pgTable("jobs", {
  * @property name - text
  * @property metaData - jsonb
  */
-export const skillsTable = pgTable("skills", {
-  id: serial("id").primaryKey(),
-  label: text("label"),
-  metaData: text("meta_data").default("[]"),
-  isHot: boolean("is_hot").default(false),
-  createdAt: timestamp("created_at").default(sql`now()`),
+export const skillsTable = pgTable('skills', {
+  id: serial('id').primaryKey(),
+  label: text('label'),
+  metaData: text('meta_data').default('[]'),
+  isHot: boolean('is_hot').default(false),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
 
 /**
@@ -507,11 +501,11 @@ export const skillsTable = pgTable("skills", {
  * @property skill_id - integer referencing the skillsTable id
  * @property isStarred - boolean
  */
-export const jobSkillsTable = pgTable("job_skills", {
-  id: serial("id").primaryKey(),
-  jobId: integer("job_id").references(() => jobsTable.id),
-  skillId: integer("skill_id").references(() => skillsTable.id),
-  isStarred: boolean("is_starred").default(false),
+export const jobSkillsTable = pgTable('job_skills', {
+  id: serial('id').primaryKey(),
+  jobId: integer('job_id').references(() => jobsTable.id),
+  skillId: integer('skill_id').references(() => skillsTable.id),
+  isStarred: boolean('is_starred').default(false),
 });
 
 /**
@@ -521,11 +515,11 @@ export const jobSkillsTable = pgTable("job_skills", {
  * @property skill_id - integer referencing the skillsTable id
  * @property years_of_experience - integer the number of years of experience the freelancer has with the skill
  */
-export const freelancerSkillsTable = pgTable("freelancer_skills", {
-  id: serial("id").primaryKey(),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  skillId: integer("skill_id").references(() => skillsTable.id),
-  yearsOfExperience: integer("years_of_experience"),
+export const freelancerSkillsTable = pgTable('freelancer_skills', {
+  id: serial('id').primaryKey(),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  skillId: integer('skill_id').references(() => skillsTable.id),
+  yearsOfExperience: integer('years_of_experience'),
 });
 
 /**
@@ -537,12 +531,12 @@ export const freelancerSkillsTable = pgTable("freelancer_skills", {
  * @property status - jobApplicationStatusEnum
  * @property created_at - timestamp
  */
-export const jobApplicationsTable = pgTable("job_applications", {
-  id: serial("id").primaryKey(),
-  jobId: integer("job_id").references(() => jobsTable.id),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  status: jobApplicationStatusEnum("status"),
-  createdAt: timestamp("created_at").default(sql`now()`),
+export const jobApplicationsTable = pgTable('job_applications', {
+  id: serial('id').primaryKey(),
+  jobId: integer('job_id').references(() => jobsTable.id),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  status: jobApplicationStatusEnum('status'),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
 
 // projectType: projectTypeEnum("project_type"),
@@ -557,14 +551,14 @@ export const jobApplicationsTable = pgTable("job_applications", {
  * @property comment - text field for review comments
  * @property created_at - timestamp when the review was submitted
  */
-export const reviewsTable = pgTable("reviews", {
-  id: serial("id").primaryKey(),
-  employerId: integer("employer_id").references(() => employersTable.id),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  rating: real("rating").notNull(),
-  comment: text("comment").default(null),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  reviewType: text("review_type").notNull(),
+export const reviewsTable = pgTable('reviews', {
+  id: serial('id').primaryKey(),
+  employerId: integer('employer_id').references(() => employersTable.id),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  rating: real('rating').notNull(),
+  comment: text('comment').default(null),
+  createdAt: timestamp('created_at').default(sql`now()`),
+  reviewType: text('review_type').notNull(),
 });
 
 /**
@@ -578,17 +572,15 @@ export const reviewsTable = pgTable("reviews", {
  * @property description - text
  * @property created_at - timestamp
  */
-export const timesheetEntriesTable = pgTable("timesheet_entries", {
-  id: serial("id").primaryKey(),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  jobApplicationId: integer("job_application_id").references(
-    () => jobApplicationsTable.id
-  ),
-  date: date("date"),
-  startTime: timestamp("start_time"),
-  endTime: timestamp("end_time"),
-  description: text("description"),
-  createdAt: timestamp("created_at").default(sql`now()`),
+export const timesheetEntriesTable = pgTable('timesheet_entries', {
+  id: serial('id').primaryKey(),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  jobApplicationId: integer('job_application_id').references(() => jobApplicationsTable.id),
+  date: date('date'),
+  startTime: timestamp('start_time'),
+  endTime: timestamp('end_time'),
+  description: text('description'),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
 
 /**
@@ -597,18 +589,13 @@ export const timesheetEntriesTable = pgTable("timesheet_entries", {
  * @property timesheet_submission_id - integer referencing the timesheetSubmissionsTable id
  * @property timesheet_entry_id - integer referencing the timesheetEntriesTable id
  */
-export const TimesheetSubmissionEntriesTable = pgTable(
-  "timesheet_submission_entries",
-  {
-    id: serial("id").primaryKey(),
-    timesheetSubmissionId: integer("timesheet_submission_id").references(
-      () => timesheetSubmissionsTable.id
-    ),
-    timesheetEntryId: integer("timesheet_entry_id").references(
-      () => timesheetEntriesTable.id
-    ),
-  }
-);
+export const TimesheetSubmissionEntriesTable = pgTable('timesheet_submission_entries', {
+  id: serial('id').primaryKey(),
+  timesheetSubmissionId: integer('timesheet_submission_id').references(
+    () => timesheetSubmissionsTable.id
+  ),
+  timesheetEntryId: integer('timesheet_entry_id').references(() => timesheetEntriesTable.id),
+});
 
 /**
  * Define the timesheet submissions table schema
@@ -621,19 +608,15 @@ export const TimesheetSubmissionEntriesTable = pgTable(
  * @property created_at - timestamp
  * @property updated_at - timestamp
  */
-export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
-  id: serial("id").primaryKey(),
-  freelancerId: integer("freelancer_id").references(() => freelancersTable.id),
-  jobApplicationId: integer("job_application_id").references(
-    () => jobApplicationsTable.id
-  ),
-  submissionDate: date("submission_date").notNull(), // The date the work was performed
-  totalHours: numeric("total_hours").notNull(),
-  status: timesheetStatusEnum("status")
-    .notNull()
-    .default(TimesheetStatus.Submitted), // pending, approved, rejected
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const timesheetSubmissionsTable = pgTable('timesheet_submissions', {
+  id: serial('id').primaryKey(),
+  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
+  jobApplicationId: integer('job_application_id').references(() => jobApplicationsTable.id),
+  submissionDate: date('submission_date').notNull(), // The date the work was performed
+  totalHours: numeric('total_hours').notNull(),
+  status: timesheetStatusEnum('status').notNull().default(TimesheetStatus.Submitted), // pending, approved, rejected
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 /**
@@ -643,9 +626,19 @@ export const timesheetSubmissionsTable = pgTable("timesheet_submissions", {
  * @property metadata
  * @property createdAt
  */
-export const attachmentsTable = pgTable("attachments", {
-  id: serial("id").primaryKey(),
-  key: varchar("key").notNull(),
-  metadata: jsonb("metadata").default({}),
-  createdAt: timestamp("created_at").defaultNow(),
+export const attachmentsTable = pgTable('attachments', {
+  id: serial('id').primaryKey(),
+  key: varchar('key').notNull(),
+  metadata: jsonb('metadata').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+/**
+ * Definition of the exit_feedback table.
+ */
+export const exitFeedbackTable = pgTable('exit_feedback', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  feedback: text('feedback'),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
