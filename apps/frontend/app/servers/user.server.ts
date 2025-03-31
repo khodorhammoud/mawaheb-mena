@@ -769,22 +769,6 @@ export async function updateOnboardingStatus(userId: number) {
   return result;
 }
 
-/**
- * Set the isOnboarded status for a user
- * @param userId The ID of the user
- * @param isOnboarded Boolean value to set the isOnboarded status
- * @returns The updated user record
- */
-export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
-  const result = await db
-    .update(UsersTable)
-    .set({ isOnboarded } as unknown)
-    .where(eq(UsersTable.id, userId))
-    .returning();
-
-  return { success: true, data: result[0] };
-}
-
 export async function getUserSettings(userId: number) {
   const result = await db
     .select({
@@ -1123,4 +1107,43 @@ export async function isAccountDeleted(userId: number): Promise<boolean> {
     .limit(1);
 
   return account.length > 0 && account[0].status === AccountStatus.Deleted;
+}
+
+export async function deactivateAccount(userId: number): Promise<boolean> {
+  try {
+    // console.log('🔍 Getting account type for user:', userId);
+    // Get the user's account type
+    const accountType = await getUserAccountType(userId);
+    // console.log('📋 Account type:', accountType);
+
+    if (!accountType) {
+      // console.log('❌ No account type found');
+      return false;
+    }
+
+    // console.log('📝 Updating account status to deactivated...');
+    // Update account status to deactivated in the accountsTable only
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Deactivated })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    // console.log('📊 Account update result:', accountResult);
+
+    // Check if the update returned anything
+    if (!accountResult || accountResult.length === 0) {
+      // console.log('❌ Account update failed');
+      return false;
+    }
+
+    // console.log('✅ Account deactivation completed successfully');
+    return true;
+  } catch (error) {
+    console.error('💥 Error in deactivateAccount:', error);
+    return false;
+  }
 }

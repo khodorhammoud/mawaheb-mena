@@ -4,8 +4,8 @@ import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Employer, Freelancer } from '~/types/User';
 import { requireUserVerified } from '~/auth/auth.server';
-import FreelancerIdentifyingScreen from './freelancer';
-import EmployerIdentifyingScreen from './employer';
+import FreelancerIdentificationScreen from './freelancer';
+import EmployerIdentificationScreen from './employer';
 import {
   createEmployerIdentification,
   getEmployerIdentification,
@@ -19,31 +19,23 @@ import {
 } from '~/servers/freelancer.server';
 import { setOnboardedStatus } from '~/servers/user.server';
 import { getAttachmentMetadataById } from '~/servers/cloudStorage.server';
-import { deleteAttachmentById } from '~/servers/attachment.server';
 
 // Add this interface after the imports
 interface AttachmentMetadata {
   id: number;
   key: string;
-  name?: string;
   metadata?: {
-    name?: string;
     size?: number;
-    type?: string;
     contentType?: string;
+    name?: string;
+    type?: string;
     lastModified?: number;
     storage?: {
       key?: string;
-      name?: string;
+      bucket?: string;
+      url?: string;
     };
-  };
-  storage?: {
-    key: string;
-    bucket: string;
-    url: string;
-    metadata?: {
-      name?: string;
-    };
+    [key: string]: any;
   };
   createdAt?: string;
   [key: string]: any;
@@ -84,28 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
       targetUpdated === 'employer-identification';
 
     // Get files to delete from form data
-    const filesToDeleteString = formData.get('filesToDelete') as string;
-    let filesToDelete: number[] = [];
-    try {
-      if (filesToDeleteString) {
-        filesToDelete = JSON.parse(filesToDeleteString);
-      }
-    } catch (error) {
-      console.error('Error parsing filesToDelete:', error);
-      filesToDelete = [];
-    }
-
-    // Process file deletions if any
-    if (filesToDelete.length > 0) {
-      for (const fileId of filesToDelete) {
-        try {
-          // Delete the file from the attachments table
-          await deleteAttachmentById(fileId);
-        } catch (error) {
-          console.error(`Error deleting file with ID ${fileId}:`, error);
-        }
-      }
-    }
+    const filesToDelete = JSON.parse((formData.get('filesToDelete') as string) || '[]');
 
     if (
       accountType === AccountType.Employer &&
@@ -140,7 +111,7 @@ export async function action({ request }: ActionFunctionArgs) {
         file => file instanceof File && file.size > 0
       );
 
-      // Prepare attachments data with actual File objects and files to delete
+      // Prepare attachments data with actual File objects
       const attachmentsData = {
         identification: validIdentificationFiles,
         trade_license: validTradeLicenseFiles,
@@ -190,7 +161,7 @@ export async function action({ request }: ActionFunctionArgs) {
         file => file instanceof File && file.size > 0
       );
 
-      // Prepare attachments data with actual File objects and files to delete
+      // Prepare attachments data with actual File objects
       const attachmentsData = {
         identification: validIdentificationFiles,
         trade_license: validTradeLicenseFiles,
@@ -233,6 +204,11 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  // Redirect from the old URL to the new one if needed
+  if (new URL(request.url).pathname === '/identifying') {
+    return redirect('/identification');
+  }
+
   // Ensure the user is verified
   await requireUserVerified(request);
 
@@ -268,10 +244,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (userId) {
     if (accountType === AccountType.Employer) {
       const result = await getEmployerIdentification(userId);
+      console.log(
+        'DEBUG - Employer identification raw data from getEmployerIdentification:',
+        JSON.stringify(result, null, 2)
+      );
 
       if (result.success && result.data) {
         // Get the raw identification data
         const rawData = result.data;
+        console.log('DEBUG - rawData structure:', Object.keys(rawData));
+        console.log(
+          'DEBUG - rawData.attachments:',
+          typeof rawData.attachments,
+          rawData.attachments ? JSON.stringify(rawData.attachments, null, 2) : 'null'
+        );
 
         // CRITICAL FIX: Handle raw attachments correctly whether it's a string, object, or null
         let parsedAttachments = null;
@@ -302,6 +288,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           // Cast attachments to a Record to avoid type errors
           const attachments = enhancedData.attachments as Record<string, any>;
+          console.log(
+            'DEBUG - Processed attachments object:',
+            JSON.stringify(attachments, null, 2)
+          );
 
           // Initialize the structure to ensure all expected arrays exist
           if (!attachments.identification) attachments.identification = [];
@@ -317,6 +307,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             ) {
               // Get the attachment IDs
               const attachmentIds = attachments[attachmentType] as number[];
+              console.log(`DEBUG - ${attachmentType} IDs:`, attachmentIds);
 
               // Fetch the attachment metadata from the attachments table
               const attachmentMetadata = await Promise.all(
@@ -325,171 +316,40 @@ export async function loader({ request }: LoaderFunctionArgs) {
                   if (result.success && result.data) {
                     const metadata = result.data as AttachmentMetadata;
 
-                    // Get the original filename from metadata.name or extract from the key
-                    let fileName = 'unknown-file';
+                    // Try to get the file name from multiple possible locations
+                    let name = 'unknown-file';
 
-                    // First check if metadata has a name property directly
+                    // Check if metadata.name exists directly in metadata object
                     if (metadata.name) {
-                      fileName = metadata.name;
+                      name = metadata.name;
                     }
-                    // Check if name is in the metadata.metadata property
-                    else if (metadata.metadata?.name) {
-                      fileName = metadata.metadata.name;
+                    // Check if metadata.metadata.name exists (from the saveAttachment metadata)
+                    else if (metadata.metadata && metadata.metadata.name) {
+                      name = metadata.metadata.name;
                     }
-                    // Check if name is in the metadata.storage.metadata property
-                    else if (metadata.storage?.metadata?.name) {
-                      fileName = metadata.storage.metadata.name;
-                    }
-                    // Look in the metadata from the storage
-                    else if (metadata.metadata?.storage?.name) {
-                      fileName = metadata.metadata.storage.name;
-                    }
-                    // Then check if it's in the storage object key
-                    else if (metadata.storage?.key) {
-                      // Extract the filename from the storage key
-                      const key = metadata.storage.key;
-
-                      // Check for the file name format in the key
-                      // Try to find the original filename after prefix-timestamp-
-                      const matches = key.match(/^([^-]+)-(?:\d+-)?(.+)$/);
-                      if (matches && matches.length >= 3) {
-                        fileName = matches[2]; // This should be the filename part
-                      } else {
-                        // Fallback: just take everything after the first dash
-                        const dashIndex = key.indexOf('-');
-                        if (dashIndex !== -1) {
-                          fileName = key.substring(dashIndex + 1);
-                        }
-                      }
-                    }
-                    // Finally, check the key directly
+                    // Fallback to using key if metadata.name doesn't exist
                     else if (metadata.key) {
-                      // Extract the filename from the key
-                      const key = metadata.key;
-
-                      // Use the same pattern matching logic
-                      const matches = key.match(/^([^-]+)-(?:\d+-)?(.+)$/);
-                      if (matches && matches.length >= 3) {
-                        fileName = matches[2]; // This should be the filename part
+                      // Extract filename from the key (prefix-filename format)
+                      const keyParts = metadata.key.split('-');
+                      // If key has the prefix-filename format, extract the filename part
+                      if (keyParts.length > 1) {
+                        name = keyParts.slice(1).join('-');
                       } else {
-                        // Fallback: just take everything after the first dash
-                        const dashIndex = key.indexOf('-');
-                        if (dashIndex !== -1) {
-                          fileName = key.substring(dashIndex + 1);
-                        }
+                        // If no prefix-filename format, just use the last part of the path
+                        name = metadata.key.split('/').pop() || 'unknown-file';
                       }
                     }
 
-                    // Check if the original filename is stored directly in metadata.storage
-                    else if (metadata.storage && typeof metadata.storage === 'object') {
-                      // Sometimes the file name might be stored in a format like:
-                      // metadata.storage = { key: '...', bucket: '...', url: '...', originalName: '...' }
-                      // So check all keys of the storage object
-                      for (const [key, value] of Object.entries(metadata.storage)) {
-                        // Look for keys that might contain filename information
-                        if (
-                          typeof value === 'string' &&
-                          (key.toLowerCase().includes('name') || key.toLowerCase().includes('file'))
-                        ) {
-                          fileName = value;
-                          break;
-                        }
-                      }
-                    }
+                    console.log(`DEBUG - Processing attachment ID ${id}:`, {
+                      key: metadata.key,
+                      name: name,
+                      metadata: metadata.metadata,
+                    });
 
-                    // Attempt to extract the original file name from the raw response
-                    // Look for the name in various locations in the raw data
-                    if (fileName === 'unknown-file' && result.data) {
-                      // Use a safer approach with type assertions and checks
-                      const rawData = result.data as Record<string, any>;
-
-                      // Check common locations for the filename
-                      if (rawData.name && typeof rawData.name === 'string') {
-                        fileName = rawData.name;
-                      }
-                      // Check metadata structure based on saveAttachment format
-                      else if (rawData.metadata && typeof rawData.metadata === 'object') {
-                        // Check direct name property in metadata
-                        if (rawData.metadata.name && typeof rawData.metadata.name === 'string') {
-                          fileName = rawData.metadata.name;
-                        }
-                        // The saveAttachment function creates this metadata structure
-                        else if (
-                          rawData.metadata.metadata &&
-                          typeof rawData.metadata.metadata === 'object'
-                        ) {
-                          if (
-                            rawData.metadata.metadata.name &&
-                            typeof rawData.metadata.metadata.name === 'string'
-                          ) {
-                            fileName = rawData.metadata.metadata.name;
-                          }
-                        }
-                      }
-                      // Check for originalName
-                      else if (rawData.originalName && typeof rawData.originalName === 'string') {
-                        fileName = rawData.originalName;
-                      }
-
-                      // If we still don't have a valid filename, look deeper
-                      if (fileName === 'unknown-file') {
-                        // Try to find any property that looks like a filename
-                        const findNameInObject = (
-                          obj: Record<string, any>,
-                          depth = 0
-                        ): string | null => {
-                          if (depth > 3) return null; // Prevent too deep recursion
-
-                          for (const [key, value] of Object.entries(obj)) {
-                            // Check if the key itself contains 'name' or 'file'
-                            if (
-                              (key.toLowerCase().includes('name') ||
-                                key.toLowerCase().includes('file')) &&
-                              typeof value === 'string' &&
-                              value.length > 0
-                            ) {
-                              return value;
-                            }
-
-                            // Check for storage key patterns
-                            if (
-                              key === 'storage' &&
-                              typeof value === 'object' &&
-                              value.key &&
-                              typeof value.key === 'string'
-                            ) {
-                              const storageKey = value.key;
-                              // Look for patterns like prefix-filename.ext or prefix-timestamp-filename.ext
-                              const keyMatches = storageKey.match(/^([^-]+)-(?:\d+-)?(.+\.\w+)$/);
-                              if (keyMatches && keyMatches.length >= 3) {
-                                return keyMatches[2]; // This would be the filename.ext part
-                              }
-                            }
-
-                            // Check nested objects
-                            if (value && typeof value === 'object' && !Array.isArray(value)) {
-                              const nestedResult = findNameInObject(
-                                value as Record<string, any>,
-                                depth + 1
-                              );
-                              if (nestedResult) return nestedResult;
-                            }
-                          }
-
-                          return null;
-                        };
-
-                        const foundName = findNameInObject(rawData);
-                        if (foundName) {
-                          fileName = foundName;
-                        }
-                      }
-                    }
-
-                    // Print the full metadata for debugging
+                    // Add serverId to make file deletion easier
                     return {
                       ...metadata,
-                      name: fileName,
+                      name,
                       serverId: id,
                       isServerFile: true,
                       size: metadata.metadata?.size || 143 * 1024,
@@ -505,10 +365,47 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
               // Replace the attachment IDs with the metadata
               attachments[attachmentType] = attachmentMetadata.filter(Boolean);
+
+              // Add debug logging for the processed files
+              console.log(
+                `DEBUG - Processed ${attachmentType} files:`,
+                attachments[attachmentType].map(file => ({
+                  name: file.name,
+                  size: file.size,
+                  isServerFile: file.isServerFile,
+                }))
+              );
             }
           }
 
           identificationData = enhancedData;
+          console.log(
+            'DEBUG - Final enhanced employer identification data:',
+            JSON.stringify(
+              {
+                ...identificationData,
+                attachments: {
+                  identification:
+                    attachments.identification?.map(a => ({
+                      name: a.name,
+                      size: a.size,
+                    })) || [],
+                  trade_license:
+                    attachments.trade_license?.map(a => ({
+                      name: a.name,
+                      size: a.size,
+                    })) || [],
+                  board_resolution:
+                    attachments.board_resolution?.map(a => ({
+                      name: a.name,
+                      size: a.size,
+                    })) || [],
+                },
+              },
+              null,
+              2
+            )
+          );
         } else {
           // Initialize with empty attachments if none exist
           identificationData = {
@@ -523,10 +420,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     } else if (accountType === AccountType.Freelancer) {
       const result = await getFreelancerIdentification(userId);
+      console.log(
+        'DEBUG - Freelancer identification raw data from getFreelancerIdentification:',
+        JSON.stringify(result, null, 2)
+      );
 
       if (result.success && result.data) {
         // Get the raw identification data
         const rawData = result.data;
+        console.log('DEBUG - rawData structure:', Object.keys(rawData));
+        console.log(
+          'DEBUG - rawData.attachments:',
+          typeof rawData.attachments,
+          rawData.attachments ? JSON.stringify(rawData.attachments, null, 2) : 'null'
+        );
 
         // CRITICAL FIX: Handle raw attachments correctly whether it's a string, object, or null
         let parsedAttachments = null;
@@ -556,6 +463,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           // Get the attachment IDs
           const attachments = enhancedData.attachments as Record<string, any>;
+          console.log(
+            'DEBUG - Processed attachments object:',
+            JSON.stringify(attachments, null, 2)
+          );
 
           // Initialize empty arrays if they don't exist
           if (!attachments.identification) attachments.identification = [];
@@ -577,174 +488,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 attachmentIds.map(async (id: number) => {
                   const result = await getAttachmentMetadataById(id);
                   if (result.success && result.data) {
-                    // Print the full raw metadata response for debugging
-
                     const metadata = result.data as AttachmentMetadata;
 
-                    // Get the original filename from metadata.name or extract from the key
-                    let fileName = 'unknown-file';
+                    // Try to get the file name from multiple possible locations
+                    let name = 'unknown-file';
 
-                    // First check if metadata has a name property directly
+                    // Check if metadata.name exists directly in metadata object
                     if (metadata.name) {
-                      fileName = metadata.name;
+                      name = metadata.name;
                     }
-                    // Check if name is in the metadata.metadata property
-                    else if (metadata.metadata?.name) {
-                      fileName = metadata.metadata.name;
+                    // Check if metadata.metadata.name exists (from the saveAttachment metadata)
+                    else if (metadata.metadata && metadata.metadata.name) {
+                      name = metadata.metadata.name;
                     }
-                    // Check if name is in the metadata.storage.metadata property
-                    else if (metadata.storage?.metadata?.name) {
-                      fileName = metadata.storage.metadata.name;
-                    }
-                    // Look in the metadata from the storage
-                    else if (metadata.metadata?.storage?.name) {
-                      fileName = metadata.metadata.storage.name;
-                    }
-                    // Then check if it's in the storage object key
-                    else if (metadata.storage?.key) {
-                      // Extract the filename from the storage key
-                      const key = metadata.storage.key;
-
-                      // Check for the file name format in the key
-                      // Try to find the original filename after prefix-timestamp-
-                      const matches = key.match(/^([^-]+)-(?:\d+-)?(.+)$/);
-                      if (matches && matches.length >= 3) {
-                        fileName = matches[2]; // This should be the filename part
-                      } else {
-                        // Fallback: just take everything after the first dash
-                        const dashIndex = key.indexOf('-');
-                        if (dashIndex !== -1) {
-                          fileName = key.substring(dashIndex + 1);
-                        }
-                      }
-                    }
-                    // Finally, check the key directly
+                    // Fallback to using key if metadata.name doesn't exist
                     else if (metadata.key) {
-                      // Extract the filename from the key
-                      const key = metadata.key;
-
-                      // Use the same pattern matching logic
-                      const matches = key.match(/^([^-]+)-(?:\d+-)?(.+)$/);
-                      if (matches && matches.length >= 3) {
-                        fileName = matches[2]; // This should be the filename part
+                      // Extract filename from the key (prefix-filename format)
+                      const keyParts = metadata.key.split('-');
+                      // If key has the prefix-filename format, extract the filename part
+                      if (keyParts.length > 1) {
+                        name = keyParts.slice(1).join('-');
                       } else {
-                        // Fallback: just take everything after the first dash
-                        const dashIndex = key.indexOf('-');
-                        if (dashIndex !== -1) {
-                          fileName = key.substring(dashIndex + 1);
-                        }
+                        // If no prefix-filename format, just use the last part of the path
+                        name = metadata.key.split('/').pop() || 'unknown-file';
                       }
                     }
 
-                    // Check if the original filename is stored directly in metadata.storage
-                    else if (metadata.storage && typeof metadata.storage === 'object') {
-                      // Sometimes the file name might be stored in a format like:
-                      // metadata.storage = { key: '...', bucket: '...', url: '...', originalName: '...' }
-                      // So check all keys of the storage object
-                      for (const [key, value] of Object.entries(metadata.storage)) {
-                        // Look for keys that might contain filename information
-                        if (
-                          typeof value === 'string' &&
-                          (key.toLowerCase().includes('name') || key.toLowerCase().includes('file'))
-                        ) {
-                          fileName = value;
-                          break;
-                        }
-                      }
-                    }
+                    console.log(`DEBUG - Processing attachment ID ${id}:`, {
+                      key: metadata.key,
+                      name: name,
+                      metadata: metadata.metadata,
+                    });
 
-                    // Attempt to extract the original file name from the raw response
-                    // Look for the name in various locations in the raw data
-                    if (fileName === 'unknown-file' && result.data) {
-                      // Use a safer approach with type assertions and checks
-                      const rawData = result.data as Record<string, any>;
-
-                      // Check common locations for the filename
-                      if (rawData.name && typeof rawData.name === 'string') {
-                        fileName = rawData.name;
-                      }
-                      // Check metadata structure based on saveAttachment format
-                      else if (rawData.metadata && typeof rawData.metadata === 'object') {
-                        // Check direct name property in metadata
-                        if (rawData.metadata.name && typeof rawData.metadata.name === 'string') {
-                          fileName = rawData.metadata.name;
-                        }
-                        // The saveAttachment function creates this metadata structure
-                        else if (
-                          rawData.metadata.metadata &&
-                          typeof rawData.metadata.metadata === 'object'
-                        ) {
-                          if (
-                            rawData.metadata.metadata.name &&
-                            typeof rawData.metadata.metadata.name === 'string'
-                          ) {
-                            fileName = rawData.metadata.metadata.name;
-                          }
-                        }
-                      }
-                      // Check for originalName
-                      else if (rawData.originalName && typeof rawData.originalName === 'string') {
-                        fileName = rawData.originalName;
-                      }
-
-                      // If we still don't have a valid filename, look deeper
-                      if (fileName === 'unknown-file') {
-                        // Try to find any property that looks like a filename
-                        const findNameInObject = (
-                          obj: Record<string, any>,
-                          depth = 0
-                        ): string | null => {
-                          if (depth > 3) return null; // Prevent too deep recursion
-
-                          for (const [key, value] of Object.entries(obj)) {
-                            // Check if the key itself contains 'name' or 'file'
-                            if (
-                              (key.toLowerCase().includes('name') ||
-                                key.toLowerCase().includes('file')) &&
-                              typeof value === 'string' &&
-                              value.length > 0
-                            ) {
-                              return value;
-                            }
-
-                            // Check for storage key patterns
-                            if (
-                              key === 'storage' &&
-                              typeof value === 'object' &&
-                              value.key &&
-                              typeof value.key === 'string'
-                            ) {
-                              const storageKey = value.key;
-                              // Look for patterns like prefix-filename.ext or prefix-timestamp-filename.ext
-                              const keyMatches = storageKey.match(/^([^-]+)-(?:\d+-)?(.+\.\w+)$/);
-                              if (keyMatches && keyMatches.length >= 3) {
-                                return keyMatches[2]; // This would be the filename.ext part
-                              }
-                            }
-
-                            // Check nested objects
-                            if (value && typeof value === 'object' && !Array.isArray(value)) {
-                              const nestedResult = findNameInObject(
-                                value as Record<string, any>,
-                                depth + 1
-                              );
-                              if (nestedResult) return nestedResult;
-                            }
-                          }
-
-                          return null;
-                        };
-
-                        const foundName = findNameInObject(rawData);
-                        if (foundName) {
-                          fileName = foundName;
-                        }
-                      }
-                    }
-
+                    // Add serverId to make file deletion easier
                     return {
                       ...metadata,
-                      name: fileName,
+                      name,
                       serverId: id,
                       isServerFile: true,
                       size: metadata.metadata?.size || 143 * 1024,
@@ -760,10 +539,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
               // Replace the attachment IDs with the metadata
               attachments[attachmentType] = attachmentMetadata.filter(Boolean);
+
+              // Add debug logging for the processed files
+              console.log(
+                `DEBUG - Processed ${attachmentType} files for freelancer:`,
+                attachments[attachmentType].map(file => ({
+                  name: file.name,
+                  size: file.size,
+                  isServerFile: file.isServerFile,
+                }))
+              );
             }
           }
 
           identificationData = enhancedData;
+          console.log(
+            'DEBUG - Final enhanced freelancer identification data:',
+            JSON.stringify(
+              {
+                ...identificationData,
+                attachments: {
+                  identification:
+                    attachments.identification?.map(a => ({
+                      name: a.name,
+                      size: a.size,
+                    })) || [],
+                  trade_license:
+                    attachments.trade_license?.map(a => ({
+                      name: a.name,
+                      size: a.size,
+                    })) || [],
+                },
+              },
+              null,
+              2
+            )
+          );
         } else {
           // Initialize with empty attachments if none exist
           identificationData = {
@@ -881,9 +692,9 @@ export default function Layout() {
   return (
     <div>
       {accountType === AccountType.Employer ? (
-        <EmployerIdentifyingScreen />
+        <EmployerIdentificationScreen />
       ) : (
-        <FreelancerIdentifyingScreen />
+        <FreelancerIdentificationScreen />
       )}
     </div>
   );
