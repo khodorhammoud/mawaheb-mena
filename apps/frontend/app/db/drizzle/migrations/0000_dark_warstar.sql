@@ -1,5 +1,5 @@
 DO $$ BEGIN
- CREATE TYPE "public"."account_status" AS ENUM('draft', 'pending', 'published', 'closed', 'suspended');
+ CREATE TYPE "public"."account_status" AS ENUM('draft', 'pending', 'published', 'closed', 'suspended', 'deleted');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -111,8 +111,10 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"first_name" varchar(80),
 	"last_name" varchar(80),
 	"email" varchar(150) NOT NULL,
-	"password_hash" varchar,
+	"password_hash" varchar NOT NULL,
 	"is_verified" boolean DEFAULT false,
+	"deletion_requested_at" timestamp,
+	"final_deletion_at" timestamp,
 	"is_onboarded" boolean DEFAULT false,
 	"provider" "provider",
 	"role" "user_role" DEFAULT 'user',
@@ -174,6 +176,13 @@ CREATE TABLE IF NOT EXISTS "employers" (
 	"tax_id_document_link" text,
 	"business_license_link" text,
 	"certification_of_incorporation_link" text
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "exit_feedback" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer,
+	"feedback" text,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "freelancer_languages" (
@@ -382,6 +391,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "employers" ADD CONSTRAINT "employers_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "exit_feedback" ADD CONSTRAINT "exit_feedback_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

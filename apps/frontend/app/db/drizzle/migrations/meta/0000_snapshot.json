@@ -1,5 +1,5 @@
 {
-  "id": "f0bf0128-36ba-4c1b-8908-db15563448cf",
+  "id": "a2b3507c-6bce-473f-81a8-7cd69c729d27",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,7 +91,7 @@
           "name": "password_hash",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "is_verified": {
           "name": "is_verified",
@@ -99,6 +99,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "deletion_requested_at": {
+          "name": "deletion_requested_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "final_deletion_at": {
+          "name": "final_deletion_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "is_onboarded": {
           "name": "is_onboarded",
@@ -519,6 +531,55 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.exit_feedback": {
+      "name": "exit_feedback",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exit_feedback_user_id_users_id_fk": {
+          "name": "exit_feedback_user_id_users_id_fk",
+          "tableFrom": "exit_feedback",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -1699,7 +1760,8 @@
         "pending",
         "published",
         "closed",
-        "suspended"
+        "suspended",
+        "deleted"
       ]
     },
     "public.account_type": {
