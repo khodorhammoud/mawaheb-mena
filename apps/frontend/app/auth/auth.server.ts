@@ -95,14 +95,31 @@ export async function requireUserIsEmployer(request: Request) {
   return userId;
 }
 
-// the user must be an employer and have their account status published
-export async function requireUserIsEmployerPublished(request: Request) {
-  const userId = await requireUserAccountStatusPublished(request);
-  const status = await checkUserStatuses(userId, 'accountType', AccountType.Employer);
-  if (!status) {
-    console.warn('Unauthorized, user is not a published employer');
+// the user must be an employer and have their account status either published or deactivated
+export async function requireUserIsEmployerPublishedOrDeactivated(request: Request) {
+  const userId = await requireUserOnboarded(request);
+  const profile = await getCurrentProfileInfo(request);
+
+  if (!profile || !profile.account) {
     throw redirect('/dashboard');
   }
+
+  // Check if user is an employer
+  const isEmployer = await checkUserStatuses(userId, 'accountType', AccountType.Employer);
+  if (!isEmployer) {
+    console.warn('Unauthorized, user is not an employer');
+    throw redirect('/dashboard');
+  }
+
+  // Allow both published and deactivated accounts
+  if (
+    profile.account.accountStatus !== AccountStatus.Published &&
+    profile.account.accountStatus !== AccountStatus.Deactivated
+  ) {
+    console.warn('Unauthorized, user account status is not published or deactivated');
+    throw redirect('/dashboard');
+  }
+
   return userId;
 }
 
