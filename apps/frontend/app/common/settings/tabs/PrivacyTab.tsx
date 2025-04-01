@@ -262,7 +262,7 @@ export default function PrivacyTab() {
                   <Button
                     variant="outline"
                     onClick={() => setShowDeactivateDialog(true)}
-                    className="text-primaryColor hover:bg-red-50"
+                    className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
                   >
                     Reactivate Account
                   </Button>
@@ -277,7 +277,7 @@ export default function PrivacyTab() {
                 <Button
                   variant="outline"
                   onClick={() => setShowDeactivateDialog(true)}
-                  className="text-primaryColor hover:bg-red-50"
+                  className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
                 >
                   Deactivate Account
                 </Button>
