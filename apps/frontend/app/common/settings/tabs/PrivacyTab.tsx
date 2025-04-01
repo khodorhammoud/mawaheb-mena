@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useFetcher } from '@remix-run/react';
+import { useFetcher, useNavigate } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
 import { Textarea } from '~/components/ui/textarea';
+import { Button } from '~/components/ui/button';
 
 type SettingsFetcherData = {
   success?: boolean;
@@ -46,6 +47,7 @@ export default function PrivacyTab() {
   const exportFetcher = useFetcher();
   const deleteFetcher = useFetcher();
   const feedbackFetcher = useFetcher();
+  const navigate = useNavigate();
 
   // State for password fields
   const [currentPassword, setCurrentPassword] = useState('');
@@ -85,7 +87,7 @@ export default function PrivacyTab() {
       if (response.hasActiveJobs) {
         setDeleteDisabled(true);
         setDeleteDisabledMessage(
-          response.disabledMessage || 'Cannot delete account due to active jobs.'
+          'You cannot delete your account while there is jobs postings. Please close or complete all active jobs first.'
         );
       } else {
         setDeleteDisabled(false);
@@ -132,6 +134,26 @@ export default function PrivacyTab() {
     }
   }, [exportFetcher.data]);
 
+  // Listen for feedback fetcher response
+  useEffect(() => {
+    if (feedbackFetcher.data) {
+      const response = feedbackFetcher.data as SettingsFetcherData;
+      if (response.success) {
+        navigate('/auth/logout');
+      } else if (response.error) {
+        setErrorMessage(response.error);
+      }
+    }
+  }, [feedbackFetcher.data, navigate]);
+
+  // Check for active jobs on mount
+  useEffect(() => {
+    const formData = new FormData();
+    formData.append('formType', 'privacyTab');
+    formData.append('action', 'checkDeleteEligibility');
+    deleteFetcher.submit(formData, { method: 'post' });
+  }, []);
+
   // Handle export data
   const handleExportData = () => {
     const formData = new FormData();
@@ -142,13 +164,11 @@ export default function PrivacyTab() {
 
   // Handle delete account click
   const handleDeleteClick = () => {
-    // First check if deletion is possible
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
     formData.append('action', 'checkDeleteEligibility');
     deleteFetcher.submit(formData, { method: 'post' });
 
-    // Open dialog if not disabled
     if (!deleteDisabled) {
       setIsDeleteDialogOpen(true);
     }
@@ -257,16 +277,25 @@ export default function PrivacyTab() {
                 <span className="text-red-500">You cannot undo this.</span>
               </p>
               <div className="flex md:gap-4 gap-2">
-                <button
-                  type="button"
-                  onClick={handleDeleteClick}
-                  className={`border border-gray-200 text-primaryColor lg:px-6 md:px-4 sm:px-3 px-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs ${
-                    deleteDisabled ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  title={deleteDisabled ? deleteDisabledMessage : undefined}
-                >
-                  Delete Account
-                </button>
+                <div className="relative group">
+                  <button
+                    type="button"
+                    onClick={handleDeleteClick}
+                    disabled={deleteDisabled}
+                    className={`border border-gray-200 text-primaryColor lg:px-6 md:px-4 sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs ${
+                      deleteDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    aria-disabled={deleteDisabled}
+                  >
+                    Delete Account
+                  </button>
+                  {deleteDisabled && deleteDisabledMessage && (
+                    <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-normal w-64">
+                      {deleteDisabledMessage}
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={handleExportData}
@@ -306,14 +335,13 @@ export default function PrivacyTab() {
             ) : (
               <>
                 <p className="text-gray-700 mb-4">
-                  Are you sure you want to delete your account? This action cannot be undone. All
-                  your data will be permanently deleted after 30 days.
+                  Are you sure you want to delete your account? This action cannot be undone.
                 </p>
                 <div className="space-y-4">
                   <div>
                     <label
                       htmlFor="feedback"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Please tell us why you're leaving (optional)
                     </label>
@@ -321,25 +349,25 @@ export default function PrivacyTab() {
                       id="feedback"
                       value={feedback}
                       onChange={e => setFeedback(e.target.value)}
-                      placeholder="Your feedback helps us improve our service"
+                      placeholder="Your feedback is for our improvement"
                       className="w-full"
                     />
                   </div>
                   <div className="flex justify-end gap-4">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setIsDeleteDialogOpen(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm font-medium border bg-primaryColor/80 hover:bg-primaryColor/90 hover:text-white rounded-xl"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={handleDeleteConfirm}
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700"
                     >
                       Delete Account
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </>

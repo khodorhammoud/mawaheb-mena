@@ -14,6 +14,7 @@ import {
   saveExitFeedback,
 } from '~/servers/user.server';
 import { hash, compare } from 'bcrypt-ts';
+import { logout } from '~/auth/auth.server';
 
 export const action = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
@@ -44,7 +45,6 @@ export const action = async ({ request }) => {
       await updateUserSettings(currentUser.id, updatedSettings);
       return Response.json({ success: true });
     } catch (error) {
-      console.error('Error updating settings:', error);
       return Response.json(
         {
           success: false,
@@ -76,6 +76,7 @@ export const action = async ({ request }) => {
         }
 
         const result = await requestAccountDeletion(currentUser.id);
+
         if (!result.success) {
           return Response.json({
             success: false,
@@ -83,7 +84,7 @@ export const action = async ({ request }) => {
           });
         }
 
-        return Response.redirect('/logout');
+        return logout(request);
       } catch (error) {
         return Response.json({
           success: false,
@@ -131,7 +132,6 @@ export const action = async ({ request }) => {
           message: 'Password updated successfully.',
         });
       } catch (error) {
-        console.error('Error updating password:', error);
         return Response.json(
           {
             success: false,
@@ -151,7 +151,6 @@ export const action = async ({ request }) => {
         },
       });
     } catch (error) {
-      console.error('Error exporting user data:', error);
       return Response.json(
         {
           success: false,
