@@ -25,9 +25,15 @@ import {
   PortfolioFormFieldType,
   SocialAccount,
 } from '../types/User';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, or, inArray } from 'drizzle-orm';
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
-import { AccountStatus, AccountType, Provider } from '../types/enums';
+import {
+  AccountStatus,
+  AccountType,
+  Provider,
+  JobStatus,
+  JobApplicationStatus,
+} from '../types/enums';
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';
 
@@ -940,11 +946,20 @@ export async function exportUserData(userId: number) {
     // Get employer's jobs
     const jobs = await db.select().from(jobsTable).where(eq(jobsTable.employerId, employer.id));
 
-    // Get employer's job applications
+    // Get job applications for employer's jobs
     const jobApplications = await db
-      .select()
+      .select({
+        id: jobApplicationsTable.id,
+        jobId: jobApplicationsTable.jobId,
+        freelancerId: jobApplicationsTable.freelancerId,
+        status: jobApplicationsTable.status,
+        createdAt: jobApplicationsTable.createdAt,
+        jobTitle: jobsTable.title,
+        jobStatus: jobsTable.status,
+      })
       .from(jobApplicationsTable)
-      .where(eq(jobApplicationsTable.jobId, employer.id));
+      .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+      .where(eq(jobsTable.employerId, employer.id));
 
     return {
       ...baseData,
@@ -975,6 +990,7 @@ export async function exportUserData(userId: number) {
   throw new Error('Invalid account type');
 }
 
+// this is used for the deletion of the account :))
 /**
  * Check if a user has any active jobs
  * For freelancers: check job applications that are not completed/rejected
@@ -983,45 +999,94 @@ export async function exportUserData(userId: number) {
 export async function checkForActiveJobs(
   userId: number
 ): Promise<{ hasActiveJobs: boolean; message?: string }> {
-  const userAccount = await getUserAccountInfo({ userId });
-  if (!userAccount) {
-    throw new Error('User account not found');
-  }
-
-  if (userAccount.accountType === AccountType.Freelancer) {
-    // Check for active job applications
-    const activeApplications = await db
-      .select()
-      .from(jobApplicationsTable)
-      .where(
-        and(
-          eq(jobApplicationsTable.freelancerId, userAccount.id),
-          eq(jobApplicationsTable.status, 'approved')
-        )
-      );
-
-    if (activeApplications.length > 0) {
-      return {
-        hasActiveJobs: true,
-        message: 'You cannot delete your account while you have active job applications.',
-      };
+  try {
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
     }
-  } else if (userAccount.accountType === AccountType.Employer) {
-    // Check for active jobs
-    const activeJobs = await db
-      .select()
-      .from(jobsTable)
-      .where(and(eq(jobsTable.employerId, userAccount.id), eq(jobsTable.status, 'active')));
 
-    if (activeJobs.length > 0) {
-      return {
-        hasActiveJobs: true,
-        message: 'You cannot delete your account while you have active job postings.',
-      };
+    if (userAccount.accountType === AccountType.Employer) {
+      // First get the employer record
+      const employer = await db
+        .select({ id: employersTable.id })
+        .from(employersTable)
+        .where(eq(employersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!employer || employer.length === 0) {
+        throw new Error('Employer record not found');
+      }
+
+      // Check for employer's active jobs using the correct employer ID
+      const activeJobs = await db
+        .select({
+          id: jobsTable.id,
+          status: jobsTable.status,
+          title: jobsTable.title,
+        })
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, employer[0].id),
+            or(
+              eq(jobsTable.status, JobStatus.Draft),
+              eq(jobsTable.status, JobStatus.Active),
+              eq(jobsTable.status, JobStatus.Paused)
+            )
+          )
+        );
+
+      if (activeJobs.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while there is jobs postings. Please close or complete all active jobs first.',
+        };
+      }
+    } else {
+      // First get the freelancer record
+      const freelancer = await db
+        .select({ id: freelancersTable.id })
+        .from(freelancersTable)
+        .where(eq(freelancersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!freelancer || freelancer.length === 0) {
+        throw new Error('Freelancer record not found');
+      }
+
+      // Check for freelancer's active job applications using the correct freelancer ID
+      const activeApplications = await db
+        .select({
+          id: jobApplicationsTable.id,
+          status: jobApplicationsTable.status,
+          jobId: jobApplicationsTable.jobId,
+        })
+        .from(jobApplicationsTable)
+        .where(
+          and(
+            eq(jobApplicationsTable.freelancerId, freelancer[0].id),
+            or(
+              eq(jobApplicationsTable.status, JobApplicationStatus.Pending),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Shortlisted),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Approved)
+            )
+          )
+        );
+
+      if (activeApplications.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while you have pending or active job applications. Please wait for them to be completed or withdrawn.',
+        };
+      }
     }
-  }
 
-  return { hasActiveJobs: false };
+    return { hasActiveJobs: false };
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -1032,67 +1097,47 @@ export async function requestAccountDeletion(
   userId: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const activeJobs = await checkForActiveJobs(userId);
-    if (activeJobs.hasActiveJobs) {
-      return { success: false, error: activeJobs.message };
+    // Get the user's account
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
     }
 
-    // Update user and account status
-    await db.transaction(async tx => {
-      // Update user table
-      await tx
-        .update(UsersTable)
-        .set({
-          deletionRequestedAt: new Date(),
-          finalDeletionAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        } as unknown as typeof UsersTable.$inferInsert)
-        .where(eq(UsersTable.id, userId));
+    // Update the account status
+    await db
+      .update(accountsTable)
+      .set({
+        accountStatus: AccountStatus.Deleted,
+      } as any)
+      .where(eq(accountsTable.id, userAccount.id));
 
-      // Update account status
-      const userAccount = await getUserAccountInfo({ userId });
-      if (userAccount) {
-        await tx
-          .update(accountsTable)
-          .set({
-            accountStatus: AccountStatus.Deleted,
-          })
-          .where(eq(accountsTable.id, userAccount.id));
-      }
-    });
+    // Update user deletion timestamps
+    await db
+      .update(UsersTable)
+      .set({
+        deletionRequestedAt: new Date(),
+        finalDeletionAt: new Date(),
+      } as any)
+      .where(eq(UsersTable.id, userId));
 
     return { success: true };
   } catch (error) {
-    console.error('Error requesting account deletion:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'An error occurred while requesting account deletion',
-    };
+    throw error;
   }
 }
 
 /**
  * Save exit feedback when a user deletes their account
  */
-export async function saveExitFeedback(
-  userId: number,
-  feedback: string
-): Promise<{ success: boolean; error?: string }> {
+export async function saveExitFeedback(userId: number, feedback: string): Promise<void> {
   try {
     await db.insert(exitFeedbackTable).values({
       userId,
       feedback,
+      createdAt: new Date(),
     });
-
-    return { success: true };
   } catch (error) {
-    console.error('Error saving exit feedback:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'An error occurred while saving feedback',
-    };
+    throw error;
   }
 }
 
@@ -1107,43 +1152,4 @@ export async function isAccountDeleted(userId: number): Promise<boolean> {
     .limit(1);
 
   return account.length > 0 && account[0].status === AccountStatus.Deleted;
-}
-
-export async function deactivateAccount(userId: number): Promise<boolean> {
-  try {
-    // console.log('🔍 Getting account type for user:', userId);
-    // Get the user's account type
-    const accountType = await getUserAccountType(userId);
-    // console.log('📋 Account type:', accountType);
-
-    if (!accountType) {
-      // console.log('❌ No account type found');
-      return false;
-    }
-
-    // console.log('📝 Updating account status to deactivated...');
-    // Update account status to deactivated in the accountsTable only
-    const accountResult = await db
-      .update(accountsTable)
-      .set({ accountStatus: AccountStatus.Deactivated })
-      .where(eq(accountsTable.userId, userId))
-      .returning({
-        id: accountsTable.id,
-        accountStatus: accountsTable.accountStatus,
-      });
-
-    // console.log('📊 Account update result:', accountResult);
-
-    // Check if the update returned anything
-    if (!accountResult || accountResult.length === 0) {
-      // console.log('❌ Account update failed');
-      return false;
-    }
-
-    // console.log('✅ Account deactivation completed successfully');
-    return true;
-  } catch (error) {
-    console.error('💥 Error in deactivateAccount:', error);
-    return false;
-  }
 }
