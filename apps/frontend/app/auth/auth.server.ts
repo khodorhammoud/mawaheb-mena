@@ -1,7 +1,7 @@
 // import { json } from "@remix-run/node";
 // import { getUserByEmail, verifyPassword } from "~/utils/user.server";
 
-import { sessionStorage, getSession } from './session.server';
+import { sessionStorage, getSession, destroySession } from './session.server';
 import { Authenticator } from 'remix-auth';
 import { registerationStrategy, loginStrategy } from './strategies';
 import { checkUserStatuses, getUser, getCurrentProfileInfo } from '~/servers/user.server';
@@ -136,6 +136,17 @@ export async function requireUserAccountStatusPublishedOrDeactivated(request: Re
   }
 
   return userId;
+}
+
+// Logout function that destroys the session and redirects to login
+export async function logout(request: Request) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  return redirect('/login-employer', {
+    headers: {
+      'Set-Cookie': await destroySession(session),
+    },
+  });
 }
 
 /* 
