@@ -121,3 +121,40 @@ export async function markAllNotificationsAsRead(userId: number) {
     throw error;
   }
 }
+
+export async function getNotificationById(
+  notificationId: number,
+  userId: number
+): Promise<Notification | null> {
+  if (!notificationId || !userId) {
+    return null;
+  }
+
+  try {
+    const results = await db
+      .select()
+      .from(notificationsTable)
+      .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.userId, userId)))
+      .limit(1);
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    const notification = results[0];
+    // Ensure ID is a number
+    const id =
+      typeof notification.id === 'string' ? parseInt(notification.id, 10) : notification.id;
+
+    return {
+      ...notification,
+      id, // Use the processed numeric ID
+      type: notification.type as NotificationType,
+      createdAt: new Date(notification.createdAt),
+      readAt: notification.readAt ? new Date(notification.readAt) : null,
+    };
+  } catch (error) {
+    console.error('Error fetching notification by ID:', error);
+    return null;
+  }
+}
