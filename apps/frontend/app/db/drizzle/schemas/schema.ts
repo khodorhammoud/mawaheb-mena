@@ -174,16 +174,12 @@ export const UsersTable = pgTable('users', {
  * @property {integer} userId - References the UsersTable.id
  * @property {jsonb} attachments - JSONB field for multiple file attachments
  * @property {timestamp} createdAt - Timestamp for when the record was created
- * @property {timestamp} updatedAt - Timestamp for when the record was last updated
  */
 export const userIdentificationsTable = pgTable('user_identifications', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .references(() => UsersTable.id)
-    .unique(),
+  userId: integer('user_id').references(() => UsersTable.id),
   attachments: jsonb('attachments').default(sql`'{}'::jsonb`),
   createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 /**
@@ -629,6 +625,16 @@ export const attachmentsTable = pgTable('attachments', {
   key: varchar('key').notNull(),
   metadata: jsonb('metadata').default({}),
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+/**
+ * Definition of the exit_feedback table.
+ */
+export const exitFeedbackTable = pgTable('exit_feedback', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  feedback: text('feedback'),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
 
 export const notificationsTable = pgTable('notifications', {
