@@ -15,15 +15,19 @@ authenticator.use(registerationStrategy, 'register');
 
 // the user must be authenticated and have a session
 export async function requireUserSession(request) {
-  const session = await getSession(request.headers.get('Cookie'));
-  const userId = session.get('user');
+  try {
+    const session = await getSession(request.headers.get('Cookie'));
+    const userId = session.get('user');
 
-  if (!userId) {
-    console.warn('Unauthorized, user is not logged in');
-    throw redirect('/login-employer');
+    if (!userId) {
+      console.warn('Unauthorized, user is not logged in');
+      throw redirect('/login-employer');
+    }
+
+    return userId;
+  } catch (error) {
+    throw error;
   }
-
-  return userId;
 }
 
 // the user must be verified through 2FA

@@ -124,3 +124,10 @@ export enum AttachmentBelongsTo {
   Portfolio = 'portfolio',
   Certificate = 'certificate',
 }
+
+export enum NotificationType {
+  Message = 'message',
+  Alert = 'alert',
+  Reminder = 'reminder',
+  StatusUpdate = 'status_update',
+}
