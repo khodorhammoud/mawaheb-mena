@@ -10,7 +10,7 @@ import {
 import { requireUserSession } from '~/auth/auth.server';
 import { getNotifications, markAllNotificationsAsRead } from '~/servers/notifications.server';
 import { Button } from '~/components/ui/button';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { NotificationType } from '~/types/enums';
 import { useEffect, useState } from 'react';
 
@@ -198,10 +198,37 @@ export default function Notifications() {
                   <p className="text-gray-600 mt-1 text-sm line-clamp-2">{notification.message}</p>
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-xs text-gray-400">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                        includeSeconds: false,
-                      })}
+                      {(() => {
+                        try {
+                          let date;
+
+                          // Handle different date formats
+                          if (typeof notification.createdAt === 'string') {
+                            // If it's a string, parse it
+                            date = parseISO(notification.createdAt);
+                          } else {
+                            // Try to create a Date from whatever we have
+                            date = new Date(notification.createdAt);
+                          }
+
+                          // Check if the date is valid
+                          if (isNaN(date.getTime())) {
+                            return 'Invalid date';
+                          }
+
+                          // Adjust for timezone difference (subtract 3 hours)
+                          const adjustedDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+
+                          // Format the date correctly with the adjusted timestamp
+                          return formatDistanceToNow(adjustedDate, {
+                            addSuffix: true,
+                            includeSeconds: false,
+                          });
+                        } catch (e) {
+                          console.error('Date formatting error:', e);
+                          return 'Unknown time';
+                        }
+                      })()}
                     </p>
 
                     <div className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
