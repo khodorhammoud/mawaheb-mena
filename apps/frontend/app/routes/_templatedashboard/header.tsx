@@ -86,7 +86,9 @@ export default function Header() {
   };
 
   const handleNotificationClick = (notificationId: number) => {
-    navigate(`/notifications/${notificationId}`);
+    // Use the new /notification/:id URL pattern which is separate from the notifications list
+    console.log(`Navigating to single notification ID: ${notificationId}`);
+    window.location.href = `/notification/${notificationId}`;
   };
 
   return (
