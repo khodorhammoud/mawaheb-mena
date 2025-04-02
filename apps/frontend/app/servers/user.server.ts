@@ -1103,22 +1103,13 @@ export async function requestAccountDeletion(
       throw new Error('Account not found');
     }
 
-    // Update the account status
+    // Update the account status to Deleted
     await db
       .update(accountsTable)
       .set({
         accountStatus: AccountStatus.Deleted,
-      } as any)
+      })
       .where(eq(accountsTable.id, userAccount.id));
-
-    // Update user deletion timestamps
-    await db
-      .update(UsersTable)
-      .set({
-        deletionRequestedAt: new Date(),
-        finalDeletionAt: new Date(),
-      } as any)
-      .where(eq(UsersTable.id, userId));
 
     return { success: true };
   } catch (error) {
