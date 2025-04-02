@@ -160,13 +160,13 @@ export const UsersTable = pgTable('users', {
   firstName: varchar('first_name', { length: 80 }),
   lastName: varchar('last_name', { length: 80 }),
   email: varchar('email', { length: 150 }).unique().notNull(),
-  passHash: varchar('password_hash').notNull(),
+  passHash: varchar('password_hash'),
   isVerified: boolean('is_verified').default(false),
-  deletionRequestedAt: timestamp('deletion_requested_at'),
-  finalDeletionAt: timestamp('final_deletion_at'),
   isOnboarded: boolean('is_onboarded').default(false),
   provider: providerEnum('provider'),
   role: userRoleEnum('role').default('user'),
+  deletionRequestedAt: timestamp('deletion_requested_at'),
+  finalDeletionAt: timestamp('final_deletion_at'),
 });
 
 /**
@@ -179,12 +179,9 @@ export const UsersTable = pgTable('users', {
  */
 export const userIdentificationsTable = pgTable('user_identifications', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .references(() => UsersTable.id)
-    .unique(),
+  userId: integer('user_id').references(() => UsersTable.id),
   attachments: jsonb('attachments').default(sql`'{}'::jsonb`),
   createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 /**
@@ -623,7 +620,7 @@ export const timesheetSubmissionsTable = pgTable('timesheet_submissions', {
  * @property id
  * @property key
  * @property metadata
- * @property createdAt
+ * @property createdAty
  */
 export const attachmentsTable = pgTable('attachments', {
   id: serial('id').primaryKey(),
@@ -640,4 +637,16 @@ export const exitFeedbackTable = pgTable('exit_feedback', {
   userId: integer('user_id').references(() => UsersTable.id),
   feedback: text('feedback'),
   createdAt: timestamp('created_at').default(sql`now()`),
+});
+
+export const notificationsTable = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  type: varchar('type', { length: 50 }), // e.g., "message", "alert", "reminder"
+  title: text('title'),
+  message: text('message'),
+  payload: jsonb('payload').default(sql`'{}'::jsonb`),
+  isRead: boolean('is_read').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  readAt: timestamp('read_at'),
 });

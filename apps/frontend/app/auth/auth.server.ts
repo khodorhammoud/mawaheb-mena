@@ -15,15 +15,19 @@ authenticator.use(registerationStrategy, 'register');
 
 // the user must be authenticated and have a session
 export async function requireUserSession(request) {
-  const session = await getSession(request.headers.get('Cookie'));
-  const userId = session.get('user');
+  try {
+    const session = await getSession(request.headers.get('Cookie'));
+    const userId = session.get('user');
 
-  if (!userId) {
-    console.warn('Unauthorized, user is not logged in');
-    throw redirect('/login-employer');
+    if (!userId) {
+      console.warn('Unauthorized, user is not logged in');
+      throw redirect('/login-employer');
+    }
+
+    return userId;
+  } catch (error) {
+    throw error;
   }
-
-  return userId;
 }
 
 // the user must be verified through 2FA
@@ -126,12 +130,16 @@ export async function requireUserAccountStatusPublishedOrDeactivated(request: Re
     throw redirect('/identification');
   }
 
+  // Check if account is deleted
+  if (profile.account.accountStatus === AccountStatus.Deleted) {
+    throw redirect('/login-employer');
+  }
+
   // Allow both published and deactivated accounts to access the dashboard
   if (
     profile.account.accountStatus !== AccountStatus.Published &&
     profile.account.accountStatus !== AccountStatus.Deactivated
   ) {
-    console.warn('Unauthorized, user is not published or deactivated');
     throw redirect('/identification');
   }
 
@@ -142,9 +150,11 @@ export async function requireUserAccountStatusPublishedOrDeactivated(request: Re
 export async function logout(request: Request) {
   const session = await getSession(request.headers.get('Cookie'));
 
+  const destroyedSession = await destroySession(session);
+
   return redirect('/login-employer', {
     headers: {
-      'Set-Cookie': await destroySession(session),
+      'Set-Cookie': destroyedSession,
     },
   });
 }
