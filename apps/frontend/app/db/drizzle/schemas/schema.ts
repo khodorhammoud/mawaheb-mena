@@ -160,8 +160,10 @@ export const UsersTable = pgTable('users', {
   firstName: varchar('first_name', { length: 80 }),
   lastName: varchar('last_name', { length: 80 }),
   email: varchar('email', { length: 150 }).unique().notNull(),
-  passHash: varchar('password_hash'),
+  passHash: varchar('password_hash').notNull(),
   isVerified: boolean('is_verified').default(false),
+  deletionRequestedAt: timestamp('deletion_requested_at'),
+  finalDeletionAt: timestamp('final_deletion_at'),
   isOnboarded: boolean('is_onboarded').default(false),
   provider: providerEnum('provider'),
   role: userRoleEnum('role').default('user'),
@@ -174,7 +176,6 @@ export const UsersTable = pgTable('users', {
  * @property {integer} userId - References the UsersTable.id
  * @property {jsonb} attachments - JSONB field for multiple file attachments
  * @property {timestamp} createdAt - Timestamp for when the record was created
- * @property {timestamp} updatedAt - Timestamp for when the record was last updated
  */
 export const userIdentificationsTable = pgTable('user_identifications', {
   id: serial('id').primaryKey(),
@@ -629,4 +630,14 @@ export const attachmentsTable = pgTable('attachments', {
   key: varchar('key').notNull(),
   metadata: jsonb('metadata').default({}),
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+/**
+ * Definition of the exit_feedback table.
+ */
+export const exitFeedbackTable = pgTable('exit_feedback', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  feedback: text('feedback'),
+  createdAt: timestamp('created_at').default(sql`now()`),
 });
