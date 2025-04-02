@@ -1111,6 +1111,15 @@ export async function requestAccountDeletion(
       })
       .where(eq(accountsTable.id, userAccount.id));
 
+    // Update user deletion timestamps
+    await db
+      .update(UsersTable)
+      .set({
+        deletionRequestedAt: new Date(),
+        finalDeletionAt: new Date(),
+      } as any)
+      .where(eq(UsersTable.id, userId));
+
     return { success: true };
   } catch (error) {
     throw error;

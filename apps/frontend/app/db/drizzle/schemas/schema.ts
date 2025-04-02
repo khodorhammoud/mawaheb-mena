@@ -165,6 +165,8 @@ export const UsersTable = pgTable('users', {
   isOnboarded: boolean('is_onboarded').default(false),
   provider: providerEnum('provider'),
   role: userRoleEnum('role').default('user'),
+  deletionRequestedAt: timestamp('deletion_requested_at'),
+  finalDeletionAt: timestamp('final_deletion_at'),
 });
 
 /**
