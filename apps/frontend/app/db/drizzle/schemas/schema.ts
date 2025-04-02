@@ -622,11 +622,23 @@ export const timesheetSubmissionsTable = pgTable('timesheet_submissions', {
  * @property id
  * @property key
  * @property metadata
- * @property createdAt
+ * @property createdAty
  */
 export const attachmentsTable = pgTable('attachments', {
   id: serial('id').primaryKey(),
   key: varchar('key').notNull(),
   metadata: jsonb('metadata').default({}),
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const notificationsTable = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => UsersTable.id),
+  type: varchar('type', { length: 50 }), // e.g., "message", "alert", "reminder"
+  title: text('title'),
+  message: text('message'),
+  payload: jsonb('payload').default(sql`'{}'::jsonb`),
+  isRead: boolean('is_read').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  readAt: timestamp('read_at'),
 });
