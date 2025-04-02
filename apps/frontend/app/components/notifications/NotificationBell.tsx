@@ -1,7 +1,7 @@
 import { Bell } from 'lucide-react';
 import { NotificationType } from '~/types/enums';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Link } from '@remix-run/react';
 
 interface Notification {
@@ -69,7 +69,36 @@ export function NotificationBell({ notifications, onNotificationClick }: Notific
                     <h4 className="font-medium">{notification.title}</h4>
                     <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                     <p className="text-xs text-gray-400 mt-2">
-                      {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
+                      {(() => {
+                        try {
+                          let date;
+
+                          // Handle different date formats
+                          if (typeof notification.createdAt === 'string') {
+                            // If it's a string, parse it
+                            date = parseISO(notification.createdAt);
+                          } else {
+                            // Try to create a Date from whatever we have
+                            date = new Date(notification.createdAt);
+                          }
+
+                          // Check if the date is valid
+                          if (isNaN(date.getTime())) {
+                            return 'Invalid date';
+                          }
+
+                          // Adjust for timezone difference (subtract 3 hours)
+                          const adjustedDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+
+                          // Format the date correctly with the adjusted timestamp
+                          return formatDistanceToNow(adjustedDate, {
+                            addSuffix: true,
+                            includeSeconds: false,
+                          });
+                        } catch (e) {
+                          return 'Unknown time';
+                        }
+                      })()}
                     </p>
                   </div>
                 </div>

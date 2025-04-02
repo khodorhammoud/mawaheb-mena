@@ -3,7 +3,7 @@ import { useLoaderData, useNavigate, useParams } from '@remix-run/react';
 import { requireUserSession } from '~/auth/auth.server';
 import { getNotificationById, markNotificationAsRead } from '~/servers/notifications.server';
 import { Button } from '~/components/ui/button';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { NotificationType } from '~/types/enums';
 import { useEffect, useState } from 'react';
 
@@ -152,7 +152,36 @@ export default function SingleNotificationView() {
             <h4 className="font-medium text-lg">{notification.title}</h4>
             <p className="text-gray-600 mt-1">{notification.message}</p>
             <p className="text-sm text-gray-400 mt-2">
-              {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+              {(() => {
+                try {
+                  let date;
+
+                  // Handle different date formats
+                  if (typeof notification.createdAt === 'string') {
+                    // If it's a string, parse it
+                    date = parseISO(notification.createdAt);
+                  } else {
+                    // Try to create a Date from whatever we have
+                    date = new Date(notification.createdAt);
+                  }
+
+                  // Check if the date is valid
+                  if (isNaN(date.getTime())) {
+                    return 'Invalid date';
+                  }
+
+                  // Adjust for timezone difference (subtract 3 hours)
+                  const adjustedDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+
+                  // Format the date correctly with the adjusted timestamp
+                  return formatDistanceToNow(adjustedDate, {
+                    addSuffix: true,
+                    includeSeconds: false,
+                  });
+                } catch (e) {
+                  return 'Unknown time';
+                }
+              })()}
             </p>
 
             {notification.payload && Object.keys(notification.payload).length > 0 && (
