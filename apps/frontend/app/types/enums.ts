@@ -4,6 +4,7 @@ export enum AccountStatus {
   Published = 'published',
   Closed = 'closed',
   Suspended = 'suspended',
+  Deleted = 'deleted',
   Deactivated = 'deactivated',
 }
 
@@ -123,4 +124,11 @@ export enum JobsOpenTo {
 export enum AttachmentBelongsTo {
   Portfolio = 'portfolio',
   Certificate = 'certificate',
+}
+
+export enum NotificationType {
+  Message = 'message',
+  Alert = 'alert',
+  Reminder = 'reminder',
+  StatusUpdate = 'status_update',
 }

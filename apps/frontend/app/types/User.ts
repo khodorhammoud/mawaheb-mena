@@ -7,7 +7,7 @@ import {
   Language,
   ProjectType,
   Provider,
-} from "./enums";
+} from './enums';
 
 export interface User {
   id?: number;
@@ -19,7 +19,9 @@ export interface User {
   isVerified?: boolean;
   isOnboarded?: boolean;
   provider?: Provider;
-  role?: "admin" | "user";
+  role?: 'admin' | 'user';
+  deletionRequestedAt?: Date;
+  finalDeletionAt?: Date;
 }
 
 export interface PreferredWorkingTimes {

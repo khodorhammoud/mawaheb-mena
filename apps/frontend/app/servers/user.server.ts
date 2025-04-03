@@ -3,10 +3,18 @@ import { db } from '../db/drizzle/connector';
 import {
   accountsTable,
   employersTable,
+  exitFeedbackTable,
+  freelancerLanguagesTable,
   freelancersTable,
+  jobApplicationsTable,
+  skillsTable,
+  timesheetEntriesTable,
+  languagesTable,
+  jobsTable,
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
+  freelancerSkillsTable,
 } from '../db/drizzle/schemas/schema';
 import {
   // LoggedInUser,
@@ -17,9 +25,15 @@ import {
   PortfolioFormFieldType,
   SocialAccount,
 } from '../types/User';
-import { and, eq /* lt, gte, ne */ } from 'drizzle-orm';
+import { and, eq, or /* lt, gte, ne */ } from 'drizzle-orm';
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
-import { AccountStatus, AccountType, Provider } from '../types/enums';
+import {
+  AccountStatus,
+  AccountType,
+  JobApplicationStatus,
+  Provider,
+  JobStatus,
+} from '../types/enums';
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';
 
@@ -125,13 +139,17 @@ export async function getAccountBySlug(slug: string): Promise<UserAccount | null
  * @returns UserAccount | null: the current user account info from the session or null if the user is not logged in
  */
 
+let currentAccount: UserAccount = null;
 export async function getCurrentUserAccountInfo(
   request: Request,
   withPassword = false
 ): Promise<UserAccount | null> {
-  const user = await getCurrentUser(request, withPassword);
-  if (!user) return null;
-  return await getUserAccountInfo({ userId: user.id });
+  if (!currentAccount) {
+    const user = await getCurrentUser(request, withPassword);
+    if (!user) return null;
+    currentAccount = await getUserAccountInfo({ userId: user.id });
+  }
+  return currentAccount;
 }
 
 /**
@@ -268,7 +286,6 @@ export async function getUserIdFromEmployerId_Depricated(
  * @param freelancerId : the id of the freelancer to get the userId for
  * @returns number: the userId of the freelancer
  */
-
 export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
   // join the freelancers table with the accounts table to get the userId
   const result = await db
@@ -757,22 +774,6 @@ export async function updateOnboardingStatus(userId: number) {
   return result;
 }
 
-/**
- * Set the isOnboarded status for a user
- * @param userId The ID of the user
- * @param isOnboarded Boolean value to set the isOnboarded status
- * @returns The updated user record
- */
-export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
-  const result = await db
-    .update(UsersTable)
-    .set({ isOnboarded } as unknown)
-    .where(eq(UsersTable.id, userId))
-    .returning();
-
-  return { success: true, data: result[0] };
-}
-
 export async function getUserSettings(userId: number) {
   const result = await db
     .select({
@@ -896,4 +897,326 @@ export async function reactivateAccount(userId: number): Promise<boolean> {
     console.error('💥 Error in reactivateAccount:', error);
     return false;
   }
+}
+
+/**
+ * Export user data based on account type
+ * @param userId - The ID of the user to export data for
+ * @returns A promise that resolves to the exported data
+ */
+export async function exportUserData(userId: number) {
+  // Get the user's account type
+  const accountType = await getUserAccountType(userId);
+  if (!accountType) {
+    throw new Error('User account type not found');
+  }
+
+  // Get the user's profile info
+  const profileInfo = await getProfileInfo({ userId });
+  if (!profileInfo) {
+    throw new Error('User profile not found');
+  }
+
+  // Get the user's account info
+  const accountInfo = await getUserAccountInfo({ userId });
+  if (!accountInfo) {
+    throw new Error('User account not found');
+  }
+
+  // Base data structure that's common to both types
+  const baseData = {
+    user: {
+      id: userId,
+      firstName: accountInfo.user.firstName,
+      lastName: accountInfo.user.lastName,
+      email: accountInfo.user.email,
+    },
+    account: {
+      id: accountInfo.id,
+      accountType: accountInfo.accountType,
+      country: accountInfo.country,
+      region: accountInfo.region,
+      phone: accountInfo.phone,
+      languages: accountInfo.languages,
+      preferredWorkingTimes: accountInfo.preferredWorkingTimes,
+      accountStatus: accountInfo.accountStatus,
+      isCreationComplete: accountInfo.isCreationComplete,
+      slug: accountInfo.slug,
+    },
+  };
+
+  if (accountType === AccountType.Freelancer) {
+    const freelancer = profileInfo as Freelancer;
+
+    // Get freelancer's job applications
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.freelancerId, freelancer.id));
+
+    // Get freelancer's timesheet entries
+    const timesheetEntries = await db
+      .select()
+      .from(timesheetEntriesTable)
+      .where(eq(timesheetEntriesTable.freelancerId, freelancer.id));
+
+    // Get freelancer's skills
+    const freelancerSkills = await db
+      .select({
+        skill: skillsTable,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(freelancerSkillsTable.skillId, skillsTable.id))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancer.id));
+
+    // Get freelancer's languages
+    const freelancerLanguages = await db
+      .select({
+        language: languagesTable,
+      })
+      .from(freelancerLanguagesTable)
+      .leftJoin(languagesTable, eq(freelancerLanguagesTable.languageId, languagesTable.id))
+      .where(eq(freelancerLanguagesTable.freelancerId, freelancer.id));
+
+    return {
+      ...baseData,
+      freelancerDetails: {
+        id: freelancer.id,
+        accountId: freelancer.accountId,
+        fieldsOfExpertise: freelancer.fieldsOfExpertise,
+        portfolio: freelancer.portfolio,
+        workHistory: freelancer.workHistory,
+        portfolioDescription: freelancer.portfolioDescription,
+        cvLink: freelancer.cvLink,
+        videoLink: freelancer.videoLink,
+        certificates: freelancer.certificates,
+        educations: freelancer.educations,
+        yearsOfExperience: freelancer.yearsOfExperience,
+        languagesSpoken: freelancer.languagesSpoken,
+        preferredProjectTypes: freelancer.preferredProjectTypes,
+        hourlyRate: freelancer.hourlyRate,
+        compensationType: freelancer.compensationType,
+        availableForWork: freelancer.availableForWork,
+        availableFrom: freelancer.availableFrom,
+        hoursAvailableFrom: freelancer.hoursAvailableFrom,
+        hoursAvailableTo: freelancer.hoursAvailableTo,
+        jobsOpenTo: freelancer.jobsOpenTo,
+      },
+      jobApplications,
+      timesheetEntries,
+      skills: freelancerSkills.map(fs => fs.skill),
+      languages: freelancerLanguages.map(fl => fl.language),
+    };
+  } else if (accountType === AccountType.Employer) {
+    const employer = profileInfo as Employer;
+
+    // Get employer's jobs
+    const jobs = await db.select().from(jobsTable).where(eq(jobsTable.employerId, employer.id));
+
+    // Get job applications for employer's jobs
+    const jobApplications = await db
+      .select({
+        id: jobApplicationsTable.id,
+        jobId: jobApplicationsTable.jobId,
+        freelancerId: jobApplicationsTable.freelancerId,
+        status: jobApplicationsTable.status,
+        createdAt: jobApplicationsTable.createdAt,
+        jobTitle: jobsTable.title,
+        jobStatus: jobsTable.status,
+      })
+      .from(jobApplicationsTable)
+      .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+      .where(eq(jobsTable.employerId, employer.id));
+
+    return {
+      ...baseData,
+      employerDetails: {
+        id: employer.id,
+        employerAccountType: employer.employerAccountType,
+        companyName: employer.companyName,
+        employerName: employer.employerName,
+        companyEmail: employer.companyEmail,
+        industrySector: employer.industrySector,
+        yearsInBusiness: employer.yearsInBusiness,
+        companyRepName: employer.companyRepName,
+        companyRepEmail: employer.companyRepEmail,
+        companyRepPosition: employer.companyRepPosition,
+        companyRepPhone: employer.companyRepPhone,
+        taxIdNumber: employer.taxIdNumber,
+        taxIdDocumentLink: employer.taxIdDocumentLink,
+        businessLicenseLink: employer.businessLicenseLink,
+        certificationOfIncorporationLink: employer.certificationOfIncorporationLink,
+        WebsiteURL: employer.WebsiteURL,
+        socialMediaLinks: employer.socialMediaLinks,
+      },
+      jobs,
+      jobApplications,
+    };
+  }
+
+  throw new Error('Invalid account type');
+}
+
+// this is used for the deletion of the account :))
+/**
+ * Check if a user has any active jobs
+ * For freelancers: check job applications that are not completed/rejected
+ * For employers: check jobs that are not completed/closed
+ */
+export async function checkForActiveJobs(
+  userId: number
+): Promise<{ hasActiveJobs: boolean; message?: string }> {
+  try {
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
+    }
+
+    if (userAccount.accountType === AccountType.Employer) {
+      // First get the employer record
+      const employer = await db
+        .select({ id: employersTable.id })
+        .from(employersTable)
+        .where(eq(employersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!employer || employer.length === 0) {
+        throw new Error('Employer record not found');
+      }
+
+      // Check for employer's active jobs using the correct employer ID
+      const activeJobs = await db
+        .select({
+          id: jobsTable.id,
+          status: jobsTable.status,
+          title: jobsTable.title,
+        })
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, employer[0].id),
+            or(
+              eq(jobsTable.status, JobStatus.Draft),
+              eq(jobsTable.status, JobStatus.Active),
+              eq(jobsTable.status, JobStatus.Paused)
+            )
+          )
+        );
+
+      if (activeJobs.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while there is jobs postings. Please close or complete all active jobs first.',
+        };
+      }
+    } else {
+      // First get the freelancer record
+      const freelancer = await db
+        .select({ id: freelancersTable.id })
+        .from(freelancersTable)
+        .where(eq(freelancersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!freelancer || freelancer.length === 0) {
+        throw new Error('Freelancer record not found');
+      }
+
+      // Check for freelancer's active job applications using the correct freelancer ID
+      const activeApplications = await db
+        .select({
+          id: jobApplicationsTable.id,
+          status: jobApplicationsTable.status,
+          jobId: jobApplicationsTable.jobId,
+        })
+        .from(jobApplicationsTable)
+        .where(
+          and(
+            eq(jobApplicationsTable.freelancerId, freelancer[0].id),
+            or(
+              eq(jobApplicationsTable.status, JobApplicationStatus.Pending),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Shortlisted),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Approved)
+            )
+          )
+        );
+
+      if (activeApplications.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while you have pending or active job applications. Please wait for them to be completed or withdrawn.',
+        };
+      }
+    }
+
+    return { hasActiveJobs: false };
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Request account deletion
+ * This will set the deletion_requested_at timestamp and update account status
+ */
+export async function requestAccountDeletion(
+  userId: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get the user's account
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
+    }
+
+    // Update the account status to Deleted
+    await db
+      .update(accountsTable)
+      .set({
+        accountStatus: AccountStatus.Deleted,
+      })
+      .where(eq(accountsTable.id, userAccount.id));
+
+    // Update user deletion timestamps
+    await db
+      .update(UsersTable)
+      .set({
+        deletionRequestedAt: new Date(),
+        finalDeletionAt: new Date(),
+      } as any)
+      .where(eq(UsersTable.id, userId));
+
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Save exit feedback when a user deletes their account
+ */
+export async function saveExitFeedback(userId: number, feedback: string): Promise<void> {
+  try {
+    await db.insert(exitFeedbackTable).values({
+      userId,
+      feedback,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Check if an account is deleted during login
+ */
+export async function isAccountDeleted(userId: number): Promise<boolean> {
+  const account = await db
+    .select({ status: accountsTable.accountStatus })
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, userId))
+    .limit(1);
+
+  return account.length > 0 && account[0].status === AccountStatus.Deleted;
 }
