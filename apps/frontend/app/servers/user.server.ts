@@ -138,18 +138,13 @@ export async function getAccountBySlug(slug: string): Promise<UserAccount | null
  * @param withPassword : boolean to determine if the password hash should be included in the response
  * @returns UserAccount | null: the current user account info from the session or null if the user is not logged in
  */
-
-let currentAccount: UserAccount = null;
 export async function getCurrentUserAccountInfo(
   request: Request,
   withPassword = false
 ): Promise<UserAccount | null> {
-  if (!currentAccount) {
-    const user = await getCurrentUser(request, withPassword);
-    if (!user) return null;
-    currentAccount = await getUserAccountInfo({ userId: user.id });
-  }
-  return currentAccount;
+  const user = await getCurrentUser(request, withPassword);
+  if (!user) return null;
+  return await getUserAccountInfo({ userId: user.id });
 }
 
 /**
@@ -833,18 +828,12 @@ export async function updateUserPassword(userId: number, hashedPassword: string)
 
 export async function deactivateAccount(userId: number): Promise<boolean> {
   try {
-    // console.log('🔍 Getting account type for user:', userId);
-    // Get the user's account type
     const accountType = await getUserAccountType(userId);
-    // console.log('📋 Account type:', accountType);
 
     if (!accountType) {
-      // console.log('❌ No account type found');
       return false;
     }
 
-    // console.log('📝 Updating account status to deactivated...');
-    // Update account status to deactivated in the accountsTable only
     const accountResult = await db
       .update(accountsTable)
       .set({ accountStatus: AccountStatus.Deactivated })
@@ -854,15 +843,10 @@ export async function deactivateAccount(userId: number): Promise<boolean> {
         accountStatus: accountsTable.accountStatus,
       });
 
-    // console.log('📊 Account update result:', accountResult);
-
-    // Check if the update returned anything
     if (!accountResult || accountResult.length === 0) {
-      // console.log('❌ Account update failed');
       return false;
     }
 
-    // console.log('✅ Account deactivation completed successfully');
     return true;
   } catch (error) {
     console.error('💥 Error in deactivateAccount:', error);
@@ -878,7 +862,6 @@ export async function reactivateAccount(userId: number): Promise<boolean> {
       return false;
     }
 
-    // Update account status to published in the accountsTable
     const accountResult = await db
       .update(accountsTable)
       .set({ accountStatus: AccountStatus.Published })

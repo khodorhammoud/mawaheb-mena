@@ -85,9 +85,8 @@ export default function PrivacyTab() {
 
   // Deactivate/Reactivate Account State
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
-  const [currentAccountStatus, setCurrentAccountStatus] = useState<AccountStatus>(
-    initialAccountStatus || AccountStatus.Published
-  );
+  const [currentAccountStatus, setCurrentAccountStatus] =
+    useState<AccountStatus>(initialAccountStatus);
 
   // Password Update State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -150,6 +149,7 @@ export default function PrivacyTab() {
         const newStatus = settingsFetcher.data.isDeactivated
           ? AccountStatus.Deactivated
           : AccountStatus.Published;
+
         setCurrentAccountStatus(newStatus);
 
         toast({
@@ -163,10 +163,8 @@ export default function PrivacyTab() {
           action: <ToastAction altText="Close">Close</ToastAction>,
         });
 
-        // Close dialog on success
         setShowDeactivateDialog(false);
       } else {
-        // If we get an error, revert
         setCurrentAccountStatus(initialAccountStatus);
 
         toast({
@@ -448,12 +446,26 @@ export default function PrivacyTab() {
           {/* DEACTIVATE / REACTIVATE ACCOUNT */}
           <div>
             <div className="text-base mt-1">
-              {currentAccountStatus === AccountStatus.Deactivated
-                ? 'Reactivate my account'
-                : 'Deactivate my account'}
+              {currentAccountStatus === AccountStatus.Published
+                ? 'Deactivate my account'
+                : 'Reactivate my account'}
             </div>
 
-            {currentAccountStatus === AccountStatus.Deactivated ? (
+            {currentAccountStatus === AccountStatus.Published ? (
+              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
+                <p className="text-sm text-gray-700 mt-2">
+                  Mawaheb makes it easy to deactivate your account and all data associated with it.
+                  You can undo this at any time.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeactivateDialog(true)}
+                  className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                >
+                  Deactivate Account
+                </Button>
+              </div>
+            ) : (
               <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
                 <p className="text-sm text-gray-700">
                   Your account is currently deactivated. You can reactivate it at any time.
@@ -468,20 +480,6 @@ export default function PrivacyTab() {
                   </Button>
                 </div>
               </div>
-            ) : (
-              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
-                <p className="text-sm text-gray-700 mt-2">
-                  Mawaheb makes it easy to deactivate your account and all data associated with it.
-                  You can undo this at any time.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeactivateDialog(true)}
-                  className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
-                >
-                  Deactivate Account
-                </Button>
-              </div>
             )}
           </div>
         </div>
@@ -495,7 +493,7 @@ export default function PrivacyTab() {
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 px-1">
             {deleteDisabled ? (
               <p className="text-red-500">{deleteDisabledMessage}</p>
             ) : (
@@ -505,18 +503,15 @@ export default function PrivacyTab() {
                 </p>
                 <div className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="feedback"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Please tell us why you're leaving (optional)
-                    </label>
-                    <Textarea
+                    <AppFormField
                       id="feedback"
-                      value={feedback}
+                      name="feedback"
+                      type="textarea"
+                      label="Please tell us why you're leaving (optional)"
+                      defaultValue={feedback}
                       onChange={e => setFeedback(e.target.value)}
                       placeholder="Your feedback helps us improve"
-                      className="w-full"
+                      className="w-full !h-[120px]"
                     />
                   </div>
                   <div className="flex justify-end gap-4">
@@ -549,19 +544,19 @@ export default function PrivacyTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {currentAccountStatus === AccountStatus.Deactivated
-                ? 'Reactivate Account'
-                : 'Deactivate Account'}
+              {currentAccountStatus === AccountStatus.Published
+                ? 'Deactivate Account'
+                : 'Reactivate Account'}
             </DialogTitle>
             <DialogDescription className="space-y-4">
               <div className="mt-4">
-                {currentAccountStatus === AccountStatus.Deactivated ? (
-                  <p>Are you sure you want to reactivate your account?</p>
-                ) : (
+                {currentAccountStatus === AccountStatus.Published ? (
                   <>
                     {getDeactivationWarning()}
                     <p>Are you sure you want to deactivate your account?</p>
                   </>
+                ) : (
+                  <p>Are you sure you want to reactivate your account?</p>
                 )}
               </div>
             </DialogDescription>
@@ -571,19 +566,17 @@ export default function PrivacyTab() {
               Cancel
             </Button>
             <Button
-              variant={
-                currentAccountStatus === AccountStatus.Deactivated ? 'default' : 'destructive'
-              }
+              variant={currentAccountStatus === AccountStatus.Published ? 'destructive' : 'default'}
               onClick={handleDeactivateAccount}
               disabled={settingsFetcher.state === 'submitting'}
             >
               {settingsFetcher.state === 'submitting'
-                ? currentAccountStatus === AccountStatus.Deactivated
-                  ? 'Reactivating...'
-                  : 'Deactivating...'
-                : currentAccountStatus === AccountStatus.Deactivated
-                  ? 'Reactivate Account'
-                  : 'Deactivate Account'}
+                ? currentAccountStatus === AccountStatus.Published
+                  ? 'Deactivating...'
+                  : 'Reactivating...'
+                : currentAccountStatus === AccountStatus.Published
+                  ? 'Deactivate Account'
+                  : 'Reactivate Account'}
             </Button>
           </DialogFooter>
         </DialogContent>
