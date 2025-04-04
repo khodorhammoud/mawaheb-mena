@@ -45,10 +45,17 @@ export const action = async ({ request }) => {
       }
 
       if (success) {
+        // If the account was deactivated, isDeactivated should be true
+        // If the account was reactivated, isDeactivated should be false
+        const newIsDeactivated = !isDeactivated;
+
+        // Get the updated account status to confirm
+        const updatedAccount = await getCurrentUserAccountInfo(request);
+
         return Response.json({
           success: true,
           formType: 'deactivateAccount',
-          isDeactivated: !isDeactivated,
+          isDeactivated: updatedAccount?.accountStatus === AccountStatus.Deactivated,
         });
       } else {
         return Response.json(
@@ -224,16 +231,19 @@ export const loader = async ({ request }) => {
 
   // Get the user's account type and account info
   const accountType = await getCurrentUserAccountType(request);
+
   const userAccount = await getCurrentUserAccountInfo(request);
 
-  return Response.json({
+  const responseData = {
     settingsInfo: userSettings,
     user: {
       ...currentUser,
       accountType,
     },
     userAccountStatus: userAccount?.accountStatus || AccountStatus.Published,
-  });
+  };
+
+  return Response.json(responseData);
 };
 
 export default function Settings() {
