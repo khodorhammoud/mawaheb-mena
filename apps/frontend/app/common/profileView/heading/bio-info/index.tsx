@@ -1,4 +1,4 @@
-import { useState, useRef, MutableRefObject, useEffect } from "react";
+import { useState, useRef, MutableRefObject, useEffect } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -6,11 +6,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { RiGitlabFill, RiPencilFill } from "react-icons/ri";
-import { IoPencilSharp } from "react-icons/io5";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { RiGitlabFill, RiPencilFill } from 'react-icons/ri';
+import { IoPencilSharp } from 'react-icons/io5';
+import { useLoaderData, useFetcher } from '@remix-run/react';
 import {
   FaMapMarkerAlt,
   FaGlobe,
@@ -19,11 +19,11 @@ import {
   FaStackOverflow,
   FaGitlab,
   FaDribbble,
-} from "react-icons/fa";
-import { TbBrandGithubFilled, TbBrandDribbbleFilled } from "react-icons/tb";
-import { AccountBio } from "~/types/User";
-import AppFormField from "~/common/form-fields";
-import { AccountType, Country } from "~/types/enums";
+} from 'react-icons/fa';
+import { TbBrandGithubFilled, TbBrandDribbbleFilled } from 'react-icons/tb';
+import { AccountBio } from '~/types/User';
+import AppFormField from '~/common/form-fields';
+import { AccountType, Country } from '~/types/enums';
 
 interface BioInfoProps {
   profile: any;
@@ -85,8 +85,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
         {/* CIRCLE */}
         <div className="bg-blue-100 rounded-full xl:w-36 xl:h-36 lg:h-32 lg:w-32 h-28 w-28 flex items-center justify-center lg:mr-5 mr-2 2xl:ml-16 ml-4 md:mb-14 border-4 border-white">
           <span className="xl:text-5xl lg:text-4xl md:text-3xl text-2xl font-semibold text-primaryColor">
-            {(profileData?.firstName?.charAt(0) || "?").toUpperCase()}
-            {(profileData?.lastName?.charAt(0) || "?").toUpperCase()}
+            {(profileData?.firstName?.charAt(0) || '?').toUpperCase()}
+            {(profileData?.lastName?.charAt(0) || '?').toUpperCase()}
           </span>
         </div>
 
@@ -96,7 +96,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
           <div className="flex mt-14">
             {/* NAME */}
             <h1 className="2xl:text-2xl lg:text-xl md:text-lg text-base xl:mt-0 mt-1 md:ml-0 sm:ml-4 ml-0">
-              {profileData.firstName || "?"} {profileData.lastName || "?"}
+              {profileData.firstName || '?'} {profileData.lastName || '?'}
               {/* // comment that for the wierd error (cannot find ...) */}
             </h1>
             {/* ✏️ + POPUP */}
@@ -106,33 +106,27 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                 {/* ✏️ */}
                 <DialogTrigger asChild>
                   <Button variant="link">
-                    <IoPencilSharp className="2xl:h-8 xl:h-7 h-6 2xl:w-8 xl:w-7 w-6 text-sm text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />{" "}
+                    <IoPencilSharp className="2xl:h-8 xl:h-7 h-6 2xl:w-8 xl:w-7 w-6 text-sm text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />{' '}
                   </Button>
                 </DialogTrigger>
                 {/* POPUP CONTENT */}
                 <DialogContent className="bg-white">
                   {/* BIO */}
                   <DialogHeader>
-                    <DialogTitle className="mt-3 lg:text-lg text-base">
-                      Bio
-                    </DialogTitle>
+                    <DialogTitle className="mt-3 lg:text-lg text-base">Bio</DialogTitle>
                   </DialogHeader>
 
                   {/* ERROR MESSAGE */}
                   {showBioMessage && bioFetcher.data?.error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                      <span className="block sm:inline">
-                        {bioFetcher.data.error.message}
-                      </span>
+                      <span className="block sm:inline">{bioFetcher.data.error.message}</span>
                     </div>
                   )}
 
                   {/* SUCCESS MESSAGE */}
                   {showBioMessage && bioFetcher.data?.success && (
                     <div className="bg-green-100 border border-green-400 text-green-700 lg:px-4 px-2 lg:py-3 py-2 rounded relative mb-4">
-                      <span className="block sm:inline">
-                        Bio updated successfully
-                      </span>
+                      <span className="block sm:inline">Bio updated successfully</span>
                     </div>
                   )}
 
@@ -142,9 +136,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                       type="hidden"
                       name="target-updated"
                       value={
-                        accountType === AccountType.Employer
-                          ? "employer-bio"
-                          : "freelancer-bio"
+                        accountType === AccountType.Employer ? 'employer-bio' : 'freelancer-bio'
                       } // this value should match the target in the route.tsx
                     />
                     <div className="grid grid-cols-2 gap-4">
@@ -155,7 +147,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="firstName"
                           label="First Name"
                           className="peer mt-1"
-                          defaultValue={profileData.firstName || ""} // comment that for the wierd error (cannot find ...)
+                          defaultValue={profileData.firstName || ''} // comment that for the wierd error (cannot find ...)
                         />
                       </div>
 
@@ -166,7 +158,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="lastName"
                           label="Last Name"
                           className="peer mt-1"
-                          defaultValue={profileData.lastName || ""} // comment that for the wierd error (cannot find ...)
+                          defaultValue={profileData.lastName || ''} // comment that for the wierd error (cannot find ...)
                         />
                       </div>
 
@@ -178,17 +170,13 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="Country"
                           type="select"
                           options={[
-                            { value: "", label: "--" },
-                            ...Object.values(Country).map((country) => ({
+                            { value: '', label: '--' },
+                            ...Object.values(Country).map(country => ({
                               value: country,
                               label: country,
                             })),
                           ]}
-                          defaultValue={
-                            profileData?.country ||
-                            profileData?.account?.country ||
-                            ""
-                          }
+                          defaultValue={profileData?.country || profileData?.account?.country || ''}
                         />
                       </div>
                       {/* Address Input */}
@@ -198,11 +186,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           name="address"
                           label="Address"
                           className=""
-                          defaultValue={
-                            profileData?.address ||
-                            profileData?.account?.address ||
-                            ""
-                          }
+                          defaultValue={profileData?.address || profileData?.account?.address || ''}
                         />
                         <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                       </div>
@@ -218,9 +202,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="Personal Website"
                           className="peer mt-1"
                           defaultValue={
-                            profileData?.websiteURL ||
-                            profileData?.account?.websiteURL ||
-                            ""
+                            profileData?.websiteURL || profileData?.account?.websiteURL || ''
                           } // comment that for the wierd error (cannot find ...)
                         />
                         <FaGlobe className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -235,7 +217,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           defaultValue={
                             profileData?.socialMediaLinks?.linkedin ||
                             profileData?.account?.socialMediaLinks?.linkedin ||
-                            ""
+                            ''
                           } // comment that for the wierd error (cannot find ...)
                         />
                         <FaLinkedinIn className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -250,7 +232,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           defaultValue={
                             profileData?.socialMediaLinks?.github ||
                             profileData?.account?.socialMediaLinks?.github ||
-                            ""
+                            ''
                           } // comment that for the wierd error (cannot find ...)
                         />
                         <TbBrandGithubFilled className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -265,7 +247,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           defaultValue={
                             profileData?.socialMediaLinks?.gitlab ||
                             profileData?.account?.socialMediaLinks?.gitlab ||
-                            ""
+                            ''
                           } // comment that for the wierd error (cannot find ...)
                         />
                         <RiGitlabFill className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -279,7 +261,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           defaultValue={
                             profileData?.socialMediaLinks?.dribbble ||
                             profileData?.account?.socialMediaLinks?.dribbble ||
-                            ""
+                            ''
                           } // comment that for the wierd error (cannot find ...)
                           label="Dribbble"
                         />
@@ -294,9 +276,8 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="StackOverflow"
                           defaultValue={
                             profileData?.socialMediaLinks?.stackoverflow ||
-                            profileData?.account?.socialMediaLinks
-                              ?.stackoverflow ||
-                            ""
+                            profileData?.account?.socialMediaLinks?.stackoverflow ||
+                            ''
                           } // comment that for the wierd error (cannot find ...)
                         />
                         <FaStackOverflow className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -306,7 +287,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                     {/* Save */}
                     <DialogFooter>
                       <Button
-                        disabled={bioFetcher.state === "submitting"}
+                        disabled={bioFetcher.state === 'submitting'}
                         className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
                         type="submit"
                       >
@@ -329,50 +310,46 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                 </span>
               ) : (
                 canEdit && (
-                  <button
+                  <Button
                     onClick={() => handleTriggerClick?.(countryInputRef)}
-                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Country
-                  </button>
+                  </Button>
                 )
               )}
 
               {/* ADDRESS */}
               {profileData?.address || profileData?.account?.address ? (
                 <span className="lg:text-sm text-xs text-black font-semibold tracking-wide">
-                  {profileData?.country || profileData?.account?.country
-                    ? ", "
-                    : ""}
+                  {profileData?.country || profileData?.account?.country ? ', ' : ''}
                   {profileData?.address || profileData?.account?.address}
                 </span>
               ) : (
                 canEdit && (
-                  <button
+                  <Button
                     onClick={() => handleTriggerClick?.(addressInputRef)}
-                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaMapMarkerAlt className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Address
-                  </button>
+                  </Button>
                 )
               )}
 
               {/* WEBSITE */}
               {profileData?.websiteURL || profileData?.account?.websiteURL ? (
-                <span className="lg:text-sm text-xs text-black font-semibold tracking-wide">
-                  {profileData?.websiteURL || profileData?.account?.websiteURL}
-                </span>
+                <span className="lg:text-sm text-xs text-black font-semibold tracking-wide"></span>
               ) : (
                 canEdit && (
-                  <button
+                  <Button
                     onClick={() => handleTriggerClick?.(websiteInputRef)}
-                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:ml-2 ml-1 sm:mb-0 mb-2 w-fit"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white ml-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Website
-                  </button>
+                  </Button>
                 )
               )}
             </div>
@@ -385,6 +362,17 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
               profileData?.socialMediaLinks?.dribbble ||
               profileData?.account?.socialMediaLinks?.dribbble) && (
               <div className="inline-flex items-center gap-x-2 sm:mt-2 mt-1">
+                {profileData?.websiteURL || profileData?.account?.websiteURL ? (
+                  <a
+                    href={profileData?.websiteURL || profileData?.account?.websiteURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:text-white hover:bg-primaryColor transition-all"
+                  >
+                    <FaGlobe className="lg:w-4 w-3 lg:h-4 h-3" />
+                  </a>
+                ) : null}
+
                 {profileData?.socialMediaLinks?.linkedin ||
                 profileData?.account?.socialMediaLinks?.linkedin ? (
                   <a
