@@ -267,7 +267,8 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
+              {/* this is where i leave space betweeen the title and the content in the dialogs */}
+              <DialogHeader className="mb-6">
                 <DialogTitle>{popupTitle}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
@@ -439,7 +440,10 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
               </Button>
             )}
             <DialogContent>
-              <DialogTitle>{props.popupTitle}</DialogTitle>
+              {/* this is where i leave space betweeen the title and the content in the dialogs */}
+              <DialogHeader className="mb-6">
+                <DialogTitle>{props.popupTitle}</DialogTitle>
+              </DialogHeader>
               <FormContent
                 {...props}
                 formState={formState}
@@ -447,13 +451,13 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
                 fetcher={fetcher}
                 showStatusMessage={showStatusMessage}
               />
-              {formSubmitted && (
+              {/* {formSubmitted && (
                 <DialogFooter className="mt-2">
                   <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                   </DialogClose>
                 </DialogFooter>
-              )}
+              )} */}
             </DialogContent>
           </Dialog>
         )}

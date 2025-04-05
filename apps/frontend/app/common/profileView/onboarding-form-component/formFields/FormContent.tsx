@@ -501,9 +501,10 @@ const FormContent = forwardRef<any, FormContentProps>(
 
     return (
       <div className="">
+        {/* this is where i leave space betweeen the title and the content in the dialogs */}
         <form
           method="post"
-          className="space-y-6"
+          className="space-y-6 mt-2"
           onSubmit={handleFormSubmit}
           encType={
             formType === 'repeatable' || formType === 'file' ? 'multipart/form-data' : undefined
@@ -526,11 +527,11 @@ const FormContent = forwardRef<any, FormContentProps>(
                 >
                   {showLoadingOnSubmit && fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
                 </Button>
-                {formSubmitted && fetcher.state !== 'submitting' && (
+                {/* {formSubmitted && fetcher.state !== 'submitting' && (
                   <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                   </DialogClose>
-                )}
+                )} */}
               </div>
             </DialogFooter>
           )}
