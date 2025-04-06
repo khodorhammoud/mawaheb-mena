@@ -1,15 +1,42 @@
 import { useState, useEffect } from 'react';
-import { useFetcher, useNavigate } from '@remix-run/react';
+import { useFetcher, useNavigate, useLoaderData } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '~/components/ui/dialog';
 import { Textarea } from '~/components/ui/textarea';
 import { Button } from '~/components/ui/button';
+import { useToast } from '~/components/hooks/use-toast';
+import { ToastAction } from '~/components/ui/toast';
+import { AccountType, AccountStatus } from '~/types/enums';
+
+/* --------------------------------------------------
+   Adjust or remove these types as needed to match
+   your actual loader data and responses.
+-------------------------------------------------- */
+type LoaderData = {
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    accountType: AccountType; // e.g., Employer, Freelancer
+  };
+  userAccountStatus: AccountStatus;
+};
 
 type SettingsFetcherData = {
   success?: boolean;
   error?: string;
-  hasActiveJobs?: boolean;
-  disabledMessage?: string;
+  formType?: string; // e.g., 'privacyTab' or 'deactivateAccount'
+  isDeactivated?: boolean; // for deactivation
+  hasActiveJobs?: boolean; // for deletion eligibility
+  disabledMessage?: string; // if user cannot delete
 };
 
 type ExportDataResponse = {
@@ -40,34 +67,72 @@ type ExportDataResponse = {
   timesheetEntries: any[];
   languages: any[];
   skills: any[];
+  userAccountStatus: AccountStatus; // from HEAD
 };
 
 export default function PrivacyTab() {
-  const settingsFetcher = useFetcher();
-  const exportFetcher = useFetcher();
-  const deleteFetcher = useFetcher();
-  const feedbackFetcher = useFetcher();
-  const navigate = useNavigate();
+  const { user, userAccountStatus: initialAccountStatus } = useLoaderData<LoaderData>();
 
-  // State for password fields
+  // Fetchers
+  const settingsFetcher = useFetcher<SettingsFetcherData>();
+  const exportFetcher = useFetcher<ExportDataResponse>();
+  const deleteFetcher = useFetcher<SettingsFetcherData>();
+  const feedbackFetcher = useFetcher<SettingsFetcherData>();
+
+  // Navigation & Toast
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Deactivate/Reactivate Account State
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [currentAccountStatus, setCurrentAccountStatus] =
+    useState<AccountStatus>(initialAccountStatus);
+
+  // Password Update State
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [feedback, setFeedback] = useState('');
 
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  // Generic Error/Success Messages
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Delete Account State
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteDisabled, setDeleteDisabled] = useState(false);
   const [deleteDisabledMessage, setDeleteDisabledMessage] = useState('');
+  const [feedback, setFeedback] = useState('');
 
-  // Listen for fetcher response and display error/success messages
+  /* -------------------------------
+   * Keep "currentAccountStatus" updated
+   * if loader data changes externally
+   -------------------------------- */
   useEffect(() => {
-    if (settingsFetcher.data) {
-      const response = settingsFetcher.data as SettingsFetcherData;
+    if (
+      initialAccountStatus &&
+      initialAccountStatus !== currentAccountStatus &&
+      !settingsFetcher.data
+    ) {
+      setCurrentAccountStatus(initialAccountStatus);
+    }
+  }, [initialAccountStatus, currentAccountStatus, settingsFetcher.data]);
 
-      if (!response.success) {
-        setErrorMessage(response.error || 'An error occurred.');
+  /* --------------------------------------------
+   * Handle Settings Fetcher for:
+   *  1) Password Update
+   *  2) Deactivate/Reactivate Account
+   ---------------------------------------------*/
+  useEffect(() => {
+    if (!settingsFetcher.data) return;
+
+    // If it was the password update form
+    if (
+      settingsFetcher.data.formType === 'privacyTab' &&
+      settingsFetcher.state === 'idle' &&
+      !settingsFetcher.data.isDeactivated // not an account status update
+    ) {
+      if (!settingsFetcher.data.success) {
+        setErrorMessage(settingsFetcher.data.error || 'An error occurred.');
         setSuccessMessage(null);
       } else {
         setErrorMessage(null);
@@ -77,17 +142,51 @@ export default function PrivacyTab() {
         setConfirmPassword('');
       }
     }
-  }, [settingsFetcher.data]);
 
-  // Listen for delete fetcher response
+    // If it was the deactivateAccount form
+    if (settingsFetcher.data.formType === 'deactivateAccount') {
+      if (settingsFetcher.data.success) {
+        const newStatus = settingsFetcher.data.isDeactivated
+          ? AccountStatus.Deactivated
+          : AccountStatus.Published;
+
+        setCurrentAccountStatus(newStatus);
+
+        toast({
+          variant: 'default',
+          title:
+            newStatus === AccountStatus.Deactivated ? 'Account Deactivated' : 'Account Reactivated',
+          description:
+            newStatus === AccountStatus.Deactivated
+              ? 'Your account has been deactivated successfully.'
+              : 'Your account has been reactivated successfully.',
+          action: <ToastAction altText="Close">Close</ToastAction>,
+        });
+
+        setShowDeactivateDialog(false);
+      } else {
+        setCurrentAccountStatus(initialAccountStatus);
+
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: settingsFetcher.data.error || 'Failed to update account status',
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+    }
+  }, [settingsFetcher.data, settingsFetcher.state, initialAccountStatus, toast]);
+
+  /* --------------------------------
+   * Listen for delete eligibility or errors
+   --------------------------------*/
   useEffect(() => {
     if (deleteFetcher.data) {
-      const response = deleteFetcher.data as SettingsFetcherData;
-
+      const response = deleteFetcher.data;
       if (response.hasActiveJobs) {
         setDeleteDisabled(true);
         setDeleteDisabledMessage(
-          'You cannot delete your account while there is jobs postings. Please close or complete all active jobs first.'
+          'You cannot delete your account while there are active job postings. Please close or complete all active jobs first.'
         );
       } else {
         setDeleteDisabled(false);
@@ -100,22 +199,22 @@ export default function PrivacyTab() {
     }
   }, [deleteFetcher.data]);
 
-  // Listen for export fetcher response
+  /* --------------------------------
+   * Listen for export data response
+   --------------------------------*/
   useEffect(() => {
     if (exportFetcher.data) {
-      // Check if the response is an error
-      if ('error' in exportFetcher.data) {
-        setErrorMessage((exportFetcher.data as { error: string }).error);
+      // If there's an error field
+      if ('error' in exportFetcher.data && exportFetcher.data.error) {
+        setErrorMessage(exportFetcher.data.error as string);
         return;
       }
 
-      const userData = exportFetcher.data as ExportDataResponse;
-
+      const userData = exportFetcher.data;
       // Create a blob from the data
       const blob = new Blob([JSON.stringify(userData, null, 2)], {
         type: 'application/json',
       });
-
       // Create a URL for the blob
       const url = window.URL.createObjectURL(blob);
 
@@ -124,29 +223,32 @@ export default function PrivacyTab() {
       link.href = url;
       link.download = `user-data-${userData.user.id}.json`;
 
-      // Append to body, click, and remove
+      // Append to body, click, remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Clean up the URL
       window.URL.revokeObjectURL(url);
     }
   }, [exportFetcher.data]);
 
-  // Listen for feedback fetcher response
+  /* --------------------------------
+   * Listen for feedback fetcher response
+   * - final delete
+   --------------------------------*/
   useEffect(() => {
     if (feedbackFetcher.data) {
-      const response = feedbackFetcher.data as SettingsFetcherData;
-      if (response.success) {
+      if (feedbackFetcher.data.success) {
+        // e.g. navigate out after deletion
         navigate('/auth/logout');
-      } else if (response.error) {
-        setErrorMessage(response.error);
+      } else if (feedbackFetcher.data.error) {
+        setErrorMessage(feedbackFetcher.data.error);
       }
     }
   }, [feedbackFetcher.data, navigate]);
 
-  // Check for active jobs on mount
+  /* --------------------------------
+   * On mount, check if user can delete
+   --------------------------------*/
   useEffect(() => {
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
@@ -154,7 +256,13 @@ export default function PrivacyTab() {
     deleteFetcher.submit(formData, { method: 'post' });
   }, []);
 
-  // Handle export data
+  // Validate password form
+  const isFormValid =
+    currentPassword && newPassword && confirmPassword && newPassword === confirmPassword;
+
+  /* ----------------------------------------------------
+   * Handlers: Export, Delete, Confirm Delete, Deactivate
+   -----------------------------------------------------*/
   const handleExportData = () => {
     const formData = new FormData();
     formData.append('formType', 'exportData');
@@ -162,8 +270,8 @@ export default function PrivacyTab() {
     exportFetcher.submit(formData, { method: 'post' });
   };
 
-  // Handle delete account click
   const handleDeleteClick = () => {
+    // Re-check if user can delete
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
     formData.append('action', 'checkDeleteEligibility');
@@ -174,7 +282,6 @@ export default function PrivacyTab() {
     }
   };
 
-  // Handle delete confirmation
   const handleDeleteConfirm = () => {
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
@@ -188,23 +295,52 @@ export default function PrivacyTab() {
     setIsDeleteDialogOpen(false);
   };
 
-  // Validation checks
-  const isFormValid =
-    currentPassword && newPassword && confirmPassword && newPassword === confirmPassword;
+  const handleDeactivateAccount = () => {
+    settingsFetcher.submit({ formType: 'deactivateAccount' }, { method: 'post' });
+  };
 
+  const getDeactivationWarning = () => {
+    if (user.accountType === AccountType.Employer) {
+      return (
+        <>
+          <p className="mb-4">As an employer:</p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>Freelancers will no longer be able to see your posted jobs</li>
+            <li>You will no longer be able to create new jobs</li>
+            <li>Pending job applications will no longer be processed</li>
+            <li>Ongoing job applications will continue to be in progress</li>
+          </ul>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <p className="mb-4">As a freelancer:</p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>You will no longer be considered for any job applications in progress</li>
+            <li>You will no longer be able to apply to new jobs</li>
+            <li>Ongoing jobs will continue to be in progress</li>
+          </ul>
+        </>
+      );
+    }
+  };
+
+  /* =====================================================
+     RENDER
+  ===================================================== */
   return (
     <div className="">
+      {/* Password Update Form */}
       <settingsFetcher.Form method="post">
-        {/* 🔥 Hidden field to indicate this is PrivacyTab */}
+        {/* Hidden input to differentiate from other forms */}
         <input type="hidden" name="formType" value="privacyTab" />
 
         <div className="p-6 space-y-12">
-          {/* 🔥 Show error messages */}
+          {/* Error or Success messages for password updates */}
           {errorMessage && (
             <div className="bg-red-100 text-red-700 p-2 rounded-md">{errorMessage}</div>
           )}
-
-          {/* 🔥 Show success message */}
           {successMessage && (
             <div className="bg-green-100 text-green-700 p-2 rounded-md">{successMessage}</div>
           )}
@@ -225,7 +361,7 @@ export default function PrivacyTab() {
                   onChange={e => setCurrentPassword(e.target.value)}
                 />
                 <div className="flex flex-col gap-4">
-                  <div className="">
+                  <div>
                     <AppFormField
                       className="w-1/2"
                       id="newPassword"
@@ -268,7 +404,7 @@ export default function PrivacyTab() {
       <section className="grid lg:grid-cols-[15%_75%] gap-8 mb-20">
         <div className="text-lg font-semibold">Account</div>
         <div className="flex flex-col gap-6">
-          {/* Delete Account */}
+          {/* DELETE ACCOUNT */}
           <div>
             <div className="text-base mt-1 mb-2">Delete my account</div>
             <div className="grid md:grid-cols-[50%_50%] md:gap-6 gap-4 items-center">
@@ -307,29 +443,57 @@ export default function PrivacyTab() {
             </div>
           </div>
 
-          {/* Deactivate Account */}
+          {/* DEACTIVATE / REACTIVATE ACCOUNT */}
           <div>
-            <div className="text-base mt-1 mb-2">Deactivate my account</div>
-            <div className="grid md:grid-cols-[50%_50%] xl:gap-8 lg:gap-10 md:gap-6 gap-4 items-center">
-              <p className="text-sm text-gray-500">
-                Mawaheb makes it easy to deactivate your account and all data associated with it.
-                You can undo this at any time.
-              </p>
-              <button className="border border-gray-200 text-primaryColor sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs w-7/12 md:w-8/12 lg:w-3/5 xl:w-1/2">
-                Deactivate Account
-              </button>
+            <div className="text-base mt-1">
+              {currentAccountStatus === AccountStatus.Published
+                ? 'Deactivate my account'
+                : 'Reactivate my account'}
             </div>
+
+            {currentAccountStatus === AccountStatus.Published ? (
+              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
+                <p className="text-sm text-gray-700 mt-2">
+                  Mawaheb makes it easy to deactivate your account and all data associated with it.
+                  You can undo this at any time.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeactivateDialog(true)}
+                  className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                >
+                  Deactivate Account
+                </Button>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-[70%_auto] md:gap-6 gap-4 items-center">
+                <p className="text-sm text-gray-700">
+                  Your account is currently deactivated. You can reactivate it at any time.
+                </p>
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeactivateDialog(true)}
+                    className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                  >
+                    Reactivate Account
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Delete Account Dialog */}
+      {/* ========================================
+          DIALOG: DELETE ACCOUNT
+      ========================================= */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 px-1">
             {deleteDisabled ? (
               <p className="text-red-500">{deleteDisabledMessage}</p>
             ) : (
@@ -339,18 +503,15 @@ export default function PrivacyTab() {
                 </p>
                 <div className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="feedback"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Please tell us why you're leaving (optional)
-                    </label>
-                    <Textarea
+                    <AppFormField
                       id="feedback"
-                      value={feedback}
+                      name="feedback"
+                      type="textarea"
+                      label="Please tell us why you're leaving (optional)"
+                      defaultValue={feedback}
                       onChange={e => setFeedback(e.target.value)}
-                      placeholder="Your feedback is for our improvement"
-                      className="w-full"
+                      placeholder="Your feedback helps us improve"
+                      className="w-full !h-[120px]"
                     />
                   </div>
                   <div className="flex justify-end gap-4">
@@ -373,6 +534,51 @@ export default function PrivacyTab() {
               </>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ========================================
+          DIALOG: DEACTIVATE/REACTIVATE ACCOUNT
+      ========================================= */}
+      <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {currentAccountStatus === AccountStatus.Published
+                ? 'Deactivate Account'
+                : 'Reactivate Account'}
+            </DialogTitle>
+            <DialogDescription className="space-y-4">
+              <div className="mt-4">
+                {currentAccountStatus === AccountStatus.Published ? (
+                  <>
+                    {getDeactivationWarning()}
+                    <p>Are you sure you want to deactivate your account?</p>
+                  </>
+                ) : (
+                  <p>Are you sure you want to reactivate your account?</p>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={currentAccountStatus === AccountStatus.Published ? 'destructive' : 'default'}
+              onClick={handleDeactivateAccount}
+              disabled={settingsFetcher.state === 'submitting'}
+            >
+              {settingsFetcher.state === 'submitting'
+                ? currentAccountStatus === AccountStatus.Published
+                  ? 'Deactivating...'
+                  : 'Reactivating...'
+                : currentAccountStatus === AccountStatus.Published
+                  ? 'Deactivate Account'
+                  : 'Reactivate Account'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

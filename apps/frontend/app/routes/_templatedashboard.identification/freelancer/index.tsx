@@ -54,19 +54,16 @@ export default function FreelancerIdentifyingScreen() {
   const fetcher = useFetcher<FetcherData>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasIdentification, setHasIdentification] = useState(false);
-  const [hasTradeLicense, setHasTradeLicense] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Add form refs
   const identificationFormRef = useRef<any>({});
-  const tradeLicenseFormRef = useRef<any>({});
 
   // Add a state to track if documents have been submitted successfully
   const [documentsSubmitted, setDocumentsSubmitted] = useState(false);
 
   // Add this below the refs
   const [existingIdentificationFiles, setExistingIdentificationFiles] = useState([]);
-  const [existingTradeLicenseFiles, setExistingTradeLicenseFiles] = useState([]);
 
   // Update the useEffect that loads identification data
   useEffect(() => {
@@ -83,10 +80,6 @@ export default function FreelancerIdentifyingScreen() {
         setExistingIdentificationFiles(attachments.identification);
       }
 
-      if (attachments.trade_license && Array.isArray(attachments.trade_license)) {
-        setExistingTradeLicenseFiles(attachments.trade_license);
-      }
-
       // Update the UI state
       if (
         attachments.identification &&
@@ -94,14 +87,6 @@ export default function FreelancerIdentifyingScreen() {
         attachments.identification.length > 0
       ) {
         setHasIdentification(true);
-      }
-
-      if (
-        attachments.trade_license &&
-        Array.isArray(attachments.trade_license) &&
-        attachments.trade_license.length > 0
-      ) {
-        setHasTradeLicense(true);
       }
     }
   }, [identificationData]);
@@ -131,10 +116,7 @@ export default function FreelancerIdentifyingScreen() {
   const handleFormChange = () => {
     // Directly check the filesSelected property in the refs
     const hasIdentificationFiles = identificationFormRef.current?.filesSelected?.length > 0;
-    const hasTradeLicenseFiles = tradeLicenseFormRef.current?.filesSelected?.length > 0;
-
     setHasIdentification(hasIdentificationFiles);
-    setHasTradeLicense(hasTradeLicenseFiles);
   };
 
   // Handle form submission
@@ -145,18 +127,11 @@ export default function FreelancerIdentifyingScreen() {
       (identificationData?.attachments?.identification &&
         identificationData.attachments.identification.length > 0);
 
-    const hasTradeLicenseFiles =
-      tradeLicenseFormRef.current?.filesSelected?.length > 0 ||
-      (identificationData?.attachments?.trade_license &&
-        identificationData.attachments.trade_license.length > 0);
-
-    const hasRequiredDocuments = hasIdentificationFiles && hasTradeLicenseFiles;
-
-    if (!hasRequiredDocuments) {
+    if (!hasIdentificationFiles) {
       toast({
         variant: 'destructive',
         title: 'Required Documents Missing',
-        description: 'Please upload all required documents.',
+        description: 'Please upload your identification documents.',
       });
       return;
     }
@@ -178,36 +153,14 @@ export default function FreelancerIdentifyingScreen() {
       });
     }
 
-    // Add trade license files if any
-    if (
-      tradeLicenseFormRef.current &&
-      tradeLicenseFormRef.current.filesSelected &&
-      tradeLicenseFormRef.current.filesSelected.length > 0
-    ) {
-      // Add all files from the dialog
-      tradeLicenseFormRef.current.filesSelected.forEach(file => {
-        if (file instanceof File && file.size > 0) {
-          formData.append('trade_license', file);
-        }
-      });
-    }
-
     // Get files to delete from localStorage
     try {
       const filesToDeleteIdentification = localStorage.getItem('identification-files-to-delete');
-      const filesToDeleteTradeLicense = localStorage.getItem('trade_license-files-to-delete');
 
       let filesToDelete: number[] = [];
 
       if (filesToDeleteIdentification) {
         const parsed = JSON.parse(filesToDeleteIdentification);
-        if (Array.isArray(parsed)) {
-          filesToDelete = [...filesToDelete, ...parsed];
-        }
-      }
-
-      if (filesToDeleteTradeLicense) {
-        const parsed = JSON.parse(filesToDeleteTradeLicense);
         if (Array.isArray(parsed)) {
           filesToDelete = [...filesToDelete, ...parsed];
         }
@@ -222,7 +175,6 @@ export default function FreelancerIdentifyingScreen() {
 
         // Clear localStorage after adding to formData
         localStorage.removeItem('identification-files-to-delete');
-        localStorage.removeItem('trade_license-files-to-delete');
       }
     } catch (error) {
       console.error('DEBUG - Error handling filesToDelete from localStorage:', error);
@@ -240,29 +192,18 @@ export default function FreelancerIdentifyingScreen() {
     if (identificationFormRef.current && identificationFormRef.current.clearFiles) {
       identificationFormRef.current.clearFiles();
     }
-    if (tradeLicenseFormRef.current && tradeLicenseFormRef.current.clearFiles) {
-      tradeLicenseFormRef.current.clearFiles();
-    }
   };
 
   // Check file inputs when component mounts and after any dialog closes
   useEffect(() => {
     const checkFiles = () => {
       setHasIdentification(checkFileInput('identification'));
-      setHasTradeLicense(checkFileInput('trade_license'));
 
       // Also check if there are files in the dialog
       if (identificationFormRef.current && identificationFormRef.current.filesSelected) {
         const dialogFiles = identificationFormRef.current.filesSelected;
         if (dialogFiles && dialogFiles.length > 0) {
           setHasIdentification(true);
-        }
-      }
-
-      if (tradeLicenseFormRef.current && tradeLicenseFormRef.current.filesSelected) {
-        const tradeLicenseFiles = tradeLicenseFormRef.current.filesSelected;
-        if (tradeLicenseFiles && tradeLicenseFiles.length > 0) {
-          setHasTradeLicense(true);
         }
       }
     };
@@ -307,22 +248,6 @@ export default function FreelancerIdentifyingScreen() {
     formRef: identificationFormRef,
   };
 
-  // Form props for trade license
-  const tradeLicenseFormProps: GeneralizableFormCardProps = {
-    formType: 'file',
-    cardTitle: 'Trade License',
-    cardSubtitle: 'Please upload your trade license',
-    popupTitle: 'Upload Trade License',
-    triggerLabel: 'Upload Documents',
-    formName: 'freelancer-identification',
-    fieldName: 'trade_license',
-    acceptedFileTypes: '.pdf,.jpg,.jpeg,.png',
-    multiple: true,
-    editable: true,
-    showLoadingOnSubmit: true,
-    formRef: tradeLicenseFormRef,
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
@@ -354,20 +279,6 @@ export default function FreelancerIdentifyingScreen() {
             <div className="border rounded-lg p-4 bg-gray-50 -mt-3">
               <p className="font-medium text-gray-700">Files in database:</p>
               <FileList files={existingIdentificationFiles} title="Identification Documents" />
-            </div>
-          )}
-
-          {/* GeneralizableFormCard for trade license */}
-          <GeneralizableFormCard
-            {...tradeLicenseFormProps}
-            value={identificationData?.attachments ? identificationData : null}
-          />
-
-          {/* Display existing trade license files directly */}
-          {existingTradeLicenseFiles.length > 0 && (
-            <div className="border rounded-lg p-4 bg-gray-50 -mt-3">
-              <p className="font-medium text-gray-700">Files in database:</p>
-              <FileList files={existingTradeLicenseFiles} title="Trade License" />
             </div>
           )}
         </div>
