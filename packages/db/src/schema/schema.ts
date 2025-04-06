@@ -8,40 +8,34 @@ import {
   time,
   timestamp,
   jsonb,
-  // json,
   real,
   date,
   numeric,
-  pgEnum,
 } from 'drizzle-orm/pg-core';
 
-/** Import custom enums and types from the schemaTypes file. */
-/* import {
-  projectTypeEnum,
-  accountStatusEnum,
-  accountTypeEnum,
-  // languageEnum,
-  // countryEnum,
-  dayOfWeekEnum,
-  compensationTypeEnum,
-  employerAccountTypeEnum,
-  jobsOpenToEnum,
-  // timesheetStatusEnum,
-  timesheetStatusEnum,
-  jobStatusEnum,
-  locationPreferenceTypeEnum,
-  jobApplicationStatusEnum,
-  providerEnum,
-  // belongsToEnum,
-  experienceLevelEnum,
-  userRoleEnum,
-} from "./schemaTypes"; */
-
 import { sql } from 'drizzle-orm';
-// import { TimesheetStatus } from "~/types/enums";
 
-/* enums definitions */
+// import {
+//   providerEnum,
+//   accountStatusEnum,
+//   employerAccountTypeEnum,
+//   accountTypeEnum,
+//   timesheetStatusEnum,
+//   languageEnum,
+//   jobApplicationStatusEnum,
+//   countryEnum,
+//   dayOfWeekEnum,
+//   projectTypeEnum,
+//   compensationTypeEnum,
+//   locationPreferenceTypeEnum,
+//   experienceLevelEnum,
+//   jobStatusEnum,
+//   jobsOpenToEnum,
+//   belongsToEnum,
+//   userRoleEnum,
+// } from './types';
 
+import { pgEnum } from 'drizzle-orm/pg-core';
 import {
   AccountStatus,
   EmployerAccountType,
@@ -54,13 +48,12 @@ import {
   LocationPreferenceType,
   ExperienceLevel,
   JobStatus,
-  // JobApplicationStatus,
   TimesheetStatus,
   JobApplicationStatus,
   JobsOpenTo,
   Provider,
   AttachmentBelongsTo,
-} from '~/types/enums';
+} from '../types/enums';
 
 export const providerEnum = pgEnum('provider', Object.values(Provider) as [string, ...string[]]);
 

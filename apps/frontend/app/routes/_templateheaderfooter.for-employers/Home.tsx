@@ -1,14 +1,14 @@
-import HeroSection from "./herosection/HeroSection";
-import LayoutContainer from "../../common/layout_container";
-import FeaturesSection from "./featuressection/FeaturesSection";
-import HowItWorks from "./howitworks/HowItWorks";
-import FAQ from "./FAQ";
-import ContactUs from "./ContactUs";
-import "../../styles/wavy/wavy.css";
-import Segments from "./Segments";
-import Languages from "./Languages";
-import BlogCardsList from "./BlogCard";
-import WhyWorkWithUs from "./WhyWorkWithUs";
+import HeroSection from './herosection/HeroSection';
+import LayoutContainer from '../../common/layout_container';
+import FeaturesSection from './featuressection/FeaturesSection';
+import HowItWorks from './howitworks/HowItWorks';
+import FAQ from './FAQ';
+import ContactUs from './ContactUs';
+import '../../styles/wavy/wavy.css';
+import Segments from './Segments';
+import Languages from './Languages';
+import BlogCardsList from './BlogCard';
+import WhyWorkWithUs from './WhyWorkWithUs';
 
 // To know more, press crtl + click on component you what to know about
 

@@ -1,42 +1,34 @@
-import { Config, defineConfig } from 'drizzle-kit';
-import dotenv from 'dotenv';
+// migrator.ts
 
-// Define our own interface for now
-interface PoolConfig {
-  PGHOST: string;
-  PGDATABASE: string;
-  PGUSER: string;
-  PGPASSWORD: string;
-  ENDPOINT_ID: string;
-}
+import postgres from 'postgres';
+import * as dotenv from 'dotenv';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { PoolConfig } from '../types/PoolConfig';
 
-dotenv.config(); // Load .env file
+dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('Missing DATABASE_URL environment variable');
-}
-
-// Configuration options for database connection
-let dbCredentials;
+// Configuration options for postgres connection
+let connectionConfig;
 
 // Check if DATABASE_URL is available (for local development)
 if (process.env.DATABASE_URL) {
   try {
     // Parse the URL manually to ensure correct extraction of credentials
     const url = new URL(process.env.DATABASE_URL);
-    const user = url.username;
+    const username = url.username;
     const password = url.password;
     const host = url.hostname;
     const port = parseInt(url.port) || 5432;
     const database = url.pathname.substring(1); // Remove leading '/'
 
-    dbCredentials = {
+    connectionConfig = {
       host,
       database,
-      user,
+      username,
       password,
       port,
-      ssl: url.searchParams.get('sslmode') === 'require',
+      ssl: url.searchParams.get('sslmode') === 'require' ? 'require' : false,
     };
   } catch (error) {
     console.error('Error parsing DATABASE_URL:', error);
@@ -51,22 +43,30 @@ if (process.env.DATABASE_URL) {
     throw new Error('Missing db connection environment variables');
   }
 
-  dbCredentials = {
+  connectionConfig = {
     host: PGHOST,
     database: PGDATABASE,
-    user: PGUSER,
+    username: PGUSER,
     password: PGPASSWORD,
     port: 5432,
-    ssl: true,
+    ssl: 'require',
+    connection: {
+      options: `project=${ENDPOINT_ID}`,
+    },
   };
 }
 
-export default defineConfig({
-  // Use the schema from the shared package
-  schema: './node_modules/@mawaheb/db/dist/schema/schema.js',
-  out: './app/db/drizzle/migrations',
-  dialect: 'postgresql',
-  dbCredentials,
-  verbose: true,
-  strict: true,
-} satisfies Config);
+const psqlConnector = postgres(connectionConfig);
+
+async function drizzleMigrator() {
+  console.log('Running Drizzle migrations...');
+  await migrate(drizzle(psqlConnector), {
+    migrationsFolder: 'src/migrations',
+  });
+  await psqlConnector.end();
+}
+
+drizzleMigrator().catch(err => {
+  console.error('Migration failed:', err);
+  process.exit(1);
+});
