@@ -1,8 +1,8 @@
-import { Form } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
+import { Form } from '@remix-run/react';
+import { AccountType } from '@mawaheb/db/src/types/enums';
 
 interface GoogleAuthButtonProps {
-  mode: "login" | "signup";
+  mode: 'login' | 'signup';
   accountType: AccountType;
   className?: string;
 }
@@ -10,7 +10,7 @@ interface GoogleAuthButtonProps {
 export default function GoogleAuthButton({
   mode,
   accountType,
-  className = "",
+  className = '',
 }: GoogleAuthButtonProps) {
   return (
     <Form action={`/auth/google`} method="post">

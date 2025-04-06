@@ -1,20 +1,16 @@
-import { type FC } from "react";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  TypedResponse,
-} from "@remix-run/node";
+import { type FC } from 'react';
+import { ActionFunctionArgs, LoaderFunctionArgs, TypedResponse } from '@remix-run/node';
 
-import { useLoaderData, redirect } from "@remix-run/react";
+import { useLoaderData, redirect } from '@remix-run/react';
 
-import FreelancerPage from "./freelancer";
-import EmployerPage from "./employer";
-import { AccountType } from "~/types/enums";
+import FreelancerPage from './freelancer';
+import EmployerPage from './employer';
+import { AccountType } from '@mawaheb/db/src/types/enums';
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getAccountBySlug,
-} from "~/servers/user.server";
+} from '~/servers/user.server';
 import {
   Employer,
   Freelancer,
@@ -24,8 +20,8 @@ import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   UserAccount,
-} from "~/types/User";
-import { authenticator } from "~/auth/auth.server";
+} from '@mawaheb/db/src/types/User';
+import { authenticator } from '~/auth/auth.server';
 import {
   getAccountBio,
   getEmployerIndustries,
@@ -35,12 +31,9 @@ import {
   getEmployerAbout,
   getEmployerDashboardData,
   handleEmployerOnboardingAction,
-} from "~/servers/employer.server";
+} from '~/servers/employer.server';
 
-import {
-  getFreelancerAbout,
-  handleFreelancerOnboardingAction,
-} from "~/servers/freelancer.server";
+import { getFreelancerAbout, handleFreelancerOnboardingAction } from '~/servers/freelancer.server';
 // import { getCurrentProfile } from "~/auth/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -55,15 +48,12 @@ export async function action({ request }: ActionFunctionArgs) {
     if (accountType === AccountType.Employer) {
       return handleEmployerOnboardingAction(formData, currentUser as Employer);
     } else if (accountType === AccountType.Freelancer) {
-      return handleFreelancerOnboardingAction(
-        formData,
-        currentUser as Freelancer
-      );
+      return handleFreelancerOnboardingAction(formData, currentUser as Freelancer);
     }
   } catch (error) {
     return Response.json({
       success: false,
-      error: { message: "An unexpected error occurred." },
+      error: { message: 'An unexpected error occurred.' },
       status: 500,
     });
   }
@@ -82,18 +72,18 @@ export async function loader({
   const slug = params?.slug;
 
   if (!slug) {
-    throw new Response("Account not found", { status: 404 });
+    throw new Response('Account not found', { status: 404 });
   }
   // Fetch account by slug
   const userAccount = await getAccountBySlug(slug); // this is what make me capable to access first Name or last Name or whatever correspondes to them :)))
   if (!userAccount) {
-    throw new Response("Account not found", { status: 404 });
+    throw new Response('Account not found', { status: 404 });
   }
 
   // Authenticate the current user
   const currentUser = await authenticator.isAuthenticated(request);
   if (!currentUser) {
-    return redirect("/login-employer");
+    return redirect('/login-employer');
   }
 
   // Determine account type and fetch profile information
@@ -103,7 +93,7 @@ export async function loader({
   if (!profile) {
     return Response.json({
       success: false,
-      error: { message: "Profile information not found." },
+      error: { message: 'Profile information not found.' },
       status: 404,
     });
   }
@@ -174,7 +164,7 @@ export async function loader({
   // Fallback if account type is not found
   return Response.json({
     success: false,
-    error: { message: "Account type not found." },
+    error: { message: 'Account type not found.' },
     status: 404,
   });
 }
@@ -186,11 +176,7 @@ const Layout: FC = () => {
 
   return (
     <div>
-      {userAccount.accountType === AccountType.Employer ? (
-        <EmployerPage />
-      ) : (
-        <FreelancerPage />
-      )}
+      {userAccount.accountType === AccountType.Employer ? <EmployerPage /> : <FreelancerPage />}
     </div>
   );
 };

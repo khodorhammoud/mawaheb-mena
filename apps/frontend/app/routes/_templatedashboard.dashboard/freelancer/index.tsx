@@ -1,17 +1,16 @@
-import UserProfile from "~/common/UserProfile";
-import { useLoaderData } from "@remix-run/react";
-import { FaDollarSign } from "react-icons/fa";
-import { SlBadge } from "react-icons/sl";
-import { AccountType } from "~/types/enums";
+import UserProfile from '~/common/UserProfile';
+import { useLoaderData } from '@remix-run/react';
+import { FaDollarSign } from 'react-icons/fa';
+import { SlBadge } from 'react-icons/sl';
+import { AccountType } from '@mawaheb/db/src/types/enums';
 
 export default function Dashboard() {
-  const { accountOnboarded, accountType, isOwner, currentProfile } =
-    useLoaderData<{
-      accountOnboarded: boolean;
-      accountType: AccountType;
-      isOwner: boolean;
-      currentProfile: any;
-    }>();
+  const { accountOnboarded, accountType, isOwner, currentProfile } = useLoaderData<{
+    accountOnboarded: boolean;
+    accountType: AccountType;
+    isOwner: boolean;
+    currentProfile: any;
+  }>();
 
   if (!currentProfile || Object.keys(currentProfile).length === 0) {
     return <p>Loading...</p>; // ✅ Prevents rendering before data is ready
@@ -21,7 +20,7 @@ export default function Dashboard() {
 
   const safeParseArray = (data: any): any[] => {
     try {
-      return Array.isArray(data) ? data : JSON.parse(data ?? "[]");
+      return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
     } catch {
       return [];
     }

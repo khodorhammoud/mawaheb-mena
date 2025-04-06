@@ -1,7 +1,7 @@
-import { JobApplicationStatus } from "~/types/enums";
-import { useState } from "react";
-import StatusDropdown from "~/routes/_templatedashboard.jobs.$jobId/common/JobStatus";
-import ApplicantSheet from "./ApplicantSheet";
+import { JobApplicationStatus } from '@mawaheb/db/src/types/enums';
+import { useState } from 'react';
+import StatusDropdown from '~/routes/_templatedashboard.jobs.$jobId/common/JobStatus';
+import ApplicantSheet from './ApplicantSheet';
 
 type ApplicantsProps = {
   freelancers: any[];
@@ -9,11 +9,7 @@ type ApplicantsProps = {
   status: JobApplicationStatus;
 };
 
-export default function Applicants({
-  freelancers,
-  accountBio,
-  status,
-}: ApplicantsProps) {
+export default function Applicants({ freelancers, accountBio, status }: ApplicantsProps) {
   const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -26,7 +22,7 @@ export default function Applicants({
   return (
     <div className="">
       {freelancers && freelancers.length > 0 ? (
-        freelancers.map((freelancer) => (
+        freelancers.map(freelancer => (
           <div
             key={freelancer.id}
             className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl p-4 mb-8"
@@ -39,7 +35,7 @@ export default function Applicants({
                     src={
                       freelancer.email
                         ? `https://www.gravatar.com/avatar/${freelancer.email}?d=identicon`
-                        : "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                        : 'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg'
                     }
                     alt="profile"
                     className="h-24 w-auto rounded-xl"
@@ -52,8 +48,8 @@ export default function Applicants({
                       className="text-xl font-semibold hover:underline"
                       onClick={() => handleApplicantClick(freelancer)}
                     >
-                      {freelancer.firstName ?? "Unknown"}{" "}
-                      {freelancer.lastName?.charAt(0).toUpperCase() ?? ""}.
+                      {freelancer.firstName ?? 'Unknown'}{' '}
+                      {freelancer.lastName?.charAt(0).toUpperCase() ?? ''}.
                     </button>
                   </h2>
 
@@ -61,17 +57,14 @@ export default function Applicants({
                   <div
                     className="text-sm leading-6 mb-6"
                     dangerouslySetInnerHTML={{
-                      __html: freelancer.about || "No description available",
+                      __html: freelancer.about || 'No description available',
                     }}
                   ></div>
                 </div>
                 <div>
                   <div>
                     {/* Render application details */}
-                    <StatusDropdown
-                      currentStatus={status}
-                      applicationId={freelancer.id}
-                    />
+                    <StatusDropdown currentStatus={status} applicationId={freelancer.id} />
                   </div>
                 </div>
               </div>
@@ -93,9 +86,7 @@ export default function Applicants({
                   <p className="">date 1</p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="mb-1 text-sm text-gray-400">
-                    Invitation accepted
-                  </p>
+                  <p className="mb-1 text-sm text-gray-400">Invitation accepted</p>
                   <p className="">date 2</p>
                 </div>
                 <div className="flex flex-col items-center">

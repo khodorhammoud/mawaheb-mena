@@ -1,7 +1,7 @@
-import { useLoaderData } from "@remix-run/react";
-import JobForm from "~/common/job-form/JobForm";
-import { JobCategory } from "~/types/User";
-import { Skill } from "~/types/Skill";
+import { useLoaderData } from '@remix-run/react';
+import JobForm from '~/common/job-form/JobForm';
+import { JobCategory } from '@mawaheb/db/src/types/User';
+import { Skill } from '@mawaheb/db/src/types/Skill';
 
 interface LoaderData {
   job: {

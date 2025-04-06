@@ -1,10 +1,10 @@
 // All jobs that are not applied to yet :)
 
-import { useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { Job } from "~/types/Job";
-import JobCard from "./jobCard";
-import FilteringSearchSection from "./filters/filtering-search-section";
+import { useFetcher } from '@remix-run/react';
+import { useEffect, useState } from 'react';
+import { Job } from '@mawaheb/db/src/types/Job';
+import JobCard from './jobCard';
+import FilteringSearchSection from './filters/filtering-search-section';
 
 interface RecommendedJobsProps {
   onJobSelect: (job: Job) => void;
@@ -19,7 +19,7 @@ export default function RecommendedJobs({
 }: RecommendedJobsProps) {
   const fetcher = useFetcher<{ jobs: Job[] }>();
   const recommendedJobs =
-    fetcher.data?.jobs.map((job) => ({
+    fetcher.data?.jobs.map(job => ({
       ...job,
       createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
       fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
@@ -27,7 +27,7 @@ export default function RecommendedJobs({
   const [limit, setLimit] = useState(initialLimit);
 
   // ✅ Filters (same as AllJobs)
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     workingHours: null,
     jobType: null,
@@ -41,21 +41,21 @@ export default function RecommendedJobs({
     // console.log("📊 Current limit:", limit);
 
     const searchParams = new URLSearchParams();
-    searchParams.set("freelancerId", freelancerId.toString());
-    searchParams.set("limit", limit.toString());
+    searchParams.set('freelancerId', freelancerId.toString());
+    searchParams.set('limit', limit.toString());
 
     // console.log("Submitting fetch request with:", searchParams.toString());
 
     fetcher.submit(searchParams, {
-      method: "get",
-      action: "/api/jobs-recommendationJobs",
+      method: 'get',
+      action: '/api/jobs-recommendationJobs',
     });
   }, [freelancerId, limit]); // Add limit to dependencies
 
   // console.log("Recommended Jobs Data:", recommendedJobs);
 
   // ✅ Apply frontend filtering logic
-  const filteredJobs = recommendedJobs.filter((job) => {
+  const filteredJobs = recommendedJobs.filter(job => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -68,12 +68,10 @@ export default function RecommendedJobs({
         filters.workingHours.to &&
         job.workingHoursPerWeek <= filters.workingHours.to);
 
-    const matchesJobType =
-      !filters.jobType || job.projectType === filters.jobType;
+    const matchesJobType = !filters.jobType || job.projectType === filters.jobType;
 
     const matchesExperienceLevel =
-      !filters.experienceLevel ||
-      job.experienceLevel === filters.experienceLevel;
+      !filters.experienceLevel || job.experienceLevel === filters.experienceLevel;
 
     const matchesBudget = !filters.budget || job.budget >= filters.budget;
 
@@ -88,7 +86,7 @@ export default function RecommendedJobs({
 
   // Add load more functionality
   const handleLoadMore = () => {
-    setLimit((prevLimit) => prevLimit + 10); // Increase limit by 10
+    setLimit(prevLimit => prevLimit + 10); // Increase limit by 10
   };
 
   return (
@@ -104,15 +102,13 @@ export default function RecommendedJobs({
       />
 
       <p className="text-black text-sm mt-2 ml-4 mb-10">
-        {filteredJobs.length} Job{filteredJobs.length === 1 ? "" : "s"} Found
+        {filteredJobs.length} Job{filteredJobs.length === 1 ? '' : 's'} Found
       </p>
 
       {/* ✅ Jobs List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
         {filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <JobCard key={job.id} onSelect={onJobSelect} job={job} />
-          ))
+          filteredJobs.map(job => <JobCard key={job.id} onSelect={onJobSelect} job={job} />)
         ) : (
           <p className="text-center text-gray-500">No jobs found.</p>
         )}

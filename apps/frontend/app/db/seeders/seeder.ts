@@ -32,7 +32,7 @@ import {
   LocationPreferenceType,
   JobsOpenTo,
   JobApplicationStatus,
-} from '~/types/enums';
+} from '@mawaheb/db/src/types/enums';
 import { hash } from 'bcrypt-ts';
 import { Label } from '@radix-ui/react-select';
 

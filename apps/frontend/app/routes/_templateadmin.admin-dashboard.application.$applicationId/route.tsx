@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, useNavigate } from '@remix-run/react';
-import { JobApplicationStatus } from '~/types/enums';
+import { JobApplicationStatus } from '@mawaheb/db/src/types/enums';
 import { ApplicationOverview } from '~/components/application/ApplicationOverview';
 import { JobDetails } from '~/components/application/JobDetails';
 import { FreelancerProfile } from '~/components/application/FreelancerProfile';

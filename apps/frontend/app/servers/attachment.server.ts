@@ -1,7 +1,7 @@
 // import { eq, and, not, desc } from "drizzle-orm";
 // import { db } from "~/db/drizzle/connector";
-// import { attachmentsTable } from "~/db/drizzle/schemas/schema";
-// import { AttachmentBelongsTo } from "~/types/enums";
+// import { attachmentsTable } from "@mawaheb/db/src/schema/schema";
+// import { AttachmentBelongsTo } from "@mawaheb/db/src/types/enums";
 
 // export async function saveAttachment(
 //   key: string,
@@ -176,8 +176,8 @@
 // }
 
 import { db } from '~/db/drizzle/connector';
-import { attachmentsTable } from '~/db/drizzle/schemas/schema';
-import { AttachmentsType } from '~/types/User';
+import { attachmentsTable } from '@mawaheb/db/src/schema/schema';
+import { AttachmentsType } from '@mawaheb/db/src/types/User';
 import { eq } from 'drizzle-orm';
 
 export async function saveAttachment(

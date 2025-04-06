@@ -1,10 +1,6 @@
-import { eq, ilike, or } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
-import {
-  industriesTable,
-  languagesTable,
-  skillsTable,
-} from "~/db/drizzle/schemas/schema";
+import { eq, ilike, or } from 'drizzle-orm';
+import { db } from '~/db/drizzle/connector';
+import { industriesTable, languagesTable, skillsTable } from '@mawaheb/db/src/schema/schema';
 
 // fetch all skills
 export async function fetchSkills(isHot: boolean = false, limit: number = 10) {
@@ -26,10 +22,7 @@ export async function fetchSkills(isHot: boolean = false, limit: number = 10) {
 }
 
 // fetch skills that match metadata search term or title search term
-export async function fetchSkillsSearch(
-  searchTerm: string,
-  limit: number = 10
-) {
+export async function fetchSkillsSearch(searchTerm: string, limit: number = 10) {
   try {
     const skills = await db
       .select()
@@ -56,10 +49,7 @@ export async function fetchSkillsSearch(
 }
 
 // fetch industries that match metadata search term or title search term
-export async function fetchIndustriesSearch(
-  searchTerm: string,
-  limit: number = 10
-) {
+export async function fetchIndustriesSearch(searchTerm: string, limit: number = 10) {
   try {
     const industries = await db
       .select()
@@ -79,10 +69,7 @@ export async function fetchIndustriesSearch(
 }
 
 // fetch languages that match or title search term
-export async function fetchLanguagesSearch(
-  searchTerm: string,
-  limit: number = 10
-) {
+export async function fetchLanguagesSearch(searchTerm: string, limit: number = 10) {
   try {
     const languages = await db
       .select()

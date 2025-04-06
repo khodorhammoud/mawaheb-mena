@@ -1,16 +1,11 @@
-import Heading from "~/common/profileView/heading/Heading";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useFetcher,
-} from "@remix-run/react";
-import type { Employer } from "~/types/User";
-import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
-import { BsCurrencyDollar } from "react-icons/bs";
-import { SlBadge } from "react-icons/sl";
-import { AiFillStar } from "react-icons/ai";
-import { EmployerOnboardingData } from "../types";
+import Heading from '~/common/profileView/heading/Heading';
+import { Form, useActionData, useLoaderData, useFetcher } from '@remix-run/react';
+import type { Employer } from '@mawaheb/db/src/types/User';
+import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { BsCurrencyDollar } from 'react-icons/bs';
+import { SlBadge } from 'react-icons/sl';
+import { AiFillStar } from 'react-icons/ai';
+import { EmployerOnboardingData } from '../types';
 
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
@@ -29,7 +24,7 @@ export default function EmployerOnboardingScreen() {
       <div
         className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 relative"
         style={{
-          background: "linear-gradient(to right, #27638a 0%, white 75%)",
+          background: 'linear-gradient(to right, #27638a 0%, white 75%)',
         }}
       >
         <div className="absolute top-4 right-4">
@@ -98,11 +93,7 @@ export default function EmployerOnboardingScreen() {
         {/* Form to update the user's onboard status */}
         <Form method="post">
           {/* this input sends the userId to be used in the action (queries, ....) */}
-          <input
-            type="hidden"
-            name="userId"
-            value={currentProfile.account.user.id}
-          />
+          <input type="hidden" name="userId" value={currentProfile.account.user.id} />
           <input type="hidden" name="target-updated" value="employer-onboard" />
           {/* in the switch case, use value employer-onboard */}
           <button
@@ -112,9 +103,7 @@ export default function EmployerOnboardingScreen() {
             Proceed
           </button>
         </Form>
-        {actionData?.error && (
-          <p className="text-red-500 mt-2">{actionData.error.message}</p>
-        )}
+        {actionData?.error && <p className="text-red-500 mt-2">{actionData.error.message}</p>}
       </div>
     </div>
   );

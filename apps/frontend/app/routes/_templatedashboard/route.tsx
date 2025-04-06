@@ -7,10 +7,10 @@ import {
   getCurrentUser,
   getCurrentProfileInfo,
 } from '~/servers/user.server';
-import { AccountStatus } from '~/types/enums';
+import { AccountStatus } from '@mawaheb/db/src/types/enums';
 import { requireUserSession } from '~/auth/auth.server';
 import { getNotifications } from '~/servers/notifications.server';
-import type { User, Employer, Freelancer } from '~/types/User';
+import type { User, Employer, Freelancer } from '@mawaheb/db/src/types/User';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {

@@ -1,7 +1,7 @@
 // connector.ts
 
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as schema from '../drizzle/schemas/schema';
+import * as schema from '@mawaheb/db/src/schema/schema';
 import postgres from 'postgres';
 import { PoolConfig } from '~/types/PoolConfig';
 import * as dotenv from 'dotenv';

@@ -1,9 +1,9 @@
-import IndustriesServed from "./industries-served";
-import Languages from "./languages";
-import BioInfo from "./bio-info";
-import { useLoaderData } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
-import Skills from "./skills";
+import IndustriesServed from './industries-served';
+import Languages from './languages';
+import BioInfo from './bio-info';
+import { useLoaderData } from '@remix-run/react';
+import { AccountType } from '@mawaheb/db/src/types/enums';
+import Skills from './skills';
 
 // ✅ Accept `freelancer` prop (optional)
 interface HeadingProps {
@@ -36,8 +36,7 @@ export default function Heading({
   const profileData = profile
     ? {
         ...profile,
-        accountType:
-          profile.accountType ?? accountType ?? AccountType.Freelancer,
+        accountType: profile.accountType ?? accountType ?? AccountType.Freelancer,
       }
     : { ...bioInfo, accountType };
 
@@ -51,10 +50,7 @@ export default function Heading({
     <div className="flex items-center mb-6 font-['Switzer-Regular'] relative">
       {/* Bio Info ✏️ */}
       <div className="z-10 -mt-14 lg:mb-4 md:mb-24 mb-40">
-        <BioInfo
-          profile={{ ...profile?.account?.user, ...profileData }}
-          canEdit={canEdit}
-        />
+        <BioInfo profile={{ ...profile?.account?.user, ...profileData }} canEdit={canEdit} />
       </div>
 
       {profileData.accountType === AccountType.Freelancer ? (
@@ -66,9 +62,7 @@ export default function Heading({
       ) : (
         <>
           {/* Industries Served ✏️ */}
-          {!isViewing && (
-            <IndustriesServed profile={profileData} canEdit={canEdit} />
-          )}
+          {!isViewing && <IndustriesServed profile={profileData} canEdit={canEdit} />}
         </>
       )}
     </div>

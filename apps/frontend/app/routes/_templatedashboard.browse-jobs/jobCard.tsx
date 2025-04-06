@@ -1,9 +1,9 @@
-import { useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { Job as JobType } from "~/types/Job";
-import { Button } from "~/components/ui/button";
-import SkillBadgeList from "~/common/skill/SkillBadge";
-import { formatTimeAgo } from "~/utils/formatTimeAgo";
+import { useFetcher } from '@remix-run/react';
+import { useEffect, useState } from 'react';
+import { Job as JobType } from '@mawaheb/db/src/types/Job';
+import { Button } from '~/components/ui/button';
+import SkillBadgeList from '~/common/skill/SkillBadge';
+import { formatTimeAgo } from '~/utils/formatTimeAgo';
 
 interface JobProps {
   job: JobType & { applicationStatus?: string }; // ✅ Add applicationStatus
@@ -14,9 +14,7 @@ export default function JobCard({ job, onSelect }: JobProps) {
   const fetcher = useFetcher<{
     jobSkills: { id: number; name: string; isStarred: boolean }[];
   }>();
-  const [skills, setSkills] = useState<
-    { id: number; name: string; isStarred: boolean }[]
-  >([]);
+  const [skills, setSkills] = useState<{ id: number; name: string; isStarred: boolean }[]>([]);
 
   useEffect(() => {
     fetcher.load(`/browse-jobs?jobId=${job.id}`);
@@ -38,9 +36,7 @@ export default function JobCard({ job, onSelect }: JobProps) {
         </p>
         <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
           <div>
-            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">
-              ${job.budget}
-            </p>
+            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">${job.budget}</p>
             <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
           </div>
           <div>
@@ -50,10 +46,7 @@ export default function JobCard({ job, onSelect }: JobProps) {
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
-        <div
-          className="mt-4"
-          dangerouslySetInnerHTML={{ __html: job.description }}
-        />
+        <div className="mt-4" dangerouslySetInnerHTML={{ __html: job.description }} />
 
         {/* Dynamic Skills from Database */}
         <div className="lg:mt-8 mt-4 xl:text-base text-sm">
@@ -70,7 +63,7 @@ export default function JobCard({ job, onSelect }: JobProps) {
         className="border border-gray-300 text-primaryColor bg-white rounded-[10px] md:text-base text-sm xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white hover:bg-primaryColor not-active-gradient mt-4"
         onClick={() => onSelect(job)}
       >
-        {job.applicationStatus ? "Read more" : "Interested"}
+        {job.applicationStatus ? 'Read more' : 'Interested'}
       </Button>
     </div>
   );

@@ -1,7 +1,7 @@
 // ~/routes/freelancer/$freelancerId.tsx
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, Form, Outlet, useNavigate } from '@remix-run/react';
-import { AccountStatus, CompensationType } from '~/types/enums';
+import { AccountStatus, CompensationType } from '@mawaheb/db/src/types/enums';
 import {
   getFreelancerDetails,
   getFreelancerApplications,
@@ -10,7 +10,12 @@ import {
 } from '~/servers/admin.server';
 import { eq } from 'drizzle-orm';
 import { db } from '~/db/drizzle/connector';
-import { accountsTable, UsersTable, employersTable, jobsTable } from '~/db/drizzle/schemas/schema';
+import {
+  accountsTable,
+  UsersTable,
+  employersTable,
+  jobsTable,
+} from '@mawaheb/db/src/schema/schema';
 
 import type {
   ActionResponse,

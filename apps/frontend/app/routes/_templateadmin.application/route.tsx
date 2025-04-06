@@ -1,22 +1,15 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { eq } from "drizzle-orm";
-import { db } from "~/db/drizzle/connector";
-import {
-  jobApplicationsTable,
-  jobsTable,
-  freelancersTable,
-} from "~/db/drizzle/schemas/schema";
+import { LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import { eq } from 'drizzle-orm';
+import { db } from '~/db/drizzle/connector';
+import { jobApplicationsTable, jobsTable, freelancersTable } from '@mawaheb/db/src/schema/schema';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const applications = await db
     .select()
     .from(jobApplicationsTable)
     .leftJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
-    .leftJoin(
-      freelancersTable,
-      eq(jobApplicationsTable.freelancerId, freelancersTable.id)
-    );
+    .leftJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id));
 
   return { applications };
 }

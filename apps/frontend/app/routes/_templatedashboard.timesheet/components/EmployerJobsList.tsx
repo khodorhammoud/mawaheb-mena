@@ -1,5 +1,5 @@
-import { Job /* , JobApplication */ } from "~/types/Job";
-import { EmployerJobCard } from "./EmployerJobCard";
+import { Job /* , JobApplication */ } from '@mawaheb/db/src/types/Job';
+import { EmployerJobCard } from './EmployerJobCard';
 // import { useEffect, useState } from "react";
 
 interface EmployerJobsListProps {
@@ -34,7 +34,7 @@ export function EmployerJobsList({ jobs }: EmployerJobsListProps) {
 
   return (
     <div className="space-y-6">
-      {jobs.map((job) => (
+      {jobs.map(job => (
         <EmployerJobCard key={job.id} job={job} />
       ))}
     </div>

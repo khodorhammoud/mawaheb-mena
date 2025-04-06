@@ -1,14 +1,9 @@
-import {
-  /* jobApplicationsTable, */ jobsTable,
-} from "~/db/drizzle/schemas/schema";
-import { InferSelectModel } from "drizzle-orm";
-import { JobApplicationStatus } from "./enums";
+import { /* jobApplicationsTable, */ jobsTable } from '../schema/schema';
+import { InferSelectModel } from 'drizzle-orm';
+import { JobApplicationStatus } from './enums';
 
 // Create a modified version of the Job type that accepts both Date and string for date fields
-type JobBase = Omit<
-  InferSelectModel<typeof jobsTable>,
-  "createdAt" | "fulfilledAt"
->;
+type JobBase = Omit<InferSelectModel<typeof jobsTable>, 'createdAt' | 'fulfilledAt'>;
 
 export type Job = JobBase & {
   createdAt: Date | string;

@@ -1,11 +1,11 @@
-import { PortfolioFormFieldType } from "~/types/User";
-import { FaLink } from "react-icons/fa";
-import AppFormField from "~/common/form-fields";
-import FileUpload from "~/common/upload/fileUpload";
-import RichTextEditor from "~/components/ui/richTextEditor";
-import { useRef, useState } from "react";
-import { IoPencilSharp } from "react-icons/io5";
-import { getWordCount } from "~/lib/utils";
+import { PortfolioFormFieldType } from '@mawaheb/db/src/types/User';
+import { FaLink } from 'react-icons/fa';
+import AppFormField from '~/common/form-fields';
+import FileUpload from '~/common/upload/fileUpload';
+import RichTextEditor from '~/components/ui/richTextEditor';
+import { useRef, useState } from 'react';
+import { IoPencilSharp } from 'react-icons/io5';
+import { getWordCount } from '~/lib/utils';
 
 interface PortfolioComponentProps {
   data: PortfolioFormFieldType;
@@ -19,21 +19,19 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
   onFileChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null); // Ref for hidden file input
-  const [filePreview, setFilePreview] = useState<string | null>(
-    data.projectImageUrl || null
-  ); // Track file preview
+  const [filePreview, setFilePreview] = useState<string | null>(data.projectImageUrl || null); // Track file preview
 
   // Determine file type dynamically based on the projectImageName
   const determineFileType = (fileName: string): string => {
-    const extension = fileName.split(".").pop()?.toLowerCase() || "";
-    if (["png", "jpg", "jpeg", "gif", "bmp"].includes(extension)) {
-      return "image";
-    } else if (["pdf"].includes(extension)) {
-      return "pdf";
-    } else if (["mp4", "mov", "avi", "mkv"].includes(extension)) {
-      return "video";
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp'].includes(extension)) {
+      return 'image';
+    } else if (['pdf'].includes(extension)) {
+      return 'pdf';
+    } else if (['mp4', 'mov', 'avi', 'mkv'].includes(extension)) {
+      return 'video';
     }
-    return "unknown"; // Fallback for unsupported file types
+    return 'unknown'; // Fallback for unsupported file types
   };
 
   const handleFileUpload = (files: File[] | null) => {
@@ -54,7 +52,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
     } else {
       // Reset the preview and data if no file is selected
       setFilePreview(null);
-      onTextChange({ ...data, projectImageUrl: "", projectImageName: "" });
+      onTextChange({ ...data, projectImageUrl: '', projectImageName: '' });
     }
   };
 
@@ -64,16 +62,16 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
   };
 
   const renderFilePreview = () => {
-    const fileType = determineFileType(data.projectImageName || "");
-    if (fileType === "image" && data.projectImageUrl) {
+    const fileType = determineFileType(data.projectImageName || '');
+    if (fileType === 'image' && data.projectImageUrl) {
       return (
         <img
           src={data.projectImageUrl}
-          alt={data.projectName || "Portfolio Image"}
+          alt={data.projectName || 'Portfolio Image'}
           className="h-28 rounded-xl object-cover"
         />
       );
-    } else if (fileType === "pdf" && data.projectImageUrl) {
+    } else if (fileType === 'pdf' && data.projectImageUrl) {
       return (
         <embed
           src={data.projectImageUrl}
@@ -82,7 +80,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
           title="Portfolio PDF"
         />
       );
-    } else if (fileType === "video" && data.projectImageUrl) {
+    } else if (fileType === 'video' && data.projectImageUrl) {
       return (
         <video
           src={data.projectImageUrl}
@@ -108,9 +106,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
             label="Project Name"
             placeholder="Project Name"
             defaultValue={data.projectName}
-            onChange={(e) =>
-              onTextChange({ ...data, projectName: e.target.value })
-            }
+            onChange={e => onTextChange({ ...data, projectName: e.target.value })}
           />
         </div>
 
@@ -123,9 +119,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
             label="Project Link"
             placeholder="Project Link"
             defaultValue={data.projectLink}
-            onChange={(e) =>
-              onTextChange({ ...data, projectLink: e.target.value })
-            }
+            onChange={e => onTextChange({ ...data, projectLink: e.target.value })}
             className="w-1/2 border-gray-300 rounded-md"
           />
           <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
@@ -161,17 +155,15 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
           ref={fileInputRef}
           className="hidden"
           accept="image/*,application/pdf,video/*"
-          onChange={(e) =>
-            handleFileUpload(e.target.files ? Array.from(e.target.files) : null)
-          }
+          onChange={e => handleFileUpload(e.target.files ? Array.from(e.target.files) : null)}
         />
       </div>
 
       <div className="flex flex-col gap-2">
         {/* RICH TEXT EDITOR */}
         <RichTextEditor
-          value={data.projectDescription || ""}
-          onChange={(content) =>
+          value={data.projectDescription || ''}
+          onChange={content =>
             onTextChange({
               ...data,
               projectDescription: content,

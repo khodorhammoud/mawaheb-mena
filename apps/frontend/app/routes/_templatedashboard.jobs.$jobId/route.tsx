@@ -1,7 +1,7 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { JobCardData } from "~/types/Job";
-import { Freelancer } from "~/types/User";
+import { LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { Link, useLoaderData } from '@remix-run/react';
+import { JobCardData } from '@mawaheb/db/src/types/Job';
+import { Freelancer } from '@mawaheb/db/src/types/User';
 import {
   getJobById,
   fetchJobApplications,
@@ -17,24 +17,21 @@ import {
   getJobApplicationsForFreelancer,
   getFreelancerAverageRating,
   hasAcceptedApplication,
-} from "~/servers/job.server";
-import { requireUserIsEmployerPublished } from "~/auth/auth.server";
-import {
-  getProfileInfoByAccountId,
-  getCurrentProfileInfo,
-} from "~/servers/user.server";
-import { getAccountBio } from "~/servers/employer.server";
+} from '~/servers/job.server';
+import { requireUserIsEmployerPublished } from '~/auth/auth.server';
+import { getProfileInfoByAccountId, getCurrentProfileInfo } from '~/servers/user.server';
+import { getAccountBio } from '~/servers/employer.server';
 import {
   getFreelancerAbout,
   getFreelancerSkills,
   getFreelancerLanguages,
-} from "~/servers/freelancer.server";
-import JobDesignOne from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne";
-import JobDesignTwo from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo";
-import JobDesignThree from "../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree";
-import JobApplicants from "~/common/applicant/JobApplicants";
-import { FaArrowLeft } from "react-icons/fa";
-import { JobApplicationStatus } from "~/types/enums";
+} from '~/servers/freelancer.server';
+import JobDesignOne from '../_templatedashboard.manage-jobs/manage-jobs/JobDesignOne';
+import JobDesignTwo from '../_templatedashboard.manage-jobs/manage-jobs/JobDesignTwo';
+import JobDesignThree from '../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree';
+import JobApplicants from '~/common/applicant/JobApplicants';
+import { FaArrowLeft } from 'react-icons/fa';
+import { JobApplicationStatus } from '@mawaheb/db/src/types/enums';
 
 export type LoaderData = {
   jobData: JobCardData;
@@ -55,12 +52,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     const { jobId } = params;
     if (!jobId) {
-      return Response.json({ error: "Job ID is required" }, { status: 400 });
+      return Response.json({ error: 'Job ID is required' }, { status: 400 });
     }
 
     const job = await getJobById(parseInt(jobId));
     if (!job) {
-      return Response.json({ error: "Job not found" }, { status: 404 });
+      return Response.json({ error: 'Job not found' }, { status: 404 });
     }
 
     // Restrict access: Ensure the job belongs to the logged-in employer
@@ -72,10 +69,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     let freelancers = (await getFreelancerDetails(freelancerIds)) || [];
 
     // Process freelancers to convert string dates to Date objects in workHistory
-    freelancers = freelancers.map((freelancer) => ({
+    freelancers = freelancers.map(freelancer => ({
       ...freelancer,
       workHistory: Array.isArray(freelancer.workHistory)
-        ? freelancer.workHistory.map((work) => ({
+        ? freelancer.workHistory.map(work => ({
             ...work,
             startDate: work.startDate ? new Date(work.startDate) : new Date(),
             endDate: work.endDate ? new Date(work.endDate) : new Date(),
@@ -96,12 +93,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     if (freelancers.length > 0 && currentProfile.id) {
       // Get reviews for all freelancers
       const enhancedFreelancers = await Promise.all(
-        freelancers.map(async (freelancer) => {
+        freelancers.map(async freelancer => {
           // Get existing review if any for this specific freelancer
           const review = await getReview({
             employerId: currentProfile.id,
             freelancerId: freelancer.id,
-            reviewType: "employer_review",
+            reviewType: 'employer_review',
           });
 
           return {
@@ -130,7 +127,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         // Check if employer can review (has an application from this freelancer)
         canReview = true; // Employers can always review freelancers who have applied
       } catch (error) {
-        console.error("Error fetching profile or account bio:", error);
+        console.error('Error fetching profile or account bio:', error);
       }
     }
 
@@ -147,11 +144,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       canReview,
     });
   } catch (error) {
-    console.error("Failed to load job details:", error);
-    return Response.json(
-      { success: false, error: "Failed to load job details" },
-      { status: 500 }
-    );
+    console.error('Failed to load job details:', error);
+    return Response.json({ success: false, error: 'Failed to load job details' }, { status: 500 });
   }
 }
 
@@ -162,17 +156,17 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const formData = await request.formData();
-    const actionType = formData.get("_action");
+    const actionType = formData.get('_action');
 
-    if (actionType === "review") {
-      const freelancerId = parseInt(formData.get("freelancerId") as string, 10);
-      const rating = parseInt(formData.get("rating") as string, 10);
-      const comment = formData.get("comment") as string;
+    if (actionType === 'review') {
+      const freelancerId = parseInt(formData.get('freelancerId') as string, 10);
+      const rating = parseInt(formData.get('rating') as string, 10);
+      const comment = formData.get('comment') as string;
 
       if (!freelancerId || !rating || !currentProfile.id) {
         return Response.json({
           success: false,
-          message: "Missing required review data",
+          message: 'Missing required review data',
         });
       }
 
@@ -180,7 +174,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       const existingReview = await getReview({
         employerId: currentProfile.id,
         freelancerId: freelancerId,
-        reviewType: "employer_review",
+        reviewType: 'employer_review',
       });
 
       try {
@@ -191,7 +185,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
             freelancerId: freelancerId,
             rating,
             comment,
-            reviewType: "employer_review",
+            reviewType: 'employer_review',
           });
         } else {
           // Create new review
@@ -200,31 +194,29 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
             freelancerId: freelancerId,
             rating,
             comment,
-            reviewType: "employer_review",
+            reviewType: 'employer_review',
           });
         }
 
         return Response.json({
           success: true,
-          message: existingReview
-            ? "Review updated successfully"
-            : "Review submitted successfully",
+          message: existingReview ? 'Review updated successfully' : 'Review submitted successfully',
         });
       } catch (error) {
-        console.error("Error saving review:", error);
+        console.error('Error saving review:', error);
         return Response.json({
           success: false,
-          message: "Failed to save review",
+          message: 'Failed to save review',
         });
       }
     }
 
-    return Response.json({ success: false, message: "Invalid action type" });
+    return Response.json({ success: false, message: 'Invalid action type' });
   } catch (error) {
-    console.error("Action error:", error);
+    console.error('Action error:', error);
     return Response.json({
       success: false,
-      message: "An error occurred while processing your request",
+      message: 'An error occurred while processing your request',
     });
   }
 };
@@ -272,9 +264,7 @@ const Layout = () => {
           status={JobApplicationStatus.Pending}
         />
       ) : (
-        <p className="text-center text-gray-500">
-          No freelancers available for this job.
-        </p>
+        <p className="text-center text-gray-500">No freelancers available for this job.</p>
       )}
     </div>
   );

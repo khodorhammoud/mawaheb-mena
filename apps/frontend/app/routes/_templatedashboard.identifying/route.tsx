@@ -1,26 +1,23 @@
-import { redirect, useLoaderData } from "@remix-run/react";
-import { AccountType, AccountStatus, EmployerAccountType } from "~/types/enums";
-import {
-  getCurrentProfileInfo,
-  getCurrentUserAccountType,
-} from "~/servers/user.server";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Employer, Freelancer } from "~/types/User";
-import { requireUserVerified } from "~/auth/auth.server";
-import FreelancerIdentifyingScreen from "./freelancer";
-import EmployerIdentifyingScreen from "./employer";
+import { redirect, useLoaderData } from '@remix-run/react';
+import { AccountType, AccountStatus, EmployerAccountType } from '@mawaheb/db/src/types/enums';
+import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { Employer, Freelancer } from '@mawaheb/db/src/types/User';
+import { requireUserVerified } from '~/auth/auth.server';
+import FreelancerIdentifyingScreen from './freelancer';
+import EmployerIdentifyingScreen from './employer';
 import {
   createEmployerIdentification,
   getEmployerIdentification,
   updateEmployerIdentification,
   updateEmployerAccountStatusToPending,
-} from "~/servers/employer.server";
+} from '~/servers/employer.server';
 import {
   createFreelancerIdentification,
   getFreelancerIdentification,
   updateFreelancerIdentification,
   updateFreelancerAccountStatusToPending,
-} from "~/servers/freelancer.server";
+} from '~/servers/freelancer.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   // User must be verified
@@ -31,17 +28,17 @@ export async function action({ request }: ActionFunctionArgs) {
     const userProfile = await getCurrentProfileInfo(request);
     const currentProfile = await getCurrentProfileInfo(request);
     const accountType = currentProfile.account.accountType;
-    const targetUpdated = formData.get("target-updated") as string;
+    const targetUpdated = formData.get('target-updated') as string;
 
     // Check if this is an identification form submission
     const isIdentificationForm =
-      targetUpdated === "identification-form" ||
-      targetUpdated === "freelancer-identification" ||
-      targetUpdated === "employer-identification";
+      targetUpdated === 'identification-form' ||
+      targetUpdated === 'freelancer-identification' ||
+      targetUpdated === 'employer-identification';
 
     if (
       accountType === AccountType.Employer &&
-      (targetUpdated === "employer-identification" ||
+      (targetUpdated === 'employer-identification' ||
         (isIdentificationForm && accountType === AccountType.Employer))
     ) {
       const userId = currentProfile.account.user.id;
@@ -49,24 +46,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // Get employer account type from the profile or form data
       const employerAccountType =
-        accountType === AccountType.Employer &&
-        "employerAccountType" in currentProfile
+        accountType === AccountType.Employer && 'employerAccountType' in currentProfile
           ? (currentProfile as Employer).employerAccountType
-          : (formData.get("employerAccountType") as string);
+          : (formData.get('employerAccountType') as string);
 
       // Get file uploads
-      const identificationFiles = formData.getAll("identification") as File[];
-      const tradeLicenseFiles = formData.getAll("trade_license") as File[];
+      const identificationFiles = formData.getAll('identification') as File[];
+      const tradeLicenseFiles = formData.getAll('trade_license') as File[];
       const boardResolutionFiles =
         employerAccountType === EmployerAccountType.Company
-          ? (formData.getAll("board_resolution") as File[])
+          ? (formData.getAll('board_resolution') as File[])
           : [];
 
       // Get existing identification data
       const existingIdentification = await getEmployerIdentification(userId);
       const existingAttachments =
-        (existingIdentification.data?.attachments as Record<string, any[]>) ||
-        {};
+        (existingIdentification.data?.attachments as Record<string, any[]>) || {};
 
       // Prevent duplicate files by using a Map with filename as key
       const uniqueIdentificationFiles = new Map<string, File>();
@@ -87,12 +82,12 @@ export async function action({ request }: ActionFunctionArgs) {
                   new Blob(
                     // Use a larger buffer for the file content to ensure size is preserved
                     [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
-                    { type: fileInfo.type || "application/octet-stream" }
+                    { type: fileInfo.type || 'application/octet-stream' }
                   ),
                 ],
                 fileInfo.name,
                 {
-                  type: fileInfo.type || "application/octet-stream",
+                  type: fileInfo.type || 'application/octet-stream',
                   lastModified: fileInfo.lastModified || Date.now(),
                 }
               )
@@ -114,12 +109,12 @@ export async function action({ request }: ActionFunctionArgs) {
                   new Blob(
                     // Use a larger buffer for the file content to ensure size is preserved
                     [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
-                    { type: fileInfo.type || "application/octet-stream" }
+                    { type: fileInfo.type || 'application/octet-stream' }
                   ),
                 ],
                 fileInfo.name,
                 {
-                  type: fileInfo.type || "application/octet-stream",
+                  type: fileInfo.type || 'application/octet-stream',
                   lastModified: fileInfo.lastModified || Date.now(),
                 }
               )
@@ -145,12 +140,12 @@ export async function action({ request }: ActionFunctionArgs) {
                   new Blob(
                     // Use a larger buffer for the file content to ensure size is preserved
                     [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
-                    { type: fileInfo.type || "application/octet-stream" }
+                    { type: fileInfo.type || 'application/octet-stream' }
                   ),
                 ],
                 fileInfo.name,
                 {
-                  type: fileInfo.type || "application/octet-stream",
+                  type: fileInfo.type || 'application/octet-stream',
                   lastModified: fileInfo.lastModified || Date.now(),
                 }
               )
@@ -160,50 +155,46 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // Add new files to the maps
-      identificationFiles.forEach((file) => {
+      identificationFiles.forEach(file => {
         uniqueIdentificationFiles.set(file.name, file);
       });
 
-      tradeLicenseFiles.forEach((file) => {
+      tradeLicenseFiles.forEach(file => {
         uniqueTradeLicenseFiles.set(file.name, file);
       });
 
       // Add board resolution files for company accounts
       if (employerAccountType === EmployerAccountType.Company) {
-        boardResolutionFiles.forEach((file) => {
+        boardResolutionFiles.forEach(file => {
           uniqueBoardResolutionFiles.set(file.name, file);
         });
       }
 
       // Prepare attachments data - store file information
       const attachmentsData: Record<string, any[]> = {
-        identification: Array.from(uniqueIdentificationFiles.values()).map(
-          (file) => ({
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-          })
-        ),
-        trade_license: Array.from(uniqueTradeLicenseFiles.values()).map(
-          (file) => ({
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-          })
-        ),
-      };
-
-      if (employerAccountType === EmployerAccountType.Company) {
-        attachmentsData.board_resolution = Array.from(
-          uniqueBoardResolutionFiles.values()
-        ).map((file) => ({
+        identification: Array.from(uniqueIdentificationFiles.values()).map(file => ({
           name: file.name,
           type: file.type,
           size: file.size,
           lastModified: file.lastModified,
-        }));
+        })),
+        trade_license: Array.from(uniqueTradeLicenseFiles.values()).map(file => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified,
+        })),
+      };
+
+      if (employerAccountType === EmployerAccountType.Company) {
+        attachmentsData.board_resolution = Array.from(uniqueBoardResolutionFiles.values()).map(
+          file => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+          })
+        );
       }
 
       let result;
@@ -214,33 +205,31 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       if (!result.success) {
-        throw new Error("Failed to save employer identification");
+        throw new Error('Failed to save employer identification');
       }
 
-      const statusResult =
-        await updateEmployerAccountStatusToPending(accountId);
+      const statusResult = await updateEmployerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
-        throw new Error("Failed to update employer account status");
+        throw new Error('Failed to update employer account status');
       }
 
       return Response.json({ success: true });
     } else if (
       accountType === AccountType.Freelancer &&
-      (targetUpdated === "freelancer-identification" ||
+      (targetUpdated === 'freelancer-identification' ||
         (isIdentificationForm && accountType === AccountType.Freelancer))
     ) {
       const userId = currentProfile.account.user.id;
       const accountId = currentProfile.account.id;
 
       // Get file uploads
-      const identificationFiles = formData.getAll("identification") as File[];
+      const identificationFiles = formData.getAll('identification') as File[];
 
       // Get existing identification data
       const existingIdentification = await getFreelancerIdentification(userId);
       const existingAttachments =
-        (existingIdentification.data?.attachments as Record<string, any[]>) ||
-        {};
+        (existingIdentification.data?.attachments as Record<string, any[]>) || {};
 
       // Prevent duplicate files by using a Map with filename as key
       const uniqueFiles = new Map<string, File>();
@@ -259,12 +248,12 @@ export async function action({ request }: ActionFunctionArgs) {
                   new Blob(
                     // Use a larger buffer for the file content to ensure size is preserved
                     [new Uint8Array(new ArrayBuffer(fileSize)).fill(1)],
-                    { type: fileInfo.type || "application/octet-stream" }
+                    { type: fileInfo.type || 'application/octet-stream' }
                   ),
                 ],
                 fileInfo.name,
                 {
-                  type: fileInfo.type || "application/octet-stream",
+                  type: fileInfo.type || 'application/octet-stream',
                   lastModified: fileInfo.lastModified || Date.now(),
                 }
               )
@@ -274,13 +263,13 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       // Add new files to the map
-      identificationFiles.forEach((file) => {
+      identificationFiles.forEach(file => {
         uniqueFiles.set(file.name, file);
       });
 
       // Prepare attachments data - store file information
       const attachmentsData: Record<string, any[]> = {
-        identification: Array.from(uniqueFiles.values()).map((file) => ({
+        identification: Array.from(uniqueFiles.values()).map(file => ({
           name: file.name,
           type: file.type,
           size: file.size,
@@ -296,23 +285,22 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       if (!result.success) {
-        throw new Error("Failed to save freelancer identification");
+        throw new Error('Failed to save freelancer identification');
       }
 
-      const statusResult =
-        await updateFreelancerAccountStatusToPending(accountId);
+      const statusResult = await updateFreelancerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
-        throw new Error("Failed to update freelancer account status");
+        throw new Error('Failed to update freelancer account status');
       }
 
       return Response.json({ success: true });
     }
 
-    throw new Error("Unknown account type or target update");
+    throw new Error('Unknown account type or target update');
   } catch (error) {
     return Response.json(
-      { success: false, error: { message: "An unexpected error occurred." } },
+      { success: false, error: { message: 'An unexpected error occurred.' } },
       { status: 500 }
     );
   }
@@ -329,19 +317,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!profile) {
     return Response.json({
       success: false,
-      error: { message: "Profile information not found." },
+      error: { message: 'Profile information not found.' },
       status: 404,
     });
   }
 
   // If user is not onboarded, redirect to onboarding
   if (!profile.account?.user?.isOnboarded) {
-    return redirect("/onboarding");
+    return redirect('/onboarding');
   }
 
   // If account status is published, redirect to dashboard
   if (profile.account?.accountStatus === AccountStatus.Published) {
-    return redirect("/dashboard");
+    return redirect('/dashboard');
   }
 
   // If account status is pending, show pending message
@@ -385,7 +373,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return Response.json({
     success: false,
-    error: { message: "Account type not found." },
+    error: { message: 'Account type not found.' },
     status: 404,
   });
 }
@@ -420,12 +408,10 @@ export default function Layout() {
                 />
               </svg>
             </div>
-            <p className="text-lg font-medium text-gray-800">
-              Your account is being validated
-            </p>
+            <p className="text-lg font-medium text-gray-800">Your account is being validated</p>
             <p className="text-gray-600 mt-2">
-              We're reviewing your submitted documents. This process typically
-              takes 1-2 business days.
+              We're reviewing your submitted documents. This process typically takes 1-2 business
+              days.
             </p>
           </div>
           <p className="text-sm text-gray-500">

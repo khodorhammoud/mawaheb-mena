@@ -1,8 +1,8 @@
 import { db } from '~/db/drizzle/connector';
-import { notificationsTable } from '~/db/drizzle/schemas/schema';
+import { notificationsTable } from '@mawaheb/db/src/schema/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { Notification } from '~/types/notifications';
-import { NotificationType } from '~/types/enums';
+import { Notification } from '@mawaheb/db/src/types/notifications';
+import { NotificationType } from '@mawaheb/db/src/types/enums';
 
 export async function getNotifications(userId: number): Promise<Notification[]> {
   if (!userId) {

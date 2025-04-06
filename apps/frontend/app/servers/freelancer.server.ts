@@ -9,7 +9,7 @@ import {
   jobSkillsTable,
   accountsTable,
   userIdentificationsTable,
-} from '../db/drizzle/schemas/schema';
+} from '@mawaheb/db/src/schema/schema';
 import { eq, inArray } from 'drizzle-orm';
 import {
   Freelancer,
@@ -18,7 +18,7 @@ import {
   CertificateFormFieldType,
   EducationFormFieldType,
   AttachmentsType,
-} from '../types/User';
+} from '@mawaheb/db/src/types/User';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';

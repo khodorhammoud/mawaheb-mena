@@ -11,8 +11,8 @@ import {
   skillsTable,
   jobSkillsTable,
   freelancerSkillsTable,
-} from '~/db/drizzle/schemas/schema';
-import { JobApplicationStatus, CompensationType, JobStatus } from '~/types/enums';
+} from '@mawaheb/db/src/schema/schema';
+import { JobApplicationStatus, CompensationType, JobStatus } from '@mawaheb/db/src/types/enums';
 
 // Helper function to safely parse JSON
 function safeParseJSON<T>(jsonString: string | null | undefined, defaultValue: T): T {

@@ -9,7 +9,7 @@ import {
   languagesTable,
   userIdentificationsTable,
   attachmentsTable,
-} from '../db/drizzle/schemas/schema';
+} from '@mawaheb/db/src/schema/schema';
 import { and, eq } from 'drizzle-orm';
 import {
   Employer,
@@ -17,11 +17,11 @@ import {
   AccountSocialMediaLinks,
   Industry,
   UserAccount,
-} from '../types/User';
+} from '@mawaheb/db/src/types/User';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
-// import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from '~/types/enums';
+// import { Skill } from "@mawaheb/db/src/types/Skill"; // Import Job type to ensure compatibility
+import { JobStatus } from '@mawaheb/db/src/types/enums';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
 import { saveAttachments } from './cloudStorage.server';

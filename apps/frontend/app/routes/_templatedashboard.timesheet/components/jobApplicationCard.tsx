@@ -1,5 +1,5 @@
-import { JobApplication } from "~/types/Job";
-import { Button } from "~/components/ui/button";
+import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { Button } from '~/components/ui/button';
 
 interface JobApplicationProps {
   jobApplication: JobApplication;
@@ -9,7 +9,7 @@ interface JobApplicationProps {
 export default function JobApplicationCard(props: JobApplicationProps) {
   const { jobApplication, onSelect } = props;
   const formattedDate =
-    typeof jobApplication.createdAt === "string"
+    typeof jobApplication.createdAt === 'string'
       ? new Date(jobApplication.createdAt)
       : jobApplication.createdAt;
 

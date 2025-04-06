@@ -1,13 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useSubmit,
-} from "@remix-run/react";
-import { Freelancer } from "~/types/User";
-import { GeneralizableFormCardProps } from "~/common/profileView/onboarding-form-component/types";
-import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
+import { useState, useRef, useEffect } from 'react';
+import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
+import { Freelancer } from '@mawaheb/db/src/types/User';
+import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
+import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 
 export default function FreelancerIdentifyingScreen() {
   const { currentProfile, identificationData } = useLoaderData<{
@@ -48,7 +43,7 @@ export default function FreelancerIdentifyingScreen() {
       if (formCardRef.getFormData && formRef.current) {
         const dialogFormData = formCardRef.getFormData(formRef.current);
         if (dialogFormData) {
-          const identificationFiles = dialogFormData.getAll("identification");
+          const identificationFiles = dialogFormData.getAll('identification');
           hasFiles = identificationFiles.length > 0;
         }
       }
@@ -57,30 +52,25 @@ export default function FreelancerIdentifyingScreen() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    formData.append("target-updated", "freelancer-identification");
+    formData.append('target-updated', 'freelancer-identification');
 
     // Add files from the dialog if available
-    if (
-      identificationFormRef.current &&
-      identificationFormRef.current.getFormData
-    ) {
-      const dialogFormData = identificationFormRef.current.getFormData(
-        formRef.current
-      );
+    if (identificationFormRef.current && identificationFormRef.current.getFormData) {
+      const dialogFormData = identificationFormRef.current.getFormData(formRef.current);
       if (dialogFormData) {
-        const identificationFiles = dialogFormData.getAll("identification");
+        const identificationFiles = dialogFormData.getAll('identification');
 
         // Remove existing files with the same name
-        formData.delete("identification");
+        formData.delete('identification');
 
         // Add all files from the dialog
-        identificationFiles.forEach((file) => {
-          formData.append("identification", file);
+        identificationFiles.forEach(file => {
+          formData.append('identification', file);
         });
       }
     }
 
-    submit(formData, { method: "post", encType: "multipart/form-data" });
+    submit(formData, { method: 'post', encType: 'multipart/form-data' });
   };
 
   // Function to check if a file input has files
@@ -94,13 +84,10 @@ export default function FreelancerIdentifyingScreen() {
 
   // Update document state when form changes
   const handleFormChange = () => {
-    setHasIdentification(checkFileInput("identification"));
+    setHasIdentification(checkFileInput('identification'));
 
     // Also check if there are files in the dialog
-    if (
-      identificationFormRef.current &&
-      identificationFormRef.current.filesSelected
-    ) {
+    if (identificationFormRef.current && identificationFormRef.current.filesSelected) {
       const dialogFiles = identificationFormRef.current.filesSelected;
       if (dialogFiles && dialogFiles.length > 0) {
         setHasIdentification(true);
@@ -111,13 +98,10 @@ export default function FreelancerIdentifyingScreen() {
   // Check file inputs when component mounts and after any dialog closes
   useEffect(() => {
     const checkFiles = () => {
-      setHasIdentification(checkFileInput("identification"));
+      setHasIdentification(checkFileInput('identification'));
 
       // Also check if there are files in the dialog
-      if (
-        identificationFormRef.current &&
-        identificationFormRef.current.filesSelected
-      ) {
+      if (identificationFormRef.current && identificationFormRef.current.filesSelected) {
         const dialogFiles = identificationFormRef.current.filesSelected;
         if (dialogFiles && dialogFiles.length > 0) {
           setHasIdentification(true);
@@ -129,9 +113,9 @@ export default function FreelancerIdentifyingScreen() {
     checkFiles();
 
     // Set up a mutation observer to detect when the dialog closes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "childList" || mutation.type === "attributes") {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList' || mutation.type === 'attributes') {
           checkFiles();
         }
       });
@@ -141,7 +125,7 @@ export default function FreelancerIdentifyingScreen() {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-hidden", "class"],
+      attributeFilter: ['aria-hidden', 'class'],
     });
 
     return () => {
@@ -151,15 +135,14 @@ export default function FreelancerIdentifyingScreen() {
 
   // Define the form card props for identification upload
   const identificationFormProps: GeneralizableFormCardProps = {
-    formType: "file",
-    cardTitle: "Identification Documents",
-    cardSubtitle:
-      "Upload your identification documents (ID card, passport, etc.)",
-    popupTitle: "Upload Identification",
-    triggerLabel: "Upload Documents",
-    formName: "freelancer-identification",
-    fieldName: "identification",
-    acceptedFileTypes: ".pdf,.jpg,.jpeg,.png",
+    formType: 'file',
+    cardTitle: 'Identification Documents',
+    cardSubtitle: 'Upload your identification documents (ID card, passport, etc.)',
+    popupTitle: 'Upload Identification',
+    triggerLabel: 'Upload Documents',
+    formName: 'freelancer-identification',
+    fieldName: 'identification',
+    acceptedFileTypes: '.pdf,.jpg,.jpeg,.png',
     editable: true,
     showLoadingOnSubmit: true,
     multiple: true,
@@ -171,8 +154,8 @@ export default function FreelancerIdentifyingScreen() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">Identity Verification</h1>
         <p className="text-gray-600">
-          Please upload your identification documents to verify your identity.
-          This is a required step before you can access the platform.
+          Please upload your identification documents to verify your identity. This is a required
+          step before you can access the platform.
         </p>
       </div>
 
@@ -196,20 +179,16 @@ export default function FreelancerIdentifyingScreen() {
           identificationData.attachments.identification &&
           identificationData.attachments.identification.length > 0 && (
             <div className="mb-4 p-4 bg-gray-50 rounded-md">
-              <h3 className="text-md font-medium mb-2">
-                Uploaded Identification Documents:
-              </h3>
+              <h3 className="text-md font-medium mb-2">Uploaded Identification Documents:</h3>
               <ul className="list-disc pl-5">
-                {identificationData.attachments.identification.map(
-                  (file: any, index: number) => (
-                    <li key={index} className="text-sm text-gray-600">
-                      {file.name}
-                      <span className="text-xs text-gray-500 ml-2">
-                        ({Math.round((file.size || 143 * 1024) / 1024)} KB)
-                      </span>
-                    </li>
-                  )
-                )}
+                {identificationData.attachments.identification.map((file: any, index: number) => (
+                  <li key={index} className="text-sm text-gray-600">
+                    {file.name}
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({Math.round((file.size || 143 * 1024) / 1024)} KB)
+                    </span>
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -217,9 +196,7 @@ export default function FreelancerIdentifyingScreen() {
         {/* GeneralizableFormCard for identification */}
         <GeneralizableFormCard
           {...identificationFormProps}
-          value={
-            identificationData?.attachments ? (identificationData as any) : null
-          }
+          value={identificationData?.attachments ? (identificationData as any) : null}
         />
       </Form>
     </div>
