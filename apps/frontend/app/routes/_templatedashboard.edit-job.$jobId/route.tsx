@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, redirect } from '@remix-run/node';
 import EditJob from './EditJob';
 import { getAllJobCategories, getJobById, updateJob } from '~/servers/job.server';
-import { requireUserIsEmployerPublished } from '~/auth/auth.server';
+import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server';
 import { getCurrentUserAccountInfo, getProfileInfo } from '~/servers/user.server';
 import { getAllSkills } from '~/servers/skill.server';
 import { Job } from '~/types/Job';
@@ -9,7 +9,7 @@ import { Job } from '~/types/Job';
 export async function loader({ params, request }: { params: { jobId: number }; request: Request }) {
   const { jobId } = params;
 
-  await requireUserIsEmployerPublished(request);
+  await requireUserIsEmployerPublishedOrDeactivated(request);
 
   const currentAccount = await getCurrentUserAccountInfo(request);
   const profile = await getProfileInfo({ accountId: currentAccount.id });
@@ -36,7 +36,7 @@ export async function loader({ params, request }: { params: { jobId: number }; r
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    await requireUserIsEmployerPublished(request);
+    await requireUserIsEmployerPublishedOrDeactivated(request);
 
     const formData = await request.formData();
     const currentAccount = await getCurrentUserAccountInfo(request);

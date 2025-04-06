@@ -3,18 +3,18 @@ import { db } from '../db/drizzle/connector';
 import {
   accountsTable,
   employersTable,
+  exitFeedbackTable,
+  freelancerLanguagesTable,
   freelancersTable,
+  jobApplicationsTable,
+  skillsTable,
+  timesheetEntriesTable,
+  languagesTable,
+  jobsTable,
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
-  jobApplicationsTable,
-  timesheetEntriesTable,
-  skillsTable,
   freelancerSkillsTable,
-  languagesTable,
-  freelancerLanguagesTable,
-  jobsTable,
-  exitFeedbackTable,
 } from '../db/drizzle/schemas/schema';
 import {
   // LoggedInUser,
@@ -25,14 +25,14 @@ import {
   PortfolioFormFieldType,
   SocialAccount,
 } from '../types/User';
-import { and, eq, isNull, or, inArray } from 'drizzle-orm';
+import { and, eq, or /* lt, gte, ne */ } from 'drizzle-orm';
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
 import {
   AccountStatus,
   AccountType,
+  JobApplicationStatus,
   Provider,
   JobStatus,
-  JobApplicationStatus,
 } from '../types/enums';
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';
@@ -138,18 +138,13 @@ export async function getAccountBySlug(slug: string): Promise<UserAccount | null
  * @param withPassword : boolean to determine if the password hash should be included in the response
  * @returns UserAccount | null: the current user account info from the session or null if the user is not logged in
  */
-
-let currentAccount: UserAccount = null;
 export async function getCurrentUserAccountInfo(
   request: Request,
   withPassword = false
 ): Promise<UserAccount | null> {
-  if (!currentAccount) {
-    const user = await getCurrentUser(request, withPassword);
-    if (!user) return null;
-    currentAccount = await getUserAccountInfo({ userId: user.id });
-  }
-  return currentAccount;
+  const user = await getCurrentUser(request, withPassword);
+  if (!user) return null;
+  return await getUserAccountInfo({ userId: user.id });
 }
 
 /**
@@ -286,7 +281,6 @@ export async function getUserIdFromEmployerId_Depricated(
  * @param freelancerId : the id of the freelancer to get the userId for
  * @returns number: the userId of the freelancer
  */
-
 export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
   // join the freelancers table with the accounts table to get the userId
   const result = await db
@@ -775,6 +769,22 @@ export async function updateOnboardingStatus(userId: number) {
   return result;
 }
 
+/**
+ * Set the isOnboarded status for a user
+ * @param userId The ID of the user
+ * @param isOnboarded Boolean value to set the isOnboarded status
+ * @returns The updated user record
+ */
+export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return { success: true, data: result[0] };
+}
+
 export async function getUserSettings(userId: number) {
   const result = await db
     .select({
@@ -830,6 +840,62 @@ export async function updateUserPassword(userId: number, hashedPassword: string)
     .where(eq(UsersTable.id, userId))
     .returning();
   return result.length > 0;
+}
+
+export async function deactivateAccount(userId: number): Promise<boolean> {
+  try {
+    const accountType = await getUserAccountType(userId);
+
+    if (!accountType) {
+      return false;
+    }
+
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Deactivated })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    if (!accountResult || accountResult.length === 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('💥 Error in deactivateAccount:', error);
+    return false;
+  }
+}
+
+export async function reactivateAccount(userId: number): Promise<boolean> {
+  try {
+    const accountType = await getUserAccountType(userId);
+
+    if (!accountType) {
+      return false;
+    }
+
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Published })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    if (!accountResult || accountResult.length === 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('💥 Error in reactivateAccount:', error);
+    return false;
+  }
 }
 
 /**
