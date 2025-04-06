@@ -1,22 +1,27 @@
-import { Module } from '@nestjs/common';
+import { Module, Type, DynamicModule, ForwardReference } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
-import { UsersController } from './modules/users/users.controller';
-import { UsersService } from './modules/users/users.service';
+import { DatabaseModule } from './modules/database/database.module';
+
+// This helps TypeScript resolve the type conflict
+type ModuleImport =
+  | Type<any>
+  | DynamicModule
+  | Promise<DynamicModule>
+  | ForwardReference<any>;
 
 @Module({
   imports: [
-    ConfigModule.forRoot(
-      //   {
-      //   envFilePath: '.development.env',
-      // }
-      { isGlobal: true },
-    ),
+    // Cast the module to help TypeScript resolve the types
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }) as ModuleImport,
+    DatabaseModule,
     UsersModule,
   ],
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

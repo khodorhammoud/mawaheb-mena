@@ -1,0 +1,38 @@
+{
+  "name": "@mawaheb/db",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --watch --dts",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/migrations/migrator.ts",
+    "db:migrate:fresh": "tsx src/migrations/migrate-fresh.ts",
+    "db:migrate:fresh:seed": "tsx src/migrations/migrate-fresh.ts --seed",
+    "db:seed": "tsx src/seeders/seeder.ts"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.6",
+    "drizzle-dbml-generator": "^0.10.0",
+    "eslint": "^8.56.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "bcrypt-ts": "^5.0.0",
+    "dotenv": "^16.3.1",
+    "drizzle-orm": "^0.41.0",
+    "pg": "^8.11.3",
+    "postgres": "^3.4.3"
+  }
+}

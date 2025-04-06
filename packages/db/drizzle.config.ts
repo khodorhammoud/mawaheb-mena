@@ -1,25 +1,12 @@
 import { Config, defineConfig } from 'drizzle-kit';
-import dotenv from 'dotenv';
-
-// Define our own interface for now
-interface PoolConfig {
-  PGHOST: string;
-  PGDATABASE: string;
-  PGUSER: string;
-  PGPASSWORD: string;
-  ENDPOINT_ID: string;
-}
-
-dotenv.config(); // Load .env file
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('Missing DATABASE_URL environment variable');
-}
+import * as dotenv from 'dotenv';
+import { PoolConfig } from './src/types/PoolConfig';
+dotenv.config();
 
 // Configuration options for database connection
 let dbCredentials;
 
-// Check if DATABASE_URL is available (for local development)
+// Check if DATABASE_URL is available
 if (process.env.DATABASE_URL) {
   try {
     // Parse the URL manually to ensure correct extraction of credentials
@@ -44,7 +31,7 @@ if (process.env.DATABASE_URL) {
   }
 } else {
   // Fallback to individual environment variables
-  const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID }: PoolConfig =
+  const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID } =
     process.env as unknown as PoolConfig;
 
   if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID) {
@@ -62,9 +49,8 @@ if (process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  // Use the schema from the shared package
-  schema: './node_modules/@mawaheb/db/dist/schema/schema.js',
-  out: './app/db/drizzle/migrations',
+  schema: './src/schema/schema.ts',
+  out: './src/migrations',
   dialect: 'postgresql',
   dbCredentials,
   verbose: true,
