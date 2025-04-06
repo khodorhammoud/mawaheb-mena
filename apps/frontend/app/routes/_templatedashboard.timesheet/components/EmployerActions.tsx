@@ -1,6 +1,6 @@
-import { Button } from "~/components/ui/button";
-import { useTimesheet } from "../context/TimesheetContext";
-import { AccountType, TimesheetStatus } from "~/types/enums";
+import { Button } from '~/components/ui/button';
+import { useTimesheet } from '../context/TimesheetContext';
+import { AccountType, TimesheetStatus } from '@mawaheb/db/src/types/enums';
 
 interface EmployerActionsProps {
   date: string;
@@ -8,13 +8,8 @@ interface EmployerActionsProps {
   status: TimesheetStatus;
 }
 
-export function EmployerActions({
-  date,
-  isSubmitted,
-  status,
-}: EmployerActionsProps) {
-  const { accountType, handleTimesheetActions, timesheetActionsState } =
-    useTimesheet();
+export function EmployerActions({ date, isSubmitted, status }: EmployerActionsProps) {
+  const { accountType, handleTimesheetActions, timesheetActionsState } = useTimesheet();
 
   if (accountType !== AccountType.Employer || !isSubmitted) {
     return null;
@@ -27,16 +22,16 @@ export function EmployerActions({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleTimesheetActions("approve", date)}
-            disabled={timesheetActionsState === "submitting"}
+            onClick={() => handleTimesheetActions('approve', date)}
+            disabled={timesheetActionsState === 'submitting'}
           >
             Approve
           </Button>
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => handleTimesheetActions("reject", date)}
-            disabled={timesheetActionsState === "submitting"}
+            onClick={() => handleTimesheetActions('reject', date)}
+            disabled={timesheetActionsState === 'submitting'}
           >
             Reject
           </Button>
@@ -47,8 +42,8 @@ export function EmployerActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleTimesheetActions("approve", date)}
-          disabled={timesheetActionsState === "submitting"}
+          onClick={() => handleTimesheetActions('approve', date)}
+          disabled={timesheetActionsState === 'submitting'}
         >
           Approve
         </Button>

@@ -1,12 +1,10 @@
-import { JobApplication } from "~/types/Job";
+import { JobApplication } from '@mawaheb/db/src/types/Job';
 
 interface FreelancerTimesheetHeaderProps {
   jobApplication: JobApplication;
 }
 
-export function FreelancerTimesheetHeader({
-  jobApplication,
-}: FreelancerTimesheetHeaderProps) {
+export function FreelancerTimesheetHeader({ jobApplication }: FreelancerTimesheetHeaderProps) {
   return (
     <div className="mb-6">
       <h2 className="text-2xl font-semibold mb-2">

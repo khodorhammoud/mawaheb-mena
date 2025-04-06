@@ -1,4 +1,4 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { pgEnum } from 'drizzle-orm/pg-core';
 import {
   AccountStatus,
   EmployerAccountType,
@@ -17,82 +17,76 @@ import {
   JobsOpenTo,
   Provider,
   AttachmentBelongsTo,
-} from "~/types/enums";
+} from '@mawaheb/db/src/types/enums';
 
-export const providerEnum = pgEnum(
-  "provider",
-  Object.values(Provider) as [string, ...string[]]
-);
+export const providerEnum = pgEnum('provider', Object.values(Provider) as [string, ...string[]]);
 
 export const accountStatusEnum = pgEnum(
-  "account_status",
+  'account_status',
   Object.values(AccountStatus) as [string, ...string[]]
 );
 
 export const employerAccountTypeEnum = pgEnum(
-  "eployer_account_type",
+  'eployer_account_type',
   Object.values(EmployerAccountType) as [string, ...string[]]
 );
 export const accountTypeEnum = pgEnum(
-  "account_type",
+  'account_type',
   Object.values(AccountType) as [string, ...string[]]
 );
 
 export const timesheetStatusEnum = pgEnum(
-  "timesheet_status",
+  'timesheet_status',
   Object.values(TimesheetStatus) as [string, ...string[]]
 );
 
-export const languageEnum = pgEnum(
-  "language",
-  Object.values(Language) as [string, ...string[]]
-);
+export const languageEnum = pgEnum('language', Object.values(Language) as [string, ...string[]]);
 
 export const jobApplicationStatusEnum = pgEnum(
-  "job_application_status",
+  'job_application_status',
   Object.values(JobApplicationStatus) as [string, ...string[]]
 );
 
 export const countryEnum = pgEnum(
   // pgEnum is for making enum in postgresql, and i call its normal enum found if i click on the word Country inside values
-  "country", // this name is not depending on any other name for now !
+  'country', // this name is not depending on any other name for now !
   Object.values(Country) as [string, ...string[]] // List of all valid country values from the Country enum
 );
 export const dayOfWeekEnum = pgEnum(
-  "day_of_week",
+  'day_of_week',
   Object.values(DayOfWeek) as [string, ...string[]]
 );
 export const projectTypeEnum = pgEnum(
-  "project_type",
+  'project_type',
   Object.values(ProjectType) as [string, ...string[]]
 );
 export const compensationTypeEnum = pgEnum(
-  "compensation_type",
+  'compensation_type',
   Object.values(CompensationType) as [string, ...string[]]
 );
 
 export const locationPreferenceTypeEnum = pgEnum(
-  "location_preference_type",
+  'location_preference_type',
   Object.values(LocationPreferenceType) as [string, ...string[]]
 );
 
 export const experienceLevelEnum = pgEnum(
-  "experience_level",
+  'experience_level',
   Object.values(ExperienceLevel) as [string, ...string[]]
 );
 
 export const jobStatusEnum = pgEnum(
-  "job_status",
+  'job_status',
   Object.values(JobStatus) as [string, ...string[]]
 );
 
 export const jobsOpenToEnum = pgEnum(
-  "jobs_open_to",
+  'jobs_open_to',
   Object.values(JobsOpenTo) as [string, ...string[]]
 );
 
 export const belongsToEnum = pgEnum(
-  "belongs_to",
+  'belongs_to',
   Object.values(AttachmentBelongsTo) as [string, ...string[]]
 );
 /* export const jobApplicationStatusEnum = pgEnum(
@@ -101,4 +95,4 @@ export const belongsToEnum = pgEnum(
 );
  */
 
-export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);

@@ -1,13 +1,10 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import SignUpEmployerPage from "./Signup";
-import {
-  generateVerificationToken,
-  getProfileInfo,
-} from "../../servers/user.server";
-import { RegistrationError } from "../../common/errors/UserError";
-import { sendEmail } from "../../servers/emails/emailSender.server";
-import { authenticator } from "../../auth/auth.server";
-import { Employer } from "../../types/User";
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import SignUpEmployerPage from './Signup';
+import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
+import { RegistrationError } from '../../common/errors/UserError';
+import { sendEmail } from '../../servers/emails/emailSender.server';
+import { authenticator } from '../../auth/auth.server';
+import { Employer } from '@mawaheb/db/src/types/User';
 
 export async function action({ request }: ActionFunctionArgs) {
   let newEmployer: Employer | null = null;
@@ -16,25 +13,25 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.clone().formData();
 
     // Extract necessary fields
-    const termsAccepted = formData.get("termsAccepted");
-    const email = formData.get("email");
-    const firstName = formData.get("firstName");
-    const lastName = formData.get("lastName");
+    const termsAccepted = formData.get('termsAccepted');
+    const email = formData.get('email');
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
 
     // Backend validation for terms acceptance
-    if (!termsAccepted || termsAccepted !== "on") {
+    if (!termsAccepted || termsAccepted !== 'on') {
       return Response.json(
         {
           success: false,
           error: {
-            message: "You must accept the terms and conditions to proceed.",
+            message: 'You must accept the terms and conditions to proceed.',
           },
         },
         { status: 400 }
       );
     }
 
-    const userId = await authenticator.authenticate("register", request);
+    const userId = await authenticator.authenticate('register', request);
 
     newEmployer = (await getProfileInfo({ userId })) as Employer;
 
@@ -43,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
         {
           success: false,
           error: {
-            message: "Failed to register user. Please try again later.",
+            message: 'Failed to register user. Please try again later.',
           },
         },
         { status: 500 }
@@ -52,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const verificationToken = await generateVerificationToken(userId);
     await sendEmail({
-      type: "accountVerification",
+      type: 'accountVerification',
       email: email as string,
       name: (firstName || lastName) as string,
       data: {
@@ -63,14 +60,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return Response.json({ success: true, newEmployer });
   } catch (error) {
-    if (
-      error instanceof RegistrationError &&
-      error.code === "Email already exists"
-    ) {
+    if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(
         {
           success: false,
-          error: { message: "The email address is already registered." },
+          error: { message: 'The email address is already registered.' },
         },
         { status: 400 }
       );
@@ -80,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         success: false,
         error: {
-          message: "An unexpected error occurred. Please try again later.",
+          message: 'An unexpected error occurred. Please try again later.',
         },
       },
       { status: 500 }
@@ -94,7 +88,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // SO !--IMPORTANT--!
   // If the user is authenticated, redirect to the dashboard.
   if (user) {
-    return Response.json({ redirect: "/dashboard" });
+    return Response.json({ redirect: '/dashboard' });
   }
 
   // Otherwise, let them stay on the signup page.
@@ -103,7 +97,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.8' }}>
       <SignUpEmployerPage />
     </div>
   );

@@ -10,8 +10,13 @@ import {
   jobCategoriesTable,
   skillsTable,
   jobSkillsTable,
-} from '~/db/drizzle/schemas/schema';
-import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '~/types/enums';
+} from '@mawaheb/db/src/schema/schema';
+import {
+  AccountType,
+  AccountStatus,
+  JobApplicationStatus,
+  JobStatus,
+} from '@mawaheb/db/src/types/enums';
 import type { Account } from '~/common/admin-pages/tables/AccountsTable';
 import {
   Portfolio,

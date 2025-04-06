@@ -1,11 +1,11 @@
-import WorkingHoursFilter from "./WorkingHoursFilter";
-import JobTypeFilter from "./JobTypeFilter";
-import SkillsFilter from "./SkillsFilter";
-import ExperienceLevelFilter from "./ExperienceLevelFilter";
-import HourlyRateFilter from "./BudgetFilter";
-import AppFormField from "~/common/form-fields";
-import { ProjectType, ExperienceLevel } from "~/types/enums";
-import { BsSearch } from "react-icons/bs";
+import WorkingHoursFilter from './WorkingHoursFilter';
+import JobTypeFilter from './JobTypeFilter';
+import SkillsFilter from './SkillsFilter';
+import ExperienceLevelFilter from './ExperienceLevelFilter';
+import HourlyRateFilter from './BudgetFilter';
+import AppFormField from '~/common/form-fields';
+import { ProjectType, ExperienceLevel } from '@mawaheb/db/src/types/enums';
+import { BsSearch } from 'react-icons/bs';
 
 interface FilteringSearchSectionProps {
   searchQuery: string;
@@ -35,7 +35,7 @@ export default function FilteringSearchSection({
 
   // ✅ Function to clear all filters
   const clearAllFilters = () => {
-    setSearchQuery(""); // Reset search query
+    setSearchQuery(''); // Reset search query
     setFilters({
       workingHours: null,
       jobType: null,
@@ -55,7 +55,7 @@ export default function FilteringSearchSection({
           type="text"
           placeholder="Hinted search text"
           defaultValue={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           label={
             <div className="flex items-center justify-center">
               <BsSearch /> <div className="ml-4">Hinted search text</div>

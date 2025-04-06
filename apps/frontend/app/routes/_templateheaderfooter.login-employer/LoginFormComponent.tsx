@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
-import SocialLinks from "../../common/registration/socialLinks";
-import { useActionData, useNavigate, Form } from "@remix-run/react";
-import AppFormField from "../../common/form-fields";
-import { AccountType } from "~/types/enums";
+import { useEffect, useRef } from 'react';
+import SocialLinks from '../../common/registration/socialLinks';
+import { useActionData, useNavigate, Form } from '@remix-run/react';
+import AppFormField from '../../common/form-fields';
+import { AccountType } from '@mawaheb/db/src/types/enums';
 
 interface ActionData {
   success?: boolean;
@@ -24,9 +24,7 @@ export default function LoginFormComponent() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto bg-white pl-2 pr-12 mt-20">
-      <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">
-        Log In
-      </h1>
+      <h1 className="text-6xl mb-8 self-start font-['BespokeSerif-Medium']">Log In</h1>
 
       {/* error message in case of error */}
       {actionData?.error && (
@@ -75,9 +73,7 @@ export default function LoginFormComponent() {
         {/* success message when all is done */}
         {actionData?.success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-            <strong className="font-bold">
-              ✅ A verification email has been sent to you.
-            </strong>
+            <strong className="font-bold">✅ A verification email has been sent to you.</strong>
           </div>
         )}
       </Form>
@@ -94,7 +90,7 @@ export default function LoginFormComponent() {
       {/* Don't have an account? SignUp */}
       <div className="text-center mt-8">
         <p className="text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
+          Don&apos;t have an account?{' '}
           <a
             href="/signup-employer"
             className="text-primaryColor font-medium hover:underline underline-offset-2 no-underline"

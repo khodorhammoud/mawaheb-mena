@@ -1,19 +1,12 @@
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-import {
-  calculateContinuousFill,
-  processEntriesForDay,
-} from "../utils/timeEntryCalculations";
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { calculateContinuousFill, processEntriesForDay } from '../utils/timeEntryCalculations';
 import {
   TimesheetEntry,
   // TimesheetData,
   TimeSlot,
-} from "../../../types/Timesheet";
-import { useTimesheet } from "../context/TimesheetContext";
-import { TimesheetStatus } from "~/types/enums";
+} from '@mawaheb/db/src/types/Timesheet';
+import { useTimesheet } from '../context/TimesheetContext';
+import { TimesheetStatus } from '@mawaheb/db/src/types/enums';
 
 interface TimeGridEntryProps {
   day: { date: Date };
@@ -39,12 +32,8 @@ export function TimeGridEntry({
 
   const entries = timesheetEntry || [];
   const processedEntries = processEntriesForDay(entries);
-  const entriesToRender = processedEntries.filter((entry) => {
-    const calcResult = calculateContinuousFill(
-      entry.startTime,
-      entry.endTime,
-      timeSlots
-    );
+  const entriesToRender = processedEntries.filter(entry => {
+    const calcResult = calculateContinuousFill(entry.startTime, entry.endTime, timeSlots);
 
     return calcResult.firstSlotIndex === timeIndex;
   });
@@ -54,28 +43,28 @@ export function TimeGridEntry({
       className={`h-12 border border-gray-200 relative ${
         isSubmitted
           ? status === TimesheetStatus.Approved
-            ? "bg-green-200"
+            ? 'bg-green-200'
             : status === TimesheetStatus.Rejected
-              ? "bg-red-200"
-              : "bg-gray-200"
-          : "bg-white"
+              ? 'bg-red-200'
+              : 'bg-gray-200'
+          : 'bg-white'
       }`}
       role="button"
       tabIndex={0}
-      onClick={(e) => {
+      onClick={e => {
         // Only trigger if clicking the empty space and not the entry block
         if (e.target === e.currentTarget) {
           canEdit && onEntryClick(day?.date, time, null);
         }
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
           onEntryClick(day?.date, time, null);
         }
       }}
       key={timeIndex}
     >
-      {entriesToRender.map((entry) => (
+      {entriesToRender.map(entry => (
         <EntryBlock
           key={entry.id}
           entry={entry}
@@ -108,11 +97,7 @@ function EntryBlock({
   isSubmitted: boolean;
   status: TimesheetStatus;
 }) {
-  const calcResult = calculateContinuousFill(
-    entry.startTime,
-    entry.endTime,
-    timeSlots
-  );
+  const calcResult = calculateContinuousFill(entry.startTime, entry.endTime, timeSlots);
   const { topPercentage, heightPercentage, heightPixelsToBeAdded } = calcResult;
 
   const totalColumns = entry.totalColumns!;
@@ -123,11 +108,10 @@ function EntryBlock({
     gapBetweenEntries * entry.column
   }px)`;
 
-  const truncationLength =
-    totalColumns === 1 ? 20 : totalColumns === 2 ? 10 : 5;
+  const truncationLength = totalColumns === 1 ? 20 : totalColumns === 2 ? 10 : 5;
   const truncatedDescription =
     entry.description.length > truncationLength
-      ? entry.description.substring(0, truncationLength) + "..."
+      ? entry.description.substring(0, truncationLength) + '...'
       : entry.description;
   const isDescriptionTruncated = entry.description.length > truncationLength;
 
@@ -138,11 +122,11 @@ function EntryBlock({
           className={`absolute bg-blue-200 cursor-pointer rounded-md z-[1] flex items-center justify-center ${
             isSubmitted
               ? status === TimesheetStatus.Approved
-                ? "bg-green-300"
+                ? 'bg-green-300'
                 : status === TimesheetStatus.Rejected
-                  ? "bg-red-300"
-                  : "bg-gray-300"
-              : "bg-blue-200"
+                  ? 'bg-red-300'
+                  : 'bg-gray-300'
+              : 'bg-blue-200'
           }`}
           style={{
             top: `${topPercentage}%`,
@@ -150,12 +134,12 @@ function EntryBlock({
             width,
             left,
           }}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             !isSubmitted && onEntryClick(day?.date, time, entry);
           }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.stopPropagation();
               onEntryClick(day?.date, time, entry);
             }

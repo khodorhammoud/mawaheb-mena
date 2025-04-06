@@ -38,7 +38,7 @@ import {
 } from "./schemaTypes"; */
 
 import { sql } from 'drizzle-orm';
-// import { TimesheetStatus } from "~/types/enums";
+// import { TimesheetStatus } from "@mawaheb/db/src/types/enums";
 
 /* enums definitions */
 
@@ -60,7 +60,7 @@ import {
   JobsOpenTo,
   Provider,
   AttachmentBelongsTo,
-} from '~/types/enums';
+} from '@mawaheb/db/src/types/enums';
 
 export const providerEnum = pgEnum('provider', Object.values(Provider) as [string, ...string[]]);
 

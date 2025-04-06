@@ -1,8 +1,8 @@
-import { Form } from "@remix-run/react";
-import AppFormField from "../../../common/form-fields";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { AccountType } from "~/types/enums";
+import { Form } from '@remix-run/react';
+import AppFormField from '../../../common/form-fields';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { AccountType } from '@mawaheb/db/src/types/enums';
 
 export default function Header({ setViewMode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,16 +10,16 @@ export default function Header({ setViewMode }) {
   // Effect to handle window resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.matchMedia("(min-width: 1024px)").matches) {
+      if (window.matchMedia('(min-width: 1024px)').matches) {
         setIsOpen(false); // Close the menu on lg screens and larger
       }
     };
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     handleResize(); // Run on mount to check initial screen size
 
     // Cleanup listener on component unmount
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -27,12 +27,7 @@ export default function Header({ setViewMode }) {
       {/* Search */}
       <Form method="post" className="space-y-6 xl:-mt-10 lg:-mt-8 -mt-8">
         <input type="hidden" name="accountType" value={AccountType.Employer} />
-        <AppFormField
-          id="search"
-          name="search"
-          label="🔍 Hinted search text"
-          className=""
-        />
+        <AppFormField id="search" name="search" label="🔍 Hinted search text" className="" />
       </Form>
 
       {/* Buttons - Hidden on Medium screens */}
@@ -98,7 +93,7 @@ export default function Header({ setViewMode }) {
       {/* 🍔 BUTTONS AND ICONS INSIDE BURGER MENU */}
       <motion.div
         initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: isOpen ? 1 : 0, height: isOpen ? "auto" : 0 }}
+        animate={{ opacity: isOpen ? 1 : 0, height: isOpen ? 'auto' : 0 }}
         className="grid overflow-hidden absolute md:right-36 md:-top-3 z-20 max-w-fit sm:right-0 sm:top-12 right-0 top-3"
       >
         {/* Buttons */}
@@ -131,25 +126,17 @@ export default function Header({ setViewMode }) {
 
         {/* Icons */}
         <div className="sm:flex sm:items-center grid-cols-3 justify-center gap-4 mt-4 md:hidden hidden">
-          <a href="#" onClick={() => setViewMode("one")} className="icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-6"
-              fill="#27638a"
-            >
+          <a href="#" onClick={() => setViewMode('one')} className="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6" fill="#27638a">
               <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
             </svg>
           </a>
-          <a href="#" onClick={() => setViewMode("two")} className="icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-6 ml-1"
-              fill="#27638a"
-            >
+          <a href="#" onClick={() => setViewMode('two')} className="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6 ml-1" fill="#27638a">
               <path d="M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
             </svg>
           </a>
-          <a href="#" onClick={() => setViewMode("three")} className="icon">
+          <a href="#" onClick={() => setViewMode('three')} className="icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-8 h-8"
@@ -169,25 +156,17 @@ export default function Header({ setViewMode }) {
 
       {/* Icons inside the burger menu */}
       <div className="md:flex md:items-center gap-4 xl:-mt-2 lg:-mt-1 hidden">
-        <a href="#" onClick={() => setViewMode("one")} className="icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-6"
-            fill="#27638a"
-          >
+        <a href="#" onClick={() => setViewMode('one')} className="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6" fill="#27638a">
             <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
           </svg>
         </a>
-        <a href="#" onClick={() => setViewMode("two")} className="icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-6 ml-1"
-            fill="#27638a"
-          >
+        <a href="#" onClick={() => setViewMode('two')} className="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6 ml-1" fill="#27638a">
             <path d="M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
           </svg>
         </a>
-        <a href="#" onClick={() => setViewMode("three")} className="icon">
+        <a href="#" onClick={() => setViewMode('three')} className="icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="w-8 h-8"

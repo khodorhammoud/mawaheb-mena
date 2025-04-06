@@ -15,7 +15,7 @@ import {
   freelancerLanguagesTable,
   jobsTable,
   exitFeedbackTable,
-} from '../db/drizzle/schemas/schema';
+} from '@mawaheb/db/src/schema/schema';
 import {
   // LoggedInUser,
   User,
@@ -24,7 +24,7 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from '../types/User';
+} from '@mawaheb/db/src/types/User';
 import { and, eq, isNull, or, inArray } from 'drizzle-orm';
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
 import {
@@ -33,7 +33,7 @@ import {
   Provider,
   JobStatus,
   JobApplicationStatus,
-} from '../types/enums';
+} from '@mawaheb/db/src/types/enums';
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';
 
@@ -735,6 +735,10 @@ export async function checkUserStatuses(
     if (checkingWhat === 'accountStatus') return account.accountStatus === checkingFor;
   }
   return false;
+}
+
+export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+  return await db.update(UsersTable).set({ isOnboarded }).where(eq(UsersTable.id, userId));
 }
 
 /******************* Social Accounts *******************/

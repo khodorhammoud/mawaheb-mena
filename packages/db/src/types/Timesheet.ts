@@ -1,5 +1,5 @@
-import { JobApplication } from "~/types/Job";
-import { AccountType, TimesheetStatus } from "./enums";
+import { JobApplication } from './Job';
+import { AccountType, TimesheetStatus } from './enums';
 
 export type TimesheetEntry = {
   id?: number;

@@ -5,7 +5,7 @@ import { sessionStorage, getSession, destroySession } from './session.server';
 import { Authenticator } from 'remix-auth';
 import { registerationStrategy, loginStrategy } from './strategies';
 import { checkUserStatuses, getUser, getCurrentProfileInfo } from '~/servers/user.server';
-import { AccountStatus, AccountType } from '~/types/enums';
+import { AccountStatus, AccountType } from '@mawaheb/db/src/types/enums';
 import { redirect } from '@remix-run/node';
 
 export const authenticator = new Authenticator<number>(sessionStorage);

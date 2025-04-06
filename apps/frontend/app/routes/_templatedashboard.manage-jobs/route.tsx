@@ -1,6 +1,6 @@
 import { LoaderFunction, ActionFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { JobCardData } from '~/types/Job';
+import { JobCardData } from '@mawaheb/db/src/types/Job';
 import { updateJobStatus, fetchJobsWithApplications } from '~/servers/job.server';
 import { requireUserAccountStatusPublishedOrDeactivated } from '~/auth/auth.server';
 import { getProfileInfo } from '~/servers/user.server';

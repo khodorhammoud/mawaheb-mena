@@ -1,6 +1,6 @@
-import { useLoaderData } from "@remix-run/react";
-import JobApplicationCard from "./jobApplicationCard";
-import { JobApplication } from "~/types/Job";
+import { useLoaderData } from '@remix-run/react';
+import JobApplicationCard from './jobApplicationCard';
+import { JobApplication } from '@mawaheb/db/src/types/Job';
 export default function JobsPage({
   onJobSelect,
 }: {
@@ -11,7 +11,7 @@ export default function JobsPage({
   }>();
   return (
     <div>
-      {jobApplications.map((jobApplication) => (
+      {jobApplications.map(jobApplication => (
         <JobApplicationCard
           onSelect={onJobSelect}
           key={jobApplication.id}

@@ -1,24 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { useLoaderData } from "@remix-run/react";
-import { Badge } from "../../../components/ui/badge";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "../../../components/ui/popover";
-import { FaStar, FaRegStar } from "react-icons/fa";
-import { Input } from "../../../components/ui/input";
-import { Skill } from "~/types/Skill";
+import { useEffect, useRef, useState } from 'react';
+import { useLoaderData } from '@remix-run/react';
+import { Badge } from '../../../components/ui/badge';
+import { Popover, PopoverTrigger, PopoverContent } from '../../../components/ui/popover';
+import { FaStar, FaRegStar } from 'react-icons/fa';
+import { Input } from '../../../components/ui/input';
+import { Skill } from '@mawaheb/db/src/types/Skill';
 
 interface RequiredSkillsProps {
   selectedSkills: Skill[];
   onChange: (skills: Skill[]) => void;
 }
 
-export default function RequiredSkills({
-  selectedSkills,
-  onChange,
-}: RequiredSkillsProps) {
+export default function RequiredSkills({ selectedSkills, onChange }: RequiredSkillsProps) {
   const triggerRef = useRef(null);
   const [popoverWidth, setPopoverWidth] = useState(350);
   const { skills = [] } = useLoaderData<{ skills?: Skill[] }>();
@@ -30,21 +23,21 @@ export default function RequiredSkills({
       }
     };
     updatePopoverWidth();
-    window.addEventListener("resize", updatePopoverWidth);
+    window.addEventListener('resize', updatePopoverWidth);
     return () => {
-      window.removeEventListener("resize", updatePopoverWidth);
+      window.removeEventListener('resize', updatePopoverWidth);
     };
   }, []);
 
   const toggleSkill = (skill: Skill) => {
-    const updatedSkills = selectedSkills.some((s) => s.name === skill.name)
-      ? selectedSkills.filter((s) => s.name !== skill.name)
+    const updatedSkills = selectedSkills.some(s => s.name === skill.name)
+      ? selectedSkills.filter(s => s.name !== skill.name)
       : [...selectedSkills, skill];
     onChange(updatedSkills);
   };
 
   const toggleStarredSkill = (skill: Skill) => {
-    const updatedSkills = selectedSkills.map((s) =>
+    const updatedSkills = selectedSkills.map(s =>
       s.name === skill.name ? { ...s, isStarred: !s.isStarred } : s
     );
     onChange(updatedSkills);
@@ -60,11 +53,11 @@ export default function RequiredSkills({
         <input
           type="hidden"
           name="jobSkills"
-          value={selectedSkills.map((skill) => skill.name).join(",")}
+          value={selectedSkills.map(skill => skill.name).join(',')}
         />
-        {visibleSkills.map((skill) => (
+        {visibleSkills.map(skill => (
           <Badge
-            className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? "bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none" : "border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400"}`}
+            className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none' : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'}`}
           >
             <div onClick={() => toggleStarredSkill(skill)}>
               {skill.isStarred ? (
@@ -88,10 +81,7 @@ export default function RequiredSkills({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div
-          ref={triggerRef}
-          className="cursor-pointer border border-slate-300 rounded-xl p-1"
-        >
+        <div ref={triggerRef} className="cursor-pointer border border-slate-300 rounded-xl p-1">
           {selectedSkills.length > 0 ? (
             renderSelectedSkillsInInput()
           ) : (
@@ -115,10 +105,8 @@ export default function RequiredSkills({
         {/* skills to choose */}
         <div className="flex flex-wrap gap-y-3 gap-x-2 mb-6">
           {skills
-            .filter(
-              (skill) => !selectedSkills.some((s) => s.name === skill.name)
-            )
-            .map((skill) => (
+            .filter(skill => !selectedSkills.some(s => s.name === skill.name))
+            .map(skill => (
               <Badge
                 key={skill.name}
                 onClick={() => toggleSkill(skill)}
@@ -134,13 +122,13 @@ export default function RequiredSkills({
 
         {/* selected skills */}
         <div className="flex flex-wrap gap-y-3 gap-x-2">
-          {selectedSkills.map((skill) => (
+          {selectedSkills.map(skill => (
             <div
               key={skill.name}
               className="flex items-center font-medium cursor-pointer rounded-xl"
             >
               <Badge
-                className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? "bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none" : "border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400"}`}
+                className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none' : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'}`}
               >
                 <div onClick={() => toggleStarredSkill(skill)}>
                   {skill.isStarred ? (
@@ -155,17 +143,11 @@ export default function RequiredSkills({
           ))}
         </div>
         <p className="mt-4 text-sm text-gray-600">
-          Add at least 5 skills, then star 3-4 of them you consider your top
-          skill.
+          Add at least 5 skills, then star 3-4 of them you consider your top skill.
         </p>
         <p className="mt-2 text-sm text-gray-600">
-          You need to select at least {Math.max(0, 5 - selectedSkills.length)}{" "}
-          more skills and star{" "}
-          {Math.max(
-            0,
-            3 - selectedSkills.filter((skill) => skill.isStarred).length
-          )}{" "}
-          more skills.
+          You need to select at least {Math.max(0, 5 - selectedSkills.length)} more skills and star{' '}
+          {Math.max(0, 3 - selectedSkills.filter(skill => skill.isStarred).length)} more skills.
         </p>
       </PopoverContent>
     </Popover>

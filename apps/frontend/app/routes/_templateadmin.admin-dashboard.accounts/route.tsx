@@ -1,14 +1,8 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { AccountStatus } from "~/types/enums";
-import {
-  AccountsTable,
-  Account,
-} from "~/common/admin-pages/tables/AccountsTable";
-import {
-  getFreelancerAccounts,
-  getEmployerAccounts,
-} from "~/servers/admin.server";
+import { LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import { AccountStatus } from '@mawaheb/db/src/types/enums';
+import { AccountsTable, Account } from '~/common/admin-pages/tables/AccountsTable';
+import { getFreelancerAccounts, getEmployerAccounts } from '~/servers/admin.server';
 
 type LoaderData = {
   freelancers: Account[];
@@ -26,7 +20,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 interface AccountTableProps {
   accounts: Account[];
-  type: "Freelancer" | "Employer";
+  type: 'Freelancer' | 'Employer';
 }
 
 /* function AccountTable({ accounts, type }: AccountTableProps) {

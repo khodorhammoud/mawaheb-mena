@@ -5,9 +5,9 @@ import {
   timesheetEntriesTable,
   TimesheetSubmissionEntriesTable,
   timesheetSubmissionsTable,
-} from '~/db/drizzle/schemas/schema';
-import { TimesheetStatus } from '~/types/enums';
-import { TimesheetEntry } from '~/types/Timesheet';
+} from '@mawaheb/db/src/schema/schema';
+import { TimesheetStatus } from '@mawaheb/db/src/types/enums';
+import { TimesheetEntry } from '@mawaheb/db/src/types/Timesheet';
 
 export async function getTimesheetEntriesFromDatabase(
   freelancerId: number,

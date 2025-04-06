@@ -1,4 +1,4 @@
-import { AccountType } from "~/types/enums";
+import { AccountType } from '@mawaheb/db/src/types/enums';
 import {
   AccountBio,
   CertificateFormFieldType,
@@ -6,7 +6,7 @@ import {
   Industry,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
-} from "~/types/User";
+} from '@mawaheb/db/src/types/User';
 
 export type EmployerOnboardingData = {
   accountType: AccountType;

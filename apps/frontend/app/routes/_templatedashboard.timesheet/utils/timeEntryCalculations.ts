@@ -1,4 +1,4 @@
-import { TimesheetEntry } from "~/types/Timesheet";
+import { TimesheetEntry } from '@mawaheb/db/src/types/Timesheet';
 
 const gridGap = 8;
 
@@ -13,15 +13,11 @@ export const calculateContinuousFill = (
   const endTotalMinutes = endTime.getHours() * 60 + endTime.getMinutes();
 
   const firstSlotIndex = timeSlots.findIndex(
-    (slot) =>
-      startTotalMinutes >= slot.totalMinutes &&
-      startTotalMinutes < slot.totalMinutes + 30
+    slot => startTotalMinutes >= slot.totalMinutes && startTotalMinutes < slot.totalMinutes + 30
   );
 
   const lastSlotIndex = timeSlots.findIndex(
-    (slot) =>
-      endTotalMinutes > slot.totalMinutes &&
-      endTotalMinutes <= slot.totalMinutes + 30
+    slot => endTotalMinutes > slot.totalMinutes && endTotalMinutes <= slot.totalMinutes + 30
   );
 
   if (firstSlotIndex === -1 || lastSlotIndex === -1) return null;
@@ -29,8 +25,7 @@ export const calculateContinuousFill = (
   const topPercentage = ((startTotalMinutes % 30) / 30) * 100;
   const heightPercentage = ((endTotalMinutes - startTotalMinutes) / 30) * 100;
   const heightPixelsToBeAdded =
-    (lastSlotIndex - firstSlotIndex) * gridGap +
-    (lastSlotIndex - firstSlotIndex) * 2;
+    (lastSlotIndex - firstSlotIndex) * gridGap + (lastSlotIndex - firstSlotIndex) * 2;
   return {
     topPercentage,
     heightPercentage,
@@ -55,7 +50,7 @@ export const processEntriesForDay = (entries: TimesheetEntry[]) => {
     entry.column = ongoingEntries.length;
     ongoingEntries.push(entry);
     const totalColumns = ongoingEntries.length;
-    ongoingEntries.forEach((e) => (e.totalColumns = totalColumns));
+    ongoingEntries.forEach(e => (e.totalColumns = totalColumns));
 
     processedEntries.push(entry);
   }

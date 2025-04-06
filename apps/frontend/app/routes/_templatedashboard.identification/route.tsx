@@ -1,8 +1,8 @@
 import { redirect, useLoaderData } from '@remix-run/react';
-import { AccountType, AccountStatus, EmployerAccountType } from '~/types/enums';
+import { AccountType, AccountStatus, EmployerAccountType } from '@mawaheb/db/src/types/enums';
 import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Employer, Freelancer } from '~/types/User';
+import { Employer, Freelancer } from '@mawaheb/db/src/types/User';
 import { requireUserVerified } from '~/auth/auth.server';
 import FreelancerIdentificationScreen from './freelancer';
 import EmployerIdentificationScreen from './employer';
