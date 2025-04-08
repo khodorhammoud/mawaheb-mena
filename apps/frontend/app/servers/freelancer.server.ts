@@ -328,14 +328,19 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
 
   async function handleFreelancerSkills(formData: FormData, freelancer: Freelancer) {
     const skills = formData.get('skills');
+    // console.log('🔥 FREELANCER SERVER: Received Skills Form Data:', skills);
     try {
       const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
       const skillsStatus = await updateFreelancerSkills(freelancer.id, skillsParsed);
+
       return Response.json({ success: skillsStatus.success });
     } catch (error) {
-      console.error('Error parsing skills', error);
+      console.error('🔥 FREELANCER SERVER: Error updating skills', error);
+      return Response.json(
+        { success: false, error: { message: 'Failed to update skills.' } },
+        { status: 500 }
+      );
     }
-    return Response.json({ success: true });
   }
 
   async function handleFreelancerOnboard(userId: number) {
@@ -682,17 +687,30 @@ export async function updateFreelancerSkills(
       .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
 
     // insert new skills
-    await db.insert(freelancerSkillsTable).values(
-      skillsData.map((skill: { skillId: number; yearsOfExperience: number }) => ({
-        freelancerId,
-        skillId: skill.skillId,
-        yearsOfExperience: skill.yearsOfExperience,
-      }))
-    );
+    const skillsToInsert = skillsData.map((skill: FreelancerSkill) => ({
+      freelancerId,
+      skillId: skill.skillId,
+      label: skill.label || '',
+      yearsOfExperience: skill.yearsOfExperience,
+      isStarred: skill.isStarred || false,
+    }));
+
+    await db.insert(freelancerSkillsTable).values(skillsToInsert);
+
+    // Update fields_of_expertise in freelancers table
+    const fieldsOfExpertise = skillsData.map(skill => skill.label || '').filter(Boolean);
+
+    // Update the freelancers table with the skills array
+    await db
+      .update(freelancersTable)
+      .set({
+        fieldsOfExpertise,
+      })
+      .where(eq(freelancersTable.id, freelancerId));
 
     return { success: true };
   } catch (error) {
-    console.error('Error updating freelancer skills', error);
+    console.error('Error updating freelancer skills:', error);
     throw error;
   }
 }
@@ -970,10 +988,14 @@ export async function getFreelancerSkills(freelancerId: number) {
 
 // fetch freelancer's skills
 export async function fetchFreelancerSkills(freelancerId: number): Promise<FreelancerSkill[]> {
+  // console.log('🔥 FREELANCER SERVER: Fetching skills for freelancer:', freelancerId);
+
   const skills = await db
     .select()
     .from(freelancerSkillsTable)
     .where(eq(freelancerSkillsTable.freelancerId, freelancerId));
+
+  // console.log('🔥 FREELANCER SERVER: Raw skills from DB:', skills);
 
   // get skill labels from skills table
   const skillLabels = await db
@@ -986,13 +1008,21 @@ export async function fetchFreelancerSkills(freelancerId: number): Promise<Freel
       )
     );
 
-  // add skill labels to skills
-  const freelancerSkills: FreelancerSkill[] = skills.map(skill => ({
-    skillId: skill.skillId,
-    label: skillLabels.find(label => label.id === skill.skillId)?.label,
-    yearsOfExperience: skill.yearsOfExperience,
-  }));
+  // console.log('🔥 FREELANCER SERVER: Skill labels from DB:', skillLabels);
 
+  // add skill labels to skills
+  const freelancerSkills: FreelancerSkill[] = skills.map(skill => {
+    const skillWithLabel = {
+      skillId: skill.skillId,
+      label: skillLabels.find(label => label.id === skill.skillId)?.label,
+      yearsOfExperience: skill.yearsOfExperience,
+      isStarred: skill.isStarred,
+    };
+    // console.log('🔥 FREELANCER SERVER: Processing skill:', skill, 'Result:', skillWithLabel);
+    return skillWithLabel;
+  });
+
+  // console.log('🔥 FREELANCER SERVER: Final freelancer skills:', freelancerSkills);
   return freelancerSkills;
 }
 
