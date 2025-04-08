@@ -733,9 +733,9 @@ export async function checkUserStatuses(
   return false;
 }
 
-export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
-  return await db.update(UsersTable).set({ isOnboarded }).where(eq(UsersTable.id, userId));
-}
+// export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+//   return await db.update(UsersTable).set({ isOnboarded }).where(eq(UsersTable.id, userId));
+// }
 
 /******************* Social Accounts *******************/
 export async function getSocialAccount({
