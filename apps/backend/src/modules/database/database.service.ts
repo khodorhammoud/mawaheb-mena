@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { createConnection } from '@mawaheb/db';
+import { db } from '~/db/connector';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -7,7 +7,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {
     // Create the database connection using the shared package
-    this.dbInstance = createConnection();
+    this.dbInstance = db;
     console.log('Database connection created');
   }
 
