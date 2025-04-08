@@ -73,10 +73,23 @@ export default function JobStateButton({
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDeactivated ? false : undefined}>
       <DropdownMenuTrigger asChild>
         <Button
-          className={`w-[106px] h-[36px] flex items-center justify-center rounded-xl text-sm ${statusStyles[selectedStatus]} ${className}`}
+          className={`w-[106px] h-[36px] flex items-center justify-center rounded-xl text-sm ${
+            statusStyles[selectedStatus]
+          } ${className} ${isDeactivated ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={e => {
+            if (isDeactivated) {
+              e.preventDefault();
+              e.stopPropagation();
+              toast({
+                variant: 'destructive',
+                title: 'Action Not Allowed',
+                description: "You can't change a state while your account is deactivated",
+              });
+            }
+          }}
         >
           {/* Arrow icon */}
           <FaChevronDown className="w-3 h-3 mr-2 text-white" />
