@@ -1,6 +1,6 @@
 {
-  "id": "ffc22271-0502-4350-8337-4077d1cfd0b6",
-  "prevId": "c28aff34-0f05-4653-9543-0b879c4df053",
+  "id": "4ad9f949-bb3b-44e1-88c6-bcf7e9a2b0e9",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -121,6 +121,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'user'"
+        },
+        "deletion_requested_at": {
+          "name": "deletion_requested_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "final_deletion_at": {
+          "name": "final_deletion_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -530,6 +542,55 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.exit_feedback": {
+      "name": "exit_feedback",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exit_feedback_user_id_users_id_fk": {
+          "name": "exit_feedback_user_id_users_id_fk",
+          "tableFrom": "exit_feedback",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.freelancer_languages": {
       "name": "freelancer_languages",
       "schema": "",
@@ -619,6 +680,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_starred": {
+          "name": "is_starred",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -1672,13 +1740,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
         }
       },
       "indexes": {},
@@ -1698,15 +1759,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_identifications_user_id_unique": {
-          "name": "user_identifications_user_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "public.user_verifications": {
       "name": "user_verifications",
@@ -1781,6 +1834,7 @@
         "published",
         "closed",
         "suspended",
+        "deleted",
         "deactivated"
       ]
     },
