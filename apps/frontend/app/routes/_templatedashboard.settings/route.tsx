@@ -8,11 +8,16 @@ import {
   getUserSettings,
   updateUserSettings,
   updateUserPassword,
-  exportUserData,
+  deactivateAccount,
+  reactivateAccount,
+  getCurrentUserAccountType,
+  getCurrentUserAccountInfo,
   checkForActiveJobs,
-  requestAccountDeletion,
+  exportUserData,
   saveExitFeedback,
+  requestAccountDeletion,
 } from '~/servers/user.server';
+import { AccountType, AccountStatus } from '~/types/enums';
 import { hash, compare } from 'bcrypt-ts';
 import { logout } from '~/auth/auth.server';
 
@@ -25,6 +30,55 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const target = formData.get('formType');
   const action = formData.get('action');
+
+  // Handle account deactivation/reactivation
+  if (target === 'deactivateAccount') {
+    try {
+      const userAccount = await getCurrentUserAccountInfo(request);
+      const isDeactivated = userAccount?.accountStatus === AccountStatus.Deactivated;
+
+      let success;
+      if (isDeactivated) {
+        success = await reactivateAccount(currentUser.id);
+      } else {
+        success = await deactivateAccount(currentUser.id);
+      }
+
+      if (success) {
+        // If the account was deactivated, isDeactivated should be true
+        // If the account was reactivated, isDeactivated should be false
+        const newIsDeactivated = !isDeactivated;
+
+        // Get the updated account status to confirm
+        const updatedAccount = await getCurrentUserAccountInfo(request);
+
+        return Response.json({
+          success: true,
+          formType: 'deactivateAccount',
+          isDeactivated: updatedAccount?.accountStatus === AccountStatus.Deactivated,
+        });
+      } else {
+        return Response.json(
+          {
+            success: false,
+            error: isDeactivated ? 'Failed to reactivate account' : 'Failed to deactivate account',
+            formType: 'deactivateAccount',
+          },
+          { status: 500 }
+        );
+      }
+    } catch (error) {
+      console.error('💥 Error in account status change:', error);
+      return Response.json(
+        {
+          success: false,
+          error: 'An error occurred while updating account status',
+          formType: 'deactivateAccount',
+        },
+        { status: 500 }
+      );
+    }
+  }
 
   if (target === 'accountTab') {
     const phone = formData.get('fullPhone');
@@ -175,7 +229,21 @@ export const loader = async ({ request }) => {
     throw new Response('User settings not found', { status: 404 });
   }
 
-  return Response.json({ settingsInfo: userSettings });
+  // Get the user's account type and account info
+  const accountType = await getCurrentUserAccountType(request);
+
+  const userAccount = await getCurrentUserAccountInfo(request);
+
+  const responseData = {
+    settingsInfo: userSettings,
+    user: {
+      ...currentUser,
+      accountType,
+    },
+    userAccountStatus: userAccount?.accountStatus || AccountStatus.Published,
+  };
+
+  return Response.json(responseData);
 };
 
 export default function Settings() {

@@ -2,6 +2,7 @@ import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { JobCardData } from '@mawaheb/db/src/types/Job';
 import { Freelancer } from '@mawaheb/db/src/types/User';
+
 import {
   getJobById,
   fetchJobApplications,
@@ -18,7 +19,7 @@ import {
   getFreelancerAverageRating,
   hasAcceptedApplication,
 } from '~/servers/job.server';
-import { requireUserIsEmployerPublished } from '~/auth/auth.server';
+import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server';
 import { getProfileInfoByAccountId, getCurrentProfileInfo } from '~/servers/user.server';
 import { getAccountBio } from '~/servers/employer.server';
 import {
@@ -45,7 +46,7 @@ export type LoaderData = {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
     // Ensures that the user is an employer
-    await requireUserIsEmployerPublished(request);
+    await requireUserIsEmployerPublishedOrDeactivated(request);
 
     // Fetch the logged-in employer profile
     const currentProfile = await getCurrentProfileInfo(request);
@@ -151,7 +152,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
   // Ensure the user is a published employer
-  await requireUserIsEmployerPublished(request);
+  await requireUserIsEmployerPublishedOrDeactivated(request);
   const currentProfile = await getCurrentProfileInfo(request);
 
   try {
