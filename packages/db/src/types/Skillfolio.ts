@@ -1,4 +1,4 @@
-interface UserSkill {
+export interface UserSkill {
   name: string;
   proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
   yearsOfExperience?: number;
@@ -6,14 +6,14 @@ interface UserSkill {
   verifiedBy?: string[]; // ["Project", "Certificate"]
 }
 
-interface Education {
+export interface Education {
   degree: string;
   field: string;
   institution: string;
   completedOn: string;
 }
 
-interface Experience {
+export interface Experience {
   role: string;
   company?: string;
   durationYears?: number;
@@ -21,7 +21,7 @@ interface Experience {
   projectDescriptions?: string[];
 }
 
-interface Verification {
+export interface Verification {
   type: string; // e.g., "Project Use", "Reference"
   evidence?: string;
 }

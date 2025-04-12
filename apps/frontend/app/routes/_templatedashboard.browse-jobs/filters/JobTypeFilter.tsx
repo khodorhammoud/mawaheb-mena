@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ComboBox, ComboBoxItem } from '~/components/ui/combobox';
-import { ProjectType } from '@mawaheb/db/src/types/enums';
+import { ProjectType } from '@mawaheb/db';
 
 interface JobTypeFilterProps {
   filters: { jobType: ProjectType | null };

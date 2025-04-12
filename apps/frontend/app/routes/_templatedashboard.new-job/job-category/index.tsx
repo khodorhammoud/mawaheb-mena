@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLoaderData } from '@remix-run/react';
 import { Badge } from '~/components/ui/badge';
-import { JobCategory } from '@mawaheb/db/src/types/User';
+import { JobCategory } from '@mawaheb/db';
 
 export default function JobCategoryComponent() {
   const { jobCategories } = useLoaderData<{ jobCategories: JobCategory[] }>();

@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { getJobsFiltered } from '../servers/job.server';
 import { requireUserIsFreelancerPublished } from '~/auth/auth.server';
-import { JobFilter } from '@mawaheb/db/src/types/Job';
+import { JobFilter } from '@mawaheb/db';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // user must be a published freelancer

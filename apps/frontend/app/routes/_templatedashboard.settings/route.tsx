@@ -17,7 +17,7 @@ import {
   saveExitFeedback,
   requestAccountDeletion,
 } from '~/servers/user.server';
-import { AccountType, AccountStatus } from '@mawaheb/db/src/types/enums';
+import { AccountType, AccountStatus } from '@mawaheb/db';
 import { hash, compare } from 'bcrypt-ts';
 import { logout } from '~/auth/auth.server';
 

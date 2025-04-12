@@ -1,4 +1,4 @@
-import { Job, JobApplication } from '@mawaheb/db/src/types/Job';
+import { Job, JobApplication } from '@mawaheb/db';
 import { useEffect, useState } from 'react';
 import { FreelancerListItem } from './FreelancerListItem';
 

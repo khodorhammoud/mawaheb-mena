@@ -1,4 +1,5 @@
 import { vitePlugin as remix } from '@remix-run/dev';
+import { installGlobals } from '@remix-run/node';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { resolve } from 'path';
@@ -10,9 +11,12 @@ declare module '@remix-run/node' {
   }
 }
 
+installGlobals();
+
 export default defineConfig({
   optimizeDeps: {
     include: ['dompurify'],
+    exclude: ['postgres', 'pg', 'bcrypt-ts', 'dotenv'],
   },
   plugins: [
     remix({
@@ -46,8 +50,21 @@ export default defineConfig({
       //   });
       // },
     }),
-    tsconfigPaths(),
+    tsconfigPaths({ root: '../..' }),
   ],
+  build: {
+    rollupOptions: {
+      external: ['postgres'],
+    },
+  },
+  ssr: {
+    noExternal: [/@mawaheb\/db/],
+  },
+  resolve: {
+    alias: {
+      '@mawaheb/db': resolve(__dirname, '../../packages/db/src'),
+    },
+  },
   // server: {
   //   host: "0.0.0.0",
   //   port: 3000,

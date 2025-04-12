@@ -1,4 +1,4 @@
-import { CompensationType } from '@mawaheb/db/src/types/enums';
+import { CompensationType } from '@mawaheb/db';
 
 interface FreelancerProfileProps {
   freelancer: {

@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { requireUserOnboarded } from '~/auth/auth.server';
-import { AccountType } from '@mawaheb/db/src/types/enums';
+import { AccountType } from '@mawaheb/db';
 import { getUserAccountType } from '~/servers/user.server';
 import TimeSheetPage from '~/routes/_templatedashboard.timesheet/components/TimeSheetPage';
 import { FreelancerTimesheetHeader } from '~/routes/_templatedashboard.timesheet/components/FreelancerTimesheetHeader';
@@ -10,7 +10,7 @@ import {
   getJobApplicationByJobIdAndFreelancerId,
   getJobApplicationsByJobId,
 } from '~/servers/job.server';
-import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { JobApplication } from '@mawaheb/db';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUserOnboarded(request);

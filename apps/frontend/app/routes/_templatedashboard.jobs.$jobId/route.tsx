@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
-import { JobCardData } from '@mawaheb/db/src/types/Job';
-import { Freelancer } from '@mawaheb/db/src/types/User';
+import { JobCardData } from '@mawaheb/db';
+import { Freelancer } from '@mawaheb/db';
 
 import {
   getJobById,
@@ -32,7 +32,7 @@ import JobDesignTwo from '../_templatedashboard.manage-jobs/manage-jobs/JobDesig
 import JobDesignThree from '../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree';
 import JobApplicants from '~/common/applicant/JobApplicants';
 import { FaArrowLeft } from 'react-icons/fa';
-import { JobApplicationStatus } from '@mawaheb/db/src/types/enums';
+import { JobApplicationStatus } from '@mawaheb/db';
 
 export type LoaderData = {
   jobData: JobCardData;

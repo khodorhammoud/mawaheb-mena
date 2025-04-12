@@ -1,5 +1,5 @@
 import { hash, compare } from 'bcrypt-ts';
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   employersTable,
@@ -15,7 +15,7 @@ import {
   freelancerSkillsTable,
   languagesTable,
   jobsTable,
-} from '@mawaheb/db/src/schema/schema';
+} from '@mawaheb/db';
 import {
   // LoggedInUser,
   User,
@@ -24,17 +24,11 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from '@mawaheb/db/src/types/User';
+} from '@mawaheb/db';
 import { and, eq, isNull, or, inArray } from 'drizzle-orm';
 
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
-import {
-  AccountStatus,
-  AccountType,
-  Provider,
-  JobStatus,
-  JobApplicationStatus,
-} from '@mawaheb/db/src/types/enums';
+import { AccountStatus, AccountType, Provider, JobStatus, JobApplicationStatus } from '@mawaheb/db';
 
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';

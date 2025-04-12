@@ -7,7 +7,7 @@ import {
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
 import { TimePicker } from '~/components/ui/time-picker';
-import type { TimesheetEntry, EntryPopup } from '@mawaheb/db/src/types/Timesheet';
+import type { TimesheetEntry, EntryPopup } from '@mawaheb/db';
 
 interface TimeEntryDialogProps {
   popup: EntryPopup;

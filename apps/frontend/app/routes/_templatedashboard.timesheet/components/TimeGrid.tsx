@@ -1,18 +1,13 @@
 import { useRef } from 'react';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { TimeGridEntry } from './TimeGridEntry';
-import type {
-  DisplayedDaysType,
-  TimesheetEntry,
-  TimesheetData,
-  TimeSlot,
-} from '@mawaheb/db/src/types/Timesheet';
+import type { DisplayedDaysType, TimesheetEntry, TimesheetData, TimeSlot } from '@mawaheb/db';
 import { useTimeSlots } from '../hooks/useTimeSlots';
 import { DayTotal } from './DayTotal';
 import { SubmitDayButton } from './SubmitDayButton';
 import { calculateDayTotal } from '../utils';
 import { useTimesheet } from '../context/TimesheetContext';
-import { AccountType } from '@mawaheb/db/src/types/enums';
+import { AccountType } from '@mawaheb/db';
 import { EmployerActions } from './EmployerActions';
 
 interface TimeGridProps {

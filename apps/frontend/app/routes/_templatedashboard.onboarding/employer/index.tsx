@@ -1,6 +1,6 @@
 import Heading from '~/common/profileView/heading/Heading';
 import { Form, useActionData, useLoaderData, useFetcher } from '@remix-run/react';
-import type { Employer } from '@mawaheb/db/src/types/User';
+import type { Employer } from '@mawaheb/db';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 import { BsCurrencyDollar } from 'react-icons/bs';
 import { SlBadge } from 'react-icons/sl';

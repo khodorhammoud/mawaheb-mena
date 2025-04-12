@@ -36,7 +36,7 @@ if (process.env.DATABASE_URL) {
       username,
       password,
       port,
-      ssl: url.searchParams.get('sslmode') === 'require' ? 'require' : false,
+      ssl: url.searchParams.get('sslmode') === 'require' ? ('require' as const) : false,
     };
   } catch (error) {
     console.error('Error parsing DATABASE_URL:', error);
@@ -59,7 +59,7 @@ if (process.env.DATABASE_URL) {
     username: PGUSER,
     password: PGPASSWORD,
     port: 5432,
-    ssl: 'require',
+    ssl: 'require' as const,
     connection: {
       options: `project=${ENDPOINT_ID}`,
     },

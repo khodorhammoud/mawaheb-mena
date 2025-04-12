@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ComboBox, ComboBoxItem } from '~/components/ui/combobox';
-import { ExperienceLevel } from '@mawaheb/db/src/types/enums';
+import { ExperienceLevel } from '@mawaheb/db';
 
 interface ExperienceLevelFilterProps {
   filters: { experienceLevel: ExperienceLevel | null };

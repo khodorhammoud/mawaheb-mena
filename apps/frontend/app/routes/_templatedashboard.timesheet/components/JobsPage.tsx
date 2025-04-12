@@ -1,6 +1,6 @@
 import { useLoaderData } from '@remix-run/react';
 import JobApplicationCard from './jobApplicationCard';
-import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { JobApplication } from '@mawaheb/db';
 export default function JobsPage({
   onJobSelect,
 }: {

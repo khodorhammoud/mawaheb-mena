@@ -1,4 +1,4 @@
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   freelancersTable,
   languagesTable,
@@ -9,7 +9,7 @@ import {
   jobSkillsTable,
   accountsTable,
   userIdentificationsTable,
-} from '@mawaheb/db/src/schema/schema';
+} from '@mawaheb/db';
 import { eq, inArray } from 'drizzle-orm';
 import {
   Freelancer,
@@ -18,7 +18,7 @@ import {
   CertificateFormFieldType,
   EducationFormFieldType,
   AttachmentsType,
-} from '@mawaheb/db/src/types/User';
+} from '@mawaheb/db';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';

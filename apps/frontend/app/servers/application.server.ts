@@ -1,5 +1,5 @@
 import { eq, aliasedTable } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   jobApplicationsTable,
   jobsTable,
@@ -11,8 +11,8 @@ import {
   skillsTable,
   jobSkillsTable,
   freelancerSkillsTable,
-} from '@mawaheb/db/src/schema/schema';
-import { JobApplicationStatus, CompensationType, JobStatus } from '@mawaheb/db/src/types/enums';
+} from '@mawaheb/db';
+import { JobApplicationStatus, CompensationType, JobStatus } from '@mawaheb/db';
 
 // Helper function to safely parse JSON
 function safeParseJSON<T>(jsonString: string | null | undefined, defaultValue: T): T {

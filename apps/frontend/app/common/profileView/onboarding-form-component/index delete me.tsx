@@ -18,7 +18,7 @@ import {
   EducationFormFieldType,
   OnboardingEmployerFields,
   OnboardingFreelancerFields,
-} from '@mawaheb/db/src/types/User';
+} from '@mawaheb/db';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppFormField from '~/common/form-fields';
 import { FaLink } from 'react-icons/fa';

@@ -1,13 +1,13 @@
 import { and, lte, eq, gte, inArray } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 
 import {
   timesheetEntriesTable,
   TimesheetSubmissionEntriesTable,
   timesheetSubmissionsTable,
-} from '@mawaheb/db/src/schema/schema';
-import { TimesheetStatus } from '@mawaheb/db/src/types/enums';
-import { TimesheetEntry } from '@mawaheb/db/src/types/Timesheet';
+} from '@mawaheb/db';
+import { TimesheetStatus } from '@mawaheb/db';
+import { TimesheetEntry } from '@mawaheb/db';
 
 export async function getTimesheetEntriesFromDatabase(
   freelancerId: number,

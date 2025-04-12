@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { JobApplicationStatus, AccountStatus } from '@mawaheb/db/src/types/enums';
+import { JobApplicationStatus, AccountStatus } from '@mawaheb/db';
 import { DataTable } from './DataTable';
 
 interface Application {

@@ -1,4 +1,4 @@
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   employerIndustriesTable,
@@ -9,19 +9,13 @@ import {
   languagesTable,
   userIdentificationsTable,
   attachmentsTable,
-} from '@mawaheb/db/src/schema/schema';
+} from '@mawaheb/db';
 import { and, eq } from 'drizzle-orm';
-import {
-  Employer,
-  AccountBio,
-  AccountSocialMediaLinks,
-  Industry,
-  UserAccount,
-} from '@mawaheb/db/src/types/User';
+import { Employer, AccountBio, AccountSocialMediaLinks, Industry, UserAccount } from '@mawaheb/db';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
 // import { Skill } from "@mawaheb/db/src/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from '@mawaheb/db/src/types/enums';
+import { JobStatus } from '@mawaheb/db';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
 import { saveAttachments } from './cloudStorage.server';

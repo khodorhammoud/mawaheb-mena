@@ -1,20 +1,10 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node';
 import { Link, useLoaderData, Outlet } from '@remix-run/react';
-// import { eq, sql } from "drizzle-orm";
-// import { db } from "~/db/drizzle/connector";
-// import {
-//   jobsTable,
-//   employersTable,
-//   jobCategoriesTable,
-//   jobApplicationsTable,
-//   accountsTable,
-//   UsersTable,
-//   freelancersTable,
-// } from "@mawaheb/db/src/schema/schema";
+
 // import { ChevronRightIcon } from "@heroicons/react/24/solid";
 import { JobsTable } from '~/common/admin-pages/tables/JobsTable';
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
-import { JobStatus, JobApplicationStatus, AccountStatus } from '@mawaheb/db/src/types/enums';
+import { JobStatus, JobApplicationStatus, AccountStatus } from '@mawaheb/db';
 import { getBasicJobs, getAllApplications } from '~/servers/admin.server';
 
 /* function ApplicationsTable({ applications }: { applications: any[] }) {

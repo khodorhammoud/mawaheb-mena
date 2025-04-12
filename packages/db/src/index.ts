@@ -1,14 +1,108 @@
-// Export the schema
-export * from './schema/schema.js';
+export * as schema from './schema/schema';
 
-// Export the types
-export * from './types/enums.js';
-export * from './types/PoolConfig.js';
+export {
+  providerEnum,
+  accountStatusEnum,
+  employerAccountTypeEnum,
+  accountTypeEnum,
+  timesheetStatusEnum,
+  languageEnum,
+  jobApplicationStatusEnum,
+  countryEnum,
+  dayOfWeekEnum,
+  projectTypeEnum,
+  compensationTypeEnum,
+  locationPreferenceTypeEnum,
+  experienceLevelEnum,
+  jobStatusEnum,
+  jobsOpenToEnum,
+  belongsToEnum,
+  userRoleEnum,
+  UsersTable,
+  userIdentificationsTable,
+  socialAccountsTable,
+  accountsTable,
+  preferredWorkingTimesTable,
+  freelancersTable,
+  freelancerLanguagesTable,
+  employersTable,
+  languagesTable,
+  accountLanguagesTable,
+  userVerificationsTable,
+  industriesTable,
+  employerIndustriesTable,
+  jobCategoriesTable,
+  jobsTable,
+  skillsTable,
+  jobSkillsTable,
+  freelancerSkillsTable,
+  jobApplicationsTable,
+  reviewsTable,
+  timesheetEntriesTable,
+  TimesheetSubmissionEntriesTable,
+  timesheetSubmissionsTable,
+  attachmentsTable,
+  exitFeedbackTable,
+  notificationsTable,
+  skillfoliosTable,
+} from './schema/schema';
 
-// Export the connector
-export { db } from './connector';
+export type { PoolConfig } from './types/PoolConfig';
 
-// Export migration and seeding utilities
-export { drizzleMigrator } from './migrations/migrator.js';
-export { migrateFresh } from './migrations/migrate-fresh.js';
-export { seed } from './seeders/seeder.js';
+export {
+  AccountStatus,
+  Provider,
+  AccountType,
+  EmployerAccountType,
+  ProjectType,
+  LocationPreferenceType,
+  CompensationType,
+  Language,
+  Country,
+  DayOfWeek,
+  ExperienceLevel,
+  JobStatus,
+  JobApplicationStatus,
+  TimesheetStatus,
+  JobsOpenTo,
+  AttachmentBelongsTo,
+  NotificationType,
+} from './types/enums';
+
+export { JobCardData, JobFilter, JobApplication } from './types/Job';
+export { Skill } from './types/Skill';
+
+export { UserSkill, Education, Experience, Verification, Skillfolio } from './types/Skillfolio';
+
+export type { Job } from './types/Job';
+
+export { Notification } from './types/notifications';
+
+export type { TimesheetEntry, EntryPopup, TimeSlot, DisplayedDaysType } from './types/Timesheet';
+
+export { TimesheetDay, TimesheetData, TimesheetProps, DayTotalProps } from './types/Timesheet';
+
+export {
+  User,
+  PreferredWorkingTimes,
+  SocialAccount,
+  UserAccount,
+  AccountSocialMediaLinks,
+  Employer,
+  Freelancer,
+  LoggedInUser,
+  AccountBio,
+  Industry,
+  JobCategory,
+  LoaderFunctionError,
+  OnboardingEmployerFields,
+  OnboardingFreelancerFields,
+  PortfolioFormFieldType,
+  AttachmentsType,
+  WorkHistoryFormFieldType,
+  CertificateFormFieldType,
+  EducationFormFieldType,
+  SettingsInfo,
+} from './types/User';
+
+// export { db } from './connector';

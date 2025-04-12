@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSearchParams, Link } from '@remix-run/react';
-import { JobApplicationStatus, AccountStatus } from '@mawaheb/db/src/types/enums';
+import { JobApplicationStatus, AccountStatus } from '@mawaheb/db';
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
 import { getApplications } from '~/servers/admin.server';
 
