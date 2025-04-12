@@ -4,15 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix vite:build",
-    "dev": "remix vite:dev ",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx  app/db/migrator.ts",
-    "db:migrate:fresh": "tsx app/db/migrate-fresh.ts",
-    "db:migrate:fresh:seed": "tsx app/db/migrate-fresh.ts --seed",
-    "db:seed": "tsx app/db/seeders/seeder.ts",
+    "build": "pnpm exec remix vite:build",
+    "dev": "pnpm exec remix vite:dev ",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "remix-serve ./build/server/index.js",
+    "start": "pnpm exec remix-serve ./build/server/index.js",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -24,7 +19,7 @@
     "@google-cloud/storage": "^7.14.0",
     "@heroicons/react": "^2.1.4",
     "@hookform/resolvers": "^3.9.0",
-    "@mawaheb/db": "*",
+    "@mawaheb/db": "workspace:*",
     "@neondatabase/serverless": "^0.9.3",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.2",

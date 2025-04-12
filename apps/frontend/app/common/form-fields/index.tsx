@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { useState, useEffect, ReactNode } from 'react';
 import PhoneNumberField from './phoneNbs/PhoneNumberField';
 
@@ -243,7 +243,7 @@ const AppFormField = ({
   );
 };
 
-AppFormField.propTypes = {
+/* AppFormField.propTypes = {
   type: PropTypes.string,
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
@@ -263,6 +263,6 @@ AppFormField.propTypes = {
   onChange: PropTypes.func,
   useRichText: PropTypes.bool,
   min: PropTypes.number, // ✅ Add min to prop types
-};
+}; */
 
 export default AppFormField;

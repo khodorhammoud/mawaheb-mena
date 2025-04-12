@@ -1,27 +1,27 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { db } from '@mawaheb/db';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private dbInstance;
+  private dbInstance: any;
 
   constructor() {
-    // Create the database connection using the shared package
-    this.dbInstance = db;
-    console.log('Database connection created');
+    console.log('DatabaseService constructed');
   }
 
-  onModuleInit() {
-    console.log('Database module initialized');
+  async onModuleInit() {
+    const { db } = await import('@mawaheb/db/server');
+    this.dbInstance = db;
+    console.log('Database module initialized, connection obtained');
   }
 
   onModuleDestroy() {
-    // Close the database connection when the application shuts down
-    console.log('Database connection closed');
+    console.log('Database connection closed (potential placeholder)');
   }
 
-  // Method to get the database instance
   get db() {
+    if (!this.dbInstance) {
+      throw new Error('Database connection not initialized yet.');
+    }
     return this.dbInstance;
   }
 }
