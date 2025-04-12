@@ -174,7 +174,28 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                   <IoPencilSharp className="lg:relative absolute lg:left-0 left-10 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
+              <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[90vh]">
+                {/* <button
+                  onClick={() => handleSkillDialogChange(false)}
+                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                > */}
+                {/* <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg> */}
+                {/* <span className="sr-only">Close</span> */}
+                {/* </button> */}
                 <DialogHeader>
                   <DialogTitle className="my-3">Skills</DialogTitle>
                   <DialogDescription className="w-2/3 text-base">
