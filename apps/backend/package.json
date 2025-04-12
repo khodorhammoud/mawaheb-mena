@@ -6,9 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "pnpm exec nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "pnpm exec nest start",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@mawaheb/db": "*",
+    "@mawaheb/db": "workspace:*",
     "@neondatabase/serverless": "^0.9.3",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.2",
