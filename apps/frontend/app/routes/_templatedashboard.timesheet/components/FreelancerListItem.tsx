@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
-import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { JobApplication } from '@mawaheb/db';
 
 interface FreelancerListItemProps {
   jobApplication: JobApplication;

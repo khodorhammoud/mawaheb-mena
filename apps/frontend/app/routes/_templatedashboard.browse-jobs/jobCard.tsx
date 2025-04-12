@@ -1,6 +1,6 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { Job as JobType } from '@mawaheb/db/src/types/Job';
+import { Job as JobType } from '@mawaheb/db';
 import { Button } from '~/components/ui/button';
 import SkillBadgeList from '~/common/skill/SkillBadge';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';

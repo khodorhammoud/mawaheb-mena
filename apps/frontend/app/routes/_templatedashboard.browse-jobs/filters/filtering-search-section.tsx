@@ -4,7 +4,7 @@ import SkillsFilter from './SkillsFilter';
 import ExperienceLevelFilter from './ExperienceLevelFilter';
 import HourlyRateFilter from './BudgetFilter';
 import AppFormField from '~/common/form-fields';
-import { ProjectType, ExperienceLevel } from '@mawaheb/db/src/types/enums';
+import { ProjectType, ExperienceLevel } from '@mawaheb/db';
 import { BsSearch } from 'react-icons/bs';
 
 interface FilteringSearchSectionProps {

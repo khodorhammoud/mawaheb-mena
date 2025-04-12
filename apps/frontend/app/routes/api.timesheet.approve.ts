@@ -1,10 +1,10 @@
 import { ActionFunctionArgs } from '@remix-run/node';
-import { requireUserIsEmployerPublished } from '~/auth/auth.server';
+import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server';
 import { updateTimesheetEntriesStatus } from '~/servers/timesheet.server';
-import { TimesheetStatus } from '@mawaheb/db/src/types/enums';
+import { TimesheetStatus } from '@mawaheb/db';
 
 export async function action({ request }: ActionFunctionArgs) {
-  await requireUserIsEmployerPublished(request);
+  await requireUserIsEmployerPublishedOrDeactivated(request);
 
   const formData = await request.formData();
   const date = formData.get('date') as string;

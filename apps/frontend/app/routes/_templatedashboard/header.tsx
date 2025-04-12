@@ -10,7 +10,7 @@ import AppFormField from '~/common/form-fields';
 import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { Dialog, DialogContent } from '~/components/ui/dialog';
 import Availability from '~/common/profileView/availability-form/availability';
-import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/src/types/enums';
+import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
 

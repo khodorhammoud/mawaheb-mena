@@ -2,7 +2,7 @@ import { Form } from '@remix-run/react';
 import AppFormField from '../../../common/form-fields';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AccountType } from '@mawaheb/db/src/types/enums';
+import { AccountType } from '@mawaheb/db';
 
 export default function Header({ setViewMode }) {
   const [isOpen, setIsOpen] = useState(false);

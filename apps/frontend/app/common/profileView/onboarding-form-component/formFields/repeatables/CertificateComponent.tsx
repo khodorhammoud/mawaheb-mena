@@ -1,4 +1,4 @@
-import { CertificateFormFieldType } from '@mawaheb/db/src/types/User';
+import { CertificateFormFieldType } from '@mawaheb/db';
 import AppFormField from '~/common/form-fields';
 import FileUpload from '~/common/upload/fileUpload';
 import { useRef, useState } from 'react';

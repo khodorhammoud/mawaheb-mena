@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'; // or cloudflare/deno
 
 import {
-  requireUserIsEmployerPublished,
+  requireUserIsEmployerPublishedOrDeactivated,
   requireUserIsFreelancerPublished,
   requireUserOnboarded,
 } from '~/auth/auth.server';
@@ -13,7 +13,7 @@ import {
 } from '~/servers/job.server';
 import TimeSheetPage from './components/TimeSheetPage';
 import JobsPage from './components/JobsPage';
-import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { JobApplication } from '@mawaheb/db';
 import { useState } from 'react';
 import {
   getEmployerIdFromUserId,
@@ -21,7 +21,7 @@ import {
   getUserAccountType,
 } from '~/servers/user.server';
 import { useLoaderData } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db/src/types/enums';
+import { AccountType } from '@mawaheb/db';
 import { FreelancerTimesheetHeader } from './components/FreelancerTimesheetHeader';
 import { OtherFreelancers } from './components/OtherFreelancers';
 import { EmployerJobsList } from './components/EmployerJobsList';
@@ -42,7 +42,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     profileId = freelancerId;
   } else if (accountType === AccountType.Employer) {
     // user must be an employer
-    await requireUserIsEmployerPublished(request);
+    await requireUserIsEmployerPublishedOrDeactivated(request);
     const employerId = await getEmployerIdFromUserId(userId);
     profileId = employerId;
   }

@@ -1,4 +1,4 @@
-import { Job /* , JobApplication */ } from '@mawaheb/db/src/types/Job';
+import { Job /* , JobApplication */ } from '@mawaheb/db';
 import { EmployerJobCard } from './EmployerJobCard';
 // import { useEffect, useState } from "react";
 

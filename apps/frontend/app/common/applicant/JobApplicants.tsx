@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useLoaderData } from '@remix-run/react';
-import { JobApplicationStatus } from '@mawaheb/db/src/types/enums';
+import { JobApplicationStatus } from '@mawaheb/db';
 import Applicants from './Applicants';
-import { AccountBio, Freelancer } from '@mawaheb/db/src/types/User';
-import { JobCardData } from '@mawaheb/db/src/types/Job';
+import { AccountBio, Freelancer } from '@mawaheb/db';
+import { JobCardData } from '@mawaheb/db';
 
 type JobApplicantsProps = {
   freelancers: Freelancer[];

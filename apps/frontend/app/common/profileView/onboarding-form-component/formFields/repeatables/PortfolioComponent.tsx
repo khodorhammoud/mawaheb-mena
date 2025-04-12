@@ -1,4 +1,4 @@
-import { PortfolioFormFieldType } from '@mawaheb/db/src/types/User';
+import { PortfolioFormFieldType } from '@mawaheb/db';
 import { FaLink } from 'react-icons/fa';
 import AppFormField from '~/common/form-fields';
 import FileUpload from '~/common/upload/fileUpload';

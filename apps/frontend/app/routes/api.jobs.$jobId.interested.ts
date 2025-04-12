@@ -5,8 +5,8 @@ import {
   getJobById,
 } from '../servers/job.server';
 import { requireUserIsFreelancerPublished } from '~/auth/auth.server';
-import { JobFilter } from '@mawaheb/db/src/types/Job';
-import { JobStatus } from '@mawaheb/db/src/types/enums';
+import { JobFilter } from '@mawaheb/db';
+import { JobStatus } from '@mawaheb/db';
 import { getProfileInfo } from '~/servers/user.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

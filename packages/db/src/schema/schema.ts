@@ -545,7 +545,7 @@ export const reviewsTable = pgTable('reviews', {
   employerId: integer('employer_id').references(() => employersTable.id),
   freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
   rating: real('rating').notNull(),
-  comment: text('comment').default(null),
+  comment: text('comment'),
   createdAt: timestamp('created_at').default(sql`now()`),
   reviewType: text('review_type').notNull(),
 });

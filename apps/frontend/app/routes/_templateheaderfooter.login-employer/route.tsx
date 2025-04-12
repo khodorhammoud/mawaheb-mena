@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, json } from '@remix-run/node';
 import LoginEmployerPage from './Login';
 import { authenticator } from '../../auth/auth.server';
-import { Employer, Freelancer } from '@mawaheb/db/src/types/User';
+import { Employer, Freelancer } from '@mawaheb/db';
 import { createUserSession } from '../../auth/session.server';
 import { AuthorizationError } from 'remix-auth';
 

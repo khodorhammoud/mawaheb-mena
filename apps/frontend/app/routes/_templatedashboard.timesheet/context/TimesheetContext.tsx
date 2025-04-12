@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
-import { AccountType } from '@mawaheb/db/src/types/enums';
-import type { TimesheetEntry, TimeSlot } from '@mawaheb/db/src/types/Timesheet';
+import { AccountType } from '@mawaheb/db';
+import type { TimesheetEntry, TimeSlot } from '@mawaheb/db';
 
 interface TimesheetContextType {
   accountType: AccountType;

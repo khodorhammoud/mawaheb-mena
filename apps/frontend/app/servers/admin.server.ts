@@ -1,5 +1,5 @@
 import { eq, aliasedTable, and, desc, sql, count } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   UsersTable,
@@ -10,13 +10,8 @@ import {
   jobCategoriesTable,
   skillsTable,
   jobSkillsTable,
-} from '@mawaheb/db/src/schema/schema';
-import {
-  AccountType,
-  AccountStatus,
-  JobApplicationStatus,
-  JobStatus,
-} from '@mawaheb/db/src/types/enums';
+} from '@mawaheb/db';
+import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '@mawaheb/db';
 import type { Account } from '~/common/admin-pages/tables/AccountsTable';
 import {
   Portfolio,

@@ -1,8 +1,8 @@
 // import Sidebar from "~/routes/_templatedashboard/Sidebar";
 import { Link, useLoaderData, useNavigate } from '@remix-run/react';
 // import { useState } from "react";
-import type { Employer } from '@mawaheb/db/src/types/User';
-import { AccountStatus } from '@mawaheb/db/src/types/enums';
+import type { Employer } from '@mawaheb/db';
+import { AccountStatus } from '@mawaheb/db';
 import { useToast } from '~/components/hooks/use-toast';
 import { ToastAction } from '~/components/ui/toast';
 import { Button } from '~/components/ui/button';

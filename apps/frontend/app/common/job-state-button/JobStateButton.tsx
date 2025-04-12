@@ -1,6 +1,6 @@
 import { useFetcher } from '@remix-run/react';
 import { useState } from 'react';
-import { JobStatus, AccountStatus } from '@mawaheb/db/src/types/enums';
+import { JobStatus, AccountStatus } from '@mawaheb/db';
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,

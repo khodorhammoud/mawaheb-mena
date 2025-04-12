@@ -1,4 +1,4 @@
-import { JobApplication } from '@mawaheb/db/src/types/Job';
+import { JobApplication } from '@mawaheb/db';
 
 interface FreelancerTimesheetHeaderProps {
   jobApplication: JobApplication;

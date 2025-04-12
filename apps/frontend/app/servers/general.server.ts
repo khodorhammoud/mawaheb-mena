@@ -1,6 +1,6 @@
 import { eq, ilike, or } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
-import { industriesTable, languagesTable, skillsTable } from '@mawaheb/db/src/schema/schema';
+import { db } from '@mawaheb/db/server';
+import { industriesTable, languagesTable, skillsTable } from '@mawaheb/db';
 
 // fetch all skills
 export async function fetchSkills(isHot: boolean = false, limit: number = 10) {

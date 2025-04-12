@@ -5,7 +5,7 @@ import { useLoaderData, redirect } from '@remix-run/react';
 
 import FreelancerPage from './freelancer';
 import EmployerPage from './employer';
-import { AccountType } from '@mawaheb/db/src/types/enums';
+import { AccountType } from '@mawaheb/db';
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
@@ -20,7 +20,7 @@ import {
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
   UserAccount,
-} from '@mawaheb/db/src/types/User';
+} from '@mawaheb/db';
 import { authenticator } from '~/auth/auth.server';
 import {
   getAccountBio,

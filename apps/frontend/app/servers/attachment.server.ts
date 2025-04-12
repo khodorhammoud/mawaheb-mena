@@ -1,6 +1,6 @@
 // import { eq, and, not, desc } from "drizzle-orm";
 // import { db } from "~/db/drizzle/connector";
-// import { attachmentsTable } from "@mawaheb/db/src/schema/schema";
+// import { attachmentsTable } from "@mawaheb/db";
 // import { AttachmentBelongsTo } from "@mawaheb/db/src/types/enums";
 
 // export async function saveAttachment(
@@ -175,9 +175,9 @@
 //   }
 // }
 
-import { db } from '~/db/drizzle/connector';
-import { attachmentsTable } from '@mawaheb/db/src/schema/schema';
-import { AttachmentsType } from '@mawaheb/db/src/types/User';
+import { db } from '@mawaheb/db/server';
+import { attachmentsTable } from '@mawaheb/db';
+import { AttachmentsType } from '@mawaheb/db';
 import { eq } from 'drizzle-orm';
 
 export async function saveAttachment(

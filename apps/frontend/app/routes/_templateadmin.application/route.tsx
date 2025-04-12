@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
-import { jobApplicationsTable, jobsTable, freelancersTable } from '@mawaheb/db/src/schema/schema';
+import { db } from '@mawaheb/db/server';
+import { jobApplicationsTable, jobsTable, freelancersTable } from '@mawaheb/db';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const applications = await db

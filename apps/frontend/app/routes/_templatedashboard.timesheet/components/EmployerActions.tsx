@@ -1,6 +1,6 @@
 import { Button } from '~/components/ui/button';
 import { useTimesheet } from '../context/TimesheetContext';
-import { AccountType, TimesheetStatus } from '@mawaheb/db/src/types/enums';
+import { AccountType, TimesheetStatus } from '@mawaheb/db';
 
 interface EmployerActionsProps {
   date: string;
