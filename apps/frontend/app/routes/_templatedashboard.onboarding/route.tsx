@@ -1,14 +1,14 @@
 import EmployerOnboardingScreen from './employer';
 import FreelancerOnboardingScreen from './freelancer';
 import { redirect, useLoaderData } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUserAccountInfo,
 } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Employer, Freelancer } from '@mawaheb/db';
+import { Employer, Freelancer } from '@mawaheb/db/types';
 import { requireUserVerified } from '~/auth/auth.server';
 import {
   getAccountBio,

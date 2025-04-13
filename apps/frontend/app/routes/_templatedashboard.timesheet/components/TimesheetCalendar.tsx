@@ -1,5 +1,5 @@
 import { Calendar } from '~/components/ui/calendar';
-import type { TimesheetData } from '@mawaheb/db';
+import type { TimesheetData } from '@mawaheb/db/types';
 import { useEffect, useState } from 'react';
 
 interface TimesheetCalendarProps {

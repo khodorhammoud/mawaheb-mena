@@ -1,6 +1,6 @@
 import { NotificationType } from './enums';
 
-export interface Notification {
+export type Notification = {
   id: number;
   userId: number;
   type: NotificationType;
@@ -10,4 +10,4 @@ export interface Notification {
   isRead: boolean;
   createdAt: Date;
   readAt: Date | null;
-}
+};

@@ -1,5 +1,5 @@
 import { Checkbox } from '~/components/ui/checkbox';
-import { WorkHistoryFormFieldType } from '@mawaheb/db';
+import { WorkHistoryFormFieldType } from '@mawaheb/db/types';
 import { format } from 'date-fns';
 import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';

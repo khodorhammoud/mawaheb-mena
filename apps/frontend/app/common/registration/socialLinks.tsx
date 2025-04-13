@@ -1,6 +1,6 @@
 import { useLocation } from '@remix-run/react';
 import GoogleAuthButton from '../auth/GoogleAuthButton';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 export default function SocialLinks() {
   const location = useLocation();

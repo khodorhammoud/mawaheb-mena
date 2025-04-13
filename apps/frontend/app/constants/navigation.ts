@@ -4,7 +4,7 @@
 import { TFunction } from 'i18next';
 import { FaBriefcase, FaCog, FaFileAlt, FaChartLine } from 'react-icons/fa';
 import { MdSpaceDashboard } from 'react-icons/md';
-import { AccountStatus } from '@mawaheb/db';
+import { AccountStatus } from '@mawaheb/db/enums';
 
 // this is the main navigation
 export const navigation = function (t: TFunction) {

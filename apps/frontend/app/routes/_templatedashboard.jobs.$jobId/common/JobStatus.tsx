@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useFetcher } from '@remix-run/react';
-import { JobApplicationStatus } from '@mawaheb/db';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 import { Button } from '~/components/ui/button';
 
 type StatusDropdownProps = {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { TimesheetEntry, EntryPopup, TimeSlot, TimesheetData } from '@mawaheb/db';
+import type { TimesheetEntry, EntryPopup, TimeSlot, TimesheetData } from '@mawaheb/db/types';
 import { useToast } from '~/components/hooks/use-toast';
 import { useFetcher } from '@remix-run/react';
-import { JobApplication } from '@mawaheb/db';
+import { JobApplication } from '@mawaheb/db/types';
 import { subDays, addDays } from 'date-fns';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 export const useTimesheet = (
   allowOverlap = true,

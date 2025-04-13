@@ -4,7 +4,7 @@ import { getAllJobCategories, getJobById, updateJob } from '~/servers/job.server
 import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server';
 import { getCurrentUserAccountInfo, getProfileInfo } from '~/servers/user.server';
 import { getAllSkills } from '~/servers/skill.server';
-import { Job } from '@mawaheb/db';
+import { Job } from '@mawaheb/db/types';
 
 export async function loader({ params, request }: { params: { jobId: number }; request: Request }) {
   const { jobId } = params;

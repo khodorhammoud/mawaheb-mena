@@ -21,9 +21,9 @@ import {
   FaDribbble,
 } from 'react-icons/fa';
 import { TbBrandGithubFilled, TbBrandDribbbleFilled } from 'react-icons/tb';
-import { AccountBio } from '@mawaheb/db';
+import { AccountBio } from '@mawaheb/db/types';
 import AppFormField from '~/common/form-fields';
-import { AccountType, Country } from '@mawaheb/db';
+import { AccountType, Country } from '@mawaheb/db/enums';
 
 interface BioInfoProps {
   profile: any;

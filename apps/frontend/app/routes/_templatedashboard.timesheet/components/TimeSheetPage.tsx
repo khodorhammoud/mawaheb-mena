@@ -4,13 +4,13 @@ import { TimeEntryDialog } from '../components/TimeEntryDialog';
 import { TimeGrid } from '../components/TimeGrid';
 import { TimeHeader } from '../components/TimeHeader';
 import { TimesheetCalendar } from '../components/TimesheetCalendar';
-import type { TimesheetProps } from '@mawaheb/db';
+import type { TimesheetProps } from '@mawaheb/db/types';
 import { Toaster } from '~/components/ui/toaster';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import type { LinksFunction } from '@remix-run/node';
 import { TimesheetContext } from '../context/TimesheetContext';
 import styles from '../styles/calendarStyles.css?url';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 const Timesheet: React.FC<TimesheetProps> = ({
   allowOverlap,

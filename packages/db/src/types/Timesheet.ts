@@ -13,15 +13,15 @@ export type TimesheetEntry = {
   status?: TimesheetStatus;
 };
 
-export interface TimesheetDay {
+export type TimesheetDay = {
   entries: TimesheetEntry[];
   isSubmitted?: boolean;
   status?: TimesheetStatus;
-}
+};
 
-export interface TimesheetData {
+export type TimesheetData = {
   [key: string]: TimesheetDay;
-}
+};
 
 export type EntryPopup = {
   isOpen: boolean;
@@ -31,12 +31,12 @@ export type EntryPopup = {
   entryIndex: number | null;
 };
 
-export interface TimesheetProps {
+export type TimesheetProps = {
   allowOverlap?: boolean;
   jobApplication?: JobApplication;
   accountType: AccountType;
   freelancerId?: number;
-}
+};
 
 export type TimeSlot = {
   totalMinutes: number;
@@ -49,7 +49,7 @@ export type DisplayedDaysType = {
   formattedDate: string;
 };
 
-export interface DayTotalProps {
+export type DayTotalProps = {
   total: number;
   className?: string;
-}
+};

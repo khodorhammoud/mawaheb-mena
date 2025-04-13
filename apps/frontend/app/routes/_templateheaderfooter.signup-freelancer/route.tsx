@@ -4,7 +4,7 @@ import { generateVerificationToken, getProfileInfo } from '../../servers/user.se
 import { RegistrationError } from '../../common/errors/UserError';
 import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
-import { Freelancer } from '@mawaheb/db';
+import { Freelancer } from '@mawaheb/db/types';
 
 export async function action({ request }: ActionFunctionArgs) {
   let newFreelancer: Freelancer | null = null;

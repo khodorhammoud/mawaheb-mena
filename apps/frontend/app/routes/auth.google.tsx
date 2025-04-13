@@ -1,6 +1,6 @@
 import { ActionFunction } from '@remix-run/node';
 import { authenticator } from '~/services/auth.server';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 export const action: ActionFunction = async ({ request }) => {
   const clonedRequest = request.clone();

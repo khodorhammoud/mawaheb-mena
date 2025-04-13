@@ -9,8 +9,8 @@ import {
   registerFreelancer,
   verifyUserAccount,
 } from '~/servers/user.server';
-import { EmployerAccountType, Provider } from '@mawaheb/db';
-import { Freelancer, Employer } from '@mawaheb/db';
+import { EmployerAccountType, Provider } from '@mawaheb/db/enums';
+import { Freelancer, Employer } from '@mawaheb/db/types';
 
 // Create an instance of the authenticator
 export const authenticator = new Authenticator(sessionStorage);

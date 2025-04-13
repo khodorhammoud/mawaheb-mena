@@ -1,4 +1,4 @@
-import { JobApplication } from '@mawaheb/db';
+import { JobApplication } from '@mawaheb/db/types';
 import { Link } from '@remix-run/react';
 
 interface OtherFreelancersProps {

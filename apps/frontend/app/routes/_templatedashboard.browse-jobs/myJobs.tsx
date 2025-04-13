@@ -1,9 +1,9 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { Job } from '@mawaheb/db';
+import { Job } from '@mawaheb/db/types';
 import JobCard from './jobCard';
 import FilteringSearchSection from './filters/filtering-search-section';
-import { JobApplicationStatus } from '@mawaheb/db';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 
 interface MyJobsProps {
   onJobSelect: (job: Job) => void;

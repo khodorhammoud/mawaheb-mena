@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, ActionFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, Form, Outlet } from '@remix-run/react';
-import { AccountStatus, JobStatus } from '@mawaheb/db';
+import { AccountStatus, JobStatus } from '@mawaheb/db/enums';
 import { JobsTable } from '~/common/admin-pages/tables/JobsTable';
 import { getEmployerDetails, updateEmployerAccountStatus, type Job } from '~/servers/admin.server';
 

@@ -1,4 +1,4 @@
-import { JobApplication } from '@mawaheb/db';
+import { JobApplication } from '@mawaheb/db/types';
 import { Button } from '~/components/ui/button';
 
 interface JobApplicationProps {

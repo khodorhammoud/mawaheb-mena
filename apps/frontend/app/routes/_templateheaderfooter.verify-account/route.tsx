@@ -4,7 +4,7 @@ import { SuccessVerificationLoaderStatus } from '../../types/misc';
 import { authenticator } from '../../auth/auth.server';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useEffect, useRef } from 'react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 // export async function action({ request }: ActionFunctionArgs) {
 

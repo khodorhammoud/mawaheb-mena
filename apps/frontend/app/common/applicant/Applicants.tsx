@@ -1,4 +1,4 @@
-import { JobApplicationStatus } from '@mawaheb/db';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 import { useState } from 'react';
 import StatusDropdown from '~/routes/_templatedashboard.jobs.$jobId/common/JobStatus';
 import ApplicantSheet from './ApplicantSheet';

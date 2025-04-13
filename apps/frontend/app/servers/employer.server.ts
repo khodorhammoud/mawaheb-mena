@@ -11,11 +11,17 @@ import {
   attachmentsTable,
 } from '@mawaheb/db';
 import { and, eq } from 'drizzle-orm';
-import { Employer, AccountBio, AccountSocialMediaLinks, Industry, UserAccount } from '@mawaheb/db';
+import {
+  Employer,
+  AccountBio,
+  AccountSocialMediaLinks,
+  Industry,
+  UserAccount,
+} from '@mawaheb/db/types';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
 // import { Skill } from "@mawaheb/db/src/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from '@mawaheb/db';
+import { JobStatus } from '@mawaheb/db/enums';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
 import { saveAttachments } from './cloudStorage.server';

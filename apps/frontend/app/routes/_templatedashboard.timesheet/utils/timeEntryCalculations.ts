@@ -1,4 +1,4 @@
-import { TimesheetEntry } from '@mawaheb/db';
+import { TimesheetEntry } from '@mawaheb/db/types';
 
 const gridGap = 8;
 

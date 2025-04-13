@@ -18,7 +18,7 @@ import {
   CertificateFormFieldType,
   EducationFormFieldType,
   AttachmentsType,
-} from '@mawaheb/db';
+} from '@mawaheb/db/types';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';

@@ -1,4 +1,4 @@
-import { TimesheetEntry } from '@mawaheb/db';
+import { TimesheetEntry } from '@mawaheb/db/types';
 
 // Define the type for the popup state when adding or editing an entry
 export type EntryPopup = {

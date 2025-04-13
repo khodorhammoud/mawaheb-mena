@@ -4,9 +4,9 @@ import {
   TimesheetEntry,
   // TimesheetData,
   TimeSlot,
-} from '@mawaheb/db';
+} from '@mawaheb/db/types';
 import { useTimesheet } from '../context/TimesheetContext';
-import { TimesheetStatus } from '@mawaheb/db';
+import { TimesheetStatus } from '@mawaheb/db/enums';
 
 interface TimeGridEntryProps {
   day: { date: Date };

@@ -197,14 +197,17 @@ importers:
         specifier: ^8.0.0
         version: 8.1.0(@keystone-6/core@6.4.0(@babel/core@7.26.10)(@prisma/generator-helper@5.22.0)(@types/express@4.17.21)(@types/react@18.3.20)(encoding@0.1.13))(@types/react@18.3.20)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@keystone-6/core':
-        specifier: ^6.0.0
+        specifier: ^6.4.0
         version: 6.4.0(@babel/core@7.26.10)(@prisma/generator-helper@5.22.0)(@types/express@4.17.21)(@types/react@18.3.20)(encoding@0.1.13)
       '@keystone-6/fields-document':
         specifier: ^9.0.0
         version: 9.1.1(@keystone-6/core@6.4.0(@babel/core@7.26.10)(@prisma/generator-helper@5.22.0)(@types/express@4.17.21)(@types/react@18.3.20)(encoding@0.1.13))(slate-dom@0.112.2(slate@0.110.2))
       '@prisma/client':
-        specifier: ^6.6.0
-        version: 6.6.0(prisma@6.6.0(typescript@5.8.3))(typescript@5.8.3)
+        specifier: 5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      '@prisma/engines':
+        specifier: 5.22.0
+        version: 5.22.0
       decamelize-keys:
         specifier: ^1.1.1
         version: 1.1.1
@@ -219,8 +222,8 @@ importers:
         version: 5.8.3
     devDependencies:
       prisma:
-        specifier: ^6.6.0
-        version: 6.6.0(typescript@5.8.3)
+        specifier: 5.22.0
+        version: 5.22.0
 
   apps/frontend:
     dependencies:
@@ -16855,6 +16858,7 @@ snapshots:
     optionalDependencies:
       prisma: 6.6.0(typescript@5.8.3)
       typescript: 5.8.3
+    optional: true
 
   '@prisma/config@6.6.0':
     dependencies:
@@ -16862,14 +16866,17 @@ snapshots:
       esbuild-register: 3.6.0(esbuild@0.25.2)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@prisma/debug@5.22.0': {}
 
-  '@prisma/debug@6.6.0': {}
+  '@prisma/debug@6.6.0':
+    optional: true
 
   '@prisma/engines-version@5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2': {}
 
-  '@prisma/engines-version@6.6.0-53.f676762280b54cd07c770017ed3711ddde35f37a': {}
+  '@prisma/engines-version@6.6.0-53.f676762280b54cd07c770017ed3711ddde35f37a':
+    optional: true
 
   '@prisma/engines@5.22.0':
     dependencies:
@@ -16884,6 +16891,7 @@ snapshots:
       '@prisma/engines-version': 6.6.0-53.f676762280b54cd07c770017ed3711ddde35f37a
       '@prisma/fetch-engine': 6.6.0
       '@prisma/get-platform': 6.6.0
+    optional: true
 
   '@prisma/fetch-engine@5.22.0':
     dependencies:
@@ -16896,6 +16904,7 @@ snapshots:
       '@prisma/debug': 6.6.0
       '@prisma/engines-version': 6.6.0-53.f676762280b54cd07c770017ed3711ddde35f37a
       '@prisma/get-platform': 6.6.0
+    optional: true
 
   '@prisma/generator-helper@5.22.0':
     dependencies:
@@ -16908,6 +16917,7 @@ snapshots:
   '@prisma/get-platform@6.6.0':
     dependencies:
       '@prisma/debug': 6.6.0
+    optional: true
 
   '@prisma/internals@5.22.0':
     dependencies:
@@ -21125,6 +21135,7 @@ snapshots:
       esbuild: 0.25.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   esbuild@0.17.6:
     optionalDependencies:
@@ -26417,6 +26428,7 @@ snapshots:
       typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   prismjs@1.30.0: {}
 

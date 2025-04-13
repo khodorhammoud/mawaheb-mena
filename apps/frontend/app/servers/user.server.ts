@@ -24,11 +24,17 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from '@mawaheb/db';
+} from '@mawaheb/db/types';
 import { and, eq, isNull, or, inArray } from 'drizzle-orm';
 
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
-import { AccountStatus, AccountType, Provider, JobStatus, JobApplicationStatus } from '@mawaheb/db';
+import {
+  AccountStatus,
+  AccountType,
+  Provider,
+  JobStatus,
+  JobApplicationStatus,
+} from '@mawaheb/db/enums';
 
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';

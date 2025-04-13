@@ -1,32 +1,32 @@
-export interface UserSkill {
+export type UserSkill = {
   name: string;
   proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
   yearsOfExperience?: number;
   lastUsed?: string;
   verifiedBy?: string[]; // ["Project", "Certificate"]
-}
+};
 
-export interface Education {
+export type Education = {
   degree: string;
   field: string;
   institution: string;
   completedOn: string;
-}
+};
 
-export interface Experience {
+export type Experience = {
   role: string;
   company?: string;
   durationYears?: number;
   technologies?: string[];
   projectDescriptions?: string[];
-}
+};
 
-export interface Verification {
+export type Verification = {
   type: string; // e.g., "Project Use", "Reference"
   evidence?: string;
-}
+};
 
-export interface Skillfolio {
+export type Skillfolio = {
   id: string;
   userId: string;
   domain: string; // e.g. "Technology"
@@ -48,4 +48,4 @@ export interface Skillfolio {
   };
   createdAt: string;
   updatedAt: string;
-}
+};

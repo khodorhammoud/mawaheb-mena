@@ -4,7 +4,7 @@ import { Badge } from '../../../components/ui/badge';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../components/ui/popover';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { Input } from '../../../components/ui/input';
-import { Skill } from '@mawaheb/db';
+import { Skill } from '@mawaheb/db/types';
 
 interface RequiredSkillsProps {
   selectedSkills: Skill[];
