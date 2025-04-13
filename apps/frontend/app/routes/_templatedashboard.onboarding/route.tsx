@@ -2,7 +2,11 @@ import EmployerOnboardingScreen from './employer';
 import FreelancerOnboardingScreen from './freelancer';
 import { redirect, useLoaderData } from '@remix-run/react';
 import { AccountType } from '@mawaheb/db';
-import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
+import {
+  getCurrentProfileInfo,
+  getCurrentUserAccountType,
+  getCurrentUserAccountInfo,
+} from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Employer, Freelancer } from '@mawaheb/db';
 import { requireUserVerified } from '~/auth/auth.server';
@@ -28,32 +32,46 @@ import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
 
 export async function action({ request }: ActionFunctionArgs) {
-  // user must be verified
-  await requireUserVerified(request);
+  const userId = await requireUserVerified(request);
+  const formData = await request.formData();
+  const targetUpdated = formData.get('target-updated');
 
-  try {
-    const formData = await request.formData();
-    const userProfile = await getCurrentProfileInfo(request);
-    const currentProfile = await getCurrentProfileInfo(request);
-    const accountType = currentProfile.account.accountType;
-
-    // EMPLOYER
-    if (accountType == AccountType.Employer) {
-      return handleEmployerOnboardingAction(formData, userProfile as Employer);
-    }
-
-    // FREELANCER
-    if (accountType == AccountType.Freelancer) {
-      return handleFreelancerOnboardingAction(formData, userProfile as Freelancer);
-    }
-    // DEFAULT
-    throw new Error('Unknown target update');
-  } catch (error) {
-    return Response.json(
-      { success: false, error: { message: 'An unexpected error occurred.' } },
-      { status: 500 }
-    );
+  // Get the full user account info to determine account type
+  const userAccount = await getCurrentUserAccountInfo(request);
+  if (!userAccount) {
+    return Response.json({
+      success: false,
+      error: { message: 'User account not found.' },
+      status: 404,
+    });
   }
+
+  if (userAccount.accountType === 'freelancer') {
+    const profile = (await getCurrentProfileInfo(request)) as Freelancer;
+    if (!profile) {
+      return Response.json({
+        success: false,
+        error: { message: 'Profile not found.' },
+        status: 404,
+      });
+    }
+    const response = await handleFreelancerOnboardingAction(formData, profile);
+    return response;
+  } else if (userAccount.accountType === 'employer') {
+    const profile = (await getCurrentProfileInfo(request)) as Employer;
+    if (!profile) {
+      return Response.json({
+        success: false,
+        error: { message: 'Profile not found.' },
+        status: 404,
+      });
+    }
+    const response = await handleEmployerOnboardingAction(formData, profile);
+
+    return response;
+  }
+
+  return null;
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -74,7 +92,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Redirect to identifying route or dashboard based on onboarding status and account status
   if (profile.account?.user?.isOnboarded) {
-    console.log('profile.account?.accountStatus', profile.account?.accountStatus);
+    // console.log('profile.account?.accountStatus', profile.account?.accountStatus);
     // If account status is published, redirect to dashboard
     if (profile.account?.accountStatus === 'published') {
       return redirect('/dashboard');
