@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -7,17 +7,28 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { IoPencilSharp } from "react-icons/io5";
-import { useFetcher } from "@remix-run/react";
-import SearcheableTagSelector from "~/common/SearcheableTagSelector";
-import { Badge } from "~/components/ui/badge";
-import {
-  FreelancerSkill,
-  Skill,
-} from "~/routes/_templatedashboard.onboarding/types";
-import AppFormField from "~/common/form-fields";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { IoPencilSharp } from 'react-icons/io5';
+import { useFetcher } from '@remix-run/react';
+import SearcheableTagSelector from '~/common/SearcheableTagSelector';
+import { Badge } from '~/components/ui/badge';
+import { FreelancerSkill, Skill } from '~/routes/_templatedashboard.onboarding/types';
+import AppFormField from '~/common/form-fields';
+import { FaStar } from 'react-icons/fa';
+
+// Suggested skills array
+const SUGGESTED_SKILLS = [
+  'Branding',
+  'Responsive Web Design',
+  'JavaScript',
+  'HTML/CSS',
+  'Social Media Marketing',
+  'Accounting',
+  'DevOps',
+  'Technical Support',
+  'Other',
+];
 
 interface SkillsProps {
   profile: { skills?: FreelancerSkill[] };
@@ -28,12 +39,8 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
   const [skillsDialogOpen, setSkillsDialogOpen] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
-  const [freelancerSkills, setFreelancerSkills] = useState<FreelancerSkill[]>(
-    []
-  );
-  const [showAll, setShowAll] = useState(false); // State for modal
-
-  // console.log("🔥 SKILLS COMPONENT: Received Profile:", profile);
+  const [freelancerSkills, setFreelancerSkills] = useState<FreelancerSkill[]>([]);
+  const [showAll, setShowAll] = useState(false);
 
   const skillsFetcher = useFetcher<{
     success?: boolean;
@@ -42,20 +49,46 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
 
   // ✅ Load skills from profile
   useEffect(() => {
-    // console.log("Profile Skills:", profile.skills);
     if (profile.skills) {
-      setFreelancerSkills(profile.skills);
+      // Ensure we're properly mapping the skills with all required fields
+      const mappedSkills = profile.skills.map(skill => ({
+        skillId: skill.skillId,
+        label: skill.label,
+        yearsOfExperience: skill.yearsOfExperience || 0,
+        isStarred: skill.isStarred || false,
+      }));
+
+      setFreelancerSkills(mappedSkills);
+
+      // Update selected skills with proper typing
       setSelectedSkills(
-        profile.skills.map(
-          (skill) =>
+        mappedSkills.map(
+          skill =>
             ({
               id: skill.skillId,
               label: skill.label,
+              metaData: {},
+              isHot: false,
             }) as Skill
         )
       );
     }
   }, [profile.skills]);
+
+  // Update freelancerSkills when selectedSkills changes
+  useEffect(() => {
+    const newFreelancerSkills = selectedSkills.map(skill => {
+      const existingSkill = freelancerSkills.find(fs => fs.skillId === skill.id);
+
+      return {
+        skillId: skill.id,
+        label: skill.label,
+        yearsOfExperience: existingSkill?.yearsOfExperience || 0,
+        isStarred: existingSkill?.isStarred || false,
+      };
+    });
+    setFreelancerSkills(newFreelancerSkills);
+  }, [selectedSkills]);
 
   useEffect(() => {
     if (skillsFetcher.data?.success || skillsFetcher.data?.error) {
@@ -69,78 +102,114 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
   };
 
   const handleYearsChange = (skillId: number, years: number) => {
-    if (years < 0 || years > 30) return;
-    setFreelancerSkills((prev) =>
-      prev.map((skill) =>
-        skill.skillId === skillId
-          ? { ...skill, yearsOfExperience: years }
-          : skill
+    if (years < 0 || years > 50) return;
+    setFreelancerSkills(prev =>
+      prev.map(skill =>
+        skill.skillId === skillId ? { ...skill, yearsOfExperience: years } : skill
       )
     );
   };
 
   const handleRemoveSkill = (skillId: number) => {
-    setSelectedSkills((prev) => prev.filter((skill) => skill.id !== skillId));
+    setSelectedSkills(prev => prev.filter(skill => skill.id !== skillId));
+    setFreelancerSkills(prev => prev.filter(skill => skill.skillId !== skillId));
+  };
+
+  const handleToggleTopSkill = (skillId: number) => {
+    setFreelancerSkills(prev => {
+      const newSkills = prev.map(skill =>
+        skill.skillId === skillId ? { ...skill, isStarred: !skill.isStarred } : skill
+      );
+      return newSkills;
+    });
   };
 
   const handleSubmit = () => {
-    const skillsWithExperience = freelancerSkills.map((skill) => ({
+    const skillsWithExperience = freelancerSkills.map(skill => ({
       skillId: skill.skillId,
+      label: skill.label,
       yearsOfExperience: skill.yearsOfExperience,
+      isStarred: skill.isStarred,
     }));
 
     skillsFetcher.submit(
       {
         skills: JSON.stringify(skillsWithExperience),
-        "target-updated": "freelancer-skills",
+        'target-updated': 'freelancer-skills',
       },
-      { method: "post" }
+      { method: 'post' }
     );
   };
 
-  const maxVisibleSkills = 2;
-  const extraSkills = freelancerSkills.length - maxVisibleSkills;
-  const visibleSkills = freelancerSkills.slice(0, maxVisibleSkills);
-  const hiddenSkills = freelancerSkills.slice(maxVisibleSkills);
+  const handleSuggestedSkillClick = (skillLabel: string) => {
+    // Find if the skill already exists in selectedSkills
+    const existingSkill = selectedSkills.find(skill => skill.label === skillLabel);
+    if (existingSkill) return;
+
+    // Create a new skill with a temporary ID (you might want to handle this differently)
+    const newSkill = {
+      id: Math.random(), // Temporary ID
+      label: skillLabel,
+    } as Skill;
+
+    setSelectedSkills(prev => [...prev, newSkill]);
+  };
+
+  // Add logging for the main view rendering
+  // console.log(
+  //   '🔥 SKILLS COMPONENT: Rendering main view with skills:',
+  //   freelancerSkills.map(s => ({ label: s.label, isStarred: s.isStarred }))
+  // );
 
   return (
     <>
       <div className="lg:ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
-        {/* HEADER - Skills Title & Edit Button */}
         <div className="flex items-center justify-between w-full">
-          <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">
-            Skills
-          </span>
+          <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">Skills</span>
 
           {canEdit && (
-            <Dialog
-              open={skillsDialogOpen}
-              onOpenChange={handleSkillDialogChange}
-            >
+            <Dialog open={skillsDialogOpen} onOpenChange={handleSkillDialogChange}>
               <DialogTrigger asChild>
                 <Button variant="link">
-                  {/* ✏️ */}
                   <IoPencilSharp className="lg:relative absolute lg:left-0 left-10 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
+              <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[90vh]">
+                {/* <button
+                  onClick={() => handleSkillDialogChange(false)}
+                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                > */}
+                {/* <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg> */}
+                {/* <span className="sr-only">Close</span> */}
+                {/* </button> */}
                 <DialogHeader>
-                  <DialogTitle className="mt-3">Skills</DialogTitle>
-                  <DialogDescription>
-                    Add at least 5 skills, then specify years of experience for
-                    each.
+                  <DialogTitle className="my-3">Skills</DialogTitle>
+                  <DialogDescription className="w-2/3 text-base">
+                    Add at least 5 skills, then star 3-4 of them you consider your top skill.
                   </DialogDescription>
                 </DialogHeader>
 
                 {showMessage && skillsFetcher.data?.error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 lg:px-4 px-2 lg:py-3 py-1 rounded relative mb-4">
-                    <span className="block sm:inline">
-                      {skillsFetcher.data.error.message}
-                    </span>
+                    <span className="block sm:inline">{skillsFetcher.data.error.message}</span>
                   </div>
                 )}
 
-                <div className="mb-4">
+                <div className="mb-4 mt-6 ml-1">
                   <SearcheableTagSelector<Skill>
                     dataType="skill"
                     selectedItems={selectedSkills}
@@ -149,33 +218,68 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                     itemKey={(item: Skill) => item.id}
                     formName="freelancer-skills"
                     fieldName="freelancer-skills"
-                    searchPlaceholder="Search skills..."
+                    searchPlaceholder="Search or type skill"
                     autoSubmit={false}
                   />
                 </div>
 
-                <div className="space-y-4 mt-6">
-                  {freelancerSkills.map((skill) => (
-                    <div key={skill.skillId} className="mb-4">
+                <div className="border-t border-gray-300 my-6 ml-2 mr-6"></div>
+
+                <div className="space-y-4">
+                  {freelancerSkills.map(skill => (
+                    <div key={skill.skillId} className="flex flex-col gap-2">
                       <div className="relative inline-block group">
                         <Badge
-                          className="cursor-pointer xl:px-4 px-3 xl:py-2 py-1 bg-blue-100 text-gray-900 rounded-2xl hover:bg-blue-200 transition"
-                          onClick={() => handleRemoveSkill(skill.skillId)}
+                          className={`cursor-pointer xl:px-4 px-3 xl:py-2 py-1 max-w-fit ${
+                            skill.isStarred ? 'bg-blue-200' : 'bg-blue-100'
+                          } text-gray-900 rounded-2xl hover:bg-blue-200 transition flex items-center gap-2`}
                         >
+                          <FaStar
+                            className={`cursor-pointer ${
+                              skill.isStarred ? 'text-primaryColor' : 'text-gray-400'
+                            }`}
+                            onClick={() => handleToggleTopSkill(skill.skillId)}
+                          />
                           {skill.label}
-                          <span className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 text-white rounded-full lg:w-4 w-3 lg:h-4 h-3 flex items-center justify-center text-xs">
-                            ×
-                          </span>
                         </Badge>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="flex items-center gap-2 w-fit border border-gray-300 rounded">
+                          <button
+                            type="button"
+                            className="p-2 px-4 rounded hover:bg-gray-100"
+                            onClick={() =>
+                              handleYearsChange(
+                                skill.skillId,
+                                Math.max(0, (skill.yearsOfExperience || 0) - 1)
+                              )
+                            }
+                          >
+                            -
+                          </button>
+                          <div className="text-sm">{skill.yearsOfExperience}</div>
+                          <button
+                            type="button"
+                            className="p-2 px-4 rounded hover:bg-gray-100"
+                            onClick={() =>
+                              handleYearsChange(
+                                skill.skillId,
+                                Math.min(50, (skill.yearsOfExperience || 0) + 1)
+                              )
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="mt-6">
                   <Button
                     onClick={handleSubmit}
-                    disabled={skillsFetcher.state === "submitting"}
+                    disabled={skillsFetcher.state === 'submitting'}
                     className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
                   >
                     Save
@@ -186,42 +290,41 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
           )}
         </div>
 
-        {/* SKILLS LIST - Independent Layout */}
         <div className="flex flex-wrap items-start gap-2 w-full">
           {freelancerSkills.length > 0 ? (
             <>
-              {visibleSkills.map((skill) => (
+              {freelancerSkills.slice(0, 2).map(skill => (
                 <Badge
                   key={skill.skillId}
-                  className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
+                  className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center gap-2"
                 >
+                  {skill.isStarred && <FaStar className="text-yellow-500" />}
                   {skill.label}
                 </Badge>
               ))}
 
-              {extraSkills > 0 && (
+              {freelancerSkills.length > 2 && (
                 <Dialog open={showAll} onOpenChange={setShowAll}>
                   <DialogTrigger asChild>
                     <Badge
                       variant="outline"
                       className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
                     >
-                      +{extraSkills} more
+                      +{freelancerSkills.length - 2} more
                     </Badge>
                   </DialogTrigger>
                   <DialogContent className="bg-white max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="xl:text-lg text-base">
-                        All Skills
-                      </DialogTitle>
+                      <DialogTitle className="xl:text-lg text-base">All Skills</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex flex-wrap items-start gap-2 mt-4">
-                      {hiddenSkills.map((skill) => (
+                      {freelancerSkills.slice(2).map(skill => (
                         <Badge
                           key={skill.skillId}
-                          className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"
+                          className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center gap-2"
                         >
+                          {skill.isStarred && <FaStar className="text-yellow-500" />}
                           {skill.label}
                         </Badge>
                       ))}
@@ -231,9 +334,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
               )}
             </>
           ) : (
-            <span className="text-gray-500 text-sm italic">
-              No skills added
-            </span>
+            <span className="text-gray-500 text-sm italic">No skills added</span>
           )}
         </div>
       </div>
