@@ -11,13 +11,13 @@ export type Job = JobBase & {
   requiredSkills?: { id: number; name: string; isStarred: boolean }[];
 };
 
-export interface JobCardData {
+export type JobCardData = {
   job: Job;
   applications: JobApplication[];
   interviewedCount?: number;
-}
+};
 
-export interface JobFilter {
+export type JobFilter = {
   projectType?: string[];
   locationPreference?: string[];
   experienceLevel?: string[];
@@ -26,9 +26,9 @@ export interface JobFilter {
   pageSize?: number;
   jobIdsToExclude?: number[]; // add this to exclude job applied to
   query?: string;
-}
+};
 
-export interface JobApplication {
+export type JobApplication = {
   id: number;
   jobId: number;
   freelancerId: number;
@@ -39,5 +39,5 @@ export interface JobApplication {
     firstName: string;
     lastName: string;
   };
-}
+};
 // export type JobApplication = InferSelectModel<typeof jobApplicationsTable>;

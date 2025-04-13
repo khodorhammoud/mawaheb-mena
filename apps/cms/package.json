@@ -9,15 +9,16 @@
   },
   "dependencies": {
     "@keystone-6/auth": "^8.0.0",
-    "@keystone-6/core": "^6.0.0",
+    "@keystone-6/core": "^6.4.0",
     "@keystone-6/fields-document": "^9.0.0",
-    "@prisma/client": "^6.6.0",
+    "@prisma/client": "5.22.0",
+    "@prisma/engines": "5.22.0",
     "decamelize-keys": "^1.1.1",
     "minimist-options": "^4.1.0",
     "quick-lru": "^4.0.1",
     "typescript": "^5.5.0"
   },
   "devDependencies": {
-    "prisma": "^6.6.0"
+    "prisma": "5.22.0"
   }
 }

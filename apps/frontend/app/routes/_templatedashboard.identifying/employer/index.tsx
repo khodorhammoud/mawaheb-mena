@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
-import { Employer } from '@mawaheb/db';
-import { EmployerAccountType } from '@mawaheb/db';
+import { Employer } from '@mawaheb/db/types';
+import { EmployerAccountType } from '@mawaheb/db/enums';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 

@@ -1,4 +1,4 @@
-import { EducationFormFieldType } from '@mawaheb/db';
+import { EducationFormFieldType } from '@mawaheb/db/types';
 import AppFormField from '~/common/form-fields';
 
 interface EducationComponentProps {

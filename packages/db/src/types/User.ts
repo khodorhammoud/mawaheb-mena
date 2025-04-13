@@ -9,7 +9,7 @@ import {
   Provider,
 } from './enums';
 
-export interface User {
+export type User = {
   id?: number;
   firstName: string;
   lastName: string;
@@ -22,17 +22,17 @@ export interface User {
   role?: 'admin' | 'user';
   deletionRequestedAt?: Date;
   finalDeletionAt?: Date;
-}
+};
 
-export interface PreferredWorkingTimes {
+export type PreferredWorkingTimes = {
   id: number;
   accountId: number;
   dayOfWeek: DayOfWeek;
   startTime: Date | string;
   endTime: Date | string;
-}
+};
 
-export interface SocialAccount {
+export type SocialAccount = {
   id?: number;
   provider: string;
   providerAccountId: string;
@@ -41,9 +41,9 @@ export interface SocialAccount {
   refreshToken?: string;
   expiresAt?: Date | string;
   userId?: number;
-}
+};
 
-export interface UserAccount {
+export type UserAccount = {
   id: number;
   accountType: AccountType;
   slug: string;
@@ -57,16 +57,16 @@ export interface UserAccount {
   preferredWorkingTimes?: PreferredWorkingTimes[];
   user: User;
   // socialAccounts?: SocialAccount[];
-}
+};
 
-export interface AccountSocialMediaLinks {
+export type AccountSocialMediaLinks = {
   linkedin: string;
   github: string;
   gitlab: string;
   dribbble: string;
   stackoverflow: string;
-}
-export interface Employer {
+};
+export type Employer = {
   id?: number;
   employerAccountType: EmployerAccountType;
   accountId?: number;
@@ -87,9 +87,9 @@ export interface Employer {
   socialMediaLinks?: AccountSocialMediaLinks;
   account?: UserAccount;
   isOnboarded: boolean; // this is used in the loader :)
-}
+};
 
-export interface Freelancer {
+export type Freelancer = {
   id: number;
   accountId?: number;
   fieldsOfExpertise?: string[];
@@ -113,16 +113,16 @@ export interface Freelancer {
   hoursAvailableFrom?: string;
   hoursAvailableTo?: string;
   jobsOpenTo?: string[];
-}
+};
 
-export interface LoggedInUser {
+export type LoggedInUser = {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
-}
+};
 
-export interface AccountBio {
+export type AccountBio = {
   firstName: string;
   lastName: string;
   address: string;
@@ -130,32 +130,32 @@ export interface AccountBio {
   socialMediaLinks: AccountSocialMediaLinks;
   websiteURL: string;
   userId: number;
-}
+};
 
-export interface Industry {
+export type Industry = {
   id: number;
   label: string;
   metadata: string[];
-}
+};
 
-export interface JobCategory {
+export type JobCategory = {
   id: number;
   label: string;
-}
+};
 
-export interface LoaderFunctionError {
+export type LoaderFunctionError = {
   success: boolean;
   error: {
     message: string;
   };
   status: number;
-}
+};
 
 /* 
 These fields names also control their respective HTML input fields names
 For example, we use the HTML input field name "employerBudget" to get/set the value for the employer budget
 */
-export interface OnboardingEmployerFields {
+export type OnboardingEmployerFields = {
   accountType: AccountType;
   bioInfo: AccountBio;
   employerIndustries: Industry[];
@@ -169,9 +169,9 @@ export interface OnboardingEmployerFields {
   draftedJobCount: number;
   closedJobCount: number;
   totalJobCount: number;
-}
+};
 
-export interface OnboardingFreelancerFields {
+export type OnboardingFreelancerFields = {
   accountType: AccountType;
   bioInfo: AccountBio;
   currentProfile: Freelancer;
@@ -184,47 +184,47 @@ export interface OnboardingFreelancerFields {
   workHistory?: WorkHistoryFormFieldType[];
   certificates?: CertificateFormFieldType[];
   education?: EducationFormFieldType[];
-}
+};
 
-export interface PortfolioFormFieldType {
+export type PortfolioFormFieldType = {
   projectName: string;
   projectLink: string;
   projectDescription: string;
   attachmentId?: number; // This will be set in the function
   projectImageName?: string; // Name of the uploaded image
   projectImageUrl?: string; // Pre-signed URL for accessing the image
-}
+};
 
-export interface AttachmentsType {
+export type AttachmentsType = {
   key: string;
   metadata?: Record<string, any>; // Optional because JSONB has a default
-}
+};
 
-export interface WorkHistoryFormFieldType {
+export type WorkHistoryFormFieldType = {
   title: string;
   company: string;
   currentlyWorkingThere: boolean;
   startDate: Date | string;
   endDate: Date | string;
   jobDescription: string;
-}
+};
 
-export interface CertificateFormFieldType {
+export type CertificateFormFieldType = {
   certificateName: string;
   issuedBy: string;
   yearIssued: number;
   attachmentId?: number;
   attachmentName?: string;
   attachmentUrl?: string; // Pre-signed URL for accessing the file
-}
+};
 
-export interface EducationFormFieldType {
+export type EducationFormFieldType = {
   degree: string;
   institution: string;
   graduationYear: number;
-}
+};
 
-export interface SettingsInfo {
+export type SettingsInfo = {
   firstName: string;
   lastName: string;
   email: string;
@@ -234,4 +234,4 @@ export interface SettingsInfo {
   phone: string;
   websiteURL?: string;
   socialMediaLinks?: Record<string, string>;
-}
+};

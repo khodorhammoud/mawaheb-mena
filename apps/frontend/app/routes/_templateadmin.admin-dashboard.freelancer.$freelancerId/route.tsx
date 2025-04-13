@@ -1,7 +1,7 @@
 // ~/routes/freelancer/$freelancerId.tsx
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, Form, Outlet, useNavigate } from '@remix-run/react';
-import { AccountStatus, CompensationType } from '@mawaheb/db';
+import { AccountStatus, CompensationType } from '@mawaheb/db/enums';
 import {
   getFreelancerDetails,
   getFreelancerApplications,

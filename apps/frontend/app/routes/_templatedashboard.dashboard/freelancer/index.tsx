@@ -2,7 +2,7 @@ import UserProfile from '~/common/UserProfile';
 import { useLoaderData } from '@remix-run/react';
 import { FaDollarSign } from 'react-icons/fa';
 import { SlBadge } from 'react-icons/sl';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 export default function Dashboard() {
   const { accountOnboarded, accountType, isOwner, currentProfile } = useLoaderData<{

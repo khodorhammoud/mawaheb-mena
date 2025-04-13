@@ -11,7 +11,7 @@ import {
   WorkHistoryFormFieldType,
   CertificateFormFieldType,
   EducationFormFieldType,
-} from '@mawaheb/db';
+} from '@mawaheb/db/types';
 
 const RepeatableFields = ({
   fieldName,

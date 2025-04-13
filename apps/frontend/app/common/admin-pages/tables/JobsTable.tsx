@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { JobStatus, AccountStatus } from '@mawaheb/db';
+import { JobStatus, AccountStatus } from '@mawaheb/db/enums';
 import { DataTable } from './DataTable';
 import { ChevronRightIcon } from '@heroicons/react/24/solid';
 

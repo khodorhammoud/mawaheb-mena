@@ -2,7 +2,7 @@ import SocialLinks from '../../common/registration/socialLinks';
 import { useEffect, useRef } from 'react';
 import { useActionData, useNavigate, Form } from '@remix-run/react';
 import AppFormField from '../../common/form-fields';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 import { Checkbox } from '~/components/ui/checkbox';
 
 interface ActionData {

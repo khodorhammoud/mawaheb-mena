@@ -1,9 +1,9 @@
-import { JobCardData } from '@mawaheb/db';
+import { JobCardData } from '@mawaheb/db/types';
 import JobDesignOne from './JobDesignOne';
 import JobDesignTwo from './JobDesignTwo';
 import JobDesignThree from './JobDesignThree';
 import { useState } from 'react';
-import { JobStatus, AccountStatus } from '@mawaheb/db';
+import { JobStatus } from '@mawaheb/db/enums';
 
 interface JobProps {
   data: JobCardData;

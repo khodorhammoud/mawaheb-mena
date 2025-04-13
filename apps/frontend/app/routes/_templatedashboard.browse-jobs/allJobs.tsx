@@ -2,7 +2,7 @@
 
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { Job } from '@mawaheb/db';
+import { Job } from '@mawaheb/db/types';
 import JobCard from './jobCard';
 import FilteringSearchSection from './filters/filtering-search-section';
 

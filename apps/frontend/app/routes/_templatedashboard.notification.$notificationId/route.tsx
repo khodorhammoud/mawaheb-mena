@@ -4,7 +4,7 @@ import { requireUserSession } from '~/auth/auth.server';
 import { getNotificationById, markNotificationAsRead } from '~/servers/notifications.server';
 import { Button } from '~/components/ui/button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { NotificationType } from '@mawaheb/db';
+import { NotificationType } from '@mawaheb/db/enums';
 import { useEffect, useState } from 'react';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

@@ -11,7 +11,7 @@ import {
   skillsTable,
   jobSkillsTable,
 } from '@mawaheb/db';
-import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '@mawaheb/db';
+import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '@mawaheb/db/enums';
 import type { Account } from '~/common/admin-pages/tables/AccountsTable';
 import {
   Portfolio,

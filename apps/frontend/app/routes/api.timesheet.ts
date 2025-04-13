@@ -17,8 +17,8 @@ import {
   getFreelancerIdFromUserId,
   getUserAccountType,
 } from '~/servers/user.server';
-import { AccountType, TimesheetStatus } from '@mawaheb/db';
-import { TimesheetEntry } from '@mawaheb/db';
+import { AccountType, TimesheetStatus } from '@mawaheb/db/enums';
+import { TimesheetEntry } from '@mawaheb/db/types';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserAccountStatusPublished(request);

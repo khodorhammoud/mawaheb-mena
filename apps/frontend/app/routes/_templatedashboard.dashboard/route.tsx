@@ -9,11 +9,11 @@ import {
   WorkHistoryFormFieldType,
   Employer,
   Freelancer,
-} from '@mawaheb/db';
+} from '@mawaheb/db/types';
 import EmployerDashboard from './employer';
 import FreelancerDashboard from './freelancer';
 import { useLoaderData } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 import {
   getAllIndustries,
   getAccountBio,

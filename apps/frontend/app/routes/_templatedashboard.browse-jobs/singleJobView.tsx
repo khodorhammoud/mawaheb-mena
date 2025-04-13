@@ -1,9 +1,9 @@
 import { useFetcher, Form } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { Job } from '@mawaheb/db';
+import { Job } from '@mawaheb/db/types';
 import JobCard from './jobCard';
 import { Button } from '~/components/ui/button';
-import { Skill } from '@mawaheb/db';
+import { Skill } from '@mawaheb/db/types';
 import SkillBadgeList from '~/common/skill/SkillBadge';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { InformationCircleIcon } from '@heroicons/react/24/solid';

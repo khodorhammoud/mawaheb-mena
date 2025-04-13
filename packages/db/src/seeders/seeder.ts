@@ -20,6 +20,7 @@ import {
   jobCategoriesTable,
   jobApplicationsTable,
   userVerificationsTable,
+  skillfoliosTable,
 } from '../schema/schema.js';
 // Import the inferred types from the schema
 import type { InferInsertModel } from 'drizzle-orm';
@@ -1254,6 +1255,191 @@ const PROFILE_IMAGES = {
   },
 };
 
+// Map expertise fields to domain, field, category, and subfield
+const expertiseToSkillfolioMapping: Record<
+  string,
+  { domain: string; field: string; category?: string; subfield: string }
+> = {
+  TypeScript: {
+    domain: 'Technology',
+    field: 'Software Development',
+    category: 'Web Development',
+    subfield: 'Frontend Development',
+  },
+  JavaScript: {
+    domain: 'Technology',
+    field: 'Software Development',
+    category: 'Web Development',
+    subfield: 'Frontend Development',
+  },
+  React: {
+    domain: 'Technology',
+    field: 'Software Development',
+    category: 'Web Development',
+    subfield: 'Frontend Development',
+  },
+  'Node.js': {
+    domain: 'Technology',
+    field: 'Software Development',
+    category: 'Web Development',
+    subfield: 'Backend Development',
+  },
+  Python: {
+    domain: 'Technology',
+    field: 'Software Development',
+    category: 'Programming',
+    subfield: 'Scripting',
+  },
+  'Data Science': {
+    domain: 'Technology',
+    field: 'Data',
+    category: 'Analytics',
+    subfield: 'Data Science',
+  },
+  'Machine Learning': {
+    domain: 'Technology',
+    field: 'Data',
+    category: 'Artificial Intelligence',
+    subfield: 'Machine Learning',
+  },
+  'Data Analysis': {
+    domain: 'Technology',
+    field: 'Data',
+    category: 'Analytics',
+    subfield: 'Data Analysis',
+  },
+  DevOps: {
+    domain: 'Technology',
+    field: 'Infrastructure',
+    category: 'Cloud Computing',
+    subfield: 'DevOps',
+  },
+  'Cloud Architecture': {
+    domain: 'Technology',
+    field: 'Infrastructure',
+    category: 'Cloud Computing',
+    subfield: 'Architecture',
+  },
+  'CI/CD': {
+    domain: 'Technology',
+    field: 'Infrastructure',
+    category: 'Development Operations',
+    subfield: 'Continuous Integration',
+  },
+  Cybersecurity: {
+    domain: 'Technology',
+    field: 'Security',
+    category: 'Network Security',
+    subfield: 'Security Operations',
+  },
+};
+
+// Function to create a skillfolio from freelancer profile data
+const createSkillfolioFromFreelancer = (
+  userId: number,
+  profile: any,
+  freelancerData: any
+): Record<string, any> => {
+  // Determine the primary expertise area
+  const primaryExpertise = profile.expertise[0];
+  const mappingData = expertiseToSkillfolioMapping[primaryExpertise] || {
+    domain: 'Technology',
+    field: 'Information Technology',
+    subfield: 'General',
+  };
+
+  // Map skills from profile to the UserSkill format
+  const userSkills = profile.skills.map((skill: any) => {
+    // Determine proficiency based on years of experience
+    let proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert' = 'Beginner';
+
+    if (skill.years >= 6) {
+      proficiency = 'Expert';
+    } else if (skill.years >= 4) {
+      proficiency = 'Advanced';
+    } else if (skill.years >= 2) {
+      proficiency = 'Intermediate';
+    }
+
+    return {
+      name: skill.name,
+      proficiency,
+      yearsOfExperience: skill.years,
+      lastUsed: new Date().getFullYear().toString(), // Assume current year
+      verifiedBy: ['Project'],
+    };
+  });
+
+  // Map education from profile
+  const education = profile.education.map((edu: any) => ({
+    degree: edu.degree,
+    field: edu.fieldOfStudy,
+    institution: edu.institution,
+    completedOn: new Date(Date.now() - Math.random() * 5 * 365 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0], // Random date within last 5 years
+  }));
+
+  // Map work experience from profile
+  const experience = profile.workHistory.map((work: any) => ({
+    role: work.title,
+    company: work.company,
+    durationYears: Math.floor(Math.random() * 4) + 1, // Random 1-4 years
+    technologies: profile.expertise.slice(0, 3), // Use first 3 expertise areas as technologies
+    projectDescriptions: [work.jobDescription.split('. ')[0]], // First sentence as project description
+  }));
+
+  // Generate strengths (from skills with highest years)
+  const strengths = profile.skills
+    .filter((skill: any) => skill.years >= 4)
+    .map((skill: any) => skill.name);
+
+  // Generate weaknesses (from skills with lowest years or missing important skills)
+  const weaknesses = profile.skills
+    .filter((skill: any) => skill.years < 3)
+    .map((skill: any) => skill.name);
+
+  // Add some common skill gaps based on the expertise
+  const gaps = [];
+  if (!profile.skills.some((s: any) => s.name.includes('Docker'))) {
+    gaps.push('Docker');
+  }
+  if (!profile.skills.some((s: any) => s.name.includes('Kubernetes'))) {
+    gaps.push('Kubernetes');
+  }
+  if (!profile.skills.some((s: any) => s.name.includes('Cloud'))) {
+    gaps.push('Cloud Platforms');
+  }
+
+  // Random readiness score between 65-95
+  const readinessScore = 65 + Math.floor(Math.random() * 30);
+
+  // Return object using correct column names that match the DB schema
+  return {
+    userId,
+    domain: mappingData.domain,
+    field: mappingData.field,
+    category: mappingData.category,
+    subfield: mappingData.subfield,
+    readiness_score: readinessScore, // Snake case to match DB column
+    strengths,
+    weaknesses,
+    gaps,
+    profile: {
+      skills: userSkills,
+      tools: profile.expertise,
+      certifications: profile.certificates.map((cert: any) => cert.name),
+      education,
+      experience,
+      verifications: [
+        { type: 'Project Use', evidence: 'Portfolio Projects' },
+        { type: 'Reference', evidence: 'Previous Employment' },
+      ],
+    },
+    // created_at and updated_at will be set by defaultNow() in the schema
+  };
+};
+
 async function seed() {
   await db.transaction(async tx => {
     try {
@@ -1264,6 +1450,7 @@ async function seed() {
       await tx.delete(freelancerLanguagesTable);
       await tx.delete(jobApplicationsTable);
       await tx.delete(jobsTable);
+      await tx.delete(skillfoliosTable);
       await tx.delete(freelancersTable);
       await tx.delete(employersTable);
       await tx.delete(accountsTable);
@@ -1290,6 +1477,7 @@ async function seed() {
         ALTER SEQUENCE job_categories_id_seq RESTART WITH 1;
         ALTER SEQUENCE job_applications_id_seq RESTART WITH 1;
         ALTER SEQUENCE user_verifications_id_seq RESTART WITH 1;
+        ALTER SEQUENCE skillfolios_id_seq RESTART WITH 1;
       `);
 
       // Seed Languages
@@ -1351,7 +1539,7 @@ async function seed() {
       console.log('Seeding job categories...');
       for (const category of JOB_CATEGORIES) {
         await tx.insert(jobCategoriesTable).values({
-          name: category,
+          label: category,
         });
       }
 
@@ -1388,13 +1576,12 @@ async function seed() {
           .values({
             userId: userId,
             accountType: AccountType.Freelancer,
-            location: faker.location.city(),
             country: faker.location.country(),
+            address: faker.location.streetAddress(),
             region: faker.location.state(),
             accountStatus: AccountStatus.Published,
             phone: faker.phone.number(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            slug: profile.name.toLowerCase().replace(/\s+/g, '-'),
           })
           .returning({ id: accountsTable.id });
 
@@ -1514,6 +1701,10 @@ async function seed() {
         const freelancerId = freelancerResult[0].id;
         freelancerIds.push(freelancerId);
 
+        // Create skillfolio for this freelancer
+        const skillfolioData = createSkillfolioFromFreelancer(userId, profile, freelancerResult[0]);
+        await tx.insert(skillfoliosTable).values(skillfolioData);
+
         // Add languages for freelancer
         for (const language of profile.languages) {
           const languageId = profile.languages.indexOf(language) + 1;
@@ -1569,13 +1760,12 @@ async function seed() {
           .values({
             userId: userId,
             accountType: AccountType.Employer,
-            location: company.location,
-            country: company.location,
+            country: faker.location.country(),
+            address: faker.location.streetAddress(),
             region: faker.location.state(),
             accountStatus: AccountStatus.Published,
             phone: faker.phone.number(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            slug: company.name.toLowerCase().replace(/\s+/g, '-'),
           })
           .returning({ id: accountsTable.id });
 
@@ -1587,13 +1777,11 @@ async function seed() {
           .values({
             accountId: accountId,
             companyName: company.name,
-            companyDescription: company.description,
-            companySize: company.companySize,
+            about: company.description,
             industrySector: company.industries[0],
-            companyWebsite: `https://${company.name.toLowerCase().replace(/\s+/g, '')}.com`,
+            budget: faker.number.int({ min: 1000, max: 10000 }),
+            employerName: `${userResult[0].firstName} ${userResult[0].lastName}`,
             companyEmail: `info@${company.name.toLowerCase().replace(/\s+/g, '')}.com`,
-            companyLogo: PROFILE_IMAGES.company[i % PROFILE_IMAGES.company.length],
-            companyBanner: PROFILE_IMAGES.company[(i + 1) % PROFILE_IMAGES.company.length],
           })
           .returning({ id: employersTable.id });
 
@@ -1715,16 +1903,7 @@ async function seed() {
           await tx.insert(jobApplicationsTable).values({
             jobId: job.id,
             freelancerId: freelancer1Id,
-            coverLetter:
-              "I'm very interested in this position and believe my skills and experience make me a perfect fit. I've worked on similar projects in the past and can deliver high-quality results within your timeline. I'm particularly excited about the opportunity to work with your team on this project.",
-            attachmentUrl: 'https://drive.google.com/file/d/1234567890/view',
-            status: faker.helpers.arrayElement([
-              JobApplicationStatus.Pending,
-              JobApplicationStatus.Shortlisted,
-              JobApplicationStatus.Approved,
-              JobApplicationStatus.Rejected,
-            ]),
-            createdAt: faker.date.recent({ days: 14 }),
+            status: JobApplicationStatus.Pending,
           });
 
           // Other freelancers apply to some jobs (30% chance)
@@ -1734,18 +1913,7 @@ async function seed() {
               await tx.insert(jobApplicationsTable).values({
                 jobId: job.id,
                 freelancerId: freelancerIds[i],
-                coverLetter:
-                  "I'm excited to apply for this position as it aligns perfectly with my expertise in " +
-                  FREELANCER_PROFILES[i].expertise.join(', ') +
-                  ". With my background and skills, I can deliver exceptional results for your project. I'm particularly interested in working with your company because of your focus on innovation and quality.",
-                attachmentUrl: 'https://drive.google.com/file/d/1234567891/view',
-                status: faker.helpers.arrayElement([
-                  JobApplicationStatus.Pending,
-                  JobApplicationStatus.Shortlisted,
-                  JobApplicationStatus.Approved,
-                  JobApplicationStatus.Rejected,
-                ]),
-                createdAt: faker.date.recent({ days: 10 }),
+                status: JobApplicationStatus.Pending,
               });
             }
           }

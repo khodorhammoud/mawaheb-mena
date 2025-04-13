@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { JobCardData } from '@mawaheb/db';
+import { JobCardData } from '@mawaheb/db/types';
 import Job from '../manage-jobs/Job';
 import Header from '../manage-jobs-heading/Header';
-import { JobStatus, AccountStatus } from '@mawaheb/db'; // ✅ Import AccountStatus enum
+import { JobStatus, AccountStatus } from '@mawaheb/db/enums'; // ✅ Import AccountStatus enum
 
 interface JobManagementProps {
   data: JobCardData[];

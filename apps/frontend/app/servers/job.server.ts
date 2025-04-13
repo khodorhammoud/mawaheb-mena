@@ -1,6 +1,6 @@
 import { db } from '@mawaheb/db/server';
 import { and, desc, eq, ilike, inArray, isNull, not, or, sql } from 'drizzle-orm';
-import { Job, JobApplication, JobCardData, JobFilter } from '@mawaheb/db';
+import { Job, JobApplication, JobCardData, JobFilter } from '@mawaheb/db/types';
 import {
   jobApplicationsTable,
   jobCategoriesTable,
@@ -16,8 +16,8 @@ import {
   freelancerLanguagesTable,
   languagesTable,
 } from '@mawaheb/db';
-import { /*  Freelancer, */ JobCategory } from '@mawaheb/db';
-import { JobApplicationStatus, JobStatus, ExperienceLevel } from '@mawaheb/db';
+import { /*  Freelancer, */ JobCategory } from '@mawaheb/db/types';
+import { JobApplicationStatus, JobStatus, ExperienceLevel } from '@mawaheb/db/enums';
 import { getUser, getUserIdFromFreelancerId } from './user.server';
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {

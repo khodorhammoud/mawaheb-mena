@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import SocialLinks from '../../common/registration/socialLinks';
 import { useActionData, useNavigate, Form } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 export default function SignupLeftComponent() {
   const actionData = useActionData();

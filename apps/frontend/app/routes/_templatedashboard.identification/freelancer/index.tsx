@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Form, useActionData, useLoaderData, useSubmit, useFetcher } from '@remix-run/react';
-import { Freelancer } from '@mawaheb/db';
+import { Freelancer } from '@mawaheb/db/types';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 import { useToast } from '~/components/hooks/use-toast';

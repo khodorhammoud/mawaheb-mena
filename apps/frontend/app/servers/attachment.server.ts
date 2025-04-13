@@ -177,7 +177,7 @@
 
 import { db } from '@mawaheb/db/server';
 import { attachmentsTable } from '@mawaheb/db';
-import { AttachmentsType } from '@mawaheb/db';
+import { AttachmentsType } from '@mawaheb/db/types';
 import { eq } from 'drizzle-orm';
 
 export async function saveAttachment(

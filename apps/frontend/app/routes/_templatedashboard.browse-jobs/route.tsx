@@ -1,17 +1,17 @@
 import { LoaderFunctionArgs, ActionFunctionArgs, redirect } from '@remix-run/node';
 import { useState } from 'react';
 import { getCurrentUserAccountType, getCurrentProfileInfo } from '~/servers/user.server';
-import { AccountType, AccountStatus } from '@mawaheb/db';
+import { AccountType, AccountStatus } from '@mawaheb/db/enums';
 import { requireUserIsFreelancer } from '~/auth/auth.server';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import RecommendedJobs from './recommendedJobs';
 import AllJobs from './allJobs';
 import MyJobs from './myJobs';
 import { Sheet, SheetContent, SheetDescription, SheetHeader } from '~/components/ui/sheet';
-import { Job } from '@mawaheb/db';
+import { Job } from '@mawaheb/db/types';
 import SingleJobView from './singleJobView';
 import { getJobSkills } from '~/servers/skill.server';
-import { Skill } from '@mawaheb/db';
+import { Skill } from '@mawaheb/db/types';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import {
   getReview,

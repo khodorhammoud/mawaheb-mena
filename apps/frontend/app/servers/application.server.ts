@@ -12,7 +12,7 @@ import {
   jobSkillsTable,
   freelancerSkillsTable,
 } from '@mawaheb/db';
-import { JobApplicationStatus, CompensationType, JobStatus } from '@mawaheb/db';
+import { JobApplicationStatus, CompensationType, JobStatus } from '@mawaheb/db/enums';
 
 // Helper function to safely parse JSON
 function safeParseJSON<T>(jsonString: string | null | undefined, defaultValue: T): T {

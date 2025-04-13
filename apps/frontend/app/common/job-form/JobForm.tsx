@@ -4,11 +4,11 @@ import { Button } from '~/components/ui/button';
 import AppFormField from '~/common/form-fields';
 import { Badge } from '~/components/ui/badge';
 import RequiredSkills from '~/routes/_templatedashboard.new-job/required-skills';
-import { JobCategory } from '@mawaheb/db';
-import { Skill } from '@mawaheb/db';
+import { JobCategory } from '@mawaheb/db/types';
+import { Skill } from '@mawaheb/db/types';
 import RichTextEditor from '~/components/ui/richTextEditor';
 import { getWordCount } from '~/lib/utils';
-import { ExperienceLevel } from '@mawaheb/db';
+import { ExperienceLevel } from '@mawaheb/db/enums';
 
 interface JobFormProps {
   job?: {

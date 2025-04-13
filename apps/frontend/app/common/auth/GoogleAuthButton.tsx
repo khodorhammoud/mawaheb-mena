@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 
 interface GoogleAuthButtonProps {
   mode: 'login' | 'signup';

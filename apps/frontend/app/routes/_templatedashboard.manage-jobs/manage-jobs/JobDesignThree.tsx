@@ -1,8 +1,8 @@
-import { JobCardData } from '@mawaheb/db';
+import { JobCardData } from '@mawaheb/db/types';
 import JobStateButton from '~/common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
 import { Link } from '@remix-run/react';
-import { JobStatus } from '@mawaheb/db';
+import { JobStatus } from '@mawaheb/db/enums';
 import { parseDate } from '~/lib/utils';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';

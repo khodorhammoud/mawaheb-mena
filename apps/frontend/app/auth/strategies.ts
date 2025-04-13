@@ -7,8 +7,8 @@ import {
   isAccountDeleted,
 } from '../servers/user.server';
 import { compare } from 'bcrypt-ts';
-import { Employer, Freelancer } from '@mawaheb/db';
-import { AccountType, EmployerAccountType, Provider } from '@mawaheb/db';
+import { Employer, Freelancer } from '@mawaheb/db/types';
+import { AccountType, EmployerAccountType, Provider } from '@mawaheb/db/enums';
 
 export const loginStrategy = new FormStrategy(async ({ form }): Promise<number> => {
   let email = form.get('email') as string;

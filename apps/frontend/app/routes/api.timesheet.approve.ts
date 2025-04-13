@@ -1,7 +1,7 @@
 import { ActionFunctionArgs } from '@remix-run/node';
 import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server';
 import { updateTimesheetEntriesStatus } from '~/servers/timesheet.server';
-import { TimesheetStatus } from '@mawaheb/db';
+import { TimesheetStatus } from '@mawaheb/db/enums';
 
 export async function action({ request }: ActionFunctionArgs) {
   await requireUserIsEmployerPublishedOrDeactivated(request);

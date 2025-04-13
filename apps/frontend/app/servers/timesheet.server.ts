@@ -6,8 +6,8 @@ import {
   TimesheetSubmissionEntriesTable,
   timesheetSubmissionsTable,
 } from '@mawaheb/db';
-import { TimesheetStatus } from '@mawaheb/db';
-import { TimesheetEntry } from '@mawaheb/db';
+import { TimesheetStatus } from '@mawaheb/db/enums';
+import { TimesheetEntry } from '@mawaheb/db/types';
 
 export async function getTimesheetEntriesFromDatabase(
   freelancerId: number,

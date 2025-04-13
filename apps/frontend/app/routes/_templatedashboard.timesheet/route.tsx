@@ -13,7 +13,7 @@ import {
 } from '~/servers/job.server';
 import TimeSheetPage from './components/TimeSheetPage';
 import JobsPage from './components/JobsPage';
-import { JobApplication } from '@mawaheb/db';
+import { JobApplication } from '@mawaheb/db/types';
 import { useState } from 'react';
 import {
   getEmployerIdFromUserId,
@@ -21,7 +21,7 @@ import {
   getUserAccountType,
 } from '~/servers/user.server';
 import { useLoaderData } from '@remix-run/react';
-import { AccountType } from '@mawaheb/db';
+import { AccountType } from '@mawaheb/db/enums';
 import { FreelancerTimesheetHeader } from './components/FreelancerTimesheetHeader';
 import { OtherFreelancers } from './components/OtherFreelancers';
 import { EmployerJobsList } from './components/EmployerJobsList';

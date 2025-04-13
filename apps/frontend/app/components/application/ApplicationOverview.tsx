@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react';
-import { JobApplicationStatus } from '@mawaheb/db';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 
 interface ApplicationOverviewProps {
   application: {
