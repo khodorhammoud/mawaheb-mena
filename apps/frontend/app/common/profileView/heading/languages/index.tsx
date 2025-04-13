@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -7,12 +7,12 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { IoPencilSharp } from "react-icons/io5";
-import { useFetcher } from "@remix-run/react";
-import SearcheableTagSelector from "~/common/SearcheableTagSelector";
-import { Badge } from "~/components/ui/badge";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { IoPencilSharp } from 'react-icons/io5';
+import { useFetcher } from '@remix-run/react';
+import SearcheableTagSelector from '~/common/SearcheableTagSelector';
+import { Badge } from '~/components/ui/badge';
 
 interface LanguagesProps {
   profile: { languages?: { id: number; language: string }[] };
@@ -31,9 +31,9 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
     error?: { message: string };
   }>();
 
-  const [selectedLanguages, setSelectedLanguages] = useState<
-    { id: number; language: string }[]
-  >(profile.languages || []);
+  const [selectedLanguages, setSelectedLanguages] = useState<{ id: number; language: string }[]>(
+    profile.languages || []
+  );
 
   useEffect(() => {
     setSelectedLanguages(profile.languages || []);
@@ -53,16 +53,16 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
   };
 
   const handleSubmit = () => {
-    const languagesWithExperience = selectedLanguages.map((language) => ({
+    const languagesWithExperience = selectedLanguages.map(language => ({
       id: language.id,
     }));
 
     languageFetcher.submit(
       {
         languages: JSON.stringify(languagesWithExperience),
-        "target-updated": "freelancer-languages",
+        'target-updated': 'freelancer-languages',
       },
-      { method: "post" }
+      { method: 'post' }
     );
   };
 
@@ -77,15 +77,10 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
     <div className="lg:ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
       {/* HEADER - Languages Title & Edit Button */}
       <div className="flex items-center justify-between w-full">
-        <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">
-          Languages
-        </span>
+        <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">Languages</span>
 
         {canEdit && (
-          <Dialog
-            open={languagesServedOpen}
-            onOpenChange={handleLanguageDialogChange}
-          >
+          <Dialog open={languagesServedOpen} onOpenChange={handleLanguageDialogChange}>
             {/* ✏️ */}
             <DialogTrigger asChild>
               <Button variant="link">
@@ -95,7 +90,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
             <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="mt-3">Languages</DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="w-2/3 text-base">
                   Add the languages you speak
                 </DialogDescription>
               </DialogHeader>
@@ -103,22 +98,22 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
               {showLanguageMessage && languageFetcher.data?.error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 lg:px-4 px-2 lg:py-3 py-1 rounded relative mb-4">
                   <strong className="font-bold">Error: </strong>
-                  <span className="block sm:inline">
-                    {languageFetcher.data.error.message}
-                  </span>
+                  <span className="block sm:inline">{languageFetcher.data.error.message}</span>
                 </div>
               )}
 
-              <SearcheableTagSelector<{ id: number; language: string }>
-                dataType="language"
-                setSelectedItems={setSelectedLanguages}
-                selectedItems={selectedLanguages}
-                itemLabel={(item) => item.language}
-                itemKey={(item) => item.id}
-                formName="freelancer-languages"
-                fieldName="freelancer-languages"
-                searchPlaceholder="Search or type language"
-              />
+              <div className="mt-6 ml-1">
+                <SearcheableTagSelector<{ id: number; language: string }>
+                  dataType="language"
+                  setSelectedItems={setSelectedLanguages}
+                  selectedItems={selectedLanguages}
+                  itemLabel={item => item.language}
+                  itemKey={item => item.id}
+                  formName="freelancer-languages"
+                  fieldName="freelancer-languages"
+                  searchPlaceholder="Search or type language"
+                />
+              </div>
 
               <DialogFooter className="mt-6">
                 <Button
@@ -126,7 +121,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                   type="submit"
                   form="freelancer-languages-form"
                   onClick={handleSubmit}
-                  disabled={languageFetcher.state === "submitting"}
+                  disabled={languageFetcher.state === 'submitting'}
                 >
                   Save
                 </Button>
@@ -140,7 +135,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
       <div className="flex flex-wrap items-start gap-2 w-full">
         {selectedLanguages.length > 0 ? (
           <>
-            {visibleLanguages.map((language) => (
+            {visibleLanguages.map(language => (
               <Badge
                 key={language.id}
                 className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
@@ -161,13 +156,11 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                 </DialogTrigger>
                 <DialogContent className="bg-white max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="xl:text-lg text-base">
-                      All Languages
-                    </DialogTitle>
+                    <DialogTitle className="xl:text-lg text-base">All Languages</DialogTitle>
                   </DialogHeader>
 
                   <div className="flex flex-wrap items-start gap-2 mt-4">
-                    {hiddenLanguages.map((language) => (
+                    {hiddenLanguages.map(language => (
                       <Badge
                         key={language.id}
                         className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"
@@ -181,9 +174,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
             )}
           </>
         ) : (
-          <span className="text-gray-500 text-sm italic">
-            No languages added
-          </span>
+          <span className="text-gray-500 text-sm italic">No languages added</span>
         )}
       </div>
     </div>

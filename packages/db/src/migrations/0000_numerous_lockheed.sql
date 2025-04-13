@@ -111,7 +111,8 @@ CREATE TABLE "freelancer_skills" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"freelancer_id" integer,
 	"skill_id" integer,
-	"years_of_experience" integer
+	"years_of_experience" integer,
+	"is_starred" boolean DEFAULT false
 );
 --> statement-breakpoint
 CREATE TABLE "freelancers" (
@@ -210,7 +211,7 @@ CREATE TABLE "reviews" (
 	"employer_id" integer,
 	"freelancer_id" integer,
 	"rating" real NOT NULL,
-	"comment" text DEFAULT null,
+	"comment" text,
 	"created_at" timestamp DEFAULT now(),
 	"review_type" text NOT NULL
 );

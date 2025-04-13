@@ -6,6 +6,7 @@ import {
   Industry,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
+  Freelancer,
 } from '@mawaheb/db';
 
 export type EmployerOnboardingData = {
@@ -27,7 +28,7 @@ export type EmployerOnboardingData = {
 export type FreelancerOnboardingData = {
   accountType: AccountType;
   bioInfo: AccountBio;
-  currentProfile: AccountType;
+  currentProfile: Freelancer;
   about: string;
   videoLink: string;
   hourlyRate: number;
@@ -37,6 +38,8 @@ export type FreelancerOnboardingData = {
   certificates: CertificateFormFieldType[];
   educations: EducationFormFieldType[];
   workHistory: WorkHistoryFormFieldType[];
+  freelancerSkills: FreelancerSkill[];
+  freelancerLanguages: { id: number; language: string }[];
 };
 
 export interface Skill {
@@ -50,4 +53,5 @@ export interface FreelancerSkill {
   skillId: number;
   label?: string;
   yearsOfExperience: number;
+  isStarred?: boolean;
 }

@@ -1,5 +1,5 @@
 {
-  "id": "c09f9c4e-cf2a-47da-8d0c-74dbb791a23d",
+  "id": "f13074b5-0bda-4365-a407-84459e4725d5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -707,6 +707,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_starred": {
+          "name": "is_starred",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -1422,8 +1429,7 @@
           "name": "comment",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "default": null
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

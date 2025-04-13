@@ -509,6 +509,7 @@ export const freelancerSkillsTable = pgTable('freelancer_skills', {
   freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
   skillId: integer('skill_id').references(() => skillsTable.id),
   yearsOfExperience: integer('years_of_experience'),
+  isStarred: boolean('is_starred').default(false),
 });
 
 /**
