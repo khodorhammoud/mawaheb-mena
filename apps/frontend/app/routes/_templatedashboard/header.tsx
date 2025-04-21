@@ -10,7 +10,8 @@ import AppFormField from '~/common/form-fields';
 import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { Dialog, DialogContent } from '~/components/ui/dialog';
 import Availability from '~/common/profileView/availability-form/availability';
-import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
+// import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
+import { AccountStatus, AccountType, NotificationType } from '~/types/delete-me-enums';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
 
@@ -62,6 +63,9 @@ export default function Header() {
         readAt: notification.readAt ? new Date(notification.readAt) : null,
       });
     }
+
+    // Sort notifications by date - newest first
+    processedNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   // Function to open the dialog
