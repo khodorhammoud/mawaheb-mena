@@ -1,27 +1,24 @@
-import { Module, Type, DynamicModule, ForwardReference } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './modules/users/users.module';
-import { DatabaseModule } from './modules/database/database.module';
+// Each module handles a specific concern (idea) in the system
+// AppModule — The root module of the application, where we import all the modules
 
-// This helps TypeScript resolve the type conflict
-type ModuleImport =
-  | Type<any>
-  | DynamicModule
-  | Promise<DynamicModule>
-  | ForwardReference<any>;
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './modules/database/database.module';
+import { EventsModule } from './modules/events/events.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
-    // Cast the module to help TypeScript resolve the types
     ConfigModule.forRoot({
       isGlobal: true,
-    }) as ModuleImport,
+    }),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
-    UsersModule,
+    EventsModule,
+    QueueModule,
+    JobsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

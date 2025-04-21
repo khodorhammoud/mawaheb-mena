@@ -6,15 +6,14 @@ import { RemixServer } from '@remix-run/react';
 import { isbot } from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 
-// Ensure we use the native fetch implementation to have Response.json
-installGlobals({ nativeFetch: true });
-
 import i18nServer from '~/lib/i18n.server';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import * as i18n from '~/config/i18n';
 import { createInstance } from 'i18next';
 
 const ABORT_DELAY = 5_000;
+
+installGlobals({ nativeFetch: true });
 
 export default function handleRequest(
   request: Request,

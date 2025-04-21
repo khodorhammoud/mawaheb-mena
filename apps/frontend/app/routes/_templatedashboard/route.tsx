@@ -7,9 +7,10 @@ import {
   getCurrentUser,
   getCurrentProfileInfo,
 } from '~/servers/user.server';
-import { AccountStatus } from '@mawaheb/db/enums';
+import { AccountStatus } from '~/types/delete-me-enums';
 import { requireUserSession } from '~/auth/auth.server';
 import { getNotifications } from '~/servers/notifications.server';
+import { NotificationProvider } from '~/context/NotificationContext';
 // import type { User, Employer, Freelancer } from '@mawaheb/db/';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -77,25 +78,31 @@ interface LoaderData {
 }
 
 export default function Layout() {
-  const { isOnboarded, is_published_or_deactivated } = useLoaderData<LoaderData>();
+  const { isOnboarded, is_published_or_deactivated, notifications, currentUser } =
+    useLoaderData<LoaderData>();
+
+  // Get the userId for the notification context
+  const userId = currentUser?.id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex mt-[100px] mb-10">
-        {isOnboarded && is_published_or_deactivated ? (
-          <>
-            <Sidebar />
-            <div className="container">
+    <NotificationProvider userId={userId} initialNotifications={notifications}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex mt-[100px] mb-10">
+          {isOnboarded && is_published_or_deactivated ? (
+            <>
+              <Sidebar />
+              <div className="container">
+                <Outlet />
+              </div>
+            </>
+          ) : (
+            <div className="container w-full mt-10 p-5 mb-10">
               <Outlet />
             </div>
-          </>
-        ) : (
-          <div className="container w-full mt-10 p-5 mb-10">
-            <Outlet />
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 }
