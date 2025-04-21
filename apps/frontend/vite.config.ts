@@ -11,7 +11,7 @@ declare module '@remix-run/node' {
   }
 }
 
-installGlobals();
+installGlobals({ nativeFetch: true });
 
 export default defineConfig({
   optimizeDeps: {

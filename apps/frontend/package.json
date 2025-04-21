@@ -35,7 +35,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@remix-run/node": "^2.14.0",
     "@remix-run/react": "^2.16.5",
-    "@remix-run/serve": "^2.9.2",
+    "@remix-run/serve": "^2.16.5",
     "@types/react-router": "^5.1.20",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
@@ -52,7 +52,7 @@
     "i18next-fs-backend": "^2.3.1",
     "i18next-http-backend": "^3.0.2",
     "isbot": "^5.1.26",
-    "isomorphic-dompurify": "^2.19.0",
+    "isomorphic-dompurify": "^2.23.0",
     "jsdom": "^25.0.1",
     "lucide-react": "^0.487.0",
     "mammoth": "^1.9.0",
@@ -82,7 +82,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.14.0",
+    "@remix-run/dev": "^2.16.5",
     "@types/bcrypt": "^5.0.2",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
