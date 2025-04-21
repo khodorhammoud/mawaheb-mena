@@ -3,101 +3,99 @@
 // - GET /api/jobs/:jobId/status → Returns the current status of a job
 // This controller is used by the frontend to trigger background tasks and check their progress.
 
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { QueueService, JobType } from '../queue/queue.service';
+import { AuthGuard } from '../auth/auth.guard';
 
-@Controller('api/jobs')
+@Controller('jobs')
 export class JobsController {
   constructor(private readonly queueService: QueueService) {}
 
-  @Post('skillfolio')
-  async createSkillFolioJob(
-    @Body() body: { userId: number; metadata?: Record<string, any> },
-  ) {
-    const { userId, metadata } = body;
+  @Post('/skillfolio')
+  @UseGuards(AuthGuard)
+  async createSkillFolioJob(@Body() body: { userId: number }) {
+    const { userId } = body;
 
     if (!userId) {
-      return { success: false, message: 'User ID is required' };
+      return {
+        success: false,
+        error: 'Missing required userId parameter',
+      };
     }
 
     try {
-      const jobResult = await this.queueService.addSkillFolioJob(
-        userId,
-        metadata,
-      ); // adds a job to the Redis queue
+      // Add a job to the queue for this user
+      const result = await this.queueService.addSkillFolioJob(userId, {
+        manual: true,
+      });
+
       return {
         success: true,
-        jobId: jobResult.id,
-        logicalJobId: jobResult.logicalId,
-        message: `Added job with logical ID #${jobResult.logicalId}`,
+        jobId: result.id,
+        logicalId: result.logicalId,
+        message: `Job added to queue for user ${userId}`,
       };
     } catch (error) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to create skillfolio job',
+        error: error.message || 'Unknown error',
       };
     }
   }
-  // This endpoint lets the frontend send:
-  // POST /api/jobs/skillfolio
-  // {
-  // "userId": 123,
-  // "metadata": { "additionalData": "value" }
-  // }
-  //
-  // And your server responds with:
-  // {
-  // "success": true,
-  // "jobId": "abc123",
-  // "logicalJobId": 1,
-  // "message": "Added job with logical ID #1"
-  // }
 
-  @Get(':jobId/status')
+  @Get('/:jobId')
   async getJobStatus(@Param('jobId') jobId: string) {
-    try {
-      const status = await this.queueService.getJobStatus(jobId); // looks inside Redis and returns the job info from the queue.
-      return status;
-    } catch (error) {
+    if (!jobId) {
       return {
         success: false,
-        message:
-          error instanceof Error ? error.message : 'Failed to get job status',
+        error: 'Missing required jobId parameter',
       };
     }
-  }
-  // This endpoint lets the frontend send:
-  // GET /api/jobs/abc123/status
-  // And your server responds with:
-  // {
-  //   "id": "abc123",
-  //   "logicalId": 1,
-  //   "status": "completed",
-  //   "progress": 100,
-  //   "data": {
-  //     "userId": 123,
-  //     "portfolioData": { ... }
-  //   }
-  // }
 
-  @Get('queue/status')
-  async getQueueStatus() {
     try {
-      const queueStatus = await this.queueService.getQueueJobs();
+      const result = await this.queueService.getJobStatus(jobId);
       return {
         success: true,
-        queueStatus,
-        timestamp: new Date().toISOString(),
+        ...result,
       };
     } catch (error) {
       return {
         success: false,
-        message:
-          error instanceof Error ? error.message : 'Failed to get queue status',
+        error: error.message || 'Unknown error',
       };
     }
   }
+
+  @Get('/')
+  async getJobs() {
+    try {
+      const result = await this.queueService.getQueueJobs();
+      return {
+        success: true,
+        ...result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error',
+      };
+    }
+  }
+
+  // TODO: When adding a new process type, create a new endpoint here
+  // Example:
+  // @Post('/resume')
+  // @UseGuards(AuthGuard)
+  // async createResumeJob(@Body() body: { userId: number }) {
+  //   const { userId } = body;
+  //   // Implementation similar to createSkillFolioJob but using addResumeJob
+  // }
 }
