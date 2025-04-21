@@ -24,10 +24,6 @@ export class JobEventsListener {
     // Ignore anything except the transition → published
     if (payload.newStatus !== 'published') return;
 
-    console.log(
-      `▶️  account ${payload.accountId} published — enqueueing skillfolio for user ${payload.userId}`,
-    );
-
     // Add skillfolio job to the queue
     const job = await this.queueService.addSkillFolioJob(payload.userId, {
       reason: 'account_published',
@@ -72,10 +68,6 @@ export class JobEventsListener {
     userId: number;
     metadata?: Record<string, any>;
   }) {
-    console.log(
-      `📣 JobEventsListener: skillfolio job #${payload.jobId} started for user ${payload.userId}`,
-    );
-
     await this.notificationService.create({
       userId: payload.userId,
       type: 'skillfolio_started',
@@ -97,10 +89,6 @@ export class JobEventsListener {
     userId: number;
     result: any;
   }) {
-    console.log(
-      `📣 JobEventsListener: skillfolio job #${payload.jobId} completed for user ${payload.userId}`,
-    );
-
     await this.notificationService.create({
       userId: payload.userId,
       type: 'skillfolio_completed',
@@ -122,10 +110,6 @@ export class JobEventsListener {
     userId: number;
     error: string;
   }) {
-    console.log(
-      `📣 JobEventsListener: skillfolio job #${payload.jobId} failed for user ${payload.userId}`,
-    );
-
     await this.notificationService.create({
       userId: payload.userId,
       type: 'skillfolio_failed',

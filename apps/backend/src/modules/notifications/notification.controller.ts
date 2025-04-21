@@ -14,17 +14,12 @@ export class NotificationsController {
     @Param('userId', ParseIntPipe) userId: number,
     @Query('limit') limit?: string,
   ) {
-    // console.log(`[NotificationsController] GET /notifications/user/${userId}`);
-
     const parsedLimit = limit ? parseInt(limit, 10) : 100;
     const notes = await this.notificationService.getUserNotifications(
       userId,
       parsedLimit,
     );
 
-    // console.log(
-    // `[NotificationsController] → returning ${notes.length} notifications`,
-    // );
     return notes;
   }
 }

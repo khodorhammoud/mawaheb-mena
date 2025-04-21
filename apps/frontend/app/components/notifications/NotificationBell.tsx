@@ -51,16 +51,7 @@ export function NotificationBell({
 
   // Log for debugging
   useEffect(() => {
-    console.log(
-      `🔔 NotificationBell: ${notifications.length} total notifications (${unreadCount} unread)`
-    );
     if (unreadCount > 0) {
-      console.log(
-        `Unread notification IDs: ${notifications
-          .filter(n => !n.isRead)
-          .map(n => n.id)
-          .join(', ')}`
-      );
     }
   }, [notifications, unreadCount]);
 

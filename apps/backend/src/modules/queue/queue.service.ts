@@ -36,9 +36,6 @@ export class QueueService implements OnModuleInit {
     const completedJobs = await this.processQueue.getCompleted();
     if (completedJobs.length > 0) {
       await this.processQueue.clean(0, 'completed');
-      console.log(
-        `🧹 Initial cleanup of ${completedJobs.length} completed jobs from the queue`,
-      );
     }
 
     // Set up recurring cleanup task every 5 minutes
@@ -47,39 +44,30 @@ export class QueueService implements OnModuleInit {
         const completedJobs = await this.processQueue.getCompleted();
         if (completedJobs.length > 0) {
           await this.processQueue.clean(0, 'completed');
-          console.log(
-            `🧹 Cleaned up ${completedJobs.length} completed jobs from the queue`,
-          );
         }
       },
       5 * 60 * 1000,
     );
 
     // Handle stalled jobs
-    this.processQueue.on('stalled', (job) => {
-      console.log(`⚠️ Job #${job.id} (${job.data.type}) has stalled`);
-    });
+    this.processQueue.on('stalled', (job) => {});
 
     // Handle completed jobs
     this.processQueue.on('completed', async (job) => {
       const jobType = job.data.type;
-      console.log(`✅ Job #${job.id} (${jobType}) has completed`);
 
       // Get the logical ID for this job
       const logicalId = this.getLogicalIdForJob(job.id.toString());
       if (logicalId) {
-        console.log(`✅ Completed job with logical ID #${logicalId}`);
         // Remove the mapping
         this.logicalToActualJobIdMap.delete(logicalId);
       }
 
       // Decrease active job count
       this.activeJobCount = Math.max(0, this.activeJobCount - 1);
-      console.log(`📊 Active jobs remaining: ${this.activeJobCount}`);
 
       // Remove completed job from the queue
       await job.remove();
-      console.log(`🗑️ Job #${job.id} removed from the queue`);
 
       // If queue is empty, reset the counter
       if (this.activeJobCount === 0) {
@@ -90,12 +78,10 @@ export class QueueService implements OnModuleInit {
     // Handle failed jobs
     this.processQueue.on('failed', async (job) => {
       const jobType = job.data.type;
-      console.log(`❌ Job #${job.id} (${jobType}) has failed`);
 
       // Get the logical ID for this job
       const logicalId = this.getLogicalIdForJob(job.id.toString());
       if (logicalId) {
-        console.log(`❌ Failed job with logical ID #${logicalId}`);
         // Remove the mapping
         this.logicalToActualJobIdMap.delete(logicalId);
       }
@@ -115,10 +101,8 @@ export class QueueService implements OnModuleInit {
     if (waiting.length === 0 && active.length === 0 && delayed.length === 0) {
       this.activeJobCount = 0;
       this.logicalToActualJobIdMap.clear();
-      console.log('🔄 Job counter reset to 0');
     } else {
       this.activeJobCount = waiting.length + active.length + delayed.length;
-      console.log(`📊 Current job count: ${this.activeJobCount}`);
     }
   }
 
@@ -158,10 +142,6 @@ export class QueueService implements OnModuleInit {
 
     // Store the mapping between our logical ID and Bull's actual ID
     this.logicalToActualJobIdMap.set(logicalJobId, job.id.toString());
-
-    console.log(
-      `📥 Added ${data.type} job with logical ID #${logicalJobId} (Bull ID: ${job.id})`,
-    );
 
     // Emit a general job.added event
     this.eventEmitter.emit('job.added', {
