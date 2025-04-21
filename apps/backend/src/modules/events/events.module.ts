@@ -6,8 +6,16 @@ import { EventsController } from './events.controller';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from '../notifications/notification.module'; // ✅ import from correct location
 import { JobEventsListener } from './job-events.listener';
+import { QueueModule } from '../queue/queue.module';
+import { DatabaseModule } from '../database/database.module';
+
 @Module({
-  imports: [EventEmitterModule.forRoot(), NotificationsModule],
+  imports: [
+    EventEmitterModule.forRoot(),
+    NotificationsModule,
+    QueueModule,
+    DatabaseModule,
+  ],
   controllers: [EventsController],
   providers: [JobEventsListener],
 })

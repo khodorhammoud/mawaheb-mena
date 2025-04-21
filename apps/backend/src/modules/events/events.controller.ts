@@ -137,25 +137,17 @@ export class EventsController {
         `Handling job.added event for user ${payload.userId}, job ${payload.jobId}`,
       );
 
-      // Save to database
-      const notification = await this.notificationService.create({
-        userId: payload.userId,
-        type: 'job_added',
-        message: `Job ${payload.type} has been added to the queue as job #${payload.logicalJobId}`,
-        payload: {
-          jobId: payload.jobId,
-          logicalJobId: payload.logicalJobId,
-        },
-      });
+      // Don't create a database notification for the general job.added event
+      // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
-      // Also send via SSE if client is connected
+      // Still emit the event via SSE for any connected clients that need real-time updates
+      // but it won't be saved in notifications or shown to the user
       this.sendNotificationToUser(payload.userId, {
-        type: 'notification',
-        message: `Job ${payload.type} has been added to the queue as job #${payload.logicalJobId}`,
+        type: 'job_added',
+        message: `Job ${payload.type} has been added to the queue`,
         jobId: payload.jobId,
         logicalJobId: payload.logicalJobId,
         timestamp: new Date().toISOString(),
-        notification: notification,
       });
     } catch (error) {
       console.error(
@@ -172,25 +164,16 @@ export class EventsController {
         `Handling job.started event for user ${payload.userId}, job ${payload.jobId}`,
       );
 
-      // Save to database
-      const notification = await this.notificationService.create({
-        userId: payload.userId,
-        type: 'job_started',
-        message: `Job ${payload.type} #${payload.logicalJobId} is now being processed`,
-        payload: {
-          jobId: payload.jobId,
-          logicalJobId: payload.logicalJobId,
-        },
-      });
+      // Don't create a database notification for the general job.started event
+      // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
-      // Also send via SSE if client is connected
+      // Still emit the event via SSE for any connected clients that need real-time updates
+      // but it won't be saved in notifications or shown to the user
       this.sendNotificationToUser(payload.userId, {
-        type: 'notification',
-        message: `Job ${payload.type} #${payload.logicalJobId} is now being processed`,
+        type: 'job_started',
+        message: `Job ${payload.type} is now being processed`,
         jobId: payload.jobId,
-        logicalJobId: payload.logicalJobId,
         timestamp: new Date().toISOString(),
-        notification: notification,
       });
     } catch (error) {
       console.error(
@@ -204,21 +187,20 @@ export class EventsController {
   async handleJobCompleted(payload: any) {
     try {
       console.log(
-        `EventsController: Received job.completed event for job #${payload.jobId} (logical ID: ${payload.logicalJobId})`,
+        `EventsController: Received job.completed event for job #${payload.jobId}`,
       );
 
       // Skip creating a notification if the payload indicates one was already created
       if (payload.notificationCreated) {
         console.log(
-          `EventsController: Skipping notification creation for job #${payload.jobId} (logical ID: ${payload.logicalJobId}) as it was already created`,
+          `EventsController: Skipping notification creation for job #${payload.jobId} as it was already created`,
         );
         // Still send an SSE message if a client is connected
         if (payload.notification) {
           this.sendNotificationToUser(payload.userId, {
             type: 'notification',
-            message: `Job ${payload.type} #${payload.logicalJobId} has been completed successfully`,
+            message: `Job ${payload.type} has been completed successfully`,
             jobId: payload.jobId,
-            logicalJobId: payload.logicalJobId,
             result: payload.result,
             timestamp: new Date().toISOString(),
             notification: payload.notification,
@@ -227,31 +209,17 @@ export class EventsController {
         return;
       }
 
-      // Save to database
-      const notification = await this.notificationService.create({
-        userId: payload.userId,
-        type: 'job_completed',
-        message: `Job ${payload.type} #${payload.logicalJobId} has been completed successfully`,
-        payload: {
-          jobId: payload.jobId,
-          logicalJobId: payload.logicalJobId,
-          result: payload.result,
-        },
-      });
+      // Don't create a database notification for the general job.completed event
+      // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
-      console.log(
-        `EventsController: Created notification id=${notification.id} for job #${payload.jobId} (logical ID: ${payload.logicalJobId})`,
-      );
-
-      // Also send via SSE if client is connected
+      // Still emit the event via SSE for any connected clients that need real-time updates
+      // but it won't be saved in notifications or shown to the user
       this.sendNotificationToUser(payload.userId, {
-        type: 'notification',
-        message: `Job ${payload.type} #${payload.logicalJobId} has been completed successfully`,
+        type: 'job_completed',
+        message: `Job ${payload.type} has been completed successfully`,
         jobId: payload.jobId,
-        logicalJobId: payload.logicalJobId,
-        result: payload.result,
         timestamp: new Date().toISOString(),
-        notification: notification,
+        result: payload.result,
       });
     } catch (error) {
       console.error(
@@ -268,25 +236,17 @@ export class EventsController {
         `Handling job.failed event for user ${payload.userId}, job ${payload.jobId}`,
       );
 
-      // Save to database
-      const notification = await this.notificationService.create({
-        userId: payload.userId,
-        type: 'job_failed',
-        message: `Job ${payload.type} has failed: ${payload.error}`,
-        payload: {
-          jobId: payload.jobId,
-          error: payload.error,
-        },
-      });
+      // Don't create a database notification for the general job.failed event
+      // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
-      // Also send via SSE if client is connected
+      // Still emit the event via SSE for any connected clients that need real-time updates
+      // but it won't be saved in notifications or shown to the user
       this.sendNotificationToUser(payload.userId, {
-        type: 'notification',
-        message: `Job ${payload.type} has failed: ${payload.error}`,
+        type: 'job_failed',
+        message: `Job ${payload.type} processing has failed`,
         jobId: payload.jobId,
-        error: payload.error,
         timestamp: new Date().toISOString(),
-        notification: notification,
+        error: payload.error,
       });
     } catch (error) {
       console.error(

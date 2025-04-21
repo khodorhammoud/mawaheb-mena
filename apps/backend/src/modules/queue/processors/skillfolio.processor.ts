@@ -5,6 +5,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JobType, JobData } from '../queue.service';
+// import { DatabaseService } from '../../database/database.service'; // ← enable if boss needs DB
 
 @Injectable()
 @Processor('processQueue')
@@ -12,95 +13,106 @@ export class SkillFolioProcessor {
   constructor(
     @InjectQueue('processQueue') private readonly processQueue: Queue,
     private readonly eventEmitter: EventEmitter2,
+    // private readonly databaseService: DatabaseService,
   ) {}
 
-  // Helper to get the logical ID for a Bull job ID
-  private getLogicalIdForJob(bullJobId: string): number | null {
-    // Since we don't have direct access to the QueueService's map,
-    // we'll try to find it in the job metadata if available
-    // This is a fallback; the actual logicalJobId should come from the QueueService
-
-    // Default to null if we can't determine it
-    return null;
+  /** ---------------------------------------------------------------
+   *  PLACE FOR BOSS' REAL LOGIC
+   *  Replace ALL the BODY of this method with the main algorithm.
+   *  It must return the generated skillfolio object that will be sent back in job.completed and stored in notifications.
+   *  --------------------------------------------------------------*/
+  private async generateSkillFolio(
+    userId: number,
+    metadata: Record<string, any> = {},
+  ) {
+    /* === START placeholder === */
+    console.log(`📊 [placeholder] generating skillfolio for user ${userId}`);
+    await new Promise((r) => setTimeout(r, 2000)); // simulate work
+    return {
+      id: Math.floor(Math.random() * 1000),
+      title: 'Generated SkillFolio',
+      skills: ['JavaScript', 'TypeScript', 'React', 'Node.js'],
+      score: Math.floor(Math.random() * 100),
+      generatedAt: new Date().toISOString(),
+    };
+    /* === END placeholder === */
   }
 
+  /** Main BullMQ processor for JobType.SKILLFOLIO */
   @Process(JobType.SKILLFOLIO)
   async handleSkillFolioCreation(job: Job<JobData>) {
+    const { userId, metadata } = job.data;
+
     try {
-      const { userId, metadata } = job.data;
-
-      // Get the logical job ID if available in metadata
-      // This is a placeholder - in the actual implementation, you should get this from
-      // the QueueService's mapping or job metadata
-      const logicalJobId = metadata?.logicalJobId || 1;
-
-      // Emit job started event
+      /* emit general "started" event */
       this.eventEmitter.emit('job.started', {
         jobId: job.id,
-        logicalJobId,
         type: JobType.SKILLFOLIO,
         userId,
       });
 
-      console.log(
-        `▶️  Processing skillfolio job #${job.id} (logical ID: ${logicalJobId}) for user ${userId}`,
-      );
+      /* emit skillfolio-specific "started" event */
+      this.eventEmitter.emit('job.skillfolio.started', {
+        jobId: job.id,
+        userId,
+        metadata,
+      });
 
-      // simulate progress
+      console.log(
+        `▶️  Processing skillfolio job #${job.id} for user ${userId}`,
+      );
       await job.progress(0);
-      await new Promise((res) => setTimeout(res, 1000));
-      await job.progress(50);
-      await new Promise((res) => setTimeout(res, 1000));
+
+      /* === ACTUAL WORK === */
+      const skillfolio = await this.generateSkillFolio(userId, metadata);
+      await job.progress(50); // mid‑way marker
+      await new Promise((r) => setTimeout(r, 500)); // optional extra work
       await job.progress(100);
 
       const result = {
         success: true,
         message: 'SkillFolio processed successfully',
         userId,
-        data: {
-          skillfolio: {
-            id: Math.floor(Math.random() * 1000),
-            title: 'Generated SkillFolio',
-            skills: ['JavaScript', 'TypeScript', 'React', 'Node.js'],
-            score: Math.floor(Math.random() * 100),
-            generatedAt: new Date().toISOString(),
-          },
-        },
+        data: { skillfolio },
       };
 
-      console.log(
-        `✅  Completed skillfolio job #${job.id} (logical ID: ${logicalJobId}) for user ${userId}`,
-      );
+      console.log(`✅  Completed skillfolio job #${job.id} for user ${userId}`);
 
-      // Emit job completed event
+      /* emit general "completed" event */
       this.eventEmitter.emit('job.completed', {
         jobId: job.id,
-        logicalJobId,
         type: JobType.SKILLFOLIO,
+        userId,
+        result,
+      });
+
+      /* emit skillfolio-specific "completed" event */
+      this.eventEmitter.emit('job.skillfolio.completed', {
+        jobId: job.id,
         userId,
         result,
       });
 
       return result;
     } catch (error) {
-      // Get the logical job ID if available in metadata (fallback)
-      const logicalJobId = job.data.metadata?.logicalJobId || null;
+      console.error(`❌  Failed skillfolio job #${job.id}:`, error.message);
 
-      // Log and emit job failed event
-      console.error(
-        `❌ Failed to process skillfolio job #${job.id} (logical ID: ${logicalJobId || 'unknown'}): ${error.message}`,
-      );
-
+      /* emit general "failed" event */
       this.eventEmitter.emit('job.failed', {
         jobId: job.id,
-        logicalJobId,
         type: JobType.SKILLFOLIO,
-        userId: job.data.userId,
+        userId,
         error: error.message || 'Unknown error',
       });
 
-      // Rethrow to let Bull handle the failure
-      throw error;
+      /* emit skillfolio-specific "failed" event */
+      this.eventEmitter.emit('job.skillfolio.failed', {
+        jobId: job.id,
+        userId,
+        error: error.message || 'Unknown error',
+      });
+
+      throw error; // let BullMQ handle retries if configured
     }
   }
 }

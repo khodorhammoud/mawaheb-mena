@@ -5,7 +5,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export enum JobType {
   SKILLFOLIO = 'skillfolio',
-  // add more types here…
+  // TODO: When adding a new process type, add it here as a new enum value
+  // Example: RESUME = 'resume',
 }
 
 export interface JobData {
@@ -31,26 +32,38 @@ export class QueueService implements OnModuleInit {
     // Reset the job counter
     await this.resetJobCounter();
 
-    // Set up automatic job cleanup
-    await this.processQueue.clean(0, 'completed');
+    // Set up automatic job cleanup initially
+    const completedJobs = await this.processQueue.getCompleted();
+    if (completedJobs.length > 0) {
+      await this.processQueue.clean(0, 'completed');
+      console.log(
+        `🧹 Initial cleanup of ${completedJobs.length} completed jobs from the queue`,
+      );
+    }
 
     // Set up recurring cleanup task every 5 minutes
     setInterval(
       async () => {
-        await this.processQueue.clean(0, 'completed');
-        console.log('🧹 Cleaned up completed jobs from the queue');
+        const completedJobs = await this.processQueue.getCompleted();
+        if (completedJobs.length > 0) {
+          await this.processQueue.clean(0, 'completed');
+          console.log(
+            `🧹 Cleaned up ${completedJobs.length} completed jobs from the queue`,
+          );
+        }
       },
       5 * 60 * 1000,
     );
 
     // Handle stalled jobs
     this.processQueue.on('stalled', (job) => {
-      console.log(`⚠️ Job #${job.id} has stalled`);
+      console.log(`⚠️ Job #${job.id} (${job.data.type}) has stalled`);
     });
 
     // Handle completed jobs
     this.processQueue.on('completed', async (job) => {
-      console.log(`✅ Job #${job.id} has completed`);
+      const jobType = job.data.type;
+      console.log(`✅ Job #${job.id} (${jobType}) has completed`);
 
       // Get the logical ID for this job
       const logicalId = this.getLogicalIdForJob(job.id.toString());
@@ -76,7 +89,8 @@ export class QueueService implements OnModuleInit {
 
     // Handle failed jobs
     this.processQueue.on('failed', async (job) => {
-      console.log(`❌ Job #${job.id} has failed`);
+      const jobType = job.data.type;
+      console.log(`❌ Job #${job.id} (${jobType}) has failed`);
 
       // Get the logical ID for this job
       const logicalId = this.getLogicalIdForJob(job.id.toString());
@@ -146,15 +160,23 @@ export class QueueService implements OnModuleInit {
     this.logicalToActualJobIdMap.set(logicalJobId, job.id.toString());
 
     console.log(
-      `📥 Added job with logical ID #${logicalJobId} (Bull ID: ${job.id})`,
+      `📥 Added ${data.type} job with logical ID #${logicalJobId} (Bull ID: ${job.id})`,
     );
 
-    // Include the logical job ID in the emitted event
+    // Emit a general job.added event
     this.eventEmitter.emit('job.added', {
       jobId: job.id,
       logicalJobId: logicalJobId,
       type: data.type,
       userId: data.userId,
+    });
+
+    // Emit a type-specific job added event
+    this.eventEmitter.emit(`job.${data.type}.added`, {
+      jobId: job.id,
+      logicalJobId: logicalJobId,
+      userId: data.userId,
+      metadata: data.metadata,
     });
 
     // Return both IDs for reference
@@ -168,6 +190,12 @@ export class QueueService implements OnModuleInit {
   async addSkillFolioJob(userId: number, metadata: Record<string, any> = {}) {
     return this.addJob({ type: JobType.SKILLFOLIO, userId, metadata });
   }
+
+  // TODO: When adding a new process type, create a convenience method here
+  // Example:
+  // async addResumeJob(userId: number, metadata: Record<string, any> = {}) {
+  //   return this.addJob({ type: JobType.RESUME, userId, metadata });
+  // }
 
   // Get status/progress of a job
   async getJobStatus(jobId: string) {
