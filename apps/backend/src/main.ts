@@ -13,6 +13,5 @@ async function bootstrap() {
 
   await app.listen(3001); // i changed this port from 3000 to 3001
   console.log(`🚀 Listening on http://localhost:3001`);
-  console.log(`👂 CORS enabled for http://localhost:5173`);
 }
 bootstrap();

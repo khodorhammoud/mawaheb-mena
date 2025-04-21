@@ -19,7 +19,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     // Initialize the database connection using the existing db implementation
     const { db } = await import('@mawaheb/db/server');
     this.db = db;
-    console.log('Database module initialized, connection obtained');
 
     // Set up PostgreSQL LISTEN/NOTIFY client
     this.pgListener = new Client({
@@ -32,9 +31,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     // Listen for account_status notifications
     await this.pgListener.query('LISTEN account_status');
-    console.log(
-      '🔔 Listening for PostgreSQL notifications on channel: account_status',
-    );
 
     // Handle notifications from PostgreSQL
     this.pgListener.on('notification', ({ payload }) => {
@@ -42,8 +38,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
       try {
         const data = JSON.parse(payload);
-        console.log('📢 Received account status notification:', data);
-
         // Emit the event for the rest of the application
         this.eventEmitter.emit('account.status.changed', {
           accountId: data.accountId,
@@ -100,11 +94,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AFTER UPDATE ON accounts
           FOR EACH ROW EXECUTE PROCEDURE notify_account_status();
         `);
-        console.log('✅ Created database trigger for account status changes');
-      } else {
-        console.log(
-          '✅ Database trigger for account status changes already exists',
-        );
       }
     } catch (error) {
       console.error('Error setting up account status trigger:', error);

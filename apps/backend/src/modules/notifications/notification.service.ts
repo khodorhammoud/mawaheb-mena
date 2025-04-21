@@ -19,10 +19,6 @@ export class NotificationService {
 
   /** Persist a new notification row */
   async create(notification: CreateNotificationDto) {
-    // console.log(
-    //   `[NotificationService] create → user=${notification.userId} type=${notification.type}`,
-    // );
-
     const { notificationsTable } = await import('@mawaheb/db');
 
     const [result] = await this.databaseService.db
@@ -37,16 +33,11 @@ export class NotificationService {
       })
       .returning();
 
-    console.log(`[NotificationService] created notification id=${result.id}`);
     return result;
   }
 
   /** Fetch all notifications for a user */
   async getUserNotifications(userId: number, limit = 100, offset = 0) {
-    console.log(
-      `[NotificationService] fetch → user=${userId} limit=${limit} offset=${offset}`,
-    );
-
     // Use SQL template literals instead of the eq operator
     const { notificationsTable } = await import('@mawaheb/db');
     const { sql, desc } = await import('drizzle-orm');
@@ -59,9 +50,6 @@ export class NotificationService {
       .limit(limit)
       .offset(offset);
 
-    console.log(
-      `[NotificationService] Fetched ${rows.length} notifications, including ${rows.filter((n) => !n.isRead).length} unread`,
-    );
     return rows;
   }
 }

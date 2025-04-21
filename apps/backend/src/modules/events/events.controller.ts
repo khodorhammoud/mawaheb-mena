@@ -26,7 +26,6 @@ export class EventsController {
 
   constructor(private readonly notificationService: NotificationService) {
     // Initialize with empty map
-    console.log('EventsController initialized');
   }
 
   @Sse('notifications')
@@ -34,8 +33,6 @@ export class EventsController {
   @Header('Connection', 'keep-alive')
   @Header('Content-Type', 'text/event-stream')
   notifications(): Observable<MessageEvent> {
-    console.log('SSE connection initiated for general notifications');
-
     return new Observable<MessageEvent>((subscriber) => {
       // Send initial connection event
       const connectionEvent = new MessageEvent('message', {
@@ -63,7 +60,6 @@ export class EventsController {
       }, 15000); // Reduced from 30s to 15s
 
       return () => {
-        console.log('SSE general connection closed');
         clearInterval(interval);
       };
     });
@@ -75,14 +71,10 @@ export class EventsController {
   @Header('Content-Type', 'text/event-stream')
   userNotifications(@Param('userId') userId: string): Observable<MessageEvent> {
     const userIdNum = parseInt(userId, 10);
-    console.log(`SSE connection initiated for user ${userIdNum}`);
 
     return new Observable<MessageEvent>((subscriber) => {
       // Store the subscriber for this user
       this.clients.set(userIdNum, subscriber);
-      console.log(
-        `Client for user ${userIdNum} registered, total clients: ${this.clients.size}`,
-      );
 
       // Send initial connection event
       try {
@@ -94,7 +86,6 @@ export class EventsController {
           } as NotificationData),
         });
         subscriber.next(connectionEvent);
-        console.log(`Initial connection event sent to user ${userIdNum}`);
       } catch (error) {
         console.error(
           `Error sending initial connection event to user ${userIdNum}:`,
@@ -119,12 +110,8 @@ export class EventsController {
       }, 15000); // More frequent heartbeats (15s instead of 30s)
 
       return () => {
-        console.log(
-          `SSE connection for user ${userIdNum} closed, removing client`,
-        );
         clearInterval(interval);
         this.clients.delete(userIdNum);
-        console.log(`Remaining clients: ${this.clients.size}`);
       };
     });
   }
@@ -133,10 +120,6 @@ export class EventsController {
   @OnEvent('job.added')
   async handleJobAdded(payload: any) {
     try {
-      console.log(
-        `Handling job.added event for user ${payload.userId}, job ${payload.jobId}`,
-      );
-
       // Don't create a database notification for the general job.added event
       // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
@@ -160,10 +143,6 @@ export class EventsController {
   @OnEvent('job.started')
   async handleJobStarted(payload: any) {
     try {
-      console.log(
-        `Handling job.started event for user ${payload.userId}, job ${payload.jobId}`,
-      );
-
       // Don't create a database notification for the general job.started event
       // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
@@ -186,15 +165,8 @@ export class EventsController {
   @OnEvent('job.completed')
   async handleJobCompleted(payload: any) {
     try {
-      console.log(
-        `EventsController: Received job.completed event for job #${payload.jobId}`,
-      );
-
       // Skip creating a notification if the payload indicates one was already created
       if (payload.notificationCreated) {
-        console.log(
-          `EventsController: Skipping notification creation for job #${payload.jobId} as it was already created`,
-        );
         // Still send an SSE message if a client is connected
         if (payload.notification) {
           this.sendNotificationToUser(payload.userId, {
@@ -232,10 +204,6 @@ export class EventsController {
   @OnEvent('job.failed')
   async handleJobFailed(payload: any) {
     try {
-      console.log(
-        `Handling job.failed event for user ${payload.userId}, job ${payload.jobId}`,
-      );
-
       // Don't create a database notification for the general job.failed event
       // We only want to show specific event types (skillfolio_initiated, skillfolio_started, etc.)
 
@@ -263,8 +231,6 @@ export class EventsController {
     notification: any;
   }) {
     try {
-      console.log(`🔔 Notification created for user ${payload.userId}`);
-
       // Send notification to connected user
       this.sendNotificationToUser(payload.userId, {
         type: 'notification',
@@ -286,15 +252,11 @@ export class EventsController {
     try {
       const client = this.clients.get(userId);
       if (client) {
-        console.log(
-          `Sending notification to user ${userId}: ${notification.type}`,
-        );
         const event = new MessageEvent('message', {
           data: JSON.stringify(notification),
         });
         client.next(event);
       } else {
-        console.log(`No active SSE connection for user ${userId}`);
       }
     } catch (error) {
       console.error(`Error sending notification to user ${userId}:`, error);

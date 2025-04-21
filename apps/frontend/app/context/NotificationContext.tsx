@@ -71,14 +71,9 @@ export function NotificationProvider({
           ? `${window.location.protocol}//${window.location.hostname}:3001` // Use port 3001 for backend
           : 'http://localhost:3001'; // Default fallback
 
-      console.log(
-        'Fetching notifications from:',
-        `${baseUrl}/notifications/user/${userId}?limit=50` // Increased limit to get more notifications
-      );
       const response = await fetch(`${baseUrl}/notifications/user/${userId}?limit=50`);
       if (response.ok) {
         const data = await response.json();
-        console.log(`Fetched ${data.length} notifications from server, including unread ones`);
 
         // Sort notifications by date (newest first)
         const sortedData = [...data].sort((a, b) => {
@@ -105,7 +100,6 @@ export function NotificationProvider({
 
     // Close any existing connection
     if (eventSource) {
-      console.log('Closing existing SSE connection');
       eventSource.close();
     }
 
@@ -116,7 +110,6 @@ export function NotificationProvider({
         : 'http://localhost:3001'; // Default fallback
 
     const url = `${baseUrl}/events/notifications/${userId}`;
-    console.log('Attempting to connect to SSE at:', url);
 
     // Track connection state
     let isConnected = false;
@@ -131,7 +124,6 @@ export function NotificationProvider({
 
         // Handle successful connection
         newEventSource.onopen = () => {
-          console.log('✅ SSE connection successfully opened for notifications');
           isConnected = true;
           reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
@@ -150,24 +142,20 @@ export function NotificationProvider({
             // Handle different event types
             if (data.type === 'heartbeat') {
               // Just log on dev, no action needed - connection is alive
-              console.log('💓 SSE heartbeat received');
+
               return;
             }
 
             if (data.type === 'connection') {
-              console.log('🔌 SSE connection established with server');
               return;
             }
 
             // For notification messages with embedded notification data
             if (data.type === 'notification' && data.notification) {
-              console.log('🔔 New notification arrived via SSE:', data.notification);
-
               // Add the new notification to our state directly
               setNotifications(prev => {
                 // Make sure we don't duplicate notifications
                 if (prev.some(n => n.id === data.notification.id)) {
-                  console.log('⚠️ Duplicate notification detected, not adding to state');
                   return prev;
                 }
 
@@ -182,8 +170,6 @@ export function NotificationProvider({
                   notification.createdAt = new Date(notification.createdAt);
                 }
 
-                console.log('✅ Adding new notification to state, total: ' + (prev.length + 1));
-
                 // Sort notifications after adding the new one (newest first)
                 const updatedNotifications = [notification, ...prev].sort((a, b) => {
                   const dateA = new Date(a.createdAt);
@@ -191,19 +177,12 @@ export function NotificationProvider({
                   return dateB.getTime() - dateA.getTime();
                 });
 
-                console.log(
-                  `Total: ${updatedNotifications.length} notifications, including ${
-                    updatedNotifications.filter(n => !n.isRead).length
-                  } unread`
-                );
-
                 return updatedNotifications;
               });
               setLastUpdate(new Date());
             }
             // For other non-system messages, refresh all notifications
             else if (data.type !== 'connection' && data.type !== 'heartbeat') {
-              console.log('🔄 Refreshing notifications due to event:', data.type);
               refreshNotifications();
             }
           } catch (error) {
@@ -226,10 +205,6 @@ export function NotificationProvider({
             // Exponential backoff - start with 1s, then 2s, 4s, etc. up to 30s max
             const delay = Math.min(Math.pow(2, reconnectAttempts) * 1000, 30000);
 
-            console.log(
-              `🔄 Will retry SSE connection in ${delay / 1000}s (attempt ${reconnectAttempts}/${maxReconnectAttempts})`
-            );
-
             // Clear any existing timer
             if (reconnectTimer) {
               clearTimeout(reconnectTimer);
@@ -238,9 +213,6 @@ export function NotificationProvider({
             // Set new reconnect timer
             reconnectTimer = setTimeout(() => {
               if (userId) {
-                console.log(
-                  `🔄 Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`
-                );
                 const newSource = createEventSource();
                 setEventSource(newSource);
               }
@@ -269,7 +241,6 @@ export function NotificationProvider({
 
     // Cleanup function to close connection when component unmounts
     return () => {
-      console.log('🛑 Cleaning up SSE connection');
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
       }
@@ -291,12 +262,6 @@ export function NotificationProvider({
         const dateB = new Date(b.createdAt);
         return dateB.getTime() - dateA.getTime();
       });
-
-      console.log(
-        `Setting ${sortedInitialNotifications.length} initial notifications, including ${
-          sortedInitialNotifications.filter(n => !n.isRead).length
-        } unread`
-      );
 
       setNotifications(sortedInitialNotifications);
       setLastUpdate(new Date());
