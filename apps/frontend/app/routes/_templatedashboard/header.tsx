@@ -11,7 +11,7 @@ import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs
 import { Dialog, DialogContent } from '~/components/ui/dialog';
 import Availability from '~/common/profileView/availability-form/availability';
 // import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
-import { AccountStatus, AccountType, NotificationType } from '~/types/delete-me-enums';
+import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
 

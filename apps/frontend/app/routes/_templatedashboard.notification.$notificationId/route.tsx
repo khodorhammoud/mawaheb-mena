@@ -5,7 +5,7 @@ import { getNotificationById, markNotificationAsRead } from '~/servers/notificat
 import { Button } from '~/components/ui/button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 // import { NotificationType } from '@mawaheb/db/enums';
-import { NotificationType } from '~/types/delete-me-enums';
+import { NotificationType } from '@mawaheb/db/enums';
 import { useEffect, useState } from 'react';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

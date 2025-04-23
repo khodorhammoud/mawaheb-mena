@@ -1,0 +1,16 @@
+node_modules
+*.log
+.git
+.gitignore
+**/build
+**/dist
+**/.keystone
+**/keystone.db
+**/logs
+**/.next
+**/.turbo
+.DS_Store
+*lock
+*lock.*
+.prettierrc
+

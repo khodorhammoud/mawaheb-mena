@@ -44,7 +44,7 @@
     "date-fns": "^4.1.0",
     "docusaurus": "^1.14.7",
     "dompurify": "^3.2.3",
-    "drizzle-orm": "^0.41.0",
+    "drizzle-orm": "^0.42.0",
     "framer-motion": "^11.3.31",
     "get-port": "^7.1.0",
     "i18next": "^24.2.3",

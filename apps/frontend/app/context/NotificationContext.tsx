@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { NotificationType } from '~/types/delete-me-enums';
+import { NotificationType } from '@mawaheb/db/enums';
 
 // Match your existing notification interface structure
 interface Notification {
