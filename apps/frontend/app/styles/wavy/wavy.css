@@ -28,7 +28,7 @@
 }
 
 .swing-circle {
-  offset-path: path("M0 200 Q30 90 100 100 T200 40");
+  offset-path: path('M0 183 Q30 90 100 100 T200 40');
   animation: swing 5s infinite ease-in-out;
   offset-rotate: auto; /* Ensures the circle rotates according to the path's curve */
 }
@@ -40,7 +40,7 @@
 .rotation-animation {
   display: inline-block;
   animation: rotation-animation 3s ease-in-out forwards;
-  animation-delay: 3s;
+  animation-delay: 2.4s; /* this is responsible for latening the rotation of GATEWAY word */
 }
 
 @keyframes rotation-animation {
@@ -78,24 +78,10 @@
 /* LINEAR GRADIENT */
 
 .custom-gradient {
-  background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0) 40%,
-      #27638a 40%,
-      hsl(204, 42%, 84%) 100%
-    ),
-    linear-gradient(
-      to left,
-      rgba(255, 255, 255, 0) 0%,
-      #27638a 0%,
-      hsl(204, 42%, 84%) 100%
-    ),
-    linear-gradient(
-      to top,
-      rgba(255, 255, 255, 0) 60%,
-      #fff 60%,
-      rgb(255, 255, 255) 100%
-    );
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0) 40%, #27638a 40%, hsl(204, 42%, 84%) 100%),
+    linear-gradient(to left, rgba(255, 255, 255, 0) 0%, #27638a 0%, hsl(204, 42%, 84%) 100%),
+    linear-gradient(to top, rgba(255, 255, 255, 0) 60%, #fff 60%, rgb(255, 255, 255) 100%);
   transition: background 0.3s ease;
   background-blend-mode: overlay;
   overflow: hidden;
@@ -131,7 +117,7 @@
 }
 
 .circle::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;

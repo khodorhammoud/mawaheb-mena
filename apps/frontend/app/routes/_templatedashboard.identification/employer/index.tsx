@@ -74,6 +74,118 @@ export default function EmployerIdentificationScreen() {
   // In the handleBackToAccountInfo function, replace submit with useSubmit
   const submit = useSubmit();
 
+  // Initialize file refs with existing files when component loads
+  useEffect(() => {
+    if (identificationData?.attachments) {
+      // For identification files
+      if (
+        identificationFormRef.current &&
+        identificationData.attachments.identification &&
+        identificationData.attachments.identification.length > 0
+      ) {
+        const identFiles = identificationData.attachments.identification.map(file => {
+          // Properly handle file-like object creation
+          try {
+            // Use type field if available, otherwise fallback
+            const fileType = file.type || 'application/octet-stream';
+            // Use size field if available, otherwise use a default size
+            const fileSize = file.size || 143 * 1024;
+            // Create a Blob with the same type as the original file
+            const blob = new Blob([new Uint8Array(1)], { type: fileType });
+
+            // Create a new File object that looks like the original
+            const fileObj = new File([blob], file.name || 'unknown-file', {
+              type: fileType,
+              lastModified: new Date().getTime(),
+            });
+
+            // Add custom properties for tracking
+            Object.defineProperties(fileObj, {
+              isServerFile: { value: true, writable: true, enumerable: true },
+              serverId: { value: file.serverId || file.id, writable: true, enumerable: true },
+              size: { value: fileSize, writable: true, enumerable: true },
+              fileData: { value: file, writable: true, enumerable: true },
+            });
+
+            return fileObj;
+          } catch (e) {
+            return file;
+          }
+        });
+
+        identificationFormRef.current.filesSelected = identFiles;
+      }
+
+      // For trade license files
+      if (
+        tradeLicenseFormRef.current &&
+        identificationData.attachments.trade_license &&
+        identificationData.attachments.trade_license.length > 0
+      ) {
+        const tradeFiles = identificationData.attachments.trade_license.map(file => {
+          // Create file-like object with necessary properties
+          try {
+            const fileType = file.type || 'application/octet-stream';
+            const fileSize = file.size || 143 * 1024;
+            const blob = new Blob([new Uint8Array(1)], { type: fileType });
+
+            const fileObj = new File([blob], file.name || 'unknown-file', {
+              type: fileType,
+              lastModified: new Date().getTime(),
+            });
+
+            Object.defineProperties(fileObj, {
+              isServerFile: { value: true, writable: true, enumerable: true },
+              serverId: { value: file.serverId || file.id, writable: true, enumerable: true },
+              size: { value: fileSize, writable: true, enumerable: true },
+              fileData: { value: file, writable: true, enumerable: true },
+            });
+
+            return fileObj;
+          } catch (e) {
+            return file;
+          }
+        });
+
+        tradeLicenseFormRef.current.filesSelected = tradeFiles;
+      }
+
+      // For board resolution files (company only)
+      if (
+        boardResolutionFormRef.current &&
+        identificationData.attachments.board_resolution &&
+        identificationData.attachments.board_resolution.length > 0
+      ) {
+        const boardFiles = identificationData.attachments.board_resolution.map(file => {
+          // Create file-like object with necessary properties
+          try {
+            const fileType = file.type || 'application/octet-stream';
+            const fileSize = file.size || 143 * 1024;
+            const blob = new Blob([new Uint8Array(1)], { type: fileType });
+
+            const fileObj = new File([blob], file.name || 'unknown-file', {
+              type: fileType,
+              lastModified: new Date().getTime(),
+            });
+
+            Object.defineProperties(fileObj, {
+              isServerFile: { value: true, writable: true, enumerable: true },
+              serverId: { value: file.serverId || file.id, writable: true, enumerable: true },
+              size: { value: fileSize, writable: true, enumerable: true },
+              fileData: { value: file, writable: true, enumerable: true },
+            });
+
+            return fileObj;
+          } catch (e) {
+            return file;
+          }
+        });
+
+        boardResolutionFormRef.current.filesSelected = boardFiles;
+      }
+    }
+  }, [identificationData]);
+
   // Monitor the fetcher state
   useEffect(() => {
     if (fetcher.state === 'submitting') {
@@ -121,19 +233,7 @@ export default function EmployerIdentificationScreen() {
 
   // Handle submit action
   const handleSubmitDocuments = () => {
-    // console.log('DEBUG - Submitting documents with refs:', {
-    //   identificationRef: identificationFormRef.current,
-    //   identificationFiles: identificationFormRef.current?.filesSelected,
-    //   tradeLicenseRef: tradeLicenseFormRef.current,
-    //   tradeLicenseFiles: tradeLicenseFormRef.current?.filesSelected,
-    //   boardResolutionRef: boardResolutionFormRef.current,
-    //   boardResolutionFiles: boardResolutionFormRef.current?.filesSelected,
-    // });
-
-    console.log('Submit button clicked'); // Debugging log
-
     if (!hasValidFilesToSubmit()) {
-      console.log('Showing toast notification'); // Debugging log
       toast({
         variant: 'destructive',
         title: 'Required Documents Missing',
@@ -219,10 +319,6 @@ export default function EmployerIdentificationScreen() {
       }
 
       if (filesToDelete.length > 0) {
-        // console.log(
-        //   'DEBUG - handleSubmitDocuments - Adding filesToDelete to formData:',
-        //   filesToDelete
-        // );
         formData.append('filesToDelete', JSON.stringify(filesToDelete));
 
         // Clear localStorage after adding to formData
@@ -231,7 +327,7 @@ export default function EmployerIdentificationScreen() {
         localStorage.removeItem('board_resolution-files-to-delete');
       }
     } catch (error) {
-      console.error('DEBUG - Error handling filesToDelete from localStorage:', error);
+      // Error handling filesToDelete from localStorage
     }
 
     // Submit using fetcher

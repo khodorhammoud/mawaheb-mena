@@ -564,21 +564,34 @@ export async function createEmployerIdentification(
       board_resolution: boardResolutionIds.data || [],
     };
 
-    // Use upsert to either insert a new record or update the existing one
-    const result = await db
-      .insert(userIdentificationsTable)
-      .values({
-        userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
+    // Check if a record exists for this user
+    const existingRecord = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId));
+
+    let result;
+
+    if (existingRecord.length > 0) {
+      // Update existing record
+      result = await db
+        .update(userIdentificationsTable)
+        .set({
           attachments,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
+        })
+        .where(eq(userIdentificationsTable.userId, userId))
+        .returning();
+    } else {
+      // Insert new record
+      result = await db
+        .insert(userIdentificationsTable)
+        .values({
+          userId,
+          attachments,
+        })
+        .returning();
+    }
 
     return { success: true, data: result[0] };
   } catch (error) {
