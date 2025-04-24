@@ -1,11 +1,6 @@
-import { useLoaderData } from "@remix-run/react"; // Use loader data from the main loader
-import { motion } from "framer-motion";
-import {
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "../../../common/header/card";
+import { useLoaderData } from '@remix-run/react'; // Use loader data from the main loader
+import { motion } from 'framer-motion';
+import { CardHeader, CardTitle, CardDescription, CardContent } from '../../../common/header/card';
 
 // Define the type for a feature
 interface Feature {

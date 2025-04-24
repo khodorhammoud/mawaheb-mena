@@ -1,8 +1,8 @@
 import { redirect, useLoaderData } from '@remix-run/react';
-import { AccountType, AccountStatus, EmployerAccountType } from '@mawaheb/db/enums';
+import { AccountType, AccountStatus, EmployerAccountType } from '~/types/delete-me-enums';
 import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Employer, Freelancer } from '@mawaheb/db/types';
+import { Employer, Freelancer } from '@mawaheb/db/types/User';
 import { requireUserVerified } from '~/auth/auth.server';
 import FreelancerIdentifyingScreen from './freelancer';
 import EmployerIdentifyingScreen from './employer';
@@ -150,22 +150,23 @@ export async function action({ request }: ActionFunctionArgs) {
         filesToDelete,
       };
 
-      // Use createEmployerIdentification which now handles both create and update
-      const result = await createEmployerIdentification(userId, attachmentsData);
-
-      if (!result.success) {
-        return Response.json({
-          success: false,
-          error: 'Failed to save employer identification',
-        });
-      }
-
+      // First update the account status
       const statusResult = await updateEmployerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
         return Response.json({
           success: false,
           error: 'Failed to update employer account status',
+        });
+      }
+
+      // Then save the identification data
+      const result = await createEmployerIdentification(userId, attachmentsData);
+
+      if (!result.success) {
+        return Response.json({
+          success: false,
+          error: 'Failed to save employer identification',
         });
       }
 
@@ -245,6 +246,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const accountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
 
+  // Check if user is forcing to view the identification screen
+  const url = new URL(request.url);
+  const forceView = url.searchParams.get('force') === 'true';
+
   if (!profile) {
     return Response.json({
       success: false,
@@ -263,8 +268,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard');
   }
 
-  // If account status is pending, show pending message
-  const isPending = profile.account?.accountStatus === AccountStatus.Pending;
+  // If account status is pending, show pending message (unless force=true is set)
+  const isPending = profile.account?.accountStatus === AccountStatus.Pending && !forceView;
 
   // Fetch identification data based on account type
   let identificationData = null;
