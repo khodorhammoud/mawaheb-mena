@@ -44,6 +44,7 @@ export default function Dashboard() {
   const activeJobCount = loaderData?.activeJobCount || 0;
   const draftedJobCount = loaderData?.draftedJobCount || 0;
   const closedJobCount = loaderData?.closedJobCount || 0;
+  const pausedJobCount = loaderData?.pausedJobCount || 0;
   const totalJobCount = loaderData?.totalJobCount || 0;
 
   // Access the firstName from the nested structure of currentProfile
@@ -94,6 +95,12 @@ export default function Dashboard() {
       change: '+0 from last month', // Update this dynamically if needed
       changeColor: closedJobCount > 0 ? 'text-green-500' : 'text-red-500',
     },
+    {
+      title: 'Paused Jobs',
+      count: pausedJobCount,
+      change: '+0 from last month', // Update this dynamically if needed
+      changeColor: pausedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+    },
   ];
 
   // Applicants summary data
@@ -132,20 +139,25 @@ export default function Dashboard() {
             </>
           )}
 
-          <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
+          {/* Main Section */}
+          <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 xl:gap-12 gap-4 my-8">
             {/* Job Postings Section */}
-            <div className="bg-white p-6">
-              <h1 className="text-3xl font-semibold mb-6">Job Postings</h1>
-              <div className="grid grid-cols-1">
+            <div className="bg-white">
+              <h1 className="xl:text-2xl md:text-xl text-lg font-semibold mb-6">Job Postings</h1>
+              <div className="bg-gray-100 rounded-2xl p-8 space-y-10">
                 {jobData.map((job, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col justify-between px-10 py-4 bg-gray-100 rounded-md mb-4"
-                  >
-                    <h2 className="text-xl font-medium text-gray-800">{job.title}</h2>
-                    <div className="flex gap-10">
-                      <p className="text-4xl font-bold mt-2 text-black">{job.count}</p>
-                      <div className={`text-md mt-6 ${job.changeColor}`}>{job.change}</div>
+                  <div key={index}>
+                    {/* title and count */}
+                    <h2 className="xl:text-lg text-base font-semibold text-gray-800">
+                      {job.title}
+                    </h2>
+                    <div className="flex items-center gap-10">
+                      <p className="xl:text-3xl md:text-2xl text-xl font-bold text-black">
+                        {job.count}
+                      </p>
+                      <div className={`md:text-sm text-xs mt-1 ${job.changeColor}`}>
+                        {job.change}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -153,18 +165,40 @@ export default function Dashboard() {
             </div>
 
             {/* Applicants Summary Section */}
-            <div className="bg-white p-6">
-              <h1 className="text-3xl font-semibold mb-6">Applicants Summary</h1>
-              <div className="grid grid-cols-2 gap-6">
-                {applicantData.map((applicant, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col justify-between p-4 bg-gray-100 rounded-md"
-                  >
-                    <h2 className="text-xl font-medium text-gray-800">{applicant.title}</h2>
-                    <p className="text-4xl font-bold mt-2 text-black">{applicant.count}</p>
+            <div className="bg-white">
+              <h1 className="xl:text-2xl md:text-xl text-lg font-semibold mb-6">
+                Applicants Summary
+              </h1>
+              <div className="md:grid md:grid-cols-3">
+                {/* Left side: Two small boxes stacked vertically */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col justify-center xl:p-6 p-4 bg-gray-100 rounded-xl xl:h-[212px] lg:h-[196px]">
+                    <p className="xl:text-3xl md:text-2xl text-xl font-bold text-black">
+                      {applicantData[0].count}
+                    </p>
+                    <h2 className="xl:text-lg md:text-base text-sm font-medium text-gray-800">
+                      {applicantData[0].title}
+                    </h2>
                   </div>
-                ))}
+                  <div className="flex flex-col justify-center xl:p-6 p-4 bg-gray-100 rounded-xl xl:h-[212px] lg:h-[196px]">
+                    <p className="xl:text-3xl md:text-2xl text-xl font-bold text-black">
+                      {applicantData[2].count}
+                    </p>
+                    <h2 className="xl:text-lg md:text-base text-sm font-medium text-gray-800">
+                      {applicantData[2].title}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Right side: One big box spanning two rows */}
+                <div className="md:col-span-2 flex flex-col justify-center xl:p-6 p-4 bg-gray-100 rounded-xl h-full md:ml-3 md:mt-0 mt-4 xl:h-[440px] lg:h-[408px]">
+                  <p className="xl:text-3xl md:text-2xl text-xl font-bold text-black">
+                    {applicantData[1].count}
+                  </p>
+                  <h2 className="xl:text-lg md:text-base text-sm font-medium text-gray-800">
+                    {applicantData[1].title}
+                  </h2>
+                </div>
               </div>
             </div>
           </div>

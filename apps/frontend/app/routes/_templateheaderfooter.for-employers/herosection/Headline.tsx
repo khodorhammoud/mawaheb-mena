@@ -9,7 +9,7 @@ export default function Headline() {
     // Set a timeout to hide the SVG after the animation ends (2.8 seconds)
     const timeoutId = setTimeout(() => {
       setIsVisible(false); // Update state to hide the SVG
-    }, 2800); // Match the duration of the animation (2.8 seconds)
+    }, 2400); // Match the duration of the animation (2.8 seconds)
 
     return () => clearTimeout(timeoutId); // Cleanup timeout on unmount
   }, []);
@@ -22,8 +22,8 @@ export default function Headline() {
             Your{' '}
             <span className="">
               {isVisible && (
-                <svg
-                  className="absolute top-[-120px] right-[340px] z-[0] transition-opacity duration-500  ease-out"
+                <svg // top-[-120px] right-[340px]
+                  className="absolute top-[-120px] right-[370px] z-[0] transition-opacity duration-500  ease-out"
                   width="180"
                   height="120"
                   viewBox="0 0 180 180"
@@ -33,7 +33,7 @@ export default function Headline() {
                   {/* ✅ Curve line with fade out */}
                   <path
                     id="swingPath"
-                    d="M0 183 Q30 90 100 100 T200 40"
+                    d="M0 200 Q30 90 100 100 T210 40"
                     stroke="#ddd"
                     strokeWidth="2"
                     fill="none"
@@ -62,16 +62,18 @@ export default function Headline() {
                     {/* ✅ Smooth motion with fix for jump */}
                     <animateMotion
                       begin="0s"
-                      dur="2.8s"
+                      dur="2.6s"
                       repeatCount="1"
-                      keyTimes="0;1"
-                      keyPoints="1;0"
-                      calcMode="paced"
+                      keyTimes="0; 0.5; 1"
+                      keyPoints="1; 0.5; 0"
+                      calcMode="spline"
+                      keySplines="0.3 0.5 0.4 0.6; 0.2 0.1 0.3 1"
                       rotate="auto"
-                      fill="freeze" // ✅ Keeps ball at last position
+                      fill="freeze"
                     >
                       <mpath href="#swingPath" />
                     </animateMotion>
+
                     {/* ✅ Ball disappears cleanly */}
                     <animate
                       attributeName="opacity"
@@ -84,7 +86,7 @@ export default function Headline() {
                   </circle>
                 </svg>
               )}
-              <span className="text-white -rotate-3 z-[5000] bg-black rotation-animation inline-block px-6 md:px-8 rounded-[14px] relative mb-2">
+              <span className="text-black z-[5000] bg-gray-200 rotation-animation inline-block px-6 md:px-8 rounded-[14px] relative mb-2">
                 Gateway
               </span>
             </span>{' '}

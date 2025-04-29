@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaArrowLeft, FaArrowRight, FaStar } from "react-icons/fa";
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaArrowLeft, FaArrowRight, FaStar } from 'react-icons/fa';
 
 export type registrationSlideData = {
   image: string;
@@ -10,9 +10,7 @@ export type registrationSlideData = {
   rating: number;
 };
 
-export default function RegistrationSlider(props: {
-  slides: registrationSlideData[];
-}) {
+export default function RegistrationSlider(props: { slides: registrationSlideData[] }) {
   const slides: registrationSlideData[] | null = props.slides;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -20,7 +18,7 @@ export default function RegistrationSlider(props: {
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? "100%" : "-100%",
+      x: direction > 0 ? '100%' : '-100%',
       opacity: 1,
     }),
     center: {
@@ -28,7 +26,7 @@ export default function RegistrationSlider(props: {
       opacity: 1,
     },
     exit: (direction: number) => ({
-      x: direction < 0 ? "100%" : "-100%",
+      x: direction < 0 ? '100%' : '-100%',
       opacity: 1,
       // position: 'absolute',
     }),
@@ -40,7 +38,7 @@ export default function RegistrationSlider(props: {
 
     const timer = setInterval(() => {
       setDirection(1);
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide(prev => (prev + 1) % slides.length);
     }, 5000);
 
     return () => clearInterval(timer);
@@ -56,19 +54,19 @@ export default function RegistrationSlider(props: {
   const nextSlide = () => {
     handleManualNavigation(() => {
       setDirection(1);
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide(prev => (prev + 1) % slides.length);
     });
   };
 
   const prevSlide = () => {
     handleManualNavigation(() => {
       setDirection(-1);
-      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+      setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
     });
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-end h-[900px]">
+    <div className="absolute inset-0 flex flex-col justify-end h-full">
       {/* Background Image */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
@@ -83,7 +81,7 @@ export default function RegistrationSlider(props: {
           animate="center"
           exit="exit"
           transition={{
-            x: { type: "spring", stiffness: 100, damping: 20 },
+            x: { type: 'spring', stiffness: 100, damping: 20 },
             opacity: { duration: 0.2 },
           }}
         />
@@ -92,12 +90,8 @@ export default function RegistrationSlider(props: {
         {/* Quote and Name */}
         <div>
           <p className="text-xl -mr-20 mb-10">{slides[currentSlide].quote}</p>
-          <p className="text-lg font-semibold mb-10">
-            {slides[currentSlide].name}
-          </p>
-          <p className="text-sm text-gray-400 font-semibold mb-2">
-            {slides[currentSlide].title}
-          </p>
+          <p className="text-lg font-semibold mb-10">{slides[currentSlide].name}</p>
+          <p className="text-sm text-gray-400 font-semibold mb-2">{slides[currentSlide].title}</p>
         </div>
 
         <div className="flex flex-col items-center">
@@ -107,9 +101,7 @@ export default function RegistrationSlider(props: {
               <FaStar
                 key={index}
                 className={`text-md ${
-                  index < slides[currentSlide].rating
-                    ? "text-white"
-                    : "text-gray-400"
+                  index < slides[currentSlide].rating ? 'text-white' : 'text-gray-400'
                 }`}
               />
             ))}

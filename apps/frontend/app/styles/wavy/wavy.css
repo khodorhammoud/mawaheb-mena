@@ -28,7 +28,7 @@
 }
 
 .swing-circle {
-  offset-path: path('M0 183 Q30 90 100 100 T200 40');
+  offset-path: path('M0 200 Q30 90 100 100 T210 40');
   animation: swing 5s infinite ease-in-out;
   offset-rotate: auto; /* Ensures the circle rotates according to the path's curve */
 }
@@ -39,13 +39,19 @@
 
 .rotation-animation {
   display: inline-block;
-  animation: rotation-animation 3s ease-in-out forwards;
-  animation-delay: 2.4s; /* this is responsible for latening the rotation of GATEWAY word */
+  animation: rotation-animation 3.6s ease-in-out both;
+  animation-delay: 2.4s;
 }
 
 @keyframes rotation-animation {
   0% {
-    rotate: 0;
+    rotate: 0deg;
+    color: black;
+    background-color: #e5e7eb; /* Tailwind bg-gray-200 */
+  }
+  1% {
+    color: white;
+    background-color: black;
   }
   10% {
     rotate: 4deg;
@@ -54,10 +60,10 @@
     rotate: 4deg;
   }
   35% {
-    rotate: 0;
+    rotate: 0deg;
   }
   50% {
-    rotate: 0;
+    rotate: 0deg;
   }
   60% {
     rotate: -4deg;
@@ -70,6 +76,8 @@
   }
   100% {
     rotate: 3deg;
+    color: white;
+    background-color: black;
   }
 }
 
@@ -194,7 +202,7 @@
 }
 
 .not-active-gradient:hover {
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   animation: gradientAnimation 3s ease infinite !important;
 }
 
@@ -417,4 +425,28 @@
   /* Ensure full width */
   width: 100vw;
   margin-left: calc(50% - 50vw);
+}
+
+/* BACK ICON */
+/* BACK ICON */
+/* BACK ICON */
+
+.back-icon {
+  display: inline-block;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.back-icon:hover {
+  transform: translateX(-5px);
+  opacity: 0.8;
+}
+
+/* SPIN ANIMATION */
+/* SPIN ANIMATION */
+/* SPIN ANIMATION */
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
 }

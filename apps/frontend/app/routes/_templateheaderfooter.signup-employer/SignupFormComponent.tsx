@@ -3,7 +3,6 @@ import SocialLinks from '../../common/registration/socialLinks';
 import { useActionData, useNavigate, Form } from '@remix-run/react';
 import AppFormField from '../../common/form-fields';
 import { AccountType } from '@mawaheb/db/enums';
-import { Link } from '@chakra-ui/react';
 import { Checkbox } from '~/components/ui/checkbox';
 
 interface ActionData {
@@ -108,7 +107,7 @@ export default function SignupLeftComponent() {
 
           <button
             type="submit"
-            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full py-3 text-lg font-semibold text-white bg-primaryColor rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 not-active-gradient"
           >
             Continue
           </button>

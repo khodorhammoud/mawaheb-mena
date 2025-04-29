@@ -5,6 +5,7 @@ import { requireUserIsEmployerPublishedOrDeactivated } from '~/auth/auth.server'
 import { getCurrentUserAccountInfo, getProfileInfo } from '~/servers/user.server';
 import { getAllSkills } from '~/servers/skill.server';
 import { Job } from '@mawaheb/db/types';
+import { ExperienceLevel } from '@mawaheb/db/enums';
 
 export async function loader({ params, request }: { params: { jobId: number }; request: Request }) {
   const { jobId } = params;
@@ -28,7 +29,10 @@ export async function loader({ params, request }: { params: { jobId: number }; r
   const allSkills = await getAllSkills();
 
   return Response.json({
-    job,
+    job: {
+      ...job,
+      experienceLevel: job.experienceLevel as ExperienceLevel,
+    },
     jobCategories: jobCategories || [],
     skills: allSkills || [],
   });
@@ -75,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
       requiredSkills, // Pass correctly parsed skills
       projectType: formData.get('projectType') as string,
       budget: parseInt(formData.get('budget') as string, 10) || undefined,
-      experienceLevel: formData.get('experienceLevel') as string,
+      experienceLevel: formData.get('experienceLevel') as ExperienceLevel,
       status: formData.get('status') as string,
       jobCategoryId: parseInt(formData.get('jobCategory') as string, 10) || null,
     };

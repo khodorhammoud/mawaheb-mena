@@ -49,9 +49,9 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
   const handleDescriptionChange = (content: string) => setJobDescription(content);
 
   return (
-    <div className="font-['Switzer-Regular'] mt-10 w-full">
+    <div className="font-['Switzer-Regular'] w-full">
       <div className="p-6 bg-white">
-        <div className="mt-10">
+        <div className="">
           <h1 className="md:text-2xl text-xl font-semibold mb-8 self-center">
             {isEdit ? 'Edit Job Posting' : 'Job Posting Form'}
           </h1>

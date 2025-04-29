@@ -32,7 +32,7 @@ import JobDesignTwo from '../_templatedashboard.manage-jobs/manage-jobs/JobDesig
 import JobDesignThree from '../_templatedashboard.manage-jobs/manage-jobs/JobDesignThree';
 import JobApplicants from '~/common/applicant/JobApplicants';
 import { FaArrowLeft } from 'react-icons/fa';
-import { JobApplicationStatus } from '@mawaheb/db/enums';
+import { JobApplicationStatus, JobStatus } from '@mawaheb/db/enums';
 
 export type LoaderData = {
   jobData: JobCardData;
@@ -243,15 +243,15 @@ const Layout = () => {
         <div>
           {/* Show JobDesignOne on md and larger screens */}
           <div className="hidden md:block">
-            <JobDesignOne data={jobData} />
+            <JobDesignOne data={jobData} status={jobData.job.status as JobStatus} />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
           <div className="hidden sm:block md:hidden">
-            <JobDesignTwo data={jobData} />
+            <JobDesignTwo data={jobData} status={jobData.job.status as JobStatus} />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
           <div className="block sm:hidden">
-            <JobDesignThree data={jobData} />
+            <JobDesignThree data={jobData} status={jobData.job.status as JobStatus} />
           </div>
         </div>
       ) : (

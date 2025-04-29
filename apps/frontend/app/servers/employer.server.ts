@@ -435,35 +435,70 @@ export async function getEmployerDashboardData(request: Request) {
       throw new Error('Current user not found.');
     }
 
-    // Fetch counts for active, drafted, and closed jobs
-    const [activeJobs, draftedJobs, closedJobs] = await Promise.all([
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Active))
-        ),
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Draft))
-        ),
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Closed))
-        ),
-    ]);
+    // Fetch counts for active, drafted, closed, and paused jobs
+    const [activeJobs, draftedJobs, closedJobs, pausedJobs, deletedJobs, completedJobs] =
+      await Promise.all([
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Active))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Draft))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Closed))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Paused))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(
+              eq(jobsTable.employerId, currentProfile.id),
+              eq(jobsTable.status, JobStatus.Deleted)
+            )
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(
+              eq(jobsTable.employerId, currentProfile.id),
+              eq(jobsTable.status, JobStatus.Completed)
+            )
+          ),
+      ]);
 
     // Calculate the counts based on the length of the results
     const activeJobCount = activeJobs.length;
     const draftedJobCount = draftedJobs.length;
     const closedJobCount = closedJobs.length;
+    const pausedJobCount = pausedJobs.length;
+    const deletedJobCount = deletedJobs.length;
+    const completedJobCount = completedJobs.length;
 
-    // Return the job counts
-    return { activeJobCount, draftedJobCount, closedJobCount };
+    // Return the job counts and JobStatus enum values
+    return {
+      activeJobCount,
+      draftedJobCount,
+      closedJobCount,
+      pausedJobCount,
+      deletedJobCount,
+      completedJobCount,
+    };
   } catch (error) {
     console.error('Error fetching employer dashboard data:', error);
     throw error; // Re-throw the error for further handling
