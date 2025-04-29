@@ -365,6 +365,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
 
   switch (target) {
     case 'freelancer-cv':
+    case 'cvParser':
       return handleFreelancerCV(formData, freelancer);
     case 'freelancer-bio':
       return handleFreelancerBio(formData, userId);
