@@ -1,4 +1,9 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: whenever the data schema of users of type Freelancer is needed, it can all be found here
 globs: 
 alwaysApply: false
