@@ -2,9 +2,21 @@ import { Form } from '@remix-run/react';
 import AppFormField from '../../../common/form-fields';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AccountType } from '@mawaheb/db/enums';
+import { AccountType, JobStatus } from '@mawaheb/db/enums';
 
-export default function Header({ setViewMode }) {
+interface HeaderProps {
+  setViewMode: (mode: string) => void;
+  activeFilter: JobStatus | 'all';
+  setActiveFilter: (filter: JobStatus | 'all') => void;
+  onSearch: (query: string) => void;
+}
+
+export default function Header({
+  setViewMode,
+  activeFilter,
+  setActiveFilter,
+  onSearch,
+}: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Effect to handle window resize
@@ -22,26 +34,80 @@ export default function Header({ setViewMode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Handle filter button click
+  const handleFilterClick = (filter: JobStatus | 'all') => {
+    setActiveFilter(filter);
+    setIsOpen(false); // Close mobile menu when filter is selected
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(e.target.value);
+  };
+
   return (
     <div className="flex items-center xl:gap-6 lg:gap-2 lg:justify-between relative">
       {/* Search */}
-      <Form method="post" className="space-y-6 xl:-mt-10 lg:-mt-8 -mt-8">
-        <input type="hidden" name="accountType" value={AccountType.Employer} />
-        <AppFormField id="search" name="search" label="🔍 Hinted search text" className="" />
-      </Form>
+      <div className="space-y-6 xl:-mt-4 -mt-2">
+        <AppFormField
+          id="search"
+          name="search"
+          label="🔍 Hinted search text"
+          className=""
+          onChange={handleSearchChange}
+        />
+      </div>
 
       {/* Buttons - Hidden on Medium screens */}
-      <div className="lg:flex hidden ml-auto lg:ml-0 gap-1 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
-        <button className="bg-primaryColor text-white rounded-xl xl:px-4 md:px-2 md:py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm xl:text-base">
+      <div className="lg:flex hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === 'all'
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick('all')}
+        >
+          All Jobs
+        </button>
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === JobStatus.Active
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick(JobStatus.Active)}
+        >
           Active Jobs
         </button>
-        <button className="bg-primaryColor text-white rounded-xl xl:px-4 md:px-2 md:py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm xl:text-base">
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === JobStatus.Draft
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick(JobStatus.Draft)}
+        >
           Drafted Jobs
         </button>
-        <button className="bg-primaryColor text-white rounded-xl xl:px-4 md:px-2 md:py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm xl:text-base">
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === JobStatus.Paused
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick(JobStatus.Paused)}
+        >
           Paused Jobs
         </button>
-        <button className="bg-primaryColor text-white rounded-xl xl:px-4 md:px-2 md:py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm xl:text-base">
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === JobStatus.Closed
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick(JobStatus.Closed)}
+        >
           Closed Jobs
         </button>
       </div>
@@ -99,26 +165,52 @@ export default function Header({ setViewMode }) {
         {/* Buttons */}
         <div className="grid sm:grid-cols-2 md:grid-cols-1 md:gap-2 gap-1 lg:hidden">
           <button
-            className="bg-primaryColor text-white rounded-xl px-4 py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm"
-            onClick={() => setIsOpen(false)}
+            className={`rounded-xl lg:px-4 px-2 lg:py-2 py-1 transition duration-300 not-active-gradient text-sm ${
+              activeFilter === 'all'
+                ? 'bg-primaryColor text-white'
+                : 'bg-white text-primaryColor border border-primaryColor'
+            }`}
+            onClick={() => handleFilterClick('all')}
+          >
+            All Jobs
+          </button>
+          <button
+            className={`rounded-xl lg:px-4 px-2 lg:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm ${
+              activeFilter === JobStatus.Active
+                ? 'bg-primaryColor text-white'
+                : 'bg-white text-primaryColor border border-primaryColor'
+            }`}
+            onClick={() => handleFilterClick(JobStatus.Active)}
           >
             Active Jobs
           </button>
           <button
-            className="bg-primaryColor text-white rounded-xl px-4 py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm"
-            onClick={() => setIsOpen(false)}
+            className={`rounded-xl lg:px-4 px-2 lg:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm ${
+              activeFilter === JobStatus.Draft
+                ? 'bg-primaryColor text-white'
+                : 'bg-white text-primaryColor border border-primaryColor'
+            }`}
+            onClick={() => handleFilterClick(JobStatus.Draft)}
           >
             Drafted Jobs
           </button>
           <button
-            className="bg-primaryColor text-white rounded-xl px-4 py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm"
-            onClick={() => setIsOpen(false)}
+            className={`rounded-xl lg:px-4 px-2 lg:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm ${
+              activeFilter === JobStatus.Paused
+                ? 'bg-primaryColor text-white'
+                : 'bg-white text-primaryColor border border-primaryColor'
+            }`}
+            onClick={() => handleFilterClick(JobStatus.Paused)}
           >
             Paused Jobs
           </button>
           <button
-            className="bg-primaryColor text-white rounded-xl px-4 py-2 hover:bg-primaryColor-dark transition duration-300 not-active-gradient text-sm"
-            onClick={() => setIsOpen(false)}
+            className={`rounded-xl lg:px-4 px-2 lg:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm ${
+              activeFilter === JobStatus.Closed
+                ? 'bg-primaryColor text-white'
+                : 'bg-white text-primaryColor border border-primaryColor'
+            }`}
+            onClick={() => handleFilterClick(JobStatus.Closed)}
           >
             Closed Jobs
           </button>

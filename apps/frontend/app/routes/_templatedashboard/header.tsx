@@ -105,7 +105,7 @@ export default function Header() {
 
           {/* Search */}
           <div className="sm:w-[40%] w-full">
-            <AppFormField
+            {/* <AppFormField
               id="email"
               name="email"
               label={
@@ -113,7 +113,7 @@ export default function Header() {
                   <BsSearch /> <div className="md:block ml-4 hidden">Hinted search text</div>
                 </div>
               }
-            />
+            /> */}
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export default function Header() {
             <Link
               to="/new-job"
               onClick={handlePostJobClick}
-              className="bg-primaryColor rounded-[10px] md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
+              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
             >
               Post Job
             </Link>

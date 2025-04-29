@@ -16,6 +16,7 @@ import i18nServer, { localeCookie } from '~/lib/i18n.server';
 import { useChangeLanguage } from 'remix-i18next/react';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from '~/components/ui/toaster';
+import { UserProvider } from '~/context/UserContext';
 
 export const handle = { i18n: ['translation'] };
 
@@ -66,7 +67,11 @@ export const meta: MetaFunction = () => {
 export default function App() {
   const { locale } = useLoaderData<typeof loader>();
   useChangeLanguage(locale);
-  return <Outlet />;
+  return (
+    <UserProvider>
+      <Outlet />
+    </UserProvider>
+  );
 }
 
 /* export function ErrorBoundary() {

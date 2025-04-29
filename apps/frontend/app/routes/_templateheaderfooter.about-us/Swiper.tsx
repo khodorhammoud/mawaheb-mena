@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { useLoaderData } from "@remix-run/react";
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useLoaderData } from '@remix-run/react';
 
 // Type for Image Data fetched from the loader
 type ImageData = {
@@ -15,10 +15,10 @@ const Swiper: React.FC = () => {
   // Fetch the imageSwiperSection from the loader
   const { imageSwiperSection } = useLoaderData<LoaderData>();
 
-  const [initialXOffset, setInitialXOffset] = useState(1100); // To set initial offset
+  const [initialXOffset, setInitialXOffset] = useState(580); // To set initial offset
 
   useEffect(() => {
-    const offset = 1100; // This offset will push the first image partially off-screen to the left
+    const offset = 580; // This offset will push the first image partially off-screen to the left
     setInitialXOffset(offset);
   }, []);
 
@@ -28,11 +28,11 @@ const Swiper: React.FC = () => {
         className="flex cursor-grab"
         drag="x"
         dragConstraints={{
-          left: -((imageSwiperSection.length - 1) * (480 + 16) - 1232), // Adjust drag constraints based on image count
-          right: 1100, // Margin of the swiper to the left
+          left: -((imageSwiperSection.length - 1) * (480 + 16) - 1210), // Adjust drag constraints based on image count
+          right: 580, // Margin of the swiper to the left
         }}
         dragElastic={0.1}
-        whileTap={{ cursor: "grabbing" }}
+        whileTap={{ cursor: 'grabbing' }}
         initial={{ x: initialXOffset }}
       >
         {imageSwiperSection.map((image, index) => (
@@ -40,8 +40,8 @@ const Swiper: React.FC = () => {
             key={index}
             className="flex-none object-cover rounded-xl"
             style={{
-              width: "480px",
-              marginLeft: index === 0 ? `0px` : "2%", // The first image has no margin, the rest have a gap
+              width: '480px',
+              marginLeft: index === 0 ? `0px` : '2%', // The first image has no margin, the rest have a gap
             }}
           >
             <img

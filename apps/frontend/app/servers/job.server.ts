@@ -1361,29 +1361,55 @@ export async function updateJobApplicationStatus(
  * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
  *
  */
-export async function fetchJobsWithApplications(employerId: number): Promise<JobCardData[]> {
-  const jobs = await getEmployerJobs(employerId);
-  return Promise.all(
-    jobs.map(async job => {
-      const applications = await fetchJobApplications(job.id);
-      return {
-        job: {
-          ...job,
-          // Convert Date objects to strings for JSON serialization
-          createdAt: job.createdAt instanceof Date ? job.createdAt : new Date(job.createdAt),
-          fulfilledAt: job.fulfilledAt
-            ? job.fulfilledAt instanceof Date
-              ? job.fulfilledAt
-              : new Date(job.fulfilledAt)
-            : null,
-        },
-        applications: applications,
-        interviewedCount: applications.filter(
-          app => app.status === JobApplicationStatus.Shortlisted
-        ).length,
-      };
+export async function fetchJobsWithApplications(
+  employerId: number,
+  page: number = 1,
+  limit: number = 10,
+  statusFilter: string = 'all'
+) {
+  const offset = (page - 1) * limit;
+
+  // Build the where clause
+  const whereClause =
+    statusFilter === 'all'
+      ? eq(jobsTable.employerId, employerId)
+      : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
+
+  // First, get total count of jobs with the filter
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(jobsTable)
+    .where(whereClause);
+
+  // Then fetch paginated jobs with their applications
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      budget: jobsTable.budget,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      experienceLevel: jobsTable.experienceLevel,
+      createdAt: jobsTable.createdAt,
+      status: jobsTable.status,
+      employerId: jobsTable.employerId,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
     })
-  );
+    .from(jobsTable)
+    .where(whereClause)
+    .orderBy(desc(jobsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    jobs,
+    totalCount: count,
+    totalPages: Math.ceil(count / limit),
+    currentPage: page,
+  };
 }
 
 /**

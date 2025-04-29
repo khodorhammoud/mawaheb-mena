@@ -1,5 +1,6 @@
-import { FC } from "react";
-import { useLoaderData } from "@remix-run/react";
+import { FC } from 'react';
+import { useLoaderData } from '@remix-run/react';
+import SkillBadgeList from '~/common/skill/SkillBadge';
 
 // Define the Job type (adjust based on your CMS data structure)
 type Job = {
@@ -10,7 +11,7 @@ type Job = {
   priceType: string;
   levelRequired: string;
   jobDesc: string;
-  jobSkills: { id: string; name: string }[];
+  jobSkills: { id: string; name: string; isStarred: boolean }[];
 };
 
 const Jobs: FC = () => {
@@ -20,7 +21,7 @@ const Jobs: FC = () => {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-12 gap-y-6 p-6 mt-16">
-        {jobSection.map((job) => (
+        {jobSection.map(job => (
           <div
             key={job.id}
             className="bg-white border border-gray-200 rounded-xl shadow-xl p-6 flex flex-col"
@@ -30,9 +31,7 @@ const Jobs: FC = () => {
             </div>
             <div className="flex flex-row">
               <p className="text-sm text-gray-400">{job.priceType} -&nbsp;</p>
-              <p className="text-sm text-gray-400 mb-4">
-                Posted {job.postedFrom} hours ago
-              </p>
+              <p className="text-sm text-gray-400 mb-4">Posted {job.postedFrom} hours ago</p>
             </div>
             <div className="flex flex-row gap-24 mt-2 mb-6">
               <div>
@@ -45,16 +44,14 @@ const Jobs: FC = () => {
               </div>
             </div>
             <div className="leading-tight mb-4">{job.jobDesc}</div>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="mb-4">
               {job.jobSkills.length > 0 ? (
-                job.jobSkills.map((skill) => (
-                  <span
-                    key={skill.id}
-                    className="bg-cyan-600 text-white text-xs font-medium px-2 py-1 rounded-xl mb-4"
-                  >
-                    {skill.name}
-                  </span>
-                ))
+                <SkillBadgeList
+                  skills={job.jobSkills.map((skill, index) => ({
+                    name: skill.name,
+                    isStarred: index === 0 || skill.isStarred,
+                  }))}
+                />
               ) : (
                 <span className="text-sm text-gray-400">No skills listed</span>
               )}

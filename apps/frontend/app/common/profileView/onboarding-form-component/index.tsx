@@ -235,15 +235,27 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               <span className="text-sm text-gray-600">
                 {file.name} ({Math.round(file.size / 1024)} KB)
                 {(file as any).isServerFile && (
-                  <span className="ml-2 text-xs text-blue-500">(from database)</span>
+                  <span className="ml-2 text-xs text-primaryColor">(from database)</span>
                 )}
               </span>
               <button
                 type="button"
                 onClick={() => handleFileRemove(index)}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-400 hover:text-red-500 transition-all duration-300 transform hover:scale-110 flex items-center justify-center"
               >
-                Remove
+                <span className="mr-1">Remove</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
             </li>
           ))}
@@ -271,6 +283,8 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               <DialogHeader className="mb-6">
                 <DialogTitle>{popupTitle}</DialogTitle>
               </DialogHeader>
+
+              {/* This is the CHOOSE FILES and the SELECTED FILES */}
               <div className="space-y-4">
                 <input
                   type="file"
@@ -281,14 +295,21 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-full file:border-0
                     file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
+                    file:bg-blue-50 file:text-primaryColor
                     hover:file:bg-blue-100"
                 />
                 {renderSelectedFiles()}
               </div>
+
+              {/* This is the CLOSE button */}
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary" onClick={handleDialogClose}>
+                  <Button
+                    className="not-active-gradient hover:text-white border bg-white mt-4"
+                    type="button"
+                    variant="secondary"
+                    onClick={handleDialogClose}
+                  >
                     Close
                   </Button>
                 </DialogClose>

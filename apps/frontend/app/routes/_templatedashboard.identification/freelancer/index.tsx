@@ -4,6 +4,8 @@ import { Freelancer } from '@mawaheb/db/types';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 import { useToast } from '~/components/hooks/use-toast';
+import { Button } from '~/components/ui/button';
+import { FaPaperPlane, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 
 interface FileDisplayProps {
   files: Array<{ name: string; size?: number }>;
@@ -315,19 +317,18 @@ export default function FreelancerIdentifyingScreen() {
 
         {/* Back to account info button */}
         <div className="mt-6 flex justify-between">
-          <button
+          <Button
             type="button"
-            className="flex items-center text-red-500 hover:text-red-700 text-lg"
+            className="flex items-center text-lg bg-primaryColor hover:bg-primaryColor hover:underline text-white group"
             onClick={() => {
               const formData = new FormData();
               formData.append('target-updated', 'back-to-account-info');
-
               submit(formData, { method: 'post' });
             }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="h-5 w-5 mr-1 transform transition-transform duration-300 ease-in-out group-hover:-translate-x-1 "
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -338,24 +339,36 @@ export default function FreelancerIdentifyingScreen() {
               />
             </svg>
             Back to account info
-          </button>
+          </Button>
 
-          <button
+          {/* Submit documents button */}
+          <Button
             type="button"
             onClick={handleSubmitDocuments}
             disabled={isSubmitting || documentsSubmitted}
-            className={`font-bold py-3 px-8 rounded text-lg shadow-md ${
+            className={`flex items-center justify-center text-lg bg-primaryColor py-3 px-5 hover:bg-primaryColor hover:underline text-white group gap-2 ${
               isSubmitting || documentsSubmitted
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-700 text-white'
+                ? 'bg-primaryColor hover:bg-primaryColor text-white'
+                : 'bg-primaryColor hover:bg-primaryColor text-white hover:underline'
             }`}
           >
-            {isSubmitting
-              ? 'Submitting...'
-              : documentsSubmitted
-                ? 'Documents Submitted'
-                : 'Submit Documents'}
-          </button>
+            {isSubmitting ? (
+              <>
+                Submitting...
+                <FaSpinner className="h-3 w-3 animate-spin" />
+              </>
+            ) : documentsSubmitted ? (
+              <>
+                Documents Submitted
+                <FaCheckCircle className="h-3 w-3 transition-transform duration-300 group-hover:scale-110" />
+              </>
+            ) : (
+              <>
+                Submit Documents
+                <FaPaperPlane className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+              </>
+            )}
+          </Button>
         </div>
       </Form>
 
