@@ -454,7 +454,7 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="text-primaryColor border-gray-300"
+                className="text-primaryColor border-gray-300 bg-gray-100"
                 onClick={handleButtonClick}
               >
                 {props.triggerIcon} {props.triggerLabel}
