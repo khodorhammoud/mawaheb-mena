@@ -1038,11 +1038,6 @@ export async function createFreelancerIdentification(
   try {
     // Process files to delete if any
     if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
-      // console.log(
-      //   'DEBUG - createFreelancerIdentification - Processing files to delete:',
-      //   attachmentsData.filesToDelete
-      // );
-
       // Delete the files from the attachments table
       for (const fileId of attachmentsData.filesToDelete) {
         try {
@@ -1108,21 +1103,35 @@ export async function createFreelancerIdentification(
       trade_license: tradeLicenseIds.data || [],
     };
 
-    // Use upsert to either insert a new record or update the existing one
-    const result = await db
-      .insert(userIdentificationsTable)
-      .values({
-        userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
+    // Check if a record already exists for this user
+    const existingRecord = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId))
+      .limit(1);
+
+    let result;
+
+    if (existingRecord.length > 0) {
+      // Update the existing record
+      result = await db
+        .update(userIdentificationsTable)
+        .set({
           attachments,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
+        })
+        .where(eq(userIdentificationsTable.userId, userId))
+        .returning();
+    } else {
+      // Insert a new record
+      result = await db
+        .insert(userIdentificationsTable)
+        .values({
+          userId,
+          attachments,
+        })
+        .returning();
+    }
 
     return { success: true, data: result[0] };
   } catch (error) {
