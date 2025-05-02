@@ -734,9 +734,9 @@ export async function getJobRecommendations(
 }
 
 // ✅ Get All Jobs (No Restrictions)
-export async function getAllJobs() {
+export async function getAllJobs(limit?: number, offset?: number) {
   // Query to select all jobs that are active even if the freelancer applied
-  const jobs = await db
+  const query = db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
@@ -764,13 +764,19 @@ export async function getAllJobs() {
     )
     .orderBy(desc(jobsTable.createdAt));
 
+  // Apply pagination if provided
+  if (limit !== undefined && offset !== undefined) {
+    query.limit(limit).offset(offset);
+  }
+
+  const jobs = await query;
   return jobs;
 }
 
 // ✅ Get My Jobs (Jobs Freelancer Applied To)
-export async function getMyJobs(freelancerId: number) {
+export async function getMyJobs(freelancerId: number, limit?: number) {
   // Query to select all jobs that the freelancer has applied to
-  const jobs = await db
+  const query = db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
@@ -796,6 +802,12 @@ export async function getMyJobs(freelancerId: number) {
     )
     .orderBy(desc(jobsTable.createdAt));
 
+  // Apply limit if provided
+  if (limit !== undefined) {
+    query.limit(limit);
+  }
+
+  const jobs = await query;
   return jobs;
 }
 
