@@ -86,7 +86,7 @@ export default function Layout() {
 
   return (
     <NotificationProvider userId={userId} initialNotifications={notifications}>
-      <div className="min-h-screen bg-background pt-[100px]">
+      <div className="min-h-screen bg-background pt-[100px] mb-10">
         <Header />
         <div className="flex">
           {isOnboarded && is_published_or_deactivated ? (

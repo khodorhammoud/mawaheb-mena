@@ -139,40 +139,50 @@ export default function JobManagement({
         setActiveFilter={setActiveFilter}
         onSearch={setSearchQuery}
       />
-      <p className="text-gray-600 text-sm mt-2 ml-4">
-        {filteredJobs.length > 0
-          ? `Showing (${startJob} - ${endJob} of ${totalCount} total) ${activeFilter === 'all' ? `${filteredJobs.length}` : ''} job${filteredJobs.length === 1 ? '' : 's'}`
-          : 'No jobs found'}
+
+      {/* Jobs Found */}
+      <p className="text-black text-sm mt-2 ml-4 mb-10">
+        {totalCount > 0 && (
+          <>
+            <span className="font-bold text-primaryColor text-base">
+              {endJob} {endJob === 1 ? 'job' : 'jobs'}
+            </span>
+            {` out of `}
+            <span>{totalCount} total</span>
+          </>
+        )}
       </p>
-      <p className="flex items-center justify-center text-xl text-gray-600 mt-4">
-        Showing jobs {startJob}-{endJob} of {totalCount} total
-      </p>
+
       <section className="mb-20">
         {activeFilter === 'all' ? (
           // Show all jobs grouped by status
-          sortedStatuses.map(status => {
-            if (!groupedJobs[status]?.length) return null;
+          sortedStatuses.length > 0 ? (
+            sortedStatuses.map(status => {
+              if (!groupedJobs[status]?.length) return null;
 
-            return (
-              <div key={status} className="lg:mt-10 md:mt-12 mt-16">
-                <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl ml-1">
-                  {status} Jobs
-                </h2>
-                <div className={getGridClass(viewMode)}>
-                  {groupedJobs[status].map(jobCardData => (
-                    <Job
-                      key={jobCardData.job.id}
-                      data={jobCardData}
-                      viewMode={viewMode}
-                      userAccountStatus={userAccountStatus}
-                    />
-                  ))}
+              return (
+                <div key={status} className="lg:mt-10 md:mt-12 mt-16">
+                  <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl ml-1">
+                    {status} Jobs
+                  </h2>
+                  <div className={getGridClass(viewMode)}>
+                    {groupedJobs[status].map(jobCardData => (
+                      <Job
+                        key={jobCardData.job.id}
+                        data={jobCardData}
+                        viewMode={viewMode}
+                        userAccountStatus={userAccountStatus}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        ) : (
-          // Show only filtered jobs
+              );
+            })
+          ) : (
+            <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
+          )
+        ) : // Show only filtered jobs
+        filteredJobs.length > 0 ? (
           <div className="lg:mt-10 md:mt-12 mt-16">
             <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl ml-1">
               {activeFilter} Jobs
@@ -188,8 +198,17 @@ export default function JobManagement({
               ))}
             </div>
           </div>
+        ) : (
+          <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
         )}
       </section>
+
+      {/* No More Jobs Message */}
+      {data.length > 0 && endJob === totalCount && (
+        <div className="mt-6 text-center mb-10">
+          <p className="text-gray-500">No more jobs available.</p>
+        </div>
+      )}
     </div>
   );
 }
