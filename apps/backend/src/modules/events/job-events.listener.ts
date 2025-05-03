@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { QueueService, JobType } from '../queue/queue.service';
+import { QueueService } from '../queue/queue.service';
 import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
@@ -24,39 +24,35 @@ export class JobEventsListener {
     // Ignore anything except the transition → published
     if (payload.newStatus !== 'published') return;
 
+    // Trigger skillfolio generation
+    await this.triggerSkillfolioGeneration(payload.userId, payload.accountId);
+  }
+
+  /**
+   * Manually trigger skillfolio generation for a user
+   * This can be called directly from an API endpoint
+   */
+  async triggerSkillfolioGeneration(userId: number, accountId: number) {
     // Add skillfolio job to the queue
-    const job = await this.queueService.addSkillFolioJob(payload.userId, {
+    const job = await this.queueService.addSkillFolioJob(userId, {
       reason: 'account_published',
-      accountId: payload.accountId,
+      accountId: accountId,
     });
 
     // Create "initiated" notification
     await this.notificationService.create({
-      userId: payload.userId,
+      userId: userId,
       type: 'skillfolio_added',
       message: `Your SkillFolio has been added`,
       payload: {
         jobId: job.id,
         logicalId: job.logicalId,
-        accountId: payload.accountId,
+        accountId: accountId,
         initiatedAt: new Date().toISOString(),
       },
     });
 
-    // TODO: When adding a new process type that should trigger on account publishing,
-    // add the job creation and notification code here
-    // Example:
-    // const resumeJob = await this.queueService.addResumeJob(payload.userId, {
-    //   reason: 'account_published',
-    //   accountId: payload.accountId,
-    // });
-    //
-    // await this.notificationService.create({
-    //   userId: payload.userId,
-    //   type: 'resume_initiated',
-    //   message: 'Your Resume generation has been initiated.',
-    //   payload: { jobId: resumeJob.id },
-    // });
+    return job;
   }
 
   /**
@@ -87,18 +83,47 @@ export class JobEventsListener {
   async handleSkillfolioCompleted(payload: {
     jobId: string;
     userId: number;
-    result: any;
+    result?: any;
   }) {
-    await this.notificationService.create({
-      userId: payload.userId,
-      type: 'skillfolio_completed',
-      message: `Your SkillFolio has been successfully done`,
-      payload: {
-        jobId: payload.jobId,
-        completedAt: new Date().toISOString(),
-        skillfolio: payload.result.data.skillfolio,
-      },
-    });
+    try {
+      let skillfolioData = {};
+
+      // Try to extract skillfolio data, handling different result formats
+      if (payload.result?.data?.skillfolio?.skillfolio) {
+        // Format from processor: nested under data.skillfolio.skillfolio
+        skillfolioData = payload.result.data.skillfolio.skillfolio;
+      } else if (payload.result?.data?.skillfolio) {
+        // Direct format: under data.skillfolio
+        skillfolioData = payload.result.data.skillfolio;
+      }
+
+      await this.notificationService.create({
+        userId: payload.userId,
+        type: 'skillfolio_completed',
+        message: `Your SkillFolio has been successfully generated`,
+        payload: {
+          jobId: payload.jobId,
+          completedAt: new Date().toISOString(),
+          skillfolio: skillfolioData,
+        },
+      });
+    } catch (error) {
+      console.error(
+        `Error handling skillfolio completion notification:`,
+        error,
+      );
+      // Still create a notification without the skillfolio data
+      await this.notificationService.create({
+        userId: payload.userId,
+        type: 'skillfolio_completed',
+        message: `Your SkillFolio has been generated`,
+        payload: {
+          jobId: payload.jobId,
+          completedAt: new Date().toISOString(),
+          error: 'Error including skillfolio details in notification',
+        },
+      });
+    }
   }
 
   /**

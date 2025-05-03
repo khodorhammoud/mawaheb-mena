@@ -3,11 +3,12 @@
 // Redis stores every job & its status
 // BullMQ queues jobs (add jobs to queue) → Redis stores them → processors run them
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { QueueService } from './queue.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SkillFolioProcessor } from './processors/skillfolio.processor';
+import { SkillfolioModule } from '../skillfolio/skillfolio.module';
 // TODO: When adding a new process type, import its processor here
 // Example: import { ResumeProcessor } from './processors/resume.processor';
 
@@ -26,6 +27,7 @@ import { SkillFolioProcessor } from './processors/skillfolio.processor';
     BullModule.registerQueue({
       name: 'processQueue', // Queue name we created, and we are ready to put jobs (processes) inside it
     }), // registerQueue() so that : "Hey, make this queue injectable via @InjectQueue('processQueue') anywhere in the app, so when we do inject, we will get this queue."
+    forwardRef(() => SkillfolioModule), // Use forwardRef to break circular dependency
   ],
   providers: [
     QueueService, // QueueService is the service that add methods that add jobs to the queue (like addJob)

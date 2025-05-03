@@ -142,6 +142,14 @@ export class SkillfolioService {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+
+      // 6. Save the skillfolio to the database
+      this.logger.debug(`[Step 6] Saving skillfolio to database`);
+      await this.saveSkillfolio(skillfolio);
+      this.logger.debug(
+        `[Step 6] Skillfolio saved to database for userId: ${userId}`,
+      );
+
       this.logger.log(
         `Skillfolio extraction completed successfully for userId: ${userId}`,
       );
@@ -1065,5 +1073,131 @@ export class SkillfolioService {
       `[calculateBasicReadinessScore] Completed basic readiness score calculation: ${score}`,
     );
     return score;
+  }
+
+  /**
+   * Save a skillfolio to the database
+   * @param skillfolio The skillfolio to save
+   */
+  private async saveSkillfolio(skillfolio: Skillfolio): Promise<void> {
+    try {
+      const { skillfoliosTable } = await import('@mawaheb/db');
+
+      // Check if a skillfolio already exists for this user
+      const existingSkillfolio = await this.dbService.db
+        .select()
+        .from(skillfoliosTable)
+        .where(sql`${skillfoliosTable.userId} = ${skillfolio.userId}`)
+        .limit(1);
+
+      if (existingSkillfolio && existingSkillfolio.length > 0) {
+        // Update existing skillfolio
+        this.logger.debug(
+          `Updating existing skillfolio for userId: ${skillfolio.userId}`,
+        );
+        await this.dbService.db
+          .update(skillfoliosTable)
+          .set({
+            domain: skillfolio.domain,
+            field: skillfolio.field,
+            category: skillfolio.category,
+            subfield: skillfolio.subfield,
+            readiness_score: skillfolio.readinessScore,
+            strengths: skillfolio.strengths,
+            weaknesses: skillfolio.weaknesses,
+            gaps: skillfolio.gaps,
+            profile: skillfolio.profile,
+            updated_at: new Date(),
+          })
+          .where(sql`${skillfoliosTable.userId} = ${skillfolio.userId}`);
+      } else {
+        // Insert new skillfolio
+        this.logger.debug(
+          `Creating new skillfolio for userId: ${skillfolio.userId}`,
+        );
+        await this.dbService.db.insert(skillfoliosTable).values({
+          userId: skillfolio.userId,
+          domain: skillfolio.domain,
+          field: skillfolio.field,
+          category: skillfolio.category,
+          subfield: skillfolio.subfield,
+          readiness_score: skillfolio.readinessScore,
+          strengths: skillfolio.strengths,
+          weaknesses: skillfolio.weaknesses,
+          gaps: skillfolio.gaps,
+          profile: skillfolio.profile,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
+
+      this.logger.debug(
+        `Skillfolio saved to database for userId: ${skillfolio.userId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error saving skillfolio to database: ${error.message}`,
+        error.stack,
+      );
+      throw new Error(
+        `Failed to save skillfolio to database: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Get a stored skillfolio from the database for a user
+   * @param userId The ID of the user
+   * @returns The skillfolio or null if not found
+   */
+  async getStoredSkillfolio(userId: number): Promise<Skillfolio | null> {
+    try {
+      this.logger.debug(`Getting stored skillfolio for userId: ${userId}`);
+      const { skillfoliosTable } = await import('@mawaheb/db');
+
+      const storedSkillfolio = await this.dbService.db
+        .select()
+        .from(skillfoliosTable)
+        .where(sql`${skillfoliosTable.userId} = ${userId}`)
+        .limit(1);
+
+      if (!storedSkillfolio || storedSkillfolio.length === 0) {
+        this.logger.debug(`No stored skillfolio found for userId: ${userId}`);
+        return null;
+      }
+
+      const dbSkillfolio = storedSkillfolio[0];
+
+      // Convert the database record to a Skillfolio object
+      const skillfolio: Skillfolio = {
+        userId: dbSkillfolio.userId,
+        domain: dbSkillfolio.domain,
+        field: dbSkillfolio.field,
+        category: dbSkillfolio.category,
+        subfield: dbSkillfolio.subfield,
+        readinessScore: dbSkillfolio.readiness_score,
+        strengths: dbSkillfolio.strengths,
+        weaknesses: dbSkillfolio.weaknesses,
+        gaps: dbSkillfolio.gaps,
+        profile: dbSkillfolio.profile,
+        createdAt:
+          dbSkillfolio.created_at instanceof Date
+            ? dbSkillfolio.created_at.toISOString()
+            : String(dbSkillfolio.created_at),
+        updatedAt:
+          dbSkillfolio.updated_at instanceof Date
+            ? dbSkillfolio.updated_at.toISOString()
+            : String(dbSkillfolio.updated_at),
+      };
+
+      this.logger.debug(`Retrieved stored skillfolio for userId: ${userId}`);
+      return skillfolio;
+    } catch (error) {
+      this.logger.error(
+        `Error getting stored skillfolio for userId: ${userId}`,
+        error.stack,
+      );
+      throw new Error(`Failed to get stored skillfolio: ${error.message}`);
+    }
   }
 }
