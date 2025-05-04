@@ -1,7 +1,7 @@
 // EventsModule — Handles SSE (Server-Sent Events), which is a way for the server to push events (job finished, message received, etc.) to the browser (frontend)
 // SSE is like "The server keeps talking to the browser whenever something new happens — no need for the browser to keep asking."
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { EventsController } from './events.controller';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from '../notifications/notification.module'; // ✅ import from correct location
@@ -13,10 +13,11 @@ import { DatabaseModule } from '../database/database.module';
   imports: [
     EventEmitterModule.forRoot(),
     NotificationsModule,
-    QueueModule,
+    forwardRef(() => QueueModule),
     DatabaseModule,
   ],
   controllers: [EventsController],
   providers: [JobEventsListener],
+  exports: [JobEventsListener],
 })
 export class EventsModule {}

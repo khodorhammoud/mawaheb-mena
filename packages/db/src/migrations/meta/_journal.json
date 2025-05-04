@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1746262608220,
+      "tag": "0000_common_madelyne_pryor",
+      "breakpoints": true
+    }
+  ]
 }

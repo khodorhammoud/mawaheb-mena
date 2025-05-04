@@ -8,6 +8,7 @@ import { EventsModule } from './modules/events/events.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SkillfolioModule } from './modules/skillfolio/skillfolio.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     EventsModule,
     QueueModule,
     JobsModule,
+    SkillfolioModule,
   ],
 })
 export class AppModule {}

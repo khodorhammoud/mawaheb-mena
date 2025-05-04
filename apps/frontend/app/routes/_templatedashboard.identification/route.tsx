@@ -1,5 +1,5 @@
 import { redirect, useLoaderData } from '@remix-run/react';
-import { AccountType, AccountStatus, EmployerAccountType } from '~/types/delete-me-enums';
+import { AccountType, AccountStatus, EmployerAccountType } from '@mawaheb/db/types/enums';
 import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Employer, Freelancer } from '@mawaheb/db/types/User';

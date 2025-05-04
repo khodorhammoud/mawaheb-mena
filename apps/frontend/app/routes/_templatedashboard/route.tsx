@@ -7,7 +7,7 @@ import {
   getCurrentUser,
   getCurrentProfileInfo,
 } from '~/servers/user.server';
-import { AccountStatus } from '~/types/delete-me-enums';
+import { AccountStatus } from '@mawaheb/db/enums';
 import { requireUserSession } from '~/auth/auth.server';
 import { getNotifications } from '~/servers/notifications.server';
 import { NotificationProvider } from '~/context/NotificationContext';

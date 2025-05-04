@@ -1,7 +1,7 @@
 // This is the context for the notifications. It is used to fetch notifications from the server and to display them in the UI.
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { NotificationType } from '~/types/delete-me-enums';
+import { NotificationType } from '@mawaheb/db/enums';
 
 // Match your existing notification interface structure
 interface Notification {

@@ -2,8 +2,9 @@
 
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { getAllJobs, getJobsFiltered } from '../servers/job.server';
-import { getCurrentProfileInfo } from '~/servers/user.server';
 import { JobFilter } from '@mawaheb/db/types';
+import { getCurrentProfileInfo } from '~/servers/user.server';
+import { json } from '@remix-run/node';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getCurrentProfileInfo(request);

@@ -1,6 +1,6 @@
 import { Bell } from 'lucide-react';
 // import { NotificationType } from '@mawaheb/db/enums';
-import { NotificationType } from '~/types/delete-me-enums';
+import { NotificationType } from '@mawaheb/db/enums';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Link } from '@remix-run/react';

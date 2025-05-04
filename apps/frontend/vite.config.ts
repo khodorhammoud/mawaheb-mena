@@ -11,6 +11,7 @@ declare module '@remix-run/node' {
   }
 }
 
+// Use the native fetch implementation to ensure Response.json is available
 installGlobals({ nativeFetch: true });
 
 export default defineConfig({
