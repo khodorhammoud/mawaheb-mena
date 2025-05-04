@@ -6,9 +6,8 @@ export default withAuth(
   config({
     db: {
       provider: 'postgresql',
-      url:
-        process.env.POSTGRESQL_CONNECTION_STRING ||
-        'postgresql://postgres:pass@localhost:5432/mawaheb-cms?schema=public',
+      url: process.env.POSTGRESQL_CONNECTION_STRING as string,
+      //  || 'postgresql://postgres:pass@localhost:5432/mawaheb-cms?schema=public',
       enableLogging: true,
       idField: { kind: 'uuid' },
     },
@@ -17,7 +16,7 @@ export default withAuth(
     server: {
       // Adding CORS configuration
       cors: {
-        origin: ['http://localhost:5173'], // Replace with your frontend URL or add multiple origins if needed
+        origin: [process.env.FRONTEND_URL as string], // Replace with your frontend URL or add multiple origins if needed
         credentials: true, // Allow cookies and other credentials to be sent
       },
     },

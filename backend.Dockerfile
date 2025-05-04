@@ -15,6 +15,7 @@ RUN npm install -g pnpm
 RUN pnpm install
 
 # Build shared packages first, then the backend
+ENV NODE_ENV=production
 RUN cd packages/db && pnpm run build
 RUN cd apps/backend && pnpm run build
 
@@ -40,6 +41,9 @@ COPY --from=builder /app/packages/db/node_modules ./packages/db/node_modules
 # Copy built application from builder stage
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
+
+# Copy .env file
+COPY apps/backend/.env.production ./apps/backend/.env
 
 # Install pnpm
 RUN npm install -g pnpm

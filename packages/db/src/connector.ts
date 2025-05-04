@@ -8,13 +8,22 @@ dotenv.config();
 // Configuration options for postgres connection
 let connectionConfig;
 
+const isProduction = process.env.NODE_ENV === 'production';
+let databaseURL = '';
+
+// if (isProduction) {
+//   databaseURL = process.env.PRODUCTION_DATABASE_URL as string;
+// } else {
+databaseURL = process.env.DATABASE_URL as string;
+// }
+
 // Check if DATABASE_URL is available (for local development)
-if (process.env.DATABASE_URL) {
-  console.log('Using DATABASE_URL for connection:', process.env.DATABASE_URL);
+if (databaseURL) {
+  console.log('Using DATABASE_URL for connection:', databaseURL);
 
   try {
     // Parse the URL manually to ensure correct extraction of credentials
-    const url = new URL(process.env.DATABASE_URL);
+    const url = new URL(databaseURL);
     const username = url.username;
     const password = url.password;
     const host = url.hostname;

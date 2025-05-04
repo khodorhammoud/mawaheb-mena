@@ -63,6 +63,9 @@ COPY --from=builder /app/apps/cms/keystone.ts ./apps/cms/keystone.ts
 COPY --from=builder /app/apps/cms/node_modules ./apps/cms/node_modules
 COPY --from=builder /app/node_modules ./node_modules
 
+# Copy .env file
+COPY apps/cms/.env.production ./apps/cms/.env
+
 # Install additional dependencies if needed
 WORKDIR /app
 RUN pnpm install --prod --frozen-lockfile || true

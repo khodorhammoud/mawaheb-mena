@@ -18,6 +18,9 @@ console.log(
   `DATABASE_URL: ${process.env.DATABASE_URL ? 'Set (not showing for security)' : 'Not set'}`
 );
 console.log(`NODE_TLS_REJECT_UNAUTHORIZED: ${process.env.NODE_TLS_REJECT_UNAUTHORIZED}`);
+console.log(`CMS_BASE_URL: ${process.env.CMS_BASE_URL}`);
+console.log(`BACKEND_URL: ${process.env.BACKEND_URL}`);
+console.log(`REDIS_URL: ${process.env.REDIS_URL}`);
 
 // Test the database connection early
 async function testDatabaseConnection() {
@@ -55,6 +58,12 @@ async function startServer() {
       status: 'ok',
       timestamp: new Date().toISOString(),
       server: 'Custom Express wrapper',
+      env: {
+        cms_url: process.env.CMS_BASE_URL,
+        backend_url: process.env.BACKEND_URL,
+        redis_url: process.env.REDIS_URL,
+        node_env: process.env.NODE_ENV,
+      },
     });
   });
 
@@ -93,8 +102,8 @@ async function startServer() {
     }
   });
 
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => {
+  const port = process.env.PORT || 5173;
+  app.listen(port, '0.0.0.0', () => {
     console.log(`Server listening on port ${port}`);
   });
 

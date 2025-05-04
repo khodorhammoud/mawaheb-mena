@@ -3,5 +3,8 @@ node_modules
 /.cache
 /build
 .env
+.env.production
+.env.*
 
 .ai_context/
+
