@@ -58,27 +58,20 @@ async function startServer() {
     });
   });
 
-  // Serve static assets
+  // Properly map the /assets path - critical for Remix to find its assets
   app.use(
-    '/build',
-    express.static(path.join(__dirname, 'build/client'), {
+    '/assets',
+    express.static(path.join(__dirname, 'build/client/assets'), {
       immutable: true,
       maxAge: '1y',
     })
   );
 
-  app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
+  // Serve other static assets from the build directory
+  app.use(express.static(path.join(__dirname, 'build/client'), { maxAge: '1h' }));
 
-  // Create Remix request handler
-  const viteDevServer =
-    process.env.NODE_ENV === 'development'
-      ? await import('vite').then(vite =>
-          vite.createServer({
-            root: process.cwd(),
-            server: { middlewareMode: true },
-          })
-        )
-      : undefined;
+  // Also serve files from public directory for backward compatibility
+  app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 
   // Use dynamic import for build output
   const build = await import('./build/server/index.js');
@@ -91,21 +84,14 @@ async function startServer() {
     });
   };
 
-  app.all(
-    '*',
-    viteDevServer
-      ? (req, res, next) => {
-          viteDevServer.middlewares(req, res, next);
-        }
-      : (req, res, next) => {
-          try {
-            return getRequestHandler()(req, res, next);
-          } catch (error) {
-            console.error('Error in request handler:', error);
-            res.status(500).send('Internal Server Error');
-          }
-        }
-  );
+  app.all('*', (req, res, next) => {
+    try {
+      return getRequestHandler()(req, res, next);
+    } catch (error) {
+      console.error('Error in request handler:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
