@@ -13,6 +13,7 @@ import {
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
 import { IoPencilSharp } from 'react-icons/io5';
+import { FaFileAlt } from 'react-icons/fa';
 
 // Hooks used by the second snippet
 import { useFormState } from './hooks/useFormState';
@@ -56,9 +57,14 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
+  const [showParseButton, setShowParseButton] = useState(false);
+  const [parsing, setParsing] = useState(false);
 
   const formContentRef = useRef<any>(null);
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ success?: boolean; error?: { message: string } }>();
+
+  // Check if the file is a CV (based on fieldName)
+  const isCVField = fieldName === 'cvFile';
 
   // Load existing files from the server
   useEffect(() => {
@@ -116,10 +122,35 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
           if (formContentRef.current) {
             formContentRef.current.setFilesSelected(fileObjects);
           }
+
+          // Show parse button if this is a CV file and is likely a PDF or Word doc
+          if (isCVField) {
+            const hasValidCVFile = fileObjects.some(
+              file =>
+                file.type === 'application/pdf' ||
+                file.type ===
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            );
+            setShowParseButton(hasValidCVFile);
+          }
         }
       }
     }
-  }, [value, fieldName]);
+  }, [value, fieldName, isCVField]);
+
+  // Show Parse button when CV file is uploaded
+  useEffect(() => {
+    if (isCVField && selectedFiles.length > 0) {
+      const hasValidCVFile = selectedFiles.some(
+        file =>
+          file.type === 'application/pdf' ||
+          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
+      setShowParseButton(hasValidCVFile);
+    } else {
+      setShowParseButton(false);
+    }
+  }, [selectedFiles, isCVField]);
 
   // Load filesToDelete from localStorage on mount
   useEffect(() => {
@@ -193,6 +224,18 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
             updatedFiles.push(file);
           }
         });
+
+        // Show parse button if this is a CV field and there's a valid file
+        if (isCVField) {
+          const hasValidCVFile = newFiles.some(
+            file =>
+              file.type === 'application/pdf' ||
+              file.type ===
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          );
+          setShowParseButton(hasValidCVFile);
+        }
+
         return updatedFiles;
       });
     }
@@ -220,6 +263,58 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
       const newFiles = prevFiles.filter((_, i) => i !== index);
       return newFiles;
     });
+  };
+
+  // Handle CV parsing
+  const handleParseCV = () => {
+    if (selectedFiles.length === 0 || !isCVField) return;
+
+    setParsing(true);
+
+    const formData = new FormData();
+    formData.append('target-updated', 'cvParser');
+    formData.append('cvFile', selectedFiles[0]);
+
+    fetcher.submit(formData, {
+      method: 'post',
+      encType: 'multipart/form-data',
+    });
+
+    // Close dialog after submission
+    setDialogOpen(false);
+  };
+
+  // Reset parsing state when fetcher completes
+  useEffect(() => {
+    if (fetcher.state === 'idle' && parsing) {
+      setParsing(false);
+    }
+  }, [fetcher.state, parsing]);
+
+  // Show success message after CV parsing
+  const renderParseStatusMessage = () => {
+    if (!parsing && fetcher.state === 'idle' && fetcher.data) {
+      const data = fetcher.data as { success?: boolean; error?: { message: string } };
+
+      if (data.success) {
+        return (
+          <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">
+              CV parsed successfully! Your profile has been updated.
+            </span>
+          </div>
+        );
+      } else if (data.error) {
+        return (
+          <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">
+              {data.error.message || 'An error occurred while parsing your CV.'}
+            </span>
+          </div>
+        );
+      }
+    }
+    return null;
   };
 
   // Render selected files
@@ -260,6 +355,27 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
             </li>
           ))}
         </ul>
+
+        {/* Parse CV Button */}
+        {showParseButton && (
+          <div className="mt-4">
+            <Button
+              type="button"
+              onClick={handleParseCV}
+              disabled={parsing}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <FaFileAlt className="h-4 w-4" />
+              {parsing ? 'Parsing CV...' : 'Parse CV to fill profile'}
+            </Button>
+            <p className="text-xs text-gray-500 mt-1 text-center">
+              This will extract information from your CV to fill your profile automatically.
+            </p>
+          </div>
+        )}
+
+        {/* Status Message */}
+        {renderParseStatusMessage()}
       </div>
     );
   };

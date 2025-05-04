@@ -6,7 +6,9 @@ export default withAuth(
   config({
     db: {
       provider: 'postgresql',
-      url: 'postgresql://postgres:Wassim2004@localhost:5432/mawaheb-cms?schema=public', //"postgresql://mawaheb_owner:cltE5b0qUgdv@ep-still-wind-a236960h.eu-central-1.aws.neon.tech/mawaheb-cms?sslmode=require", //process.env.POSTGRESQL_CONNECTION_STRING!,
+      url:
+        process.env.POSTGRESQL_CONNECTION_STRING ||
+        'postgresql://postgres:pass@localhost:5432/mawaheb-cms?schema=public',
       enableLogging: true,
       idField: { kind: 'uuid' },
     },

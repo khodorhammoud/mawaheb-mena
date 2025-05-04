@@ -24,7 +24,7 @@
     "./server": {
       "import": {
         "types": "./dist/server.d.ts",
-        "default": "./dist/server.cjs"
+        "default": "./dist/server.js"
       },
       "require": {
         "types": "./dist/server.d.ts",
@@ -53,8 +53,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/server.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts src/server.ts --format esm,cjs --watch --dts",
+    "build": "tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --dts ",
+    "dev": "tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --watch --dts ",
     "lint": "eslint \"src/**/*.ts*\"",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "db:generate": "drizzle-kit generate",
@@ -67,10 +67,10 @@
     "@faker-js/faker": "^9.6.0",
     "drizzle-dbml-generator": "^0.10.0",
     "drizzle-kit": "^0.30.6",
-    "drizzle-orm": "^0.41.0",
+    "drizzle-orm": "^0.42.0",
     "eslint": "^8.56.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "bcrypt-ts": "^5.0.0",

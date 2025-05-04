@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   frontend-dev:
@@ -13,7 +13,7 @@ services:
         npx remix vite:dev --host 0.0.0.0
       "
     ports:
-      - "5173:5173"
+      - '5173:5173'
     environment:
       - NODE_ENV=development
       - CMS_BASE_URL=http://cms-dev:3000
@@ -35,7 +35,7 @@ services:
         npx keystone dev
       "
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - cms_dev_data:/app/apps/cms/.keystone
     environment:
@@ -45,9 +45,69 @@ services:
     networks:
       - mawaheb-dev-network
 
+  db:
+    container_name: database
+    restart: unless-stopped
+    image: postgres:16.1-alpine
+    #command: -p ${PGPORT:-5432}
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=${PGUSER:-postgres}
+      - POSTGRES_PASSWORD=${PGPASSWORD:-postgres}
+      - POSTGRES_DB=${PGDATABASE:-mawaheb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl
+    restart: unless-stopped
+
+  cms:
+    container_name: keystone
+    build:
+      context: .
+      dockerfile: cms.Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://${PGUSER:-postgres}:${PGPASSWORD:-postgres}@db:5432/${PGDATABASE:-mawaheb}
+    volumes:
+      - ./apps/cms:/app/apps/cms
+      - cms_node_modules:/app/apps/cms/node_modules
+
+  neo4j:
+    container_name: neo4j
+    image: neo4j:5.17-enterprise
+    restart: unless-stopped
+    ports:
+      - '7474:7474' # HTTP
+      - '7687:7687' # Bolt
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-skillfolio}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/import
+
 networks:
   mawaheb-dev-network:
     driver: bridge
 
 volumes:
   cms_dev_data:
+  postgres_data:
+  cms_node_modules:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:

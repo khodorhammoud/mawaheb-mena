@@ -1,58 +1,37 @@
 # Build stage
 FROM node:20-alpine AS builder
 
-# Install build dependencies and canvas-specific dependencies
+# Install build dependencies
 RUN apk add --no-cache \
-    autoconf \
-    automake \
-    libtool \
+    python3 \
     make \
     g++ \
-    python3 \
-    python3-dev \
-    py3-setuptools \
-    pkgconfig \
-    pixman-dev \
+    git \
+    libjpeg-turbo-dev \
     cairo-dev \
     pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev \
-    file \
-    nasm \
-    libjpeg-turbo-dev \
-    libjpeg-turbo-utils
+    giflib-dev
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files for the entire monorepo
-COPY package.json package-lock.json* ./
-COPY turbo.json ./
-COPY apps/frontend/package.json ./apps/frontend/
-COPY apps/shared/ ./apps/shared/
+# Copy the entire monorepo structure for the build
+COPY . .
 
-# Create packages directory if needed for turborepo
-RUN mkdir -p packages
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm install --ignore-scripts && \
-    npm rebuild canvas && \
-    npm rebuild pdf-extractor && \
-    npm rebuild isomorphic-dompurify
+# Install all dependencies
+RUN pnpm install
 
-# Copy the frontend application code
-COPY apps/frontend ./apps/frontend
-COPY apps/frontend/.env.production.local .env
-COPY apps/frontend/.env.production.local ./apps/frontend/.env
+# Build the db package and frontend
+RUN cd packages/db && pnpm run build
+RUN cd apps/frontend && pnpm run build
 
-# Ensure commonly missed packages are explicitly installed
-RUN npm install --save openai dotenv @remix-run/dev remix-auth-google
+# Install express and the remix express adapter in the frontend package
+RUN cd apps/frontend && pnpm add express@4.18.2 @remix-run/express@2.16.0
 
-# Build the app with environment variables file .env
-RUN npm run build -- --filter=frontend
-
-# Production stage
+# Production stage - much smaller
 FROM node:20-alpine AS runner
 
 # Install runtime dependencies
@@ -61,33 +40,50 @@ RUN apk add --no-cache \
     cairo \
     pango \
     giflib \
-    librsvg
+    curl
 
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
 WORKDIR /app
 
-# # Copy package files to ensure proper npm installation in production
-# COPY package.json package-lock.json* ./
-# COPY apps/frontend/package.json ./apps/frontend/
+# Create minimal directory structure
+RUN mkdir -p apps/frontend/build packages/db/dist
 
-# # Copy built assets from builder
-# COPY --from=builder /app/apps/frontend/build ./apps/frontend/build
-# COPY --from=builder /app/node_modules ./node_modules
+# Copy package files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY apps/frontend/package.json ./apps/frontend/
+COPY packages/db/package.json ./packages/db/
 
-# # Install production dependencies (ensures all required packages are available)
-# RUN cd apps/frontend && npm install --production --ignore-scripts
-# Copy ALL files from builder (including node_modules with all deps) to ensure everything needed is available
-COPY --from=builder /app ./
-# COPY /app/apps/frontend/.env.production.local /app/apps/frontend/.env
-# COPY apps/frontend/.env.production.local ./apps/frontend/.env
+# Copy node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/frontend/node_modules ./apps/frontend/node_modules
+COPY --from=builder /app/packages/db/node_modules ./packages/db/node_modules
+
+# Copy built application from builder stage
+COPY --from=builder /app/apps/frontend/build ./apps/frontend/build
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+
+# Copy our custom server wrapper
+COPY --from=builder /app/apps/frontend/server.js ./apps/frontend/
 
 # Set environment variables
 ENV NODE_ENV=production
+# Disable Node.js rejection of unauthorized SSL certificates
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+# Set debugging
+ENV DEBUG=*
+ENV NODE_OPTIONS="--trace-warnings"
 
-# Set working directory to the app directory
+# Add a health check using our new API endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Set working directory to the frontend app
 WORKDIR /app/apps/frontend
 
-# Expose port
+# Expose frontend port
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "start"]
+# Start the application with our custom server wrapper
+CMD ["node", "server.js"]

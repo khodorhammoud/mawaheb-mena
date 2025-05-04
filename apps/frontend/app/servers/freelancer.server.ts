@@ -365,6 +365,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
 
   switch (target) {
     case 'freelancer-cv':
+    case 'cvParser':
       return handleFreelancerCV(formData, freelancer);
     case 'freelancer-bio':
       return handleFreelancerBio(formData, userId);
@@ -1102,11 +1103,12 @@ export async function createFreelancerIdentification(
       trade_license: tradeLicenseIds.data || [],
     };
 
-    // First, check if a record already exists
+    // Check if a record already exists for this user
     const existingRecord = await db
       .select()
       .from(userIdentificationsTable)
-      .where(eq(userIdentificationsTable.userId, userId));
+      .where(eq(userIdentificationsTable.userId, userId))
+      .limit(1);
 
     let result;
 
