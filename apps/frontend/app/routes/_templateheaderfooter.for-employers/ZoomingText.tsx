@@ -1,11 +1,6 @@
-import {
-  motion,
-  useTransform,
-  MotionValue,
-  AnimatePresence,
-} from "framer-motion";
-import { useEffect, useState } from "react";
-import Testimonials from "./Testimonials";
+import { motion, useTransform, MotionValue, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import Testimonials from './Testimonials';
 
 interface ZoomingTextProps {
   scrollY: MotionValue<number>;
@@ -17,49 +12,38 @@ interface ZoomingTextProps {
   };
 }
 
-const ZoomingText: React.FC<ZoomingTextProps> = ({
-  scrollY,
-  fingerIconPosition,
-}) => {
+const ZoomingText: React.FC<ZoomingTextProps> = ({ scrollY, fingerIconPosition }) => {
   const [showFingerIcon, setShowFingerIcon] = useState<boolean>(false);
 
   // Responsive position values
-  const [positionYP1Value, setPositionYP1Value] = useState("40vh");
-  const [positionYP2Value, setPositionYP2Value] = useState("40vh");
+  const [positionYP1Value, setPositionYP1Value] = useState('40vh');
+  const [positionYP2Value, setPositionYP2Value] = useState('40vh');
 
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 1200) {
-        setPositionYP1Value("40vh");
-        setPositionYP2Value("30vh");
+        setPositionYP1Value('40vh');
+        setPositionYP2Value('30vh');
       } else if (window.innerWidth > 800) {
-        setPositionYP1Value("30vh");
-        setPositionYP2Value("20vh");
+        setPositionYP1Value('30vh');
+        setPositionYP2Value('20vh');
       } else {
-        setPositionYP1Value("20vh");
-        setPositionYP2Value("10vh");
+        setPositionYP1Value('20vh');
+        setPositionYP2Value('10vh');
       }
     };
 
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Scale and position transformations
   const zoomScaleP1 = useTransform(scrollY, [30, 200], [0.6, 1]);
-  const positionYP1 = useTransform(
-    scrollY,
-    [30, 200],
-    [positionYP1Value, "5vh"]
-  );
+  const positionYP1 = useTransform(scrollY, [30, 200], [positionYP1Value, '5vh']);
 
   const zoomScaleP2 = useTransform(scrollY, [30, 200], [0.6, 1]);
-  const positionYP2 = useTransform(
-    scrollY,
-    [30, 200],
-    [positionYP2Value, "-5vh"]
-  );
+  const positionYP2 = useTransform(scrollY, [30, 200], [positionYP2Value, '-5vh']);
 
   // Testimonials opacity and scale
   const zoomScaleTestimonials = useTransform(scrollY, [30, 200], [0.4, 0.6]);
@@ -76,9 +60,9 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
             exit={{ opacity: 0 }}
             className="absolute z-10"
             style={{
-              top: fingerIconPosition?.top || "910px",
-              left: fingerIconPosition?.left || "50%",
-              transform: "translate(-50%, -50%)",
+              top: fingerIconPosition?.top || '910px',
+              left: fingerIconPosition?.left || '50%',
+              transform: 'translate(-50%, -50%)',
             }}
           >
             <motion.div className="text-4xl bg-slate-100 rounded-2xl p-2 text-white fill-white stroke-black">
@@ -107,22 +91,20 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({
         {/* WHAT THEY SAY */}
         <motion.p
           style={{ scale: zoomScaleP1, y: positionYP1 }}
-          className="text-center text-4xl font-bold mt-[70vh] 2xl:mt-[40vh]"
+          className="text-center text-5xl font-bold mt-[65vh] 2xl:mt-[56vh]"
         >
           WHAT THEY SAY
         </motion.p>
 
         {/* Testimonials */}
-        <motion.div
-          style={{ scale: zoomScaleTestimonials, opacity: opacityTestimonials }}
-        >
+        <motion.div style={{ scale: zoomScaleTestimonials, opacity: opacityTestimonials }}>
           <Testimonials setShowFingerIcon={setShowFingerIcon} />
         </motion.div>
 
         {/* ABOUT US */}
         <motion.p
           style={{ scale: zoomScaleP2, y: positionYP2 }}
-          className="text-center text-4xl font-bold 2xl:mt-[5vh]"
+          className="text-center text-5xl font-bold 2xl:mt-[5vh]"
         >
           ABOUT US
         </motion.p>

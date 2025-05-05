@@ -1,4 +1,4 @@
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   freelancersTable,
   languagesTable,
@@ -9,7 +9,7 @@ import {
   jobSkillsTable,
   accountsTable,
   userIdentificationsTable,
-} from '../db/drizzle/schemas/schema';
+} from '@mawaheb/db';
 import { eq, inArray } from 'drizzle-orm';
 import {
   Freelancer,
@@ -18,7 +18,7 @@ import {
   CertificateFormFieldType,
   EducationFormFieldType,
   AttachmentsType,
-} from '../types/User';
+} from '@mawaheb/db/types';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
@@ -365,6 +365,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
 
   switch (target) {
     case 'freelancer-cv':
+    case 'cvParser':
       return handleFreelancerCV(formData, freelancer);
     case 'freelancer-bio':
       return handleFreelancerBio(formData, userId);
@@ -1037,11 +1038,6 @@ export async function createFreelancerIdentification(
   try {
     // Process files to delete if any
     if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
-      // console.log(
-      //   'DEBUG - createFreelancerIdentification - Processing files to delete:',
-      //   attachmentsData.filesToDelete
-      // );
-
       // Delete the files from the attachments table
       for (const fileId of attachmentsData.filesToDelete) {
         try {
@@ -1107,21 +1103,37 @@ export async function createFreelancerIdentification(
       trade_license: tradeLicenseIds.data || [],
     };
 
-    // Use upsert to either insert a new record or update the existing one
-    const result = await db
-      .insert(userIdentificationsTable)
-      .values({
-        userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
+    // Check if a record already exists for this user
+    const existingRecord = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId))
+      .limit(1);
+
+    let result;
+
+    if (existingRecord.length > 0) {
+      // Update existing record
+      result = await db
+        .update(userIdentificationsTable)
+        .set({
           attachments,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
+        })
+        .where(eq(userIdentificationsTable.userId, userId))
+        .returning();
+    } else {
+      // Insert new record
+      result = await db
+        .insert(userIdentificationsTable)
+        .values({
+          userId,
+          attachments,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+    }
 
     return { success: true, data: result[0] };
   } catch (error) {
@@ -1194,15 +1206,8 @@ export async function updateFreelancerIdentification(
       existingAttachments.trade_license = [];
     }
 
-    // console.log('DEBUG - updateFreelancerIdentification - Starting with existing attachments:', {
-    //   identification: existingAttachments.identification,
-    //   trade_license: existingAttachments.trade_license,
-    // });
-
     // Process files to delete if any
     if (attachmentsData.filesToDelete && attachmentsData.filesToDelete.length > 0) {
-      // console.log('DEBUG - Processing files to delete:', attachmentsData.filesToDelete);
-
       // Ensure all IDs are valid numbers
       const validFilesToDelete = attachmentsData.filesToDelete.filter(
         id => typeof id === 'number' && !isNaN(id) && id > 0
@@ -1215,13 +1220,7 @@ export async function updateFreelancerIdentification(
             id => !(typeof id === 'number' && !isNaN(id) && id > 0)
           )
         );
-        // console.log('DEBUG - Using filtered list for deletion:', validFilesToDelete);
       }
-
-      // console.log('DEBUG - Before filtering - Existing attachments:', {
-      //   identification: existingAttachments.identification,
-      //   trade_license: existingAttachments.trade_license,
-      // });
 
       // Filter out deleted file IDs from existing attachments
       existingAttachments.identification = existingAttachments.identification.filter(id => {
@@ -1236,20 +1235,10 @@ export async function updateFreelancerIdentification(
         return keep;
       });
 
-      // console.log('DEBUG - After filtering - Existing attachments:', {
-      //   identification: existingAttachments.identification,
-      //   trade_license: existingAttachments.trade_license,
-      // });
-
       // Delete the files from the attachments table
-      // console.log(`DEBUG - Starting deletion of ${validFilesToDelete.length} attachments`);
       for (const fileId of validFilesToDelete) {
         try {
-          // console.log(`DEBUG - Attempting to delete attachment with ID ${fileId}`);
           await deleteAttachmentById(fileId);
-          // console.log(
-          //   `DEBUG - Successfully completed deletion process for attachment ID ${fileId}`
-          // );
         } catch (error) {
           console.error(`DEBUG - Error deleting attachment with ID ${fileId}:`, error);
           // Continue with other deletions even if one fails
@@ -1318,9 +1307,6 @@ export async function updateFreelancerIdentification(
       })
       .where(eq(userIdentificationsTable.userId, userId))
       .returning();
-
-    // Verify the record was saved correctly
-    const verificationCheck = await getFreelancerIdentification(userId);
 
     return { success: true, data: result[0] };
   } catch (error) {

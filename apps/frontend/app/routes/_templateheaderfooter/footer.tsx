@@ -1,3 +1,5 @@
+import AppFormField from '~/common/form-fields';
+
 export default function Layout() {
   return (
     <footer className="bg-white text-black py-10 border-t border-gray-200">
@@ -7,12 +9,8 @@ export default function Layout() {
           <h4 className="text-2xl font-semibold">Join our newsletter</h4>
           <div className="lg:ml-[11%] col-span-2">
             <div className="flex w-full gap-4">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-grow px-4 py-2 border rounded-[10px] border-gray-300  focus:outline-none transition duration-200"
-              />
-              <button className="px-6 py-2 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300 not-active-gradient">
+              <AppFormField type="email" label="Enter your email" id="email" name="email" />
+              <button className="px-6 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300 not-active-gradient">
                 Subscribe
               </button>
             </div>
@@ -22,7 +20,7 @@ export default function Layout() {
         {/* Second Row: Subscription Agreement */}
         <div className="mt-4 flex justify-end pr-32">
           <p className="text-gray-600 text-sm">
-            By subscribing you agree to our{" "}
+            By subscribing you agree to our{' '}
             <a href="#" className="underline hover:text-gray-800">
               Privacy Policy
             </a>

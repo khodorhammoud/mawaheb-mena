@@ -1,7 +1,7 @@
 // ~/routes/freelancer/$freelancerId.tsx
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, Form, Outlet, useNavigate } from '@remix-run/react';
-import { AccountStatus, CompensationType } from '~/types/enums';
+import { AccountStatus, CompensationType } from '@mawaheb/db/enums';
 import {
   getFreelancerDetails,
   getFreelancerApplications,
@@ -9,8 +9,8 @@ import {
   safeParseJSON,
 } from '~/servers/admin.server';
 import { eq } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
-import { accountsTable, UsersTable, employersTable, jobsTable } from '~/db/drizzle/schemas/schema';
+import { db } from '@mawaheb/db/server';
+import { schema } from '@mawaheb/db';
 
 import type {
   ActionResponse,
@@ -25,6 +25,7 @@ import type {
 
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
 
+const { accountsTable, UsersTable, employersTable, jobsTable } = schema;
 /* function getStatusColor(status: JobApplicationStatus) {
   switch (status) {
     case JobApplicationStatus.Pending:

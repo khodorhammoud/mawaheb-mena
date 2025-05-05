@@ -1,6 +1,6 @@
 // this Calender code is so sensetive, try to keep the content in it as it is not to break anything for dashboard and onboarding states in the availability form 👍
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 import {
   format,
   addMonths,
@@ -11,7 +11,7 @@ import {
   setYear,
   getYear,
   isSameDay,
-} from "date-fns";
+} from 'date-fns';
 
 type CalendarProps = {
   selectedDate: Date | null;
@@ -19,33 +19,23 @@ type CalendarProps = {
   onClose: () => void;
 };
 
-export default function Calendar({
-  selectedDate,
-  onDateSelect,
-  onClose,
-}: CalendarProps) {
+export default function Calendar({ selectedDate, onDateSelect, onClose }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // Generate years for dropdown
-  const years = Array.from(
-    { length: 11 },
-    (_, i) => getYear(new Date()) - 5 + i
-  );
+  const years = Array.from({ length: 11 }, (_, i) => getYear(new Date()) - 5 + i);
 
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        calendarRef.current &&
-        !calendarRef.current.contains(event.target as Node)
-      ) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [onClose]);
 
@@ -71,26 +61,24 @@ export default function Calendar({
         <div
           key={i}
           className={`p-2 text-center cursor-pointer rounded-full ${
-            isSelected
-              ? "bg-primaryColor text-white"
-              : "hover:border hover:border-primaryColor"
+            isSelected ? 'bg-primaryColor text-white' : 'hover:border hover:border-primaryColor'
           }`}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
               onDateSelect(day); // Trigger parent function
             }
           }}
           tabIndex={0}
           role="button"
           style={{
-            width: "2.5rem",
-            height: "2.5rem",
+            width: '2.5rem',
+            height: '2.5rem',
           }}
           onClick={() => {
             onDateSelect(day); // Trigger parent function
           }}
         >
-          {format(day, "d")}
+          {format(day, 'd')}
         </div>
       );
     }
@@ -110,15 +98,15 @@ export default function Calendar({
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="font-medium">{format(currentMonth, "MMMM")}</span>
+          <span className="font-medium">{format(currentMonth, 'MMMM')}</span>
 
           {/* Year Dropdown */}
           <select
             value={getYear(currentMonth)}
-            onChange={(e) => handleYearChange(Number(e.target.value))}
+            onChange={e => handleYearChange(Number(e.target.value))}
             className="border border-gray-300 rounded px-2 py-1"
           >
-            {years.map((year) => (
+            {years.map(year => (
               <option key={year} value={year}>
                 {year}
               </option>
@@ -137,15 +125,13 @@ export default function Calendar({
 
       {/* Days of the week */}
       <div className="grid grid-cols-7 gap-2 text-sm font-medium text-center text-gray-500 border-t pt-4">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day}>{day}</div>
         ))}
       </div>
 
       {/* Calendar days */}
-      <div className="grid grid-cols-7 text-base gap-2 mt-2 border-b pb-2">
-        {renderDays()}
-      </div>
+      <div className="grid grid-cols-7 text-base gap-2 mt-2 border-b pb-2">{renderDays()}</div>
 
       {/* Buttons */}
       <div className="flex justify-end text-sm gap-2 mt-2">

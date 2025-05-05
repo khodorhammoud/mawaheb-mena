@@ -1,6 +1,6 @@
 // ~/types.ts
 
-import { AccountStatus, CompensationType, JobApplicationStatus } from '~/types/enums';
+import { AccountStatus, CompensationType, JobApplicationStatus } from '@mawaheb/db/enums';
 
 /** For arrays in the freelancer object */
 export interface Portfolio {

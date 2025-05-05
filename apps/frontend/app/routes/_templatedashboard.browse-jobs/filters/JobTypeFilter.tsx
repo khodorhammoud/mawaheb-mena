@@ -1,20 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import { X } from "lucide-react";
-import { ComboBox, ComboBoxItem } from "~/components/ui/combobox";
-import { ProjectType } from "~/types/enums";
+import { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
+import { ComboBox, ComboBoxItem } from '~/components/ui/combobox';
+import { ProjectType } from '@mawaheb/db/enums';
 
 interface JobTypeFilterProps {
   filters: { jobType: ProjectType | null };
   setFilters: (filters: any) => void;
 }
 
-export default function JobTypeFilter({
-  filters,
-  setFilters,
-}: JobTypeFilterProps) {
-  const [selectedJobType, setSelectedJobType] = useState<ProjectType | "">(
-    filters.jobType || ""
-  );
+export default function JobTypeFilter({ filters, setFilters }: JobTypeFilterProps) {
+  const [selectedJobType, setSelectedJobType] = useState<ProjectType | ''>(filters.jobType || '');
   const [isOpen, setIsOpen] = useState(false); // ✅ Controls dropdown visibility
   const dropdownRef = useRef<HTMLDivElement>(null); // ✅ Ref for detecting outside clicks
 
@@ -27,28 +22,25 @@ export default function JobTypeFilter({
   // ✅ Reset selectedJobType when filters.jobType is cleared
   useEffect(() => {
     if (!filters.jobType) {
-      setSelectedJobType("");
+      setSelectedJobType('');
     }
   }, [filters.jobType]);
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setIsOpen(false); // ✅ Close dropdown if clicked outside
     }
   };
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     } else {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -67,11 +59,11 @@ export default function JobTypeFilter({
           <X
             size={20}
             className="group-hover:text-white text-primaryColor hover:text-white hover:bg-gray-400 rounded-full p-[2px] transition"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
-              setSelectedJobType("");
+              setSelectedJobType('');
               setFilters((prev: any) => ({ ...prev, jobType: null }));
-              handleJobTypeChange(""); // ✅ Reset selected job type
+              handleJobTypeChange(''); // ✅ Reset selected job type
             }}
           />
         )}
@@ -86,9 +78,9 @@ export default function JobTypeFilter({
               value={jobType}
               onSelect={() => handleJobTypeChange(jobType)}
               className={`px-4 py-2 cursor-pointer transition w-[160px]
-                ${index === 0 ? "rounded-t-md" : ""} 
-                ${index === jobTypes.length - 1 ? "rounded-b-md" : ""} 
-                ${selectedJobType === jobType ? "bg-gray-400 text-white" : "hover:bg-gray-200"}`}
+                ${index === 0 ? 'rounded-t-md' : ''} 
+                ${index === jobTypes.length - 1 ? 'rounded-b-md' : ''} 
+                ${selectedJobType === jobType ? 'bg-gray-400 text-white' : 'hover:bg-gray-200'}`}
             >
               {jobType}
             </ComboBoxItem>

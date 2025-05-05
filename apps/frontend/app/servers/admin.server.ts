@@ -1,5 +1,5 @@
 import { eq, aliasedTable, and, desc, sql, count } from 'drizzle-orm';
-import { db } from '~/db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   UsersTable,
@@ -10,8 +10,8 @@ import {
   jobCategoriesTable,
   skillsTable,
   jobSkillsTable,
-} from '~/db/drizzle/schemas/schema';
-import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '~/types/enums';
+} from '@mawaheb/db';
+import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '@mawaheb/db/enums';
 import type { Account } from '~/common/admin-pages/tables/AccountsTable';
 import {
   Portfolio,
@@ -591,21 +591,53 @@ export async function updateFreelancerAccountStatus(
   freelancerId: number,
   newStatus: AccountStatus
 ) {
-  // Find the account ID for this freelancer
+  // Find the account ID and user ID for this freelancer
   const freelancer = await db
-    .select({ accountId: freelancersTable.accountId })
+    .select({
+      accountId: freelancersTable.accountId,
+      userId: accountsTable.userId,
+    })
     .from(freelancersTable)
+    .leftJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
     .where(eq(freelancersTable.id, freelancerId));
 
   if (freelancer.length === 0) {
     return { success: false, error: 'Freelancer not found' };
   }
 
+  const { accountId, userId } = freelancer[0];
+
   // Update the account status
   await db
     .update(accountsTable)
     .set({ accountStatus: newStatus })
-    .where(eq(accountsTable.id, freelancer[0].accountId));
+    .where(eq(accountsTable.id, accountId));
+
+  // If status is being set to "Published", trigger skillfolio generation
+  if (newStatus === AccountStatus.Published) {
+    try {
+      // Use the HOST_URL environment variable for the fetch URL
+      const baseUrl = process.env.HOST_URL || 'http://localhost:5173';
+
+      // Use our dedicated API endpoint to trigger skillfolio generation
+      await fetch(`${baseUrl}/api/skillfolio/trigger`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          accountId,
+          newStatus,
+        }),
+      });
+      // We don't wait for the result since this is an async process that will complete in the background
+    } catch (error) {
+      console.error('Error triggering skillfolio generation:', error);
+      // We don't want to fail the status update if the API call fails,
+      // so we'll just log the error and continue
+    }
+  }
 
   return { success: true };
 }

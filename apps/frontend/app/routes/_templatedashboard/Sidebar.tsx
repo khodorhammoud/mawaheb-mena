@@ -2,7 +2,7 @@ import { sidebarEmployerNav, sidebarFreelancerNav } from '~/constants/navigation
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
-import { AccountType } from '~/types/enums';
+import { AccountType } from '@mawaheb/db/enums';
 import { FaUser } from 'react-icons/fa6';
 
 export default function Sidebar() {

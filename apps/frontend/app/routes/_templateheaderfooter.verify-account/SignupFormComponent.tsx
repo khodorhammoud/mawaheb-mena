@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import SocialLinks from "../../common/registration/socialLinks";
-import { useActionData, useNavigate, Form } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
+import { useState, useEffect, useRef } from 'react';
+import SocialLinks from '../../common/registration/socialLinks';
+import { useActionData, useNavigate, Form } from '@remix-run/react';
+import { AccountType } from '@mawaheb/db/enums';
 
 export default function SignupLeftComponent() {
   const actionData = useActionData();
@@ -22,7 +22,7 @@ export default function SignupLeftComponent() {
     }
   }, [actionData, navigate]);
 
-  const [employerAccountType, setEmployerAccountType] = useState("personal");
+  const [employerAccountType, setEmployerAccountType] = useState('personal');
   return (
     <>
       <div className="w-full max-w-sm">
@@ -37,27 +37,21 @@ export default function SignupLeftComponent() {
         <p className="text-sm text-gray-600 mb-4">Select user type</p>
         <div className="flex mb-6 space-x-2">
           <button
-            onClick={() => setEmployerAccountType("personal")}
+            onClick={() => setEmployerAccountType('personal')}
             className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
-              employerAccountType === "personal"
-                ? "bg-gray-100 border-gray-300"
-                : "border-gray-200"
+              employerAccountType === 'personal' ? 'bg-gray-100 border-gray-300' : 'border-gray-200'
             }`}
           >
             <div className="flex flex-col items-center">
               <span>👤</span>
               <span>Personal</span>
-              <span className="text-xs text-gray-500">
-                Set Up Your Dream Team
-              </span>
+              <span className="text-xs text-gray-500">Set Up Your Dream Team</span>
             </div>
           </button>
           <button
-            onClick={() => setEmployerAccountType("company")}
+            onClick={() => setEmployerAccountType('company')}
             className={`w-1/2 py-2 px-4 border rounded-md text-sm font-medium ${
-              employerAccountType === "company"
-                ? "bg-gray-100 border-gray-300"
-                : "border-gray-200"
+              employerAccountType === 'company' ? 'bg-gray-100 border-gray-300' : 'border-gray-200'
             }`}
           >
             <div className="flex flex-col items-center">
@@ -69,21 +63,10 @@ export default function SignupLeftComponent() {
         </div>
 
         <Form method="post" className="space-y-4">
-          <input
-            type="hidden"
-            name="accountType"
-            value={AccountType.Employer}
-          />
-          <input
-            type="hidden"
-            name="eployerAccountType"
-            value={employerAccountType}
-          />
+          <input type="hidden" name="accountType" value={AccountType.Employer} />
+          <input type="hidden" name="eployerAccountType" value={employerAccountType} />
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address
             </label>
             <input
@@ -95,10 +78,7 @@ export default function SignupLeftComponent() {
           </div>
           <div className="flex space-x-4">
             <div className="w-1/2">
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                 First Name
               </label>
               <input
@@ -109,10 +89,7 @@ export default function SignupLeftComponent() {
               />
             </div>
             <div className="w-1/2">
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                 Last Name
               </label>
               <input
@@ -124,10 +101,7 @@ export default function SignupLeftComponent() {
             </div>
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <div className="relative">
@@ -167,9 +141,7 @@ export default function SignupLeftComponent() {
           {/* success message when all is done */}
           {actionData?.success && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-              <strong className="font-bold">
-                ✅ A verification email has been sent to you.
-              </strong>
+              <strong className="font-bold">✅ A verification email has been sent to you.</strong>
             </div>
           )}
         </Form>
@@ -184,11 +156,8 @@ export default function SignupLeftComponent() {
         <SocialLinks />
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <a
-              href="/login-employer"
-              className="text-blue-600 hover:text-blue-500"
-            >
+            Already have an account?{' '}
+            <a href="/login-employer" className="text-blue-600 hover:text-blue-500">
               Login
             </a>
           </p>

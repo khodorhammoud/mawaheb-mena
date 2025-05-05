@@ -1,8 +1,8 @@
-import { JobCardData } from '~/types/Job';
+import { JobCardData } from '@mawaheb/db/types';
 import JobStateButton from '~/common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
 import { Link } from '@remix-run/react';
-import { JobStatus } from '~/types/enums';
+import { JobStatus } from '@mawaheb/db/enums';
 import { parseDate } from '~/lib/utils';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
@@ -33,7 +33,7 @@ export default function JobDesignThree({
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 mb-4">
         {/* Show Edit button only when the job status is "draft" */}
         {status === JobStatus.Draft && (
           <Link

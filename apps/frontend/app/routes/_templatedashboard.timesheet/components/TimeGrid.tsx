@@ -1,19 +1,14 @@
-import { useRef } from "react";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { TimeGridEntry } from "./TimeGridEntry";
-import type {
-  DisplayedDaysType,
-  TimesheetEntry,
-  TimesheetData,
-  TimeSlot,
-} from "../../../types/Timesheet";
-import { useTimeSlots } from "../hooks/useTimeSlots";
-import { DayTotal } from "./DayTotal";
-import { SubmitDayButton } from "./SubmitDayButton";
-import { calculateDayTotal } from "../utils";
-import { useTimesheet } from "../context/TimesheetContext";
-import { AccountType } from "~/types/enums";
-import { EmployerActions } from "./EmployerActions";
+import { useRef } from 'react';
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { TimeGridEntry } from './TimeGridEntry';
+import type { DisplayedDaysType, TimesheetEntry, TimesheetData, TimeSlot } from '@mawaheb/db/types';
+import { useTimeSlots } from '../hooks/useTimeSlots';
+import { DayTotal } from './DayTotal';
+import { SubmitDayButton } from './SubmitDayButton';
+import { calculateDayTotal } from '../utils';
+import { useTimesheet } from '../context/TimesheetContext';
+import { AccountType } from '@mawaheb/db/enums';
+import { EmployerActions } from './EmployerActions';
 
 interface TimeGridProps {
   timesheet: TimesheetData;
@@ -48,9 +43,7 @@ export function TimeGrid({
                     // className="flex flex-col min-h-full border-l border-gray-200"
                   >
                     <div className="font-semibold">{day.dayName}</div>
-                    <div className="text-sm text-gray-500">
-                      {day.formattedDate}
-                    </div>
+                    <div className="text-sm text-gray-500">{day.formattedDate}</div>
                   </div>
                 );
               })}
@@ -76,8 +69,8 @@ export function TimeGrid({
       </ScrollArea>
       <div className="grid grid-cols-4 gap-[8px]">
         <div className="mt-auto"></div>
-        {displayedDays.map((day) => {
-          const dateKey = day?.date?.toLocaleDateString("en-CA");
+        {displayedDays.map(day => {
+          const dateKey = day?.date?.toLocaleDateString('en-CA');
           const entries = timesheet[dateKey]?.entries || [];
           const status = timesheet[dateKey]?.entries[0].status;
           const dayTotal = calculateDayTotal(entries);
@@ -89,10 +82,7 @@ export function TimeGrid({
               // className="flex flex-col min-h-full border-l border-gray-200"
             >
               <div className="mt-auto">
-                <DayTotal
-                  total={calculateDayTotal(entries)}
-                  className="bg-gray-50"
-                />
+                <DayTotal total={calculateDayTotal(entries)} className="bg-gray-50" />
                 {accountType === AccountType.Freelancer ? (
                   <SubmitDayButton
                     date={dateKey}
@@ -140,17 +130,11 @@ function TimeGridRow({
           day={day}
           time={time}
           timeIndex={timeIndex}
-          timesheetEntry={
-            timesheet[day?.date?.toLocaleDateString("en-CA")]?.entries || []
-          }
+          timesheetEntry={timesheet[day?.date?.toLocaleDateString('en-CA')]?.entries || []}
           timeSlots={timeSlots}
           onEntryClick={onEntryClick}
-          isSubmitted={
-            timesheet[day?.date?.toLocaleDateString("en-CA")]?.isSubmitted
-          }
-          status={
-            timesheet[day?.date?.toLocaleDateString("en-CA")]?.entries[0].status
-          }
+          isSubmitted={timesheet[day?.date?.toLocaleDateString('en-CA')]?.isSubmitted}
+          status={timesheet[day?.date?.toLocaleDateString('en-CA')]?.entries[0].status}
         />
       ))}
     </>

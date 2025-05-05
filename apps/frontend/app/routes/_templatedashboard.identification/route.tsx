@@ -1,8 +1,8 @@
 import { redirect, useLoaderData } from '@remix-run/react';
-import { AccountType, AccountStatus, EmployerAccountType } from '~/types/enums';
+import { AccountType, AccountStatus, EmployerAccountType } from '@mawaheb/db/types/enums';
 import { getCurrentProfileInfo, getCurrentUserAccountType } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Employer, Freelancer } from '~/types/User';
+import { Employer, Freelancer } from '@mawaheb/db/types/User';
 import { requireUserVerified } from '~/auth/auth.server';
 import FreelancerIdentifyingScreen from './freelancer';
 import EmployerIdentifyingScreen from './employer';
@@ -150,22 +150,23 @@ export async function action({ request }: ActionFunctionArgs) {
         filesToDelete,
       };
 
-      // Use createEmployerIdentification which now handles both create and update
-      const result = await createEmployerIdentification(userId, attachmentsData);
-
-      if (!result.success) {
-        return Response.json({
-          success: false,
-          error: 'Failed to save employer identification',
-        });
-      }
-
+      // First update the account status
       const statusResult = await updateEmployerAccountStatusToPending(accountId);
 
       if (!statusResult.success) {
         return Response.json({
           success: false,
           error: 'Failed to update employer account status',
+        });
+      }
+
+      // Then save the identification data
+      const result = await createEmployerIdentification(userId, attachmentsData);
+
+      if (!result.success) {
+        return Response.json({
+          success: false,
+          error: 'Failed to save employer identification',
         });
       }
 
@@ -245,6 +246,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const accountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
 
+  // Check if user is forcing to view the identification screen
+  const url = new URL(request.url);
+  const forceView = url.searchParams.get('force') === 'true';
+
   if (!profile) {
     return Response.json({
       success: false,
@@ -263,8 +268,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard');
   }
 
-  // If account status is pending, show pending message
-  const isPending = profile.account?.accountStatus === AccountStatus.Pending;
+  // If account status is pending, show pending message (unless force=true is set)
+  const isPending = profile.account?.accountStatus === AccountStatus.Pending && !forceView;
 
   // Fetch identification data based on account type
   let identificationData = null;
@@ -843,49 +848,49 @@ export default function Layout() {
     isPending: boolean;
   }>();
 
-  // If account status is pending, show pending message
-  if (isPending) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold mb-4">Account Verification</h1>
-          <div className="mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-yellow-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <p className="text-lg font-medium text-gray-800">Your account is being validated</p>
-            <p className="text-gray-600 mt-2">
-              We're reviewing your submitted documents. This process typically takes 1-2 business
-              days.
-            </p>
-          </div>
-          <p className="text-sm text-gray-500">
-            You'll receive an email notification once your account is approved.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
-      {accountType === AccountType.Employer ? (
-        <EmployerIdentifyingScreen />
+      {isPending ? (
+        <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+          <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center border border-gray-200">
+            <h1 className="text-2xl font-bold mb-4">Account Verification</h1>
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-primaryColor rounded-full flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-white animate-spin-slow"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+
+              <p className="text-lg font-medium text-gray-800">Your account is being validated</p>
+              <p className="text-gray-600 mt-2">
+                We're reviewing your submitted documents. This process typically takes 1-2 business
+                days.
+              </p>
+            </div>
+            <p className="text-sm text-gray-500">
+              You'll receive an email notification once your account is approved.
+            </p>
+          </div>
+        </div>
       ) : (
-        <FreelancerIdentifyingScreen />
+        <>
+          {accountType === AccountType.Employer ? (
+            <EmployerIdentifyingScreen />
+          ) : (
+            <FreelancerIdentifyingScreen />
+          )}
+        </>
       )}
     </div>
   );

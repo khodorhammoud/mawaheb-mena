@@ -2,7 +2,7 @@ import IndustriesServed from './industries-served';
 import Languages from './languages';
 import BioInfo from './bio-info';
 import { useLoaderData } from '@remix-run/react';
-import { AccountType } from '~/types/enums';
+import { AccountType } from '@mawaheb/db/enums';
 import Skills from './skills';
 
 // ✅ Accept `freelancer` prop (optional)

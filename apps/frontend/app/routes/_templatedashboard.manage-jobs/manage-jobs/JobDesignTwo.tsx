@@ -1,11 +1,11 @@
-import { JobCardData } from '../../../types/Job';
+import { JobCardData } from '@mawaheb/db/types';
 import Calendar from '~/common/calender/Calender';
 import SkillBadgeList from '~/common/skill/SkillBadge';
 import JobStateButton from '../../../common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
 import { Link } from '@remix-run/react/dist/components';
 import { parseDate } from '~/lib/utils';
-import { JobStatus } from '~/types/enums';
+import { JobStatus } from '@mawaheb/db/enums';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
 import Job from './Job';
@@ -54,7 +54,12 @@ export default function JobDesignTwo({
             />
           )}
           {status === JobStatus.Draft && (
-            <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
+            <Link
+              to={`/edit-job/${job.id}`}
+              className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Edit
+            </Link>
           )}
         </div>
 
@@ -63,7 +68,9 @@ export default function JobDesignTwo({
           <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
             <Link to={`/jobs/${job.id}`}>{job.title}</Link>
           </h3>
-          <p className="xl:text-sm text-xs text-gray-400 mb-4">
+          <p
+            className={`xl:text-sm text-xs text-gray-400 mb-4 ${status === JobStatus.Draft ? 'hidden' : ''}`}
+          >
             Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
           </p>
           <div className="flex xl:gap-10 lg:gap-8 gap-6">
@@ -88,7 +95,9 @@ export default function JobDesignTwo({
 
           {/* SKILLS */}
           <div className="mt-4 xl:text-base text-sm">
-            <p className={`${status === JobStatus.Draft ? 'text-lg mb-2' : 'hidden'}`}>Skills</p>
+            <p className={`${status === JobStatus.Draft ? 'text-sm mb-2 mt-6' : 'hidden'}`}>
+              Skills
+            </p>
             {job.requiredSkills &&
             Array.isArray(job.requiredSkills) &&
             job.requiredSkills.length > 0 ? (
@@ -99,7 +108,7 @@ export default function JobDesignTwo({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-8">
+        <div className="grid grid-cols-[1fr_2fr] gap-4 mt-8">
           {/* APPLICANTS */}
           <div
             className={`flex flex-col gap-4 ${
@@ -133,8 +142,9 @@ export default function JobDesignTwo({
           <div
             className={`${
               status === JobStatus.Draft ||
+              status === JobStatus.Paused ||
               status === JobStatus.Closed ||
-              status === JobStatus.Paused
+              status === JobStatus.Deleted
                 ? 'hidden'
                 : 'col-span-1'
             }`}

@@ -8,7 +8,7 @@
 
 .rotation-animation {
   display: inline-block;
-  animation: rotation-animation 3s ease-in-out forwards;
+  animation: rotation-animation 2.6s ease-in-out forwards;
 }
 
 @keyframes rotation-animation {

@@ -4,7 +4,8 @@ import { requireUserSession } from '~/auth/auth.server';
 import { getNotificationById, markNotificationAsRead } from '~/servers/notifications.server';
 import { Button } from '~/components/ui/button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { NotificationType } from '~/types/enums';
+// import { NotificationType } from '@mawaheb/db/enums';
+import { NotificationType } from '@mawaheb/db/enums';
 import { useEffect, useState } from 'react';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -76,20 +77,7 @@ export default function SingleNotificationView() {
 
   // Go back to the source page if possible
   const handleBackClick = () => {
-    if (initialReferrer && initialReferrer.includes('/notifications')) {
-      window.location.href = '/notifications?refresh=' + Date.now();
-    } else if (initialReferrer) {
-      try {
-        const url = new URL(initialReferrer);
-        window.location.href = url.pathname + url.search;
-      } catch (e) {
-        // Fallback to notifications
-        window.location.href = '/notifications?refresh=' + Date.now();
-      }
-    } else {
-      // Default fallback
-      window.location.href = '/notifications?refresh=' + Date.now();
-    }
+    window.history.go(-1);
   };
 
   // Skip everything if there's no notification

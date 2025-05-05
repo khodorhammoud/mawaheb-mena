@@ -11,7 +11,7 @@ import { requireUserSession } from '~/auth/auth.server';
 import { getNotifications, markAllNotificationsAsRead } from '~/servers/notifications.server';
 import { Button } from '~/components/ui/button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { NotificationType } from '~/types/enums';
+import { NotificationType } from '@mawaheb/db/enums';
 import { useEffect, useState } from 'react';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -59,13 +59,22 @@ export async function action({ request }: LoaderFunctionArgs) {
 }
 
 export default function Notifications() {
-  const { notifications } = useLoaderData<typeof loader>();
+  const { notifications: rawNotifications } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const location = useLocation();
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
   const submit = useSubmit();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  // Sort notifications by date - newest first (most recent timestamp at the top)
+  const notifications = [...rawNotifications].sort((a, b) => {
+    // Convert to dates if they're strings
+    const dateA = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
+    const dateB = typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
+    // Compare timestamps (newest first)
+    return dateB.getTime() - dateA.getTime();
+  });
 
   // Get the referrer to handle back navigation properly
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -94,13 +103,7 @@ export default function Notifications() {
 
   // Handle back button click
   const handleBackClick = () => {
-    if (previousPath) {
-      // Navigate to stored previous path if available
-      window.location.href = previousPath;
-    } else {
-      // Default fallback - go to dashboard
-      window.location.href = '/dashboard';
-    }
+    window.history.go(-1);
   };
 
   const unreadNotifications = notifications.filter(n => !n.isRead);

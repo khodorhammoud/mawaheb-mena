@@ -10,7 +10,8 @@ import AppFormField from '~/common/form-fields';
 import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { Dialog, DialogContent } from '~/components/ui/dialog';
 import Availability from '~/common/profileView/availability-form/availability';
-import { AccountStatus, AccountType, NotificationType } from '~/types/enums';
+// import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
+import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
 
@@ -62,6 +63,9 @@ export default function Header() {
         readAt: notification.readAt ? new Date(notification.readAt) : null,
       });
     }
+
+    // Sort notifications by date - newest first
+    processedNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   // Function to open the dialog
@@ -87,7 +91,6 @@ export default function Header() {
 
   const handleNotificationClick = (notificationId: number) => {
     // Use the new /notification/:id URL pattern which is separate from the notifications list
-    console.log(`Navigating to single notification ID: ${notificationId}`);
     window.location.href = `/notification/${notificationId}`;
   };
 
@@ -102,7 +105,7 @@ export default function Header() {
 
           {/* Search */}
           <div className="sm:w-[40%] w-full">
-            <AppFormField
+            {/* <AppFormField
               id="email"
               name="email"
               label={
@@ -110,7 +113,7 @@ export default function Header() {
                   <BsSearch /> <div className="md:block ml-4 hidden">Hinted search text</div>
                 </div>
               }
-            />
+            /> */}
           </div>
         </div>
 
@@ -120,7 +123,7 @@ export default function Header() {
             <Link
               to="/new-job"
               onClick={handlePostJobClick}
-              className="bg-primaryColor rounded-[10px] md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
+              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
             >
               Post Job
             </Link>

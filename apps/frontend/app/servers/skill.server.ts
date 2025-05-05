@@ -1,7 +1,7 @@
-import { db } from "~/db/drizzle/connector";
-import { jobSkillsTable, skillsTable } from "~/db/drizzle/schemas/schema";
-import { eq } from "drizzle-orm";
-import { Skill } from "~/types/Skill";
+import { db } from '@mawaheb/db/server';
+import { jobSkillsTable, skillsTable } from '@mawaheb/db';
+import { eq } from 'drizzle-orm';
+import { Skill } from '@mawaheb/db/types';
 
 export async function getJobSkills(jobId: number): Promise<Skill[]> {
   // console.log("🔍 Checking Job ID:", jobId);

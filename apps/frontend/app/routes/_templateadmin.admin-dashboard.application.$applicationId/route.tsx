@@ -1,9 +1,10 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData, useActionData, Link, useNavigate } from '@remix-run/react';
-import { JobApplicationStatus } from '~/types/enums';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 import { ApplicationOverview } from '~/components/application/ApplicationOverview';
 import { JobDetails } from '~/components/application/JobDetails';
 import { FreelancerProfile } from '~/components/application/FreelancerProfile';
+import { getApplicationMatchScore } from '~/servers/job.server';
 
 // Helper function to safely parse JSON
 function safeParseJSON<T>(jsonString: string | null | undefined, defaultValue: T): T {
@@ -55,9 +56,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   // Get application details
   const applicationDetails = await getApplicationDetails(applicationId);
-
-  // Import job server functions to get match score
-  const { getApplicationMatchScore } = await import('~/servers/job.server');
 
   // Get the job ID and freelancer ID from the application details
   const jobId = applicationDetails.application?.job?.id;

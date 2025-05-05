@@ -1,5 +1,5 @@
 import { hash, compare } from 'bcrypt-ts';
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   employersTable,
@@ -9,13 +9,13 @@ import {
   jobApplicationsTable,
   skillsTable,
   timesheetEntriesTable,
-  languagesTable,
-  jobsTable,
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
   freelancerSkillsTable,
-} from '../db/drizzle/schemas/schema';
+  languagesTable,
+  jobsTable,
+} from '@mawaheb/db';
 import {
   // LoggedInUser,
   User,
@@ -24,16 +24,18 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from '../types/User';
-import { and, eq, or /* lt, gte, ne */ } from 'drizzle-orm';
+} from '@mawaheb/db/types';
+import { and, eq, isNull, or, inArray } from 'drizzle-orm';
+
 import { RegistrationError, ErrorCode } from '../common/errors/UserError';
 import {
   AccountStatus,
   AccountType,
-  JobApplicationStatus,
   Provider,
   JobStatus,
-} from '../types/enums';
+  JobApplicationStatus,
+} from '@mawaheb/db/enums';
+
 // import { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticator } from '../auth/auth.server';
 
@@ -730,6 +732,10 @@ export async function checkUserStatuses(
   }
   return false;
 }
+
+// export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+//   return await db.update(UsersTable).set({ isOnboarded }).where(eq(UsersTable.id, userId));
+// }
 
 /******************* Social Accounts *******************/
 export async function getSocialAccount({

@@ -1,15 +1,16 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { db } from "~/db/drizzle/connector";
-import { reviewsTable } from "~/db/drizzle/schemas/schema";
-import { and, eq } from "drizzle-orm";
+import type { LoaderFunctionArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { db } from '@mawaheb/db/server';
+import { schema } from '@mawaheb/db';
+import { and, eq } from 'drizzle-orm';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const freelancerId = Number(params.freelancerId);
   if (!freelancerId) {
-    return json({ error: "Freelancer ID is required" }, { status: 400 });
+    return json({ error: 'Freelancer ID is required' }, { status: 400 });
   }
 
+  const { reviewsTable } = schema;
   // Fetch all employer reviews for this freelancer
   const reviews = await db
     .select()
@@ -17,7 +18,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     .where(
       and(
         eq(reviewsTable.freelancerId, freelancerId),
-        eq(reviewsTable.reviewType, "employer_review")
+        eq(reviewsTable.reviewType, 'employer_review')
       )
     );
 

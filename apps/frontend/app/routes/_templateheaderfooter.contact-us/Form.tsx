@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react"; // Hook to retrieve the loader data
+import { useLoaderData } from '@remix-run/react'; // Hook to retrieve the loader data
 
 interface ContactUsForm {
   title: string;
@@ -18,8 +18,7 @@ const Form = () => {
     <div className="font-['Switzer-Regular'] grid grid-cols-1 md:grid-cols-2 items-center justify-center gap-20 my-40">
       <div className="">
         <p className="text-6xl font-['BespokeSerif-Regular'] font-bold leading-relaxed">
-          {form?.title ||
-            "Have a question or need assistance? We're here to help! Reach out to us"}
+          {form?.title || "Have a question or need assistance? We're here to help! Reach out to us"}
         </p>
         <p className="text-xl font-['BespokeSerif-Regular'] mt-40 mb-6">
           {form?.subHeadline?.content ||
@@ -82,7 +81,7 @@ const Form = () => {
           <div>
             <button
               type="submit"
-              className="bg-primaryColor text-white text-sm py-4 px-10 rounded-xl not-active-gradient gradient-box"
+              className="bg-primaryColor text-white py-2 px-5 rounded-xl not-active-gradient gradient-box"
             >
               Send Form
             </button>

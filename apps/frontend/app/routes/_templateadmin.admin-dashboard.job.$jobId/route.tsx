@@ -2,7 +2,7 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { getJobDetails, getSkillsForJob, getJobApplicationsBasic } from '~/servers/admin.server';
-import { JobApplicationStatus } from '~/types/enums';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
 
 // Helper function to safely format dates

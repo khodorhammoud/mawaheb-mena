@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import { useLoaderData } from "@remix-run/react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { useLoaderData } from '@remix-run/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Testimonial {
   iconSVG?: string;
@@ -39,9 +39,9 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
             exit={{ opacity: 0 }}
             className="absolute z-10"
             style={{
-              top: "310px",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
+              top: '310px',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
             }}
           >
             <motion.div className="w-16 text-5xl bg-slate-100 rounded-2xl pl-4 pt-4 pr-2 text-white fill-white stroke-black">
@@ -79,7 +79,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
               <div
                 className="w-28 h-28 text-black mb-6 flex items-center justify-center mx-auto"
                 dangerouslySetInnerHTML={{
-                  __html: testimonial.iconSVG || "",
+                  __html: testimonial.iconSVG || '',
                 }}
               />
 
@@ -93,7 +93,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ setShowFingerIcon }) => {
                 <img
                   src={
                     testimonial.imageURL ||
-                    "https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg"
+                    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg'
                   }
                   alt={testimonial.name}
                   className="w-32 h-32 rounded-full"
