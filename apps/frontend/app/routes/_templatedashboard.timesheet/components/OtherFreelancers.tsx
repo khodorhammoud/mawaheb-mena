@@ -1,5 +1,5 @@
-import { JobApplication } from "~/types/Job";
-import { Link } from "@remix-run/react";
+import { JobApplication } from '@mawaheb/db/types';
+import { Link } from '@remix-run/react';
 
 interface OtherFreelancersProps {
   jobApplications: JobApplication[];
@@ -12,9 +12,7 @@ export function OtherFreelancers({
   currentFreelancerId,
   jobId,
 }: OtherFreelancersProps) {
-  const otherFreelancers = jobApplications.filter(
-    (app) => app.freelancerId !== currentFreelancerId
-  );
+  const otherFreelancers = jobApplications.filter(app => app.freelancerId !== currentFreelancerId);
 
   if (otherFreelancers.length === 0) {
     return null;
@@ -22,11 +20,9 @@ export function OtherFreelancers({
 
   return (
     <div className="mt-8 border-t pt-6">
-      <h3 className="text-lg font-semibold mb-4">
-        Other Freelancers on this Project
-      </h3>
+      <h3 className="text-lg font-semibold mb-4">Other Freelancers on this Project</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {otherFreelancers.map((application) => (
+        {otherFreelancers.map(application => (
           <Link
             key={application.id}
             to={`/timesheet/${jobId}/${application.freelancerId}`}

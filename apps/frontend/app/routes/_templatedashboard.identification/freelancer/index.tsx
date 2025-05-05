@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Form, useActionData, useLoaderData, useSubmit, useFetcher } from '@remix-run/react';
-import { Freelancer } from '~/types/User';
+import { Freelancer } from '@mawaheb/db/types';
 import { GeneralizableFormCardProps } from '~/common/profileView/onboarding-form-component/types';
 import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
 import { useToast } from '~/components/hooks/use-toast';
+import { Button } from '~/components/ui/button';
+import { FaPaperPlane, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 
 interface FileDisplayProps {
   files: Array<{ name: string; size?: number }>;
@@ -65,26 +67,56 @@ export default function FreelancerIdentifyingScreen() {
   // Add this below the refs
   const [existingIdentificationFiles, setExistingIdentificationFiles] = useState([]);
 
-  // Update the useEffect that loads identification data
+  // Initialize file refs with existing files when component loads
   useEffect(() => {
-    // console.log(
-    //   'DEBUG - Effect triggered with identificationData:',
-    //   identificationData ? JSON.stringify(identificationData, null, 2) : 'null'
-    // );
+    if (identificationData?.attachments) {
+      // For identification files
+      if (
+        identificationFormRef.current &&
+        identificationData.attachments.identification &&
+        identificationData.attachments.identification.length > 0
+      ) {
+        const identFiles = identificationData.attachments.identification.map(file => {
+          // Properly handle file-like object creation
+          try {
+            // Use type field if available, otherwise fallback
+            const fileType = file.type || 'application/octet-stream';
+            // Use size field if available, otherwise use a default size
+            const fileSize = file.size || 143 * 1024;
+            // Create a Blob with the same type as the original file
+            const blob = new Blob([new Uint8Array(1)], { type: fileType });
 
-    if (identificationData && identificationData.attachments) {
-      const attachments = identificationData.attachments;
+            // Create a new File object that looks like the original
+            const fileObj = new File([blob], file.name || 'unknown-file', {
+              type: fileType,
+              lastModified: new Date().getTime(),
+            });
 
-      // Set existing files state for our direct display
-      if (attachments.identification && Array.isArray(attachments.identification)) {
-        setExistingIdentificationFiles(attachments.identification);
+            // Add custom properties for tracking
+            Object.defineProperties(fileObj, {
+              isServerFile: { value: true, writable: true, enumerable: true },
+              serverId: { value: file.serverId || file.id, writable: true, enumerable: true },
+              size: { value: fileSize, writable: true, enumerable: true },
+              fileData: { value: file, writable: true, enumerable: true },
+            });
+
+            return fileObj;
+          } catch (e) {
+            return file;
+          }
+        });
+
+        identificationFormRef.current.filesSelected = identFiles;
+
+        // Set existing files state for our direct display
+        setExistingIdentificationFiles(identificationData.attachments.identification);
       }
 
       // Update the UI state
       if (
-        attachments.identification &&
-        Array.isArray(attachments.identification) &&
-        attachments.identification.length > 0
+        identificationData.attachments.identification &&
+        Array.isArray(identificationData.attachments.identification) &&
+        identificationData.attachments.identification.length > 0
       ) {
         setHasIdentification(true);
       }
@@ -285,19 +317,18 @@ export default function FreelancerIdentifyingScreen() {
 
         {/* Back to account info button */}
         <div className="mt-6 flex justify-between">
-          <button
+          <Button
             type="button"
-            className="flex items-center text-red-500 hover:text-red-700 text-lg"
+            className="flex items-center text-lg bg-primaryColor hover:bg-primaryColor hover:underline text-white group"
             onClick={() => {
               const formData = new FormData();
               formData.append('target-updated', 'back-to-account-info');
-
               submit(formData, { method: 'post' });
             }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="h-5 w-5 mr-1 transform transition-transform duration-300 ease-in-out group-hover:-translate-x-1 "
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -308,24 +339,36 @@ export default function FreelancerIdentifyingScreen() {
               />
             </svg>
             Back to account info
-          </button>
+          </Button>
 
-          <button
+          {/* Submit documents button */}
+          <Button
             type="button"
             onClick={handleSubmitDocuments}
             disabled={isSubmitting || documentsSubmitted}
-            className={`font-bold py-3 px-8 rounded text-lg shadow-md ${
+            className={`flex items-center justify-center text-lg bg-primaryColor py-3 px-5 hover:bg-primaryColor hover:underline text-white group gap-2 ${
               isSubmitting || documentsSubmitted
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-700 text-white'
+                ? 'bg-primaryColor hover:bg-primaryColor text-white'
+                : 'bg-primaryColor hover:bg-primaryColor text-white hover:underline'
             }`}
           >
-            {isSubmitting
-              ? 'Submitting...'
-              : documentsSubmitted
-                ? 'Documents Submitted'
-                : 'Submit Documents'}
-          </button>
+            {isSubmitting ? (
+              <>
+                Submitting...
+                <FaSpinner className="h-3 w-3 animate-spin" />
+              </>
+            ) : documentsSubmitted ? (
+              <>
+                Documents Submitted
+                <FaCheckCircle className="h-3 w-3 transition-transform duration-300 group-hover:scale-110" />
+              </>
+            ) : (
+              <>
+                Submit Documents
+                <FaPaperPlane className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+              </>
+            )}
+          </Button>
         </div>
       </Form>
 

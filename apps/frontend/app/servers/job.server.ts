@@ -1,6 +1,6 @@
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import { and, desc, eq, ilike, inArray, isNull, not, or, sql } from 'drizzle-orm';
-import { Job, JobApplication, JobCardData, JobFilter } from '~/types/Job';
+import { Job, JobApplication, JobCardData, JobFilter } from '@mawaheb/db/types';
 import {
   jobApplicationsTable,
   jobCategoriesTable,
@@ -15,9 +15,9 @@ import {
   freelancerSkillsTable,
   freelancerLanguagesTable,
   languagesTable,
-} from '../db/drizzle/schemas/schema';
-import { /*  Freelancer, */ JobCategory } from '../types/User';
-import { JobApplicationStatus, JobStatus, ExperienceLevel } from '~/types/enums';
+} from '@mawaheb/db';
+import { /*  Freelancer, */ JobCategory } from '@mawaheb/db/types';
+import { JobApplicationStatus, JobStatus, ExperienceLevel } from '@mawaheb/db/enums';
 import { getUser, getUserIdFromFreelancerId } from './user.server';
 
 export async function getAllJobCategories(): Promise<JobCategory[]> {
@@ -734,9 +734,9 @@ export async function getJobRecommendations(
 }
 
 // ✅ Get All Jobs (No Restrictions)
-export async function getAllJobs() {
+export async function getAllJobs(limit?: number, offset?: number) {
   // Query to select all jobs that are active even if the freelancer applied
-  const jobs = await db
+  const query = db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
@@ -764,13 +764,19 @@ export async function getAllJobs() {
     )
     .orderBy(desc(jobsTable.createdAt));
 
+  // Apply pagination if provided
+  if (limit !== undefined && offset !== undefined) {
+    query.limit(limit).offset(offset);
+  }
+
+  const jobs = await query;
   return jobs;
 }
 
 // ✅ Get My Jobs (Jobs Freelancer Applied To)
-export async function getMyJobs(freelancerId: number) {
+export async function getMyJobs(freelancerId: number, limit?: number) {
   // Query to select all jobs that the freelancer has applied to
-  const jobs = await db
+  const query = db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
@@ -796,6 +802,12 @@ export async function getMyJobs(freelancerId: number) {
     )
     .orderBy(desc(jobsTable.createdAt));
 
+  // Apply limit if provided
+  if (limit !== undefined) {
+    query.limit(limit);
+  }
+
+  const jobs = await query;
   return jobs;
 }
 
@@ -1361,29 +1373,55 @@ export async function updateJobApplicationStatus(
  * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
  *
  */
-export async function fetchJobsWithApplications(employerId: number): Promise<JobCardData[]> {
-  const jobs = await getEmployerJobs(employerId);
-  return Promise.all(
-    jobs.map(async job => {
-      const applications = await fetchJobApplications(job.id);
-      return {
-        job: {
-          ...job,
-          // Convert Date objects to strings for JSON serialization
-          createdAt: job.createdAt instanceof Date ? job.createdAt : new Date(job.createdAt),
-          fulfilledAt: job.fulfilledAt
-            ? job.fulfilledAt instanceof Date
-              ? job.fulfilledAt
-              : new Date(job.fulfilledAt)
-            : null,
-        },
-        applications: applications,
-        interviewedCount: applications.filter(
-          app => app.status === JobApplicationStatus.Shortlisted
-        ).length,
-      };
+export async function fetchJobsWithApplications(
+  employerId: number,
+  page: number = 1,
+  limit: number = 10,
+  statusFilter: string = 'all'
+) {
+  const offset = (page - 1) * limit;
+
+  // Build the where clause
+  const whereClause =
+    statusFilter === 'all'
+      ? eq(jobsTable.employerId, employerId)
+      : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
+
+  // First, get total count of jobs with the filter
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(jobsTable)
+    .where(whereClause);
+
+  // Then fetch paginated jobs with their applications
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      budget: jobsTable.budget,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      experienceLevel: jobsTable.experienceLevel,
+      createdAt: jobsTable.createdAt,
+      status: jobsTable.status,
+      employerId: jobsTable.employerId,
+      jobCategoryId: jobsTable.jobCategoryId,
+      fulfilledAt: jobsTable.fulfilledAt,
     })
-  );
+    .from(jobsTable)
+    .where(whereClause)
+    .orderBy(desc(jobsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    jobs,
+    totalCount: count,
+    totalPages: Math.ceil(count / limit),
+    currentPage: page,
+  };
 }
 
 /**

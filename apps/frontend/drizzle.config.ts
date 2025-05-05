@@ -1,6 +1,15 @@
 import { Config, defineConfig } from 'drizzle-kit';
 import dotenv from 'dotenv';
-import { PoolConfig } from '~/types/PoolConfig';
+
+// Define our own interface for now
+interface PoolConfig {
+  PGHOST: string;
+  PGDATABASE: string;
+  PGUSER: string;
+  PGPASSWORD: string;
+  ENDPOINT_ID: string;
+}
+
 dotenv.config(); // Load .env file
 
 if (!process.env.DATABASE_URL) {
@@ -53,8 +62,9 @@ if (process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: './app/db/drizzle/schemas/schema.ts', // ✅ UPDATED PATH TO MATCH YOUR FILE LOCATION
-  out: './app/db/drizzle/migrations', // ✅ UPDATED PATH TO MATCH YOUR FILE LOCATION
+  // Use the schema from the shared package
+  schema: './node_modules/@mawaheb/db/dist/schema/schema.js',
+  out: './app/db/drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials,
   verbose: true,

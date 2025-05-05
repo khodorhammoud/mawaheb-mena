@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
-import { AccountStatus } from "~/types/enums";
-import { DataTable } from "./DataTable";
+import { Link } from '@remix-run/react';
+import { AccountStatus } from '@mawaheb/db/enums';
+import { DataTable } from './DataTable';
 
 export interface Account {
   id: number;
@@ -16,7 +16,7 @@ export interface Account {
 
 interface AccountsTableProps {
   accounts: Account[];
-  type: "Freelancer" | "Employer";
+  type: 'Freelancer' | 'Employer';
   emptyMessage?: string;
 }
 
@@ -27,23 +27,22 @@ export function AccountsTable({
 }: AccountsTableProps) {
   const columns = [
     {
-      header: "Name",
-      accessor: (acc: Account) =>
-        `${acc.account.user.firstName} ${acc.account.user.lastName}`,
-      className: "font-medium text-gray-900",
+      header: 'Name',
+      accessor: (acc: Account) => `${acc.account.user.firstName} ${acc.account.user.lastName}`,
+      className: 'font-medium text-gray-900',
     },
     {
-      header: "Email",
+      header: 'Email',
       accessor: (acc: Account) => acc.account.user.email,
     },
     {
-      header: "Status",
+      header: 'Status',
       accessor: (acc: Account) => (
         <span
           className={`inline-flex rounded-full px-2 text-xs font-semibold ${
             acc.account.accountStatus === AccountStatus.Published
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
+              ? 'bg-green-100 text-green-800'
+              : 'bg-yellow-100 text-yellow-800'
           }`}
         >
           {acc.account.accountStatus}
@@ -51,7 +50,7 @@ export function AccountsTable({
       ),
     },
     {
-      header: "Actions",
+      header: 'Actions',
       accessor: (acc: Account) => (
         <Link
           to={`/admin-dashboard/${type.toLowerCase()}/${acc.id}`}
@@ -67,7 +66,7 @@ export function AccountsTable({
     <DataTable
       columns={columns}
       data={accounts}
-      keyExtractor={(acc) => acc.id}
+      keyExtractor={acc => acc.id}
       emptyMessage={emptyMessage}
     />
   );

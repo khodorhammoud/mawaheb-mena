@@ -13,7 +13,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { Button } from '~/components/ui/button';
 import { useToast } from '~/components/hooks/use-toast';
 import { ToastAction } from '~/components/ui/toast';
-import { AccountType, AccountStatus } from '~/types/enums';
+import { AccountType, AccountStatus } from '@mawaheb/db/enums';
 
 /* --------------------------------------------------
    Adjust or remove these types as needed to match

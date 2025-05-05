@@ -1,8 +1,8 @@
-import { CertificateFormFieldType } from "~/types/User";
-import AppFormField from "~/common/form-fields";
-import FileUpload from "~/common/upload/fileUpload";
-import { useRef, useState } from "react";
-import { IoPencilSharp } from "react-icons/io5";
+import { CertificateFormFieldType } from '@mawaheb/db/types';
+import AppFormField from '~/common/form-fields';
+import FileUpload from '~/common/upload/fileUpload';
+import { useRef, useState } from 'react';
+import { IoPencilSharp } from 'react-icons/io5';
 
 interface CertificateComponentProps {
   data: CertificateFormFieldType;
@@ -16,19 +16,17 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
   onFileChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null); // Ref for hidden file input
-  const [filePreview, setFilePreview] = useState<string | null>(
-    data.attachmentUrl || null
-  ); // Track file preview
+  const [filePreview, setFilePreview] = useState<string | null>(data.attachmentUrl || null); // Track file preview
 
   // Determine file type dynamically based on the attachmentName
   const determineFileType = (fileName: string): string => {
-    const extension = fileName.split(".").pop()?.toLowerCase() || "";
-    if (["png", "jpg", "jpeg", "gif", "bmp"].includes(extension)) {
-      return "image";
-    } else if (["pdf"].includes(extension)) {
-      return "pdf";
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp'].includes(extension)) {
+      return 'image';
+    } else if (['pdf'].includes(extension)) {
+      return 'pdf';
     }
-    return "unknown"; // Fallback for unsupported file types
+    return 'unknown'; // Fallback for unsupported file types
   };
 
   const handleFileUpload = (files: File[] | null) => {
@@ -48,7 +46,7 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
     } else {
       // Reset preview and data if no file is selected
       setFilePreview(null);
-      onTextChange({ ...data, attachmentName: "", attachmentUrl: "" });
+      onTextChange({ ...data, attachmentName: '', attachmentUrl: '' });
     }
   };
 
@@ -58,16 +56,16 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
   };
 
   const renderFilePreview = () => {
-    const fileType = determineFileType(data.attachmentName || "");
-    if (fileType === "image" && data.attachmentUrl) {
+    const fileType = determineFileType(data.attachmentName || '');
+    if (fileType === 'image' && data.attachmentUrl) {
       return (
         <img
           src={data.attachmentUrl}
-          alt={data.certificateName || "Certificate Image"}
+          alt={data.certificateName || 'Certificate Image'}
           className="h-28 rounded-xl object-cover"
         />
       );
-    } else if (fileType === "pdf" && data.attachmentUrl) {
+    } else if (fileType === 'pdf' && data.attachmentUrl) {
       return (
         <embed
           src={data.attachmentUrl}
@@ -111,11 +109,7 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
             ref={fileInputRef}
             className="hidden"
             accept="image/*,application/pdf"
-            onChange={(e) =>
-              handleFileUpload(
-                e.target.files ? Array.from(e.target.files) : null
-              )
-            }
+            onChange={e => handleFileUpload(e.target.files ? Array.from(e.target.files) : null)}
           />
         </div>
       </div>
@@ -129,9 +123,7 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           placeholder="Certificate Name"
           label="Certificate Name"
           defaultValue={data.certificateName}
-          onChange={(e) =>
-            onTextChange({ ...data, certificateName: e.target.value })
-          }
+          onChange={e => onTextChange({ ...data, certificateName: e.target.value })}
         />
 
         <AppFormField
@@ -141,7 +133,7 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           id="issuedBy[]"
           name="issuedBy[]"
           defaultValue={data.issuedBy}
-          onChange={(e) => onTextChange({ ...data, issuedBy: e.target.value })}
+          onChange={e => onTextChange({ ...data, issuedBy: e.target.value })}
         />
 
         <AppFormField
@@ -150,10 +142,8 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           name="yearIssued[]"
           placeholder="Year Issued"
           label="Year Issued"
-          defaultValue={data.yearIssued ? data.yearIssued.toString() : ""}
-          onChange={(e) =>
-            onTextChange({ ...data, yearIssued: parseInt(e.target.value) || 0 })
-          }
+          defaultValue={data.yearIssued ? data.yearIssued.toString() : ''}
+          onChange={e => onTextChange({ ...data, yearIssued: parseInt(e.target.value) || 0 })}
           className="md:w-[50%]"
         />
       </div>

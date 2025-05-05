@@ -1,6 +1,6 @@
-import { Link, Outlet, useLocation } from "@remix-run/react";
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { requireAdmin } from "~/auth/auth.server";
+import { Link, Outlet, useLocation } from '@remix-run/react';
+import { LoaderFunctionArgs } from '@remix-run/node';
+import { requireAdmin } from '~/auth/auth.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireAdmin(request);
@@ -19,9 +19,9 @@ export default function AdminLayout() {
               <Link
                 to="/admin-dashboard/accounts"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname === "/admin-dashboard/accounts"
-                    ? "border-primaryColor text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                  location.pathname === '/admin-dashboard/accounts'
+                    ? 'border-primaryColor text-gray-900'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Accounts
@@ -29,9 +29,9 @@ export default function AdminLayout() {
               <Link
                 to="/admin-dashboard/jobs"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname === "/admin-dashboard/jobs"
-                    ? "border-primaryColor text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                  location.pathname === '/admin-dashboard/jobs'
+                    ? 'border-primaryColor text-gray-900'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Jobs
@@ -39,9 +39,9 @@ export default function AdminLayout() {
               <Link
                 to="/admin-dashboard/applications"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname === "/admin-dashboard/applications"
-                    ? "border-primaryColor text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                  location.pathname === '/admin-dashboard/applications'
+                    ? 'border-primaryColor text-gray-900'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Job Applications

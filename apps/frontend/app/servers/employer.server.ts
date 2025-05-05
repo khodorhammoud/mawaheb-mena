@@ -1,4 +1,4 @@
-import { db } from '../db/drizzle/connector';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   employerIndustriesTable,
@@ -9,7 +9,7 @@ import {
   languagesTable,
   userIdentificationsTable,
   attachmentsTable,
-} from '../db/drizzle/schemas/schema';
+} from '@mawaheb/db';
 import { and, eq } from 'drizzle-orm';
 import {
   Employer,
@@ -17,11 +17,11 @@ import {
   AccountSocialMediaLinks,
   Industry,
   UserAccount,
-} from '../types/User';
+} from '@mawaheb/db/types';
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
-// import { Skill } from "~/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from '~/types/enums';
+// import { Skill } from "@mawaheb/db/src/types/Skill"; // Import Job type to ensure compatibility
+import { JobStatus } from '@mawaheb/db/enums';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
 import { saveAttachments } from './cloudStorage.server';
@@ -435,35 +435,70 @@ export async function getEmployerDashboardData(request: Request) {
       throw new Error('Current user not found.');
     }
 
-    // Fetch counts for active, drafted, and closed jobs
-    const [activeJobs, draftedJobs, closedJobs] = await Promise.all([
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Active))
-        ),
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Draft))
-        ),
-      db
-        .select()
-        .from(jobsTable)
-        .where(
-          and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Closed))
-        ),
-    ]);
+    // Fetch counts for active, drafted, closed, and paused jobs
+    const [activeJobs, draftedJobs, closedJobs, pausedJobs, deletedJobs, completedJobs] =
+      await Promise.all([
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Active))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Draft))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Closed))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(eq(jobsTable.employerId, currentProfile.id), eq(jobsTable.status, JobStatus.Paused))
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(
+              eq(jobsTable.employerId, currentProfile.id),
+              eq(jobsTable.status, JobStatus.Deleted)
+            )
+          ),
+        db
+          .select()
+          .from(jobsTable)
+          .where(
+            and(
+              eq(jobsTable.employerId, currentProfile.id),
+              eq(jobsTable.status, JobStatus.Completed)
+            )
+          ),
+      ]);
 
     // Calculate the counts based on the length of the results
     const activeJobCount = activeJobs.length;
     const draftedJobCount = draftedJobs.length;
     const closedJobCount = closedJobs.length;
+    const pausedJobCount = pausedJobs.length;
+    const deletedJobCount = deletedJobs.length;
+    const completedJobCount = completedJobs.length;
 
-    // Return the job counts
-    return { activeJobCount, draftedJobCount, closedJobCount };
+    // Return the job counts and JobStatus enum values
+    return {
+      activeJobCount,
+      draftedJobCount,
+      closedJobCount,
+      pausedJobCount,
+      deletedJobCount,
+      completedJobCount,
+    };
   } catch (error) {
     console.error('Error fetching employer dashboard data:', error);
     throw error; // Re-throw the error for further handling
@@ -564,21 +599,34 @@ export async function createEmployerIdentification(
       board_resolution: boardResolutionIds.data || [],
     };
 
-    // Use upsert to either insert a new record or update the existing one
-    const result = await db
-      .insert(userIdentificationsTable)
-      .values({
-        userId,
-        attachments,
-      })
-      .onConflictDoUpdate({
-        target: [userIdentificationsTable.userId],
-        set: {
+    // Check if a record exists for this user
+    const existingRecord = await db
+      .select()
+      .from(userIdentificationsTable)
+      .where(eq(userIdentificationsTable.userId, userId));
+
+    let result;
+
+    if (existingRecord.length > 0) {
+      // Update existing record
+      result = await db
+        .update(userIdentificationsTable)
+        .set({
           attachments,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
+        })
+        .where(eq(userIdentificationsTable.userId, userId))
+        .returning();
+    } else {
+      // Insert new record
+      result = await db
+        .insert(userIdentificationsTable)
+        .values({
+          userId,
+          attachments,
+        })
+        .returning();
+    }
 
     return { success: true, data: result[0] };
   } catch (error) {

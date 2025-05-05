@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEarthAmericas,
-  faBrain,
-  faPalette,
-} from "@fortawesome/free-solid-svg-icons";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEarthAmericas, faBrain, faPalette } from '@fortawesome/free-solid-svg-icons';
 
 const Topic = () => {
   // State to manage which <em> element is hovered
@@ -13,16 +9,15 @@ const Topic = () => {
 
   // Array of video paths corresponding to each <em> element
   const gifs = [
-    "https://www.w3schools.com/html/mov_bbb.mp4",
-    "https://www.w3schools.com/html/mov_bbb.mp4",
-    "https://www.w3schools.com/html/mov_bbb.mp4",
+    'https://www.w3schools.com/html/mov_bbb.mp4',
+    'https://www.w3schools.com/html/mov_bbb.mp4',
+    'https://www.w3schools.com/html/mov_bbb.mp4',
   ];
 
   // Determine the text color based on hover state
-  const textColorClass = hoveredIndex !== null ? "text-white " : "text-black";
+  const textColorClass = hoveredIndex !== null ? 'text-white ' : 'text-black';
 
-  const isHovering =
-    hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2;
+  const isHovering = hoveredIndex === 0 || hoveredIndex === 1 || hoveredIndex === 2;
   return (
     <div className="relative mt-20 pb-12 pt-20 text-center overflow-hidden">
       {/* Animation of fading in and out */}
@@ -43,32 +38,23 @@ const Topic = () => {
         )}
       </AnimatePresence>
       <div className={`relative z-10 max-w-xl mx-auto ${textColorClass}`}>
-        <h2 className="font-['BespokeSerif-Light'] font-bold text-md mb-1">
-          EXPLORE TALENT HUB
-        </h2>
+        <h2 className="font-['BespokeSerif-Light'] font-bold text-md mb-1">EXPLORE TALENT HUB</h2>
         <h1 className="font-['Switzer-Regular'] text-5xl leading-snug font-semibold">
-          Where The{" "}
+          Where The{' '}
           <div className="inline">
             {/* Hovering code ⬇️ */}
             <em
               onMouseEnter={() => setHoveredIndex(0)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                isHovering ? "border-white" : "border-primaryColor"
-              } ${isHovering ? "text-white" : "text-primaryColor"}`}
+                isHovering ? 'border-white' : 'border-primaryColor'
+              } ${isHovering ? 'text-white' : 'text-primaryColor'}`}
             >
               Realms
             </em>
             {/* icon 1 ⬇️ */}
-            <span
-              className={`mx-3 px-4 rounded-[25px] ${
-                isHovering ? "bg-white pb-2" : ""
-              }`}
-            >
-              <FontAwesomeIcon
-                className="text-4xl text-primaryColor"
-                icon={faEarthAmericas}
-              />
+            <span className={`mx-3 px-4 rounded-[25px] ${isHovering ? 'bg-white pb-2' : ''}`}>
+              <FontAwesomeIcon className="text-4xl text-primaryColor" icon={faEarthAmericas} />
             </span>
           </div>
           Of {/* Hovering code ⬇️ */}
@@ -77,21 +63,14 @@ const Topic = () => {
               onMouseEnter={() => setHoveredIndex(1)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                isHovering ? "border-white" : "border-primaryColor"
-              } ${isHovering ? "text-white" : "text-primaryColor"}`}
+                isHovering ? 'border-white' : 'border-primaryColor'
+              } ${isHovering ? 'text-white' : 'text-primaryColor'}`}
             >
               Skill
             </em>
             {/* icon 2 ⬇️ */}
-            <span
-              className={`mx-3 px-4 rounded-[25px] ${
-                isHovering ? "bg-white pb-2" : ""
-              }`}
-            >
-              <FontAwesomeIcon
-                className="text-4xl text-primaryColor"
-                icon={faBrain}
-              />
+            <span className={`mx-3 px-4 rounded-[25px] ${isHovering ? 'bg-white pb-2' : ''}`}>
+              <FontAwesomeIcon className="text-4xl text-primaryColor" icon={faBrain} />
             </span>
           </div>
           And {/* Hovering code ⬇️ */}
@@ -100,26 +79,19 @@ const Topic = () => {
               onMouseEnter={() => setHoveredIndex(2)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`cursor-pointer border-b-4 ${
-                isHovering ? "border-white" : "border-primaryColor"
-              } ${isHovering ? "text-white" : "text-primaryColor"}`}
+                isHovering ? 'border-white' : 'border-primaryColor'
+              } ${isHovering ? 'text-white' : 'text-primaryColor'}`}
             >
               Creativity
             </em>
             {/* icon 3 ⬇️ */}
-            <span
-              className={`mx-3 px-4 rounded-[25px] ${
-                isHovering ? "bg-white pb-2" : ""
-              }`}
-            >
-              <FontAwesomeIcon
-                className="text-4xl text-primaryColor"
-                icon={faPalette}
-              />
+            <span className={`mx-3 px-4 rounded-[25px] ${isHovering ? 'bg-white pb-2' : ''}`}>
+              <FontAwesomeIcon className="text-4xl text-primaryColor" icon={faPalette} />
             </span>
           </div>
           Converge To Craft Jobs Your Clients Adore
         </h1>
-        <button className="gradient-box hover:text-white hover:rounded-[10px] bg-primaryColor text-white not-active-gradient pt-2 pb-3 px-4 mt-4">
+        <button className="gradient-box hover:text-white hover:rounded-[10px] bg-primaryColor text-white not-active-gradient py-2 px-4 mt-4 rounded-xl">
           Join our team
         </button>
       </div>

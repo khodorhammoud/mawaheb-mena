@@ -4,10 +4,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { TimePicker } from "~/components/ui/time-picker";
-import type { TimesheetEntry, EntryPopup } from "../../../types/Timesheet";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { TimePicker } from '~/components/ui/time-picker';
+import type { TimesheetEntry, EntryPopup } from '@mawaheb/db/types';
 
 interface TimeEntryDialogProps {
   popup: EntryPopup;
@@ -27,10 +27,10 @@ export function TimeEntryDialog({
   onClose,
 }: TimeEntryDialogProps) {
   return (
-    <Dialog open={popup.isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={popup.isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="bg-white" aria-describedby="time-entry-dialog">
         <DialogHeader>
-          <DialogTitle>{popup.isEdit ? "Edit Entry" : "Add Entry"}</DialogTitle>
+          <DialogTitle>{popup.isEdit ? 'Edit Entry' : 'Add Entry'}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-4">
           <label htmlFor="startTime" className="block">
@@ -38,7 +38,7 @@ export function TimeEntryDialog({
             <TimePicker
               date={new Date(Number(formData.startTime))}
               timeFields="hm"
-              setDate={(date) =>
+              setDate={date =>
                 setFormData({
                   ...formData,
                   startTime: date.getTime() || new Date().getTime(),
@@ -51,7 +51,7 @@ export function TimeEntryDialog({
             <TimePicker
               date={new Date(Number(formData.endTime))}
               timeFields="hm"
-              setDate={(date) =>
+              setDate={date =>
                 setFormData({
                   ...formData,
                   endTime: date.getTime() || new Date().getTime(),
@@ -64,7 +64,7 @@ export function TimeEntryDialog({
             <input
               type="text"
               value={formData.description}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({
                   ...formData,
                   description: e.target.value,

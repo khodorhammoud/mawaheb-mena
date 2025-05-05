@@ -1,7 +1,8 @@
-import { useLoaderData } from "@remix-run/react";
-import JobForm from "~/common/job-form/JobForm";
-import { JobCategory } from "~/types/User";
-import { Skill } from "~/types/Skill";
+import { useLoaderData } from '@remix-run/react';
+import JobForm from '~/common/job-form/JobForm';
+import { JobCategory } from '@mawaheb/db/types';
+import { Skill } from '@mawaheb/db/types';
+import { ExperienceLevel } from '@mawaheb/db/enums';
 
 interface LoaderData {
   job: {
@@ -13,7 +14,7 @@ interface LoaderData {
     requiredSkills: Skill[];
     projectType: string;
     budget: number;
-    experienceLevel: string;
+    experienceLevel: ExperienceLevel;
     jobCategoryId: number | null;
   };
   jobCategories: JobCategory[];

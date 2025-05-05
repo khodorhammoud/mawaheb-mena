@@ -1,13 +1,10 @@
-import SignUpFreelancerPage from "./Signup";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import {
-  generateVerificationToken,
-  getProfileInfo,
-} from "../../servers/user.server";
-import { RegistrationError } from "../../common/errors/UserError";
-import { sendEmail } from "../../servers/emails/emailSender.server";
-import { authenticator } from "../../auth/auth.server";
-import { Freelancer } from "../../types/User";
+import SignUpFreelancerPage from './Signup';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
+import { RegistrationError } from '../../common/errors/UserError';
+import { sendEmail } from '../../servers/emails/emailSender.server';
+import { authenticator } from '../../auth/auth.server';
+import { Freelancer } from '@mawaheb/db/types';
 
 export async function action({ request }: ActionFunctionArgs) {
   let newFreelancer: Freelancer | null = null;
@@ -16,25 +13,25 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.clone().formData();
 
     // Extract necessary fields
-    const termsAccepted = formData.get("termsAccepted");
-    const email = formData.get("email");
-    const firstName = formData.get("firstName");
-    const lastName = formData.get("lastName");
+    const termsAccepted = formData.get('termsAccepted');
+    const email = formData.get('email');
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
 
     // Backend validation for terms acceptance
-    if (!termsAccepted || termsAccepted !== "on") {
+    if (!termsAccepted || termsAccepted !== 'on') {
       return Response.json(
         {
           success: false,
           error: {
-            message: "You must accept the terms and conditions to proceed.",
+            message: 'You must accept the terms and conditions to proceed.',
           },
         },
         { status: 400 }
       );
     }
 
-    const userId = await authenticator.authenticate("register", request);
+    const userId = await authenticator.authenticate('register', request);
 
     newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
 
@@ -43,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
         {
           success: false,
           error: {
-            message: "Failed to register user. Please try again later.",
+            message: 'Failed to register user. Please try again later.',
           },
         },
         { status: 500 }
@@ -52,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const verificationToken = await generateVerificationToken(userId);
     await sendEmail({
-      type: "accountVerification",
+      type: 'accountVerification',
       email: email as string,
       name: (firstName || lastName) as string,
       data: {
@@ -63,14 +60,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return Response.json({ success: true, newFreelancer });
   } catch (error) {
-    if (
-      error instanceof RegistrationError &&
-      error.code === "Email already exists"
-    ) {
+    if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(
         {
           success: false,
-          error: { message: "The email address is already registered." },
+          error: { message: 'The email address is already registered.' },
         },
         { status: 400 }
       );
@@ -80,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         success: false,
         error: {
-          message: "An unexpected error occurred. Please try again later.",
+          message: 'An unexpected error occurred. Please try again later.',
         },
       },
       { status: 500 }
@@ -92,7 +86,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request);
 
   if (user) {
-    return Response.json({ redirect: "/dashboard" });
+    return Response.json({ redirect: '/dashboard' });
   }
 
   return Response.json({ success: false });
@@ -100,7 +94,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.8' }}>
       <SignUpFreelancerPage />
     </div>
   );

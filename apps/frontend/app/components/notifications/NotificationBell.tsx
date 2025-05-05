@@ -1,8 +1,11 @@
 import { Bell } from 'lucide-react';
-import { NotificationType } from '~/types/enums';
+// import { NotificationType } from '@mawaheb/db/enums';
+import { NotificationType } from '@mawaheb/db/enums';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Link } from '@remix-run/react';
+import { useNotifications } from '~/context/NotificationContext';
+import { useEffect } from 'react';
 
 interface Notification {
   id: number;
@@ -18,10 +21,41 @@ interface NotificationBellProps {
   onNotificationClick: (notificationId: number) => void;
 }
 
-export function NotificationBell({ notifications, onNotificationClick }: NotificationBellProps) {
+export function NotificationBell({
+  notifications: propNotifications,
+  onNotificationClick,
+}: NotificationBellProps) {
+  // Get notifications from context (for real-time updates)
+  const { notifications: contextNotifications, refreshNotifications } = useNotifications();
+
+  // Decide which notifications to use (prefer context if available)
+  const unsortedNotifications =
+    contextNotifications.length > 0 ? contextNotifications : propNotifications;
+
+  // Sort notifications by date, newest first
+  const notifications = [...unsortedNotifications].sort((a, b) => {
+    // Convert to dates if they're strings
+    const dateA = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
+    const dateB = typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
+    // Compare timestamps (newest first)
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  // Refresh notifications on mount
+  useEffect(() => {
+    refreshNotifications();
+  }, []);
+
+  // Calculate unread count
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  const getNotificationColor = (type: NotificationType) => {
+  // Log for debugging
+  useEffect(() => {
+    if (unreadCount > 0) {
+    }
+  }, [notifications, unreadCount]);
+
+  const getNotificationColor = (type: NotificationType | string) => {
     switch (type) {
       case NotificationType.Message:
         return 'bg-blue-500';
@@ -31,6 +65,14 @@ export function NotificationBell({ notifications, onNotificationClick }: Notific
         return 'bg-green-500';
       case NotificationType.StatusUpdate:
         return 'bg-yellow-500';
+      case 'job_completed':
+        return 'bg-blue-500';
+      case 'job_added':
+        return 'bg-green-500';
+      case 'job_started':
+        return 'bg-yellow-500';
+      case 'job_failed':
+        return 'bg-red-500';
       default:
         return 'bg-gray-500';
     }
@@ -42,8 +84,11 @@ export function NotificationBell({ notifications, onNotificationClick }: Notific
         <div className="relative inline-block cursor-pointer">
           <Bell className="w-[38px] h-[38px] text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {unreadCount}
+            <span
+              className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+              title={`${unreadCount} unread notifications`}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </div>

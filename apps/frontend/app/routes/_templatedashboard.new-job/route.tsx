@@ -1,9 +1,9 @@
 import { ActionFunctionArgs, redirect } from '@remix-run/node';
 import { createJobPosting, getAllJobCategories } from '~/servers/job.server';
 import { getCurrentProfileInfo } from '~/servers/user.server';
-import { Job } from '~/types/Job';
-import { Employer } from '~/types/User';
-import { JobStatus, AccountStatus } from '~/types/enums';
+import { Job } from '@mawaheb/db/types';
+import { Employer } from '@mawaheb/db/types';
+import { JobStatus, AccountStatus } from '@mawaheb/db/enums';
 import NewJob from './jobs/NewJob';
 import { getAllSkills } from '~/servers/skill.server';
 
