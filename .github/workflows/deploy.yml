@@ -1,0 +1,48 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_REPO: yourdockerhubuser/mena
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        # DOCKERHUB_USERNAME: your Docker Hub username
+        # DOCKERHUB_TOKEN: a Docker Hub access token (get it from Docker Hub -> Account Settings -> Security -> New Access Token)
+
+      - name: Build Frontend image
+        run: |
+          docker build -f frontend.Dockerfile -t $IMAGE_REPO:frontend-latest .
+
+      - name: Build Backend image
+        run: |
+          docker build -f backend.Dockerfile -t $IMAGE_REPO:backend-latest .
+
+      - name: Build CMS image
+        run: |
+          docker build -f cms.Dockerfile -t $IMAGE_REPO:cms-latest .
+
+      - name: Push all images
+        run: |
+          docker push $IMAGE_REPO:frontend-latest
+          docker push $IMAGE_REPO:backend-latest
+          docker push $IMAGE_REPO:cms-latest
+
+      - name: Notify VM to deploy
+        run: |
+          curl -X POST https://yourvm.domain.com/webhook \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"event": "deployed"}'
+        # DEPLOY_WEBHOOK_TOKEN: a shared secret known to both GitHub and your VM for secure webhook verification
