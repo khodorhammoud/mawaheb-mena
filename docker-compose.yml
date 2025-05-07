@@ -11,7 +11,7 @@ services:
       - NODE_ENV=production
       - FRONTEND_URL=http://localhost:5173
       - CMS_BASE_URL=http://cms:3001
-      - BACKEND_URL=http://backend:3002
+      - BACKEND_URL=http://backend:3002/api/
       - REDIS_URL=redis://redis:6379
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       # - DATABASE_URL=postgresql://mawaheb_owner:cltE5b0qUgdv@ep-still-wind-a236960h-pooler.eu-central-1.aws.neon.tech/mawaheb?sslmode=require
@@ -82,7 +82,7 @@ services:
     depends_on:
       - redis
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3002/health || exit 1']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3002/api/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
