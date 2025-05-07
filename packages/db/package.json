@@ -53,8 +53,8 @@
     }
   },
   "scripts": {
-    "build": "NODE_ENV=production tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --dts ",
-    "dev": "NODE_ENV=development tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --watch --dts ",
+    "build": "tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --dts ",
+    "dev": "tsup src/index.ts src/server.ts src/types.ts src/enums.ts --format esm,cjs --watch --dts ",
     "lint": "eslint \"src/**/*.ts*\"",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "db:generate": "drizzle-kit generate",
