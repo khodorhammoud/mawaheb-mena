@@ -1,6 +1,6 @@
-import { Authenticator } from "remix-auth";
-import { GoogleStrategy } from "remix-auth-google";
-import { sessionStorage } from "~/auth/session.server";
+import { Authenticator } from 'remix-auth';
+import { GoogleStrategy } from 'remix-auth-google';
+import { sessionStorage } from '~/auth/session.server';
 import {
   createSocialAccount,
   getProfileInfo,
@@ -8,9 +8,9 @@ import {
   registerEmployer,
   registerFreelancer,
   verifyUserAccount,
-} from "~/servers/user.server";
-import { EmployerAccountType, Provider } from "~/types/enums";
-import { Freelancer, Employer } from "~/types/User";
+} from '~/servers/user.server';
+import { EmployerAccountType, Provider } from '@mawaheb/db/enums';
+import { Freelancer, Employer } from '@mawaheb/db/types';
 
 // Create an instance of the authenticator
 export const authenticator = new Authenticator(sessionStorage);
@@ -24,16 +24,16 @@ const googleStrategyFreelancer = new GoogleStrategy(
   async ({ accessToken, refreshToken, extraParams, profile }) => {
     const googleProfile = profile;
     if (!googleProfile || !googleProfile.emails) {
-      console.error("No email found in Google profile");
-      throw new Error("No email found in Google profile");
+      console.error('No email found in Google profile');
+      throw new Error('No email found in Google profile');
     }
 
     const email = googleProfile.emails[0]?.value;
     const emailVerified = googleProfile._json.email_verified;
 
     if (!emailVerified || !email) {
-      console.error("Email not verified in Google profile");
-      throw new Error("Email not verified in Google profile");
+      console.error('Email not verified in Google profile');
+      throw new Error('Email not verified in Google profile');
     }
 
     const userProfile = await getProfileInfo({ userEmail: email });
@@ -42,7 +42,7 @@ const googleStrategyFreelancer = new GoogleStrategy(
       // 1. check if the user has a social account with the same provider and provider_account_id
       const socialAccount = await getSocialAccount({
         userId: userProfile.account.user.id,
-        provider: "google",
+        provider: 'google',
       });
       // 2. if the user has a social account, then we need to login the user
       if (socialAccount) {
@@ -51,7 +51,7 @@ const googleStrategyFreelancer = new GoogleStrategy(
       // 3. if the user does not have a social account, then we need to create a new social account and then login the user
       await createSocialAccount({
         userId: userProfile.account.user.id,
-        provider: "google",
+        provider: 'google',
         providerAccountId: googleProfile.id,
         profileUrl: googleProfile.photos[0]?.value,
         accessToken: accessToken,
@@ -75,18 +75,18 @@ const googleStrategyFreelancer = new GoogleStrategy(
         provider: Provider.SocialAccount,
       } as Freelancer & { provider: Provider });
     } catch (error) {
-      console.error("error in registerFreelancer with google strategy", error);
-      throw new Error("Failed to register user");
+      console.error('error in registerFreelancer with google strategy', error);
+      throw new Error('Failed to register user');
     }
     if (!newCreatedProfile) {
-      console.error("newCreatedProfile is null");
-      throw new Error("Failed to register user");
+      console.error('newCreatedProfile is null');
+      throw new Error('Failed to register user');
     }
     // verify user account
     await verifyUserAccount({ userId: newCreatedProfile.account.user.id });
     await createSocialAccount({
       userId: newCreatedProfile.account.user.id,
-      provider: "google",
+      provider: 'google',
       providerAccountId: googleProfile.id,
       profileUrl: googleProfile.photos[0]?.value,
       accessToken: accessToken,
@@ -108,14 +108,14 @@ const googleStrategyEmployer = new GoogleStrategy(
     const googleProfile = profile;
 
     if (!googleProfile || !googleProfile.emails) {
-      throw new Error("No email found in Google profile");
+      throw new Error('No email found in Google profile');
     }
 
     const email = googleProfile.emails[0]?.value;
     const emailVerified = googleProfile._json.email_verified;
 
     if (!emailVerified || !email) {
-      throw new Error("Email not verified in Google profile");
+      throw new Error('Email not verified in Google profile');
     }
 
     const userProfile = await getProfileInfo({ userEmail: email });
@@ -124,7 +124,7 @@ const googleStrategyEmployer = new GoogleStrategy(
       // 1. check if the user has a social account with the same provider and provider_account_id
       const socialAccount = await getSocialAccount({
         userId: userProfile.account.user.id,
-        provider: "google",
+        provider: 'google',
       });
       // 2. if the user has a social account, then we need to login the user
       if (socialAccount) {
@@ -134,7 +134,7 @@ const googleStrategyEmployer = new GoogleStrategy(
       // 3. if the user does not have a social account, then we need to create a new social account and then login the user
       await createSocialAccount({
         userId: userProfile.account.user.id,
-        provider: "google",
+        provider: 'google',
         providerAccountId: googleProfile.id,
         profileUrl: googleProfile.photos[0]?.value,
         accessToken: accessToken,
@@ -160,16 +160,16 @@ const googleStrategyEmployer = new GoogleStrategy(
       } as Employer & { provider: Provider });
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to register user");
+      throw new Error('Failed to register user');
     }
     if (!newCreatedProfile) {
-      throw new Error("Failed to register user");
+      throw new Error('Failed to register user');
     }
     // verify user account
     await verifyUserAccount({ userId: newCreatedProfile.account.user.id });
     await createSocialAccount({
       userId: newCreatedProfile.account.user.id,
-      provider: "google",
+      provider: 'google',
       providerAccountId: googleProfile.id,
       profileUrl: googleProfile.photos[0]?.value,
       accessToken: accessToken,
@@ -180,5 +180,5 @@ const googleStrategyEmployer = new GoogleStrategy(
     return newCreatedProfile.account.user.id;
   }
 );
-authenticator.use(googleStrategyFreelancer, "google_freelancer");
-authenticator.use(googleStrategyEmployer, "google_employer");
+authenticator.use(googleStrategyFreelancer, 'google_freelancer');
+authenticator.use(googleStrategyEmployer, 'google_employer');

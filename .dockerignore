@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build outputs
+out
+dist
+build
+.keystone
+.next
+.remix
+
+# Testing
+coverage
+.nyc_output
+
+# Temp files
+.DS_Store
+.env
+.env.local
+.env.*.local
+*.log
+*.tmp
+*.temp
+
+# Development tools
+.vscode
+.idea
+*.sublime-*
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*
+
+# Logs
+logs
+*.log 

@@ -1,13 +1,21 @@
-import { hash, compare } from "bcrypt-ts";
-import { db } from "../db/drizzle/connector";
+import { hash, compare } from 'bcrypt-ts';
+import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
   employersTable,
+  exitFeedbackTable,
+  freelancerLanguagesTable,
   freelancersTable,
+  jobApplicationsTable,
+  skillsTable,
+  timesheetEntriesTable,
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
-} from "../db/drizzle/schemas/schema";
+  freelancerSkillsTable,
+  languagesTable,
+  jobsTable,
+} from '@mawaheb/db';
 import {
   // LoggedInUser,
   User,
@@ -16,12 +24,20 @@ import {
   UserAccount,
   PortfolioFormFieldType,
   SocialAccount,
-} from "../types/User";
-import { and, eq /* lt, gte, ne */ } from "drizzle-orm";
-import { RegistrationError, ErrorCode } from "../common/errors/UserError";
-import { AccountStatus, AccountType, Provider } from "../types/enums";
+} from '@mawaheb/db/types';
+import { and, eq, isNull, or, inArray } from 'drizzle-orm';
+
+import { RegistrationError, ErrorCode } from '../common/errors/UserError';
+import {
+  AccountStatus,
+  AccountType,
+  Provider,
+  JobStatus,
+  JobApplicationStatus,
+} from '@mawaheb/db/enums';
+
 // import { LoaderFunctionArgs } from "@remix-run/node";
-import { authenticator } from "../auth/auth.server";
+import { authenticator } from '../auth/auth.server';
 
 /****************************************************************
  *                                                              *
@@ -43,25 +59,19 @@ export async function getUser(
 ): Promise<User | null> {
   let user: User = null;
   if (userId) {
-    const userRes = await db
-      .select()
-      .from(UsersTable)
-      .where(eq(UsersTable.id, userId));
+    const userRes = await db.select().from(UsersTable).where(eq(UsersTable.id, userId));
     if (userRes[0]) {
       user = userRes[0] as User;
     }
   } else if (userEmail) {
     userEmail = userEmail.toLowerCase();
     try {
-      const userRes = await db
-        .select()
-        .from(UsersTable)
-        .where(eq(UsersTable.email, userEmail));
+      const userRes = await db.select().from(UsersTable).where(eq(UsersTable.email, userEmail));
       if (userRes.length > 0) {
         user = userRes[0] as User;
       }
     } catch (error) {
-      console.error("error getting user with userEmail", error);
+      console.error('error getting user with userEmail', error);
     }
   }
   if (!user) return null;
@@ -76,10 +86,7 @@ export async function getUser(
  * @returns User | null : the current user from the session or null if the user is not logged in
  */
 
-export async function getCurrentUser(
-  request: Request,
-  withPassword = false
-): Promise<User | null> {
+export async function getCurrentUser(request: Request, withPassword = false): Promise<User | null> {
   const userId = await authenticator.isAuthenticated(request);
   if (!userId) return null;
   const currentUser = await getUser({ userId }, withPassword);
@@ -94,20 +101,13 @@ export async function getCurrentUser(
  * @returns UserAccount | null: the user account with the given id or null if the account does not exist
  */
 export async function getUserAccountInfo(
-  {
-    accountId,
-    userId,
-    userEmail,
-  }: { accountId?: number; userId?: number; userEmail?: string },
+  { accountId, userId, userEmail }: { accountId?: number; userId?: number; userEmail?: string },
   withPassword = false
 ): Promise<UserAccount | null> {
   let user: User = null;
   let account = null;
   if (accountId) {
-    account = await db
-      .select()
-      .from(accountsTable)
-      .where(eq(accountsTable.id, accountId));
+    account = await db.select().from(accountsTable).where(eq(accountsTable.id, accountId));
     if (account.length === 0) return null;
     user = await getUser({ userId: account[0].userId }, withPassword);
     if (!user) return null;
@@ -116,10 +116,7 @@ export async function getUserAccountInfo(
   if (userId || userEmail) {
     user = await getUser({ userId, userEmail }, withPassword);
     if (!user) return null;
-    account = await db
-      .select()
-      .from(accountsTable)
-      .where(eq(accountsTable.userId, user.id));
+    account = await db.select().from(accountsTable).where(eq(accountsTable.userId, user.id));
 
     if (account.length === 0) return null;
   }
@@ -131,13 +128,8 @@ export async function getUserAccountInfo(
  * @param slug : the slug of the account to get the type for
  * @returns UserAccount | null: the account with the given slug or null if the account does not exist
  */
-export async function getAccountBySlug(
-  slug: string
-): Promise<UserAccount | null> {
-  const account = await db
-    .select()
-    .from(accountsTable)
-    .where(eq(accountsTable.slug, slug));
+export async function getAccountBySlug(slug: string): Promise<UserAccount | null> {
+  const account = await db.select().from(accountsTable).where(eq(accountsTable.slug, slug));
   if (account.length === 0) return null;
   return account[0] as unknown as UserAccount;
 }
@@ -148,18 +140,13 @@ export async function getAccountBySlug(
  * @param withPassword : boolean to determine if the password hash should be included in the response
  * @returns UserAccount | null: the current user account info from the session or null if the user is not logged in
  */
-
-let currentAccount: UserAccount = null;
 export async function getCurrentUserAccountInfo(
   request: Request,
   withPassword = false
 ): Promise<UserAccount | null> {
-  if (!currentAccount) {
-    const user = await getCurrentUser(request, withPassword);
-    if (!user) return null;
-    currentAccount = await getUserAccountInfo({ userId: user.id });
-  }
-  return currentAccount;
+  const user = await getCurrentUser(request, withPassword);
+  if (!user) return null;
+  return await getUserAccountInfo({ userId: user.id });
 }
 
 /**
@@ -186,11 +173,7 @@ export async function getProfileInfo(
   let freelancer = null;
 
   // if the  userId, userEmail, or accountId are provided, get the full info from the user/account
-  if (
-    "userId" in identifier ||
-    "userEmail" in identifier ||
-    "accountId" in identifier
-  ) {
+  if ('userId' in identifier || 'userEmail' in identifier || 'accountId' in identifier) {
     account = await getUserAccountInfo(identifier);
     if (!account) return null;
     // get account type
@@ -246,11 +229,9 @@ export async function getProfileInfoByAccountId(accountId: number) {
  * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
  */
 
-export async function getUserAccountType(
-  userId: number
-): Promise<AccountType | null> {
+export async function getUserAccountType(userId: number): Promise<AccountType | null> {
   const user = await getUser({ userId });
-  if (user?.role === "admin") {
+  if (user?.role === 'admin') {
     return AccountType.Admin;
   }
 
@@ -265,7 +246,7 @@ export async function getUserAccountType(
 }
 
 export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
-  console.warn("using isUserOnboarded_Depricated", user);
+  console.warn('using isUserOnboarded_Depricated', user);
   return null;
   // const users = await db
   //   .select()
@@ -285,7 +266,7 @@ export async function isUserOnboarded_Depricated(user: User): Promise<boolean> {
 export async function getUserIdFromEmployerId_Depricated(
   employerId: number
 ): Promise<number | null> {
-  console.warn("using getUserIdFromEmployerId_Depricated", employerId);
+  console.warn('using getUserIdFromEmployerId_Depricated', employerId);
   return null;
   // // join the employers table with the accounts table to get the userId
   // const result = await db
@@ -302,10 +283,7 @@ export async function getUserIdFromEmployerId_Depricated(
  * @param freelancerId : the id of the freelancer to get the userId for
  * @returns number: the userId of the freelancer
  */
-
-export async function getUserIdFromFreelancerId(
-  freelancerId: number
-): Promise<number | null> {
+export async function getUserIdFromFreelancerId(freelancerId: number): Promise<number | null> {
   // join the freelancers table with the accounts table to get the userId
   const result = await db
     .select({ userId: accountsTable.userId })
@@ -321,9 +299,7 @@ export async function getUserIdFromFreelancerId(
  * @param userId : the id of the user to get the freelancerId for
  * @returns number: the freelancerId of the user
  */
-export async function getFreelancerIdFromUserId(
-  userId: number
-): Promise<number | null> {
+export async function getFreelancerIdFromUserId(userId: number): Promise<number | null> {
   // left join freelancers table with accounts table left join with users table on userId
   const result = await db
     .select({ freelancerId: freelancersTable.id })
@@ -339,9 +315,7 @@ export async function getFreelancerIdFromUserId(
  * @param userId : the id of the user to get the employerId for
  * @returns number: the employerId of the user
  */
-export async function getEmployerIdFromUserId(
-  userId: number
-): Promise<number | null> {
+export async function getEmployerIdFromUserId(userId: number): Promise<number | null> {
   const result = await db
     .select({ employerId: employersTable.id })
     .from(employersTable)
@@ -354,7 +328,7 @@ export async function getEmployerIdFromUserId(
 export async function getCurrentEmployerAccountInfo_Depricated(
   request: Request
 ): Promise<Employer | null> {
-  console.warn("using getCurrentEmployerAccountInfo_Depricated", request);
+  console.warn('using getCurrentEmployerAccountInfo_Depricated', request);
   return null;
   // const user = await getCurrentUser(request);
   // const employer = await db
@@ -371,9 +345,7 @@ export async function getCurrentEmployerAccountInfo_Depricated(
  * check if the current user is an employer or a freelancer
  * @returns string: the account type of the user, or null if the user does not exist or is not an employee or freelancer
  */
-export async function getCurrentUserAccountType(
-  request: Request
-): Promise<AccountType | null> {
+export async function getCurrentUserAccountType(request: Request): Promise<AccountType | null> {
   // get the current user id from the session
   const currentUser = await getCurrentUser(request);
   if (!currentUser) return null;
@@ -399,7 +371,7 @@ export async function registerEmployer({
   if (!employerAccountType || !account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration"
+      'Missing required fields for registration'
     );
 
   const { firstName, lastName, email, password } = account.user;
@@ -443,14 +415,11 @@ export async function registerEmployer({
  * @param lastName : the last name of the account
  * @returns string: the newly created slug
  */
-export async function createAccountSlug(
-  firstName: string,
-  lastName: string
-): Promise<string> {
+export async function createAccountSlug(firstName: string, lastName: string): Promise<string> {
   let slug = `${firstName}-${lastName}`;
-  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   // remove any trailing hyphens
-  slug = slug.replace(/-+$/, "");
+  slug = slug.replace(/-+$/, '');
   // if the slug is longer than 60 characters, truncate it
   if (slug.length > 60) {
     slug = slug.substring(0, 60);
@@ -458,14 +427,11 @@ export async function createAccountSlug(
   // if the slug already exists, add a random number to the end of the slug
   // failsafe: this should never happen, but if it does, we don't want to get stuck in an infinite loop
   let counter = 0;
-  while (
-    (await db.select().from(accountsTable).where(eq(accountsTable.slug, slug)))
-      .length > 0
-  ) {
+  while ((await db.select().from(accountsTable).where(eq(accountsTable.slug, slug))).length > 0) {
     slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
     counter++;
     if (counter > 1000) {
-      throw new Error("Failed to create a unique slug for the account");
+      throw new Error('Failed to create a unique slug for the account');
     }
   }
   return slug;
@@ -483,7 +449,7 @@ export async function registerFreelancer({
   if (!account.user)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration"
+      'Missing required fields for registration'
     );
 
   const { firstName, lastName, email, password } = account.user;
@@ -543,7 +509,7 @@ export async function createUserAccount(
     if (!userInfo)
       throw new RegistrationError(
         ErrorCode.MISSING_FIELDS,
-        "Missing required fields for registration: userInfo"
+        'Missing required fields for registration: userInfo'
       );
     userInfo.provider = provider;
     const newUser = await registerUser(userInfo);
@@ -566,14 +532,11 @@ export async function createUserAccount(
   if (!user)
     throw new RegistrationError(
       ErrorCode.INTERNAL_ERROR,
-      "Failed to get user after creating account"
+      'Failed to get user after creating account'
     );
   const slug = await createAccountSlug(user.firstName, user.lastName);
   // insert the slug into the freelancers table
-  await db
-    .update(accountsTable)
-    .set({ slug })
-    .where(eq(accountsTable.id, result[0].id));
+  await db.update(accountsTable).set({ slug }).where(eq(accountsTable.id, result[0].id));
   return result[0];
 }
 
@@ -592,16 +555,13 @@ export async function registerUser({
   if (!password && provider === Provider.Credentials)
     throw new RegistrationError(
       ErrorCode.MISSING_FIELDS,
-      "Missing required fields for registration: password"
+      'Missing required fields for registration: password'
     );
 
   // check if user exists
   const existingUsers = await getUser({ userEmail: email });
   if (existingUsers)
-    throw new RegistrationError(
-      ErrorCode.EMAIL_ALREADY_EXISTS,
-      "Email already exists"
-    );
+    throw new RegistrationError(ErrorCode.EMAIL_ALREADY_EXISTS, 'Email already exists');
 
   type NewUser = typeof UsersTable.$inferInsert;
   let newUser: NewUser;
@@ -629,10 +589,7 @@ export async function registerUser({
   }
 
   // insert user
-  const result = (await db
-    .insert(UsersTable)
-    .values(newUser)
-    .returning()) as unknown as User;
+  const result = (await db.insert(UsersTable).values(newUser).returning()) as unknown as User;
   return result[0];
 }
 
@@ -642,10 +599,7 @@ export async function registerUser({
  * @param passHash: the hash to verify the password against
  * @returns boolean: true if the password is correct, false otherwise
  */
-export async function verifyPassword(
-  password: string,
-  passHash: string
-): Promise<boolean> {
+export async function verifyPassword(password: string, passHash: string): Promise<boolean> {
   return compare(password, passHash);
 }
 
@@ -656,13 +610,10 @@ export async function verifyPassword(
  * @returns string: the generated verification token
  */
 
-export async function generateVerificationToken(
-  userId: number
-): Promise<string> {
+export async function generateVerificationToken(userId: number): Promise<string> {
   // generate the token hash
   const token = await hash(
-    Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15),
+    Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     process.env.bycryptSalt ? Number(process.env.bycryptSalt) : 10
   );
   // set the expiry to be an hour from now
@@ -679,11 +630,7 @@ export async function generateVerificationToken(
 
 // Helper function to check if a user exists
 export async function checkUserExists(userId: number) {
-  return await db
-    .select()
-    .from(UsersTable)
-    .where(eq(UsersTable.id, userId))
-    .limit(1);
+  return await db.select().from(UsersTable).where(eq(UsersTable.id, userId)).limit(1);
 }
 
 export async function verifyUserAccount({ userId }: { userId: number }) {
@@ -747,7 +694,7 @@ export async function verifyUserVerificationToken(token: string) {
         message: ErrorCode.INTERNAL_ERROR,
       };
   } catch (e) {
-    console.error("Error verifying user:", e);
+    console.error('Error verifying user:', e);
     return {
       success: false,
       message: ErrorCode.INTERNAL_ERROR,
@@ -755,7 +702,7 @@ export async function verifyUserVerificationToken(token: string) {
   }
   return {
     success: true,
-    message: "User verified successfully",
+    message: 'User verified successfully',
     userId,
   };
 }
@@ -771,22 +718,24 @@ export async function verifyUserVerificationToken(token: string) {
  */
 export async function checkUserStatuses(
   userId: number,
-  checkingWhat: "isVerified" | "isOnboarded" | "accountStatus" | "accountType",
+  checkingWhat: 'isVerified' | 'isOnboarded' | 'accountStatus' | 'accountType',
   checkingFor?: AccountType | AccountStatus | boolean
 ) {
   const user = await getUser({ userId });
   if (!user) return false;
-  if (checkingWhat === "isVerified") return user.isVerified === checkingFor;
-  if (checkingWhat === "isOnboarded") return user.isOnboarded === checkingFor;
-  if (checkingWhat === "accountType" || checkingWhat === "accountStatus") {
+  if (checkingWhat === 'isVerified') return user.isVerified === checkingFor;
+  if (checkingWhat === 'isOnboarded') return user.isOnboarded === checkingFor;
+  if (checkingWhat === 'accountType' || checkingWhat === 'accountStatus') {
     const account = await getUserAccountInfo({ userId: user.id });
-    if (checkingWhat === "accountType")
-      return account.accountType === checkingFor;
-    if (checkingWhat === "accountStatus")
-      return account.accountStatus === checkingFor;
+    if (checkingWhat === 'accountType') return account.accountType === checkingFor;
+    if (checkingWhat === 'accountStatus') return account.accountStatus === checkingFor;
   }
   return false;
 }
+
+// export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+//   return await db.update(UsersTable).set({ isOnboarded }).where(eq(UsersTable.id, userId));
+// }
 
 /******************* Social Accounts *******************/
 export async function getSocialAccount({
@@ -799,12 +748,7 @@ export async function getSocialAccount({
   const socialAccount = await db
     .select()
     .from(socialAccountsTable)
-    .where(
-      and(
-        eq(socialAccountsTable.userId, userId),
-        eq(socialAccountsTable.provider, provider)
-      )
-    );
+    .where(and(eq(socialAccountsTable.userId, userId), eq(socialAccountsTable.provider, provider)));
   if (socialAccount.length === 0) return null;
   return socialAccount[0] as SocialAccount;
 }
@@ -829,6 +773,22 @@ export async function updateOnboardingStatus(userId: number) {
     .returning();
 
   return result;
+}
+
+/**
+ * Set the isOnboarded status for a user
+ * @param userId The ID of the user
+ * @param isOnboarded Boolean value to set the isOnboarded status
+ * @returns The updated user record
+ */
+export async function setOnboardedStatus(userId: number, isOnboarded: boolean) {
+  const result = await db
+    .update(UsersTable)
+    .set({ isOnboarded } as unknown)
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  return { success: true, data: result[0] };
 }
 
 export async function getUserSettings(userId: number) {
@@ -879,14 +839,389 @@ export async function updateUserSettings(userId: number, updatedSettings: any) {
   return { userUpdateResult, accountUpdateResult };
 }
 
-export async function updateUserPassword(
-  userId: number,
-  hashedPassword: string
-) {
+export async function updateUserPassword(userId: number, hashedPassword: string) {
   const result = await db
     .update(UsersTable)
     .set({ passHash: hashedPassword } as unknown)
     .where(eq(UsersTable.id, userId))
     .returning();
   return result.length > 0;
+}
+
+export async function deactivateAccount(userId: number): Promise<boolean> {
+  try {
+    const accountType = await getUserAccountType(userId);
+
+    if (!accountType) {
+      return false;
+    }
+
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Deactivated })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    if (!accountResult || accountResult.length === 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('💥 Error in deactivateAccount:', error);
+    return false;
+  }
+}
+
+export async function reactivateAccount(userId: number): Promise<boolean> {
+  try {
+    const accountType = await getUserAccountType(userId);
+
+    if (!accountType) {
+      return false;
+    }
+
+    const accountResult = await db
+      .update(accountsTable)
+      .set({ accountStatus: AccountStatus.Published })
+      .where(eq(accountsTable.userId, userId))
+      .returning({
+        id: accountsTable.id,
+        accountStatus: accountsTable.accountStatus,
+      });
+
+    if (!accountResult || accountResult.length === 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('💥 Error in reactivateAccount:', error);
+    return false;
+  }
+}
+
+/**
+ * Export user data based on account type
+ * @param userId - The ID of the user to export data for
+ * @returns A promise that resolves to the exported data
+ */
+export async function exportUserData(userId: number) {
+  // Get the user's account type
+  const accountType = await getUserAccountType(userId);
+  if (!accountType) {
+    throw new Error('User account type not found');
+  }
+
+  // Get the user's profile info
+  const profileInfo = await getProfileInfo({ userId });
+  if (!profileInfo) {
+    throw new Error('User profile not found');
+  }
+
+  // Get the user's account info
+  const accountInfo = await getUserAccountInfo({ userId });
+  if (!accountInfo) {
+    throw new Error('User account not found');
+  }
+
+  // Base data structure that's common to both types
+  const baseData = {
+    user: {
+      id: userId,
+      firstName: accountInfo.user.firstName,
+      lastName: accountInfo.user.lastName,
+      email: accountInfo.user.email,
+    },
+    account: {
+      id: accountInfo.id,
+      accountType: accountInfo.accountType,
+      country: accountInfo.country,
+      region: accountInfo.region,
+      phone: accountInfo.phone,
+      languages: accountInfo.languages,
+      preferredWorkingTimes: accountInfo.preferredWorkingTimes,
+      accountStatus: accountInfo.accountStatus,
+      isCreationComplete: accountInfo.isCreationComplete,
+      slug: accountInfo.slug,
+    },
+  };
+
+  if (accountType === AccountType.Freelancer) {
+    const freelancer = profileInfo as Freelancer;
+
+    // Get freelancer's job applications
+    const jobApplications = await db
+      .select()
+      .from(jobApplicationsTable)
+      .where(eq(jobApplicationsTable.freelancerId, freelancer.id));
+
+    // Get freelancer's timesheet entries
+    const timesheetEntries = await db
+      .select()
+      .from(timesheetEntriesTable)
+      .where(eq(timesheetEntriesTable.freelancerId, freelancer.id));
+
+    // Get freelancer's skills
+    const freelancerSkills = await db
+      .select({
+        skill: skillsTable,
+      })
+      .from(freelancerSkillsTable)
+      .leftJoin(skillsTable, eq(freelancerSkillsTable.skillId, skillsTable.id))
+      .where(eq(freelancerSkillsTable.freelancerId, freelancer.id));
+
+    // Get freelancer's languages
+    const freelancerLanguages = await db
+      .select({
+        language: languagesTable,
+      })
+      .from(freelancerLanguagesTable)
+      .leftJoin(languagesTable, eq(freelancerLanguagesTable.languageId, languagesTable.id))
+      .where(eq(freelancerLanguagesTable.freelancerId, freelancer.id));
+
+    return {
+      ...baseData,
+      freelancerDetails: {
+        id: freelancer.id,
+        accountId: freelancer.accountId,
+        fieldsOfExpertise: freelancer.fieldsOfExpertise,
+        portfolio: freelancer.portfolio,
+        workHistory: freelancer.workHistory,
+        portfolioDescription: freelancer.portfolioDescription,
+        cvLink: freelancer.cvLink,
+        videoLink: freelancer.videoLink,
+        certificates: freelancer.certificates,
+        educations: freelancer.educations,
+        yearsOfExperience: freelancer.yearsOfExperience,
+        languagesSpoken: freelancer.languagesSpoken,
+        preferredProjectTypes: freelancer.preferredProjectTypes,
+        hourlyRate: freelancer.hourlyRate,
+        compensationType: freelancer.compensationType,
+        availableForWork: freelancer.availableForWork,
+        availableFrom: freelancer.availableFrom,
+        hoursAvailableFrom: freelancer.hoursAvailableFrom,
+        hoursAvailableTo: freelancer.hoursAvailableTo,
+        jobsOpenTo: freelancer.jobsOpenTo,
+      },
+      jobApplications,
+      timesheetEntries,
+      skills: freelancerSkills.map(fs => fs.skill),
+      languages: freelancerLanguages.map(fl => fl.language),
+    };
+  } else if (accountType === AccountType.Employer) {
+    const employer = profileInfo as Employer;
+
+    // Get employer's jobs
+    const jobs = await db.select().from(jobsTable).where(eq(jobsTable.employerId, employer.id));
+
+    // Get job applications for employer's jobs
+    const jobApplications = await db
+      .select({
+        id: jobApplicationsTable.id,
+        jobId: jobApplicationsTable.jobId,
+        freelancerId: jobApplicationsTable.freelancerId,
+        status: jobApplicationsTable.status,
+        createdAt: jobApplicationsTable.createdAt,
+        jobTitle: jobsTable.title,
+        jobStatus: jobsTable.status,
+      })
+      .from(jobApplicationsTable)
+      .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+      .where(eq(jobsTable.employerId, employer.id));
+
+    return {
+      ...baseData,
+      employerDetails: {
+        id: employer.id,
+        employerAccountType: employer.employerAccountType,
+        companyName: employer.companyName,
+        employerName: employer.employerName,
+        companyEmail: employer.companyEmail,
+        industrySector: employer.industrySector,
+        yearsInBusiness: employer.yearsInBusiness,
+        companyRepName: employer.companyRepName,
+        companyRepEmail: employer.companyRepEmail,
+        companyRepPosition: employer.companyRepPosition,
+        companyRepPhone: employer.companyRepPhone,
+        taxIdNumber: employer.taxIdNumber,
+        taxIdDocumentLink: employer.taxIdDocumentLink,
+        businessLicenseLink: employer.businessLicenseLink,
+        certificationOfIncorporationLink: employer.certificationOfIncorporationLink,
+        WebsiteURL: employer.WebsiteURL,
+        socialMediaLinks: employer.socialMediaLinks,
+      },
+      jobs,
+      jobApplications,
+    };
+  }
+
+  throw new Error('Invalid account type');
+}
+
+// this is used for the deletion of the account :))
+/**
+ * Check if a user has any active jobs
+ * For freelancers: check job applications that are not completed/rejected
+ * For employers: check jobs that are not completed/closed
+ */
+export async function checkForActiveJobs(
+  userId: number
+): Promise<{ hasActiveJobs: boolean; message?: string }> {
+  try {
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
+    }
+
+    if (userAccount.accountType === AccountType.Employer) {
+      // First get the employer record
+      const employer = await db
+        .select({ id: employersTable.id })
+        .from(employersTable)
+        .where(eq(employersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!employer || employer.length === 0) {
+        throw new Error('Employer record not found');
+      }
+
+      // Check for employer's active jobs using the correct employer ID
+      const activeJobs = await db
+        .select({
+          id: jobsTable.id,
+          status: jobsTable.status,
+          title: jobsTable.title,
+        })
+        .from(jobsTable)
+        .where(
+          and(
+            eq(jobsTable.employerId, employer[0].id),
+            or(
+              eq(jobsTable.status, JobStatus.Draft),
+              eq(jobsTable.status, JobStatus.Active),
+              eq(jobsTable.status, JobStatus.Paused)
+            )
+          )
+        );
+
+      if (activeJobs.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while there is jobs postings. Please close or complete all active jobs first.',
+        };
+      }
+    } else {
+      // First get the freelancer record
+      const freelancer = await db
+        .select({ id: freelancersTable.id })
+        .from(freelancersTable)
+        .where(eq(freelancersTable.accountId, userAccount.id))
+        .limit(1);
+
+      if (!freelancer || freelancer.length === 0) {
+        throw new Error('Freelancer record not found');
+      }
+
+      // Check for freelancer's active job applications using the correct freelancer ID
+      const activeApplications = await db
+        .select({
+          id: jobApplicationsTable.id,
+          status: jobApplicationsTable.status,
+          jobId: jobApplicationsTable.jobId,
+        })
+        .from(jobApplicationsTable)
+        .where(
+          and(
+            eq(jobApplicationsTable.freelancerId, freelancer[0].id),
+            or(
+              eq(jobApplicationsTable.status, JobApplicationStatus.Pending),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Shortlisted),
+              eq(jobApplicationsTable.status, JobApplicationStatus.Approved)
+            )
+          )
+        );
+
+      if (activeApplications.length > 0) {
+        return {
+          hasActiveJobs: true,
+          message:
+            'You cannot delete your account while you have pending or active job applications. Please wait for them to be completed or withdrawn.',
+        };
+      }
+    }
+
+    return { hasActiveJobs: false };
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Request account deletion
+ * This will set the deletion_requested_at timestamp and update account status
+ */
+export async function requestAccountDeletion(
+  userId: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get the user's account
+    const userAccount = await getUserAccountInfo({ userId });
+    if (!userAccount) {
+      throw new Error('Account not found');
+    }
+
+    // Update the account status to Deleted
+    await db
+      .update(accountsTable)
+      .set({
+        accountStatus: AccountStatus.Deleted,
+      })
+      .where(eq(accountsTable.id, userAccount.id));
+
+    // Update user deletion timestamps
+    await db
+      .update(UsersTable)
+      .set({
+        deletionRequestedAt: new Date(),
+        finalDeletionAt: new Date(),
+      } as any)
+      .where(eq(UsersTable.id, userId));
+
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Save exit feedback when a user deletes their account
+ */
+export async function saveExitFeedback(userId: number, feedback: string): Promise<void> {
+  try {
+    await db.insert(exitFeedbackTable).values({
+      userId,
+      feedback,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Check if an account is deleted during login
+ */
+export async function isAccountDeleted(userId: number): Promise<boolean> {
+  const account = await db
+    .select({ status: accountsTable.accountStatus })
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, userId))
+    .limit(1);
+
+  return account.length > 0 && account[0].status === AccountStatus.Deleted;
 }

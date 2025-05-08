@@ -1,4 +1,4 @@
-import { AccountType } from "~/types/enums";
+import { AccountType } from '@mawaheb/db/enums';
 import {
   AccountBio,
   CertificateFormFieldType,
@@ -6,7 +6,8 @@ import {
   Industry,
   PortfolioFormFieldType,
   WorkHistoryFormFieldType,
-} from "~/types/User";
+  Freelancer,
+} from '@mawaheb/db/types';
 
 export type EmployerOnboardingData = {
   accountType: AccountType;
@@ -27,7 +28,7 @@ export type EmployerOnboardingData = {
 export type FreelancerOnboardingData = {
   accountType: AccountType;
   bioInfo: AccountBio;
-  currentProfile: AccountType;
+  currentProfile: Freelancer;
   about: string;
   videoLink: string;
   hourlyRate: number;
@@ -37,6 +38,8 @@ export type FreelancerOnboardingData = {
   certificates: CertificateFormFieldType[];
   educations: EducationFormFieldType[];
   workHistory: WorkHistoryFormFieldType[];
+  freelancerSkills: FreelancerSkill[];
+  freelancerLanguages: { id: number; language: string }[];
 };
 
 export interface Skill {
@@ -50,4 +53,5 @@ export interface FreelancerSkill {
   skillId: number;
   label?: string;
   yearsOfExperience: number;
+  isStarred?: boolean;
 }

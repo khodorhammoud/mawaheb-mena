@@ -1,5 +1,5 @@
-import { useLoaderData } from "@remix-run/react";
-import MainHeading from "../../common/MainHeading";
+import { useLoaderData } from '@remix-run/react';
+import MainHeading from '../../common/MainHeading';
 
 interface WhyWorkWithUs {
   title: string;

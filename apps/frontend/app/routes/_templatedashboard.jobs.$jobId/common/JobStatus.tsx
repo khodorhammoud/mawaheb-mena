@@ -1,17 +1,14 @@
-import { useState, useRef, useEffect } from "react";
-import { useFetcher } from "@remix-run/react";
-import { JobApplicationStatus } from "~/types/enums";
-import { Button } from "~/components/ui/button";
+import { useState, useRef, useEffect } from 'react';
+import { useFetcher } from '@remix-run/react';
+import { JobApplicationStatus } from '@mawaheb/db/enums';
+import { Button } from '~/components/ui/button';
 
 type StatusDropdownProps = {
   currentStatus: JobApplicationStatus;
   applicationId: number;
 };
 
-export default function StatusDropdown({
-  currentStatus,
-  applicationId,
-}: StatusDropdownProps) {
+export default function StatusDropdown({ currentStatus, applicationId }: StatusDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState(currentStatus);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -20,25 +17,22 @@ export default function StatusDropdown({
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleOutsideClick = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener('mousedown', handleOutsideClick);
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
 
   const handleStatusChange = (newStatus: JobApplicationStatus) => {
     fetcher.submit(
       { applicationId: applicationId.toString(), status: newStatus },
-      { method: "post" }
+      { method: 'post' }
     );
 
     // Optimistically update the UI
@@ -57,15 +51,15 @@ export default function StatusDropdown({
       {isOpen && (
         <div className="absolute mt-2 bg-white border rounded shadow-lg z-10">
           <ul>
-            {Object.values(JobApplicationStatus).map((statusOption) => (
+            {Object.values(JobApplicationStatus).map(statusOption => (
               <li
                 key={statusOption}
                 className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                 role="button"
                 tabIndex={0}
                 onClick={() => handleStatusChange(statusOption)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
                     handleStatusChange(statusOption);
                   }
                 }}

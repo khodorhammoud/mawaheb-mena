@@ -1,24 +1,40 @@
-import Heading from "~/common/profileView/heading/Heading";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
-import { SlBadge } from "react-icons/sl";
-import { FaDollarSign, FaFileUpload } from "react-icons/fa";
-import { AiFillStar } from "react-icons/ai";
-import { FreelancerOnboardingData } from "../types";
+import Heading from '~/common/profileView/heading/Heading';
+import { Form, useActionData, useLoaderData, useFetcher } from '@remix-run/react';
+import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { SlBadge } from 'react-icons/sl';
+import { FaDollarSign, FaFileUpload } from 'react-icons/fa';
+import { AiFillStar } from 'react-icons/ai';
+import { FreelancerOnboardingData } from '../types';
+import { Freelancer } from '~/types/User';
 
 export default function FreelancerOnboardingScreen() {
   type ActionData = {
     error?: { message: string };
   };
   const actionData = useActionData<ActionData>();
-  const { accountOnboarded } = useLoaderData<FreelancerOnboardingData>();
+  const { accountOnboarded, currentProfile, freelancerSkills, freelancerLanguages } =
+    useLoaderData<FreelancerOnboardingData>();
+  const fetcher = useFetcher();
+
+  // Create a profile object that matches what the Heading component expects
+  const profileWithSkillsAndLanguages = {
+    ...currentProfile,
+    skills:
+      freelancerSkills?.map(skill => ({
+        skillId: skill.skillId,
+        label: skill.label,
+        yearsOfExperience: skill.yearsOfExperience,
+        isStarred: skill.isStarred,
+      })) || [],
+    languages: freelancerLanguages || [],
+  };
 
   return (
-    <div className="mt-10 relative">
+    <div className="container mx-auto px-4">
       <div
         className="h-32 sm:h-36 md:h-40 w-auto sm:m-4 m-2 rounded-xl border-2 relative"
         style={{
-          background: "linear-gradient(to right, #27638a 0%, white 75%)",
+          background: 'linear-gradient(to right, #27638a 0%, white 75%)',
         }}
       >
         <div className="absolute top-4 right-4">
@@ -37,11 +53,13 @@ export default function FreelancerOnboardingScreen() {
         </div>
       </div>
 
-      <Heading />
+      <Heading profile={profileWithSkillsAndLanguages} />
+
       <div className="grid grid-cols-1 mb-4">
         {/* CV Upload */}
-        <div className="grid mb-4 grid-cols-1 gap-4 md:ml-20 md:mr-20 ml-10 mr-10">
+        <div className="grid mb-4 mt-6 grid-cols-1 gap-4 md:ml-20 md:mr-20 ml-10 mr-10">
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="file"
             cardTitle="Upload your CV"
             cardSubtitle="Upload your CV to automatically fill your profile information"
@@ -59,6 +77,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Hourly Rate */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="range"
             cardTitle="Hourly Rate"
             popupTitle="Hourly Rate"
@@ -73,6 +92,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Years of Experience */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="increment"
             cardTitle="Experience"
             popupTitle="Years of experience"
@@ -86,6 +106,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Years of Experience */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="video"
             cardTitle="Don't miss out on this opportunity to make a great first impression."
             cardSubtitle="Upload a video to introduce yourself and your business."
@@ -98,6 +119,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* About */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="textArea"
             cardTitle="About"
             cardSubtitle="Add your headline and bio
@@ -114,6 +136,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Portfolio */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Projects"
             popupTitle="Add a Project"
@@ -127,6 +150,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Work History */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Work History"
             popupTitle="Work History"
@@ -138,6 +162,7 @@ export default function FreelancerOnboardingScreen() {
           />
           {/* Certificates */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Certificates"
             cardSubtitle="Add your certifications."
@@ -151,6 +176,7 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Education */}
           <GeneralizableFormCard
+            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Education"
             cardSubtitle="Add your education and degrees."
@@ -167,11 +193,7 @@ export default function FreelancerOnboardingScreen() {
         <div className="sm:mt-6 mt-2 flex justify-end mr-24">
           {/* Form to update the user's onboard status */}
           <Form method="post">
-            <input
-              type="hidden"
-              name="target-updated"
-              value="freelancer-onboard"
-            />
+            <input type="hidden" name="target-updated" value="freelancer-onboard" />
             {/* in the switch case, use value employer-onboard */}
             <button
               type="submit"
@@ -182,9 +204,7 @@ export default function FreelancerOnboardingScreen() {
           </Form>
 
           {/* ERROR MESSAGE */}
-          {actionData?.error && (
-            <p className="text-red-500 mt-2">{actionData.error.message}</p>
-          )}
+          {actionData?.error && <p className="text-red-500 mt-2">{actionData.error.message}</p>}
         </div>
       </div>
     </div>

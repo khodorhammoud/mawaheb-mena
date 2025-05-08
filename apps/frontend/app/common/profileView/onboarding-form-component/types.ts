@@ -1,17 +1,20 @@
-import { FetcherWithComponents } from "@remix-run/react";
+import { FetcherWithComponents } from '@remix-run/react';
+import { MutableRefObject } from 'react';
+
+export type FormType =
+  | 'text'
+  | 'number'
+  | 'range'
+  | 'textArea'
+  | 'increment'
+  | 'video'
+  | 'file'
+  | 'repeatable'
+  | 'custom';
 
 export interface GeneralizableFormCardProps {
-  fetcher: FetcherWithComponents<any>; // ✅ Accept fetcher from UserProfile
-  formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
+  fetcher?: FetcherWithComponents<any>; // Make fetcher optional
+  formType: FormType;
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
@@ -20,25 +23,30 @@ export interface GeneralizableFormCardProps {
   formName: string;
   fieldName: string;
   acceptedFileTypes?: string;
+  multiple?: boolean; // Allow multiple file uploads
+  formRef?: MutableRefObject<any>; // Reference to access form methods
+
   minVal?: number;
   maxVal?: number;
   repeatableFieldName?: string;
   editable?: boolean;
   useRichText?: boolean;
-  value?: string | number | string[]; // ✅ Ensure value prop exists
+  value?: string | number | string[] | null; // ✅ Ensure value prop exists
+  showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
+  showStatusMessage?: boolean; // Add showStatusMessage property
 }
 
 export interface FilledGeneralizableFormCardProps {
   formType:
-    | "text"
-    | "number"
-    | "range"
-    | "textArea"
-    | "increment"
-    | "video"
-    | "file"
-    | "repeatable"
-    | "custom";
+    | 'text'
+    | 'number'
+    | 'range'
+    | 'textArea'
+    | 'increment'
+    | 'video'
+    | 'file'
+    | 'repeatable'
+    | 'custom';
   cardTitle: string;
   cardSubtitle?: string;
   popupTitle: string;
@@ -50,10 +58,10 @@ export interface FilledGeneralizableFormCardProps {
   maxVal?: number;
   repeatableFieldName?: string;
   repeatableInputValues: any[];
-  inputValue: string | number | File | string[];
+  inputValue: string | number | File | string[] | null;
 }
 
-export type FormStateType = number | string | File | null;
+export type FormStateType = string | number | File | null;
 
 export type RepeatableInputType = {
   [key: string]: any;
@@ -74,6 +82,7 @@ export interface FormContentProps extends GeneralizableFormCardProps {
   onSubmit: (e: React.FormEvent, formData: FormData) => void;
   fetcher: any; // Replace with proper Remix fetcher type
   showStatusMessage: boolean;
+  showLoadingOnSubmit?: boolean;
 }
 
 export interface RepeatableFieldsProps {

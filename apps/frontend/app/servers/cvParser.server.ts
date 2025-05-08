@@ -1,14 +1,15 @@
-import OpenAI from "openai";
-import * as mammoth from "mammoth";
-import fs from "fs";
-import path from "path";
+import OpenAI from 'openai';
+import * as mammoth from 'mammoth';
+import fs from 'fs';
+import path from 'path';
 // import * as pdfParse from "pdf-parse";
 // import * as pdfjslib from "pdfjs-dist";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+// import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 
 const ALLOWED_FILE_TYPES = {
-  PDF: "application/pdf",
-  WORD: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  PDF: 'application/pdf',
+  WORD: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 } as const;
 
 const MAX_FILE_SIZE = 6 * 1024 * 1024; // 6MB limit
@@ -22,30 +23,30 @@ class Pdf {
       const tokenizedText = await page.getTextContent();
 
       if (!tokenizedText?.items?.length) {
-        return "";
+        return '';
       }
 
       const pageText = tokenizedText.items
         .map((token: any) => token.str)
-        .join("")
+        .join('')
         .trim();
 
       return pageText;
     } catch (error) {
       console.error(`Error extracting text from page ${pageNo}:`, error);
-      return ""; // Return empty string for failed pages rather than breaking
+      return ''; // Return empty string for failed pages rather than breaking
     }
   }
 
   public static async getPDFText(source: ArrayBuffer): Promise<string> {
     if (!source || source.byteLength === 0) {
-      throw new Error("Invalid PDF source provided");
+      throw new Error('Invalid PDF source provided');
     }
 
     try {
       const pdf = await pdfjsLib.getDocument(source).promise;
       if (pdf.numPages === 0) {
-        throw new Error("PDF document appears to be empty");
+        throw new Error('PDF document appears to be empty');
       }
       const maxPages = Math.min(pdf.numPages, MAX_PAGES);
       const pageTextPromises = [];
@@ -53,10 +54,10 @@ class Pdf {
         pageTextPromises.push(Pdf.getPageText(pdf, pageNo));
       }
       const pageTexts = await Promise.all(pageTextPromises);
-      const combinedText = pageTexts.join(" ").trim();
+      const combinedText = pageTexts.join(' ').trim();
 
       if (!combinedText) {
-        throw new Error("No readable text found in PDF");
+        throw new Error('No readable text found in PDF');
       }
 
       return combinedText;
@@ -69,22 +70,20 @@ class Pdf {
 export async function genParseCV(file: File) {
   // Validate file existence
   if (!file) {
-    throw new Error("No file provided");
+    throw new Error('No file provided');
   }
 
   // Validate file size
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error("File too large. Maximum size is 10MB.");
+    throw new Error('File too large. Maximum size is 10MB.');
   }
   if (file.size < MIN_FILE_SIZE) {
-    throw new Error("File too small. Minimum size is 1KB.");
+    throw new Error('File too small. Minimum size is 1KB.');
   }
 
   // Check if the file type is valid
   if (!Object.values(ALLOWED_FILE_TYPES).includes(file.type as any)) {
-    throw new Error(
-      "Invalid file type. Only PDF and Word documents are accepted."
-    );
+    throw new Error('Invalid file type. Only PDF and Word documents are accepted.');
   }
 
   const MAX_RETRIES = 3;
@@ -93,7 +92,7 @@ export async function genParseCV(file: File) {
   async function parseWithRetry(attempt = 1): Promise<any> {
     try {
       if (!process.env.OPENAI_API_KEY) {
-        throw new Error("OpenAI API key not configured");
+        throw new Error('OpenAI API key not configured');
       }
 
       const client = new OpenAI({
@@ -104,15 +103,15 @@ export async function genParseCV(file: File) {
 
       if (!cvContent || cvContent.length < 50) {
         // 50 characters is a very low threshold for a CV
-        throw new Error("Insufficient content extracted from CV");
+        throw new Error('Insufficient content extracted from CV');
       }
 
       // Create completion with specific instructions
       const completion = await client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: 'gpt-4o-mini',
         messages: [
           {
-            role: "system",
+            role: 'system',
             content: `Extract the following information from the below text, which is a CV and format it as a JSON object:
           - about: A brief professional summary
           - projects: Array of {projectName, projectDescription, projectLink}
@@ -143,24 +142,22 @@ export async function genParseCV(file: File) {
 
       const response = completion.choices[0]?.message?.content;
       if (!response) {
-        throw new Error("Empty response from OpenAI");
+        throw new Error('Empty response from OpenAI');
       }
 
-      console.log("OpenAI API response:", response);
+      console.log('OpenAI API response:', response);
 
       try {
         const parsedData = JSON.parse(response);
         // Validate the structure of parsed data
         validateParsedData(parsedData);
         return parsedData;
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(`Invalid JSON response: ${error.message}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       if (attempt < MAX_RETRIES && isRetryableError(error)) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, RETRY_DELAY * attempt)
-        );
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
         return parseWithRetry(attempt + 1);
       }
       throw error;
@@ -172,25 +169,17 @@ export async function genParseCV(file: File) {
 function isRetryableError(error: any): boolean {
   // Define which errors should trigger a retry
   const retryableErrors = [
-    "rate_limit_exceeded",
-    "timeout",
-    "service_unavailable",
-    "internal_server_error",
+    'rate_limit_exceeded',
+    'timeout',
+    'service_unavailable',
+    'internal_server_error',
   ];
 
-  return retryableErrors.some((errType) =>
-    error.message?.toLowerCase().includes(errType)
-  );
+  return retryableErrors.some(errType => error.message?.toLowerCase().includes(errType));
 }
 
 function validateParsedData(data: any) {
-  const requiredFields = [
-    "about",
-    "projects",
-    "workHistory",
-    "certificates",
-    "education",
-  ];
+  const requiredFields = ['about', 'projects', 'workHistory', 'certificates', 'education'];
 
   for (const field of requiredFields) {
     if (!data[field]) {
@@ -199,27 +188,20 @@ function validateParsedData(data: any) {
   }
 
   // Validate arrays
-  if (!Array.isArray(data.projects))
-    throw new Error("Projects must be an array");
-  if (!Array.isArray(data.workHistory))
-    throw new Error("Work history must be an array");
-  if (!Array.isArray(data.certificates))
-    throw new Error("Certificates must be an array");
-  if (!Array.isArray(data.education))
-    throw new Error("Education must be an array");
+  if (!Array.isArray(data.projects)) throw new Error('Projects must be an array');
+  if (!Array.isArray(data.workHistory)) throw new Error('Work history must be an array');
+  if (!Array.isArray(data.certificates)) throw new Error('Certificates must be an array');
+  if (!Array.isArray(data.education)) throw new Error('Education must be an array');
 }
 
 async function parseFile(file: File): Promise<string> {
   // Check if the file type is valid (Word or PDF)
   const fileType = file.type;
   if (
-    fileType !== "application/pdf" &&
-    fileType !==
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    fileType !== 'application/pdf' &&
+    fileType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   ) {
-    throw new Error(
-      "Invalid file type. Only PDF and Word documents are accepted."
-    );
+    throw new Error('Invalid file type. Only PDF and Word documents are accepted.');
   }
 
   // Convert File to Buffer
@@ -227,27 +209,23 @@ async function parseFile(file: File): Promise<string> {
   const fileName = file.name;
 
   // Pass the file to the respective parsing function
-  if (fileType === "application/pdf") {
+  if (fileType === 'application/pdf') {
     return await extractTextFromPDF(fileBuffer, fileName);
   } else if (
-    fileType ===
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   ) {
     return await extractTextFromWord(fileBuffer);
   }
 
-  throw new Error("Unsupported file type.");
+  throw new Error('Unsupported file type.');
 }
 
-async function extractTextFromPDF(
-  fileBuffer: ArrayBuffer,
-  fileName: string
-): Promise<string> {
+async function extractTextFromPDF(fileBuffer: ArrayBuffer, fileName: string): Promise<string> {
   // Convert extract to a promise-based function
   let tempFilePath: string;
   try {
     // Step 1: Write the File object to a temporary location
-    const tempDir = path.join(process.cwd(), "temp/uploads"); // Temporary folder
+    const tempDir = path.join(process.cwd(), 'temp/uploads'); // Temporary folder
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }

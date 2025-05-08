@@ -1,14 +1,14 @@
-import LoginFreelancerPage from "./Login";
-import { ActionFunctionArgs, json } from "@remix-run/node";
-import { authenticator } from "../../auth/auth.server";
-import { Employer, Freelancer } from "../../types/User";
-import { createUserSession } from "../../auth/session.server";
-import { AuthorizationError } from "remix-auth";
+import LoginFreelancerPage from './Login';
+import { ActionFunctionArgs, json } from '@remix-run/node';
+import { authenticator } from '../../auth/auth.server';
+import { Employer, Freelancer } from '@mawaheb/db/types';
+import { createUserSession } from '../../auth/session.server';
+import { AuthorizationError } from 'remix-auth';
 
 export async function action({ request }: ActionFunctionArgs) {
   let profile: Employer | Freelancer = null;
   try {
-    profile = await authenticator.authenticate("login", request, {
+    profile = await authenticator.authenticate('login', request, {
       throwOnError: true,
     });
   } catch (error) {
@@ -26,17 +26,17 @@ export async function action({ request }: ActionFunctionArgs) {
       success: false,
       error: {
         code: (error as Response).status,
-        message: "unhandled error",
+        message: 'unhandled error',
       },
     });
   }
-  return await createUserSession(request, profile, "/dashboard");
+  return await createUserSession(request, profile, '/dashboard');
   // return json({ success: true });
 }
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.8' }}>
       <LoginFreelancerPage />
     </div>
   );

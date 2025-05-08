@@ -1,6 +1,4 @@
 import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
-import { SlBadge } from "react-icons/sl";
-import { FaDollarSign } from "react-icons/fa";
 
 import UserProfile from "../UserProfile";
 
@@ -36,7 +34,8 @@ export default function ApplicantSheet({
     educations: parseArray(freelancer.educations),
   };
 
-  // console.log("Freelancer Data:", freelancer);
+  // console.log("Normalized Freelancer Data:", normalizedFreelancer);
+  // console.log("Review data:", normalizedFreelancer.review);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -47,11 +46,7 @@ export default function ApplicantSheet({
         <div className="h-full overflow-y-auto overflow-x-hidden">
           <SheetHeader>
             <div className="w-full ml-6 mb-10">
-              <UserProfile
-                canEdit={false}
-                accountOnboarded={true}
-                profile={freelancer}
-              />
+              <UserProfile canEdit={false} profile={normalizedFreelancer} />
             </div>
           </SheetHeader>
         </div>

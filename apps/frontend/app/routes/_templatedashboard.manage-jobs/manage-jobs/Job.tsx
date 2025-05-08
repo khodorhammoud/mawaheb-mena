@@ -1,17 +1,20 @@
-import { JobCardData } from "~/types/Job";
-import JobDesignOne from "./JobDesignOne";
-import JobDesignTwo from "./JobDesignTwo";
-import JobDesignThree from "./JobDesignThree";
-import { useState } from "react";
-import { JobStatus } from "~/types/enums";
+import { JobCardData } from '@mawaheb/db/types';
+import JobDesignOne from './JobDesignOne';
+import JobDesignTwo from './JobDesignTwo';
+import JobDesignThree from './JobDesignThree';
+import { useState } from 'react';
+import { JobStatus } from '@mawaheb/db/enums';
 
 interface JobProps {
   data: JobCardData;
   viewMode: string;
+  userAccountStatus?: string;
 }
 
-export default function Job({ data, viewMode }: JobProps) {
+export default function Job({ data, viewMode, userAccountStatus }: JobProps) {
   const { job } = data;
+
+  // console.log('Job component: User account status:', userAccountStatus);
 
   // State to manage job status, including "close" as a selectable option
   const [jobStatus, setJobStatus] = useState<JobStatus>(
@@ -27,7 +30,7 @@ export default function Job({ data, viewMode }: JobProps) {
   }
 
   switch (viewMode) {
-    case "one":
+    case 'one':
       return (
         <>
           {/* Show JobDesignOne on md and larger screens */}
@@ -36,6 +39,7 @@ export default function Job({ data, viewMode }: JobProps) {
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
+              userAccountStatus={userAccountStatus}
             />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
@@ -44,6 +48,7 @@ export default function Job({ data, viewMode }: JobProps) {
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
+              userAccountStatus={userAccountStatus}
             />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
@@ -52,12 +57,13 @@ export default function Job({ data, viewMode }: JobProps) {
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
+              userAccountStatus={userAccountStatus}
             />
           </div>
         </>
       );
 
-    case "two":
+    case 'two':
       return (
         <>
           {/* Show JobDesignTwo on sm and larger screens */}
@@ -66,6 +72,7 @@ export default function Job({ data, viewMode }: JobProps) {
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
+              userAccountStatus={userAccountStatus}
             />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
@@ -74,17 +81,19 @@ export default function Job({ data, viewMode }: JobProps) {
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
+              userAccountStatus={userAccountStatus}
             />
           </div>
         </>
       );
 
-    case "three":
+    case 'three':
       return (
         <JobDesignThree
           data={data}
           status={jobStatus}
           onStatusChange={handleStatusChange}
+          userAccountStatus={userAccountStatus}
         />
       );
 

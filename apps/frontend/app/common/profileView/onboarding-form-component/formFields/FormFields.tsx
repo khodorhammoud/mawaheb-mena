@@ -1,14 +1,14 @@
-import { Input } from "~/components/ui/input";
-import RangeComponent from "./RangeComponent";
-import AppFormField from "~/common/form-fields";
-import { FaLink } from "react-icons/fa";
-import type { FormFieldProps } from "../types";
-import VideoUpload from "~/common/upload/videoUpload";
-import Or from "~/common/or/Or";
-import RichTextEditor from "~/components/ui/richTextEditor";
-import DOMPurify from "dompurify";
-import FileUpload from "~/common/upload/fileUpload";
-import { getWordCount } from "~/lib/utils";
+import { Input } from '~/components/ui/input';
+import RangeComponent from './RangeComponent';
+import AppFormField from '~/common/form-fields';
+import { FaLink } from 'react-icons/fa';
+import type { FormFieldProps } from '../types';
+import VideoUpload from '~/common/upload/videoUpload';
+import Or from '~/common/or/Or';
+import RichTextEditor from '~/components/ui/richTextEditor';
+import DOMPurify from 'dompurify';
+import FileUpload from '~/common/upload/fileUpload';
+import { getWordCount } from '~/lib/utils';
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -31,7 +31,7 @@ export const FormFields = {
       placeholder="Enter a number"
       onChange={onChange}
       className="no-spinner"
-      defaultValue={value ? value.toString() : ""}
+      defaultValue={value ? value.toString() : ''}
     />
   ),
 
@@ -50,9 +50,7 @@ export const FormFields = {
         />
         <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
       </div>
-      <p className="mb-14 text-base">
-        The median {props.popupTitle} for a designer is:
-      </p>
+      <p className="mb-14 text-base">The median {props.popupTitle} for a designer is:</p>
       <RangeComponent minVal={props.minVal} maxVal={props.maxVal} />
     </div>
   ),
@@ -63,8 +61,8 @@ export const FormFields = {
       {props?.useRichText ? (
         <RichTextEditor
           name={name} // Ensure the name attribute is included
-          value={(value as string) || ""} // Ensure value is a string
-          onChange={(content) => {
+          value={(value as string) || ''} // Ensure value is a string
+          onChange={content => {
             const event = {
               target: {
                 value: content,
@@ -76,8 +74,8 @@ export const FormFields = {
           placeholder="Add content to describe yourself"
           className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
           style={{
-            wordBreak: "break-word",
-            hyphens: "auto",
+            wordBreak: 'break-word',
+            hyphens: 'auto',
           }}
         />
       ) : (
@@ -105,7 +103,7 @@ export const FormFields = {
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
-          style={{ borderRight: "none" }} // Remove the right border of the - button
+          style={{ borderRight: 'none' }} // Remove the right border of the - button
           onClick={() => handleIncrement(-1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
@@ -113,14 +111,14 @@ export const FormFields = {
 
         {/* Input Display */}
         <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
-          {typeof value === "number" || typeof value === "string" ? value : ""}
+          {typeof value === 'number' || typeof value === 'string' ? value : ''}
         </div>
 
         {/* + Button */}
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
-          style={{ borderLeft: "none" }} // Remove the left border of the + button
+          style={{ borderLeft: 'none' }} // Remove the left border of the + button
           onClick={() => handleIncrement(1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
@@ -132,8 +130,6 @@ export const FormFields = {
   video: ({ value, onChange, name, props }: FormFieldProps) => {
     const handleVideoUpload = (file: File) => {
       const fileUrl = URL.createObjectURL(file);
-
-      console.log("Generated file URL:", fileUrl);
 
       const event = {
         target: {
@@ -148,7 +144,7 @@ export const FormFields = {
     return (
       <div className="">
         {/* UPLOAD */}
-        <VideoUpload onFileChange={(fileUrl) => handleVideoUpload(fileUrl)} />
+        <VideoUpload onFileChange={fileUrl => handleVideoUpload(fileUrl)} />
 
         {/* OR */}
         <Or />
@@ -162,7 +158,7 @@ export const FormFields = {
               name={name} // Ensure name matches "videoLink"
               label="Paste YouTube URL or upload video"
               placeholder="Paste YouTube URL or upload video"
-              defaultValue={value as string}
+              defaultValue={typeof value === 'string' ? value : ''}
               onChange={onChange}
               className=""
             />
@@ -173,15 +169,81 @@ export const FormFields = {
     );
   },
 
-  file: ({ value, onChange, name, props }: FormFieldProps) => {
-    return (
-      <Input
-        type="file"
-        name={name}
-        accept={props.acceptedFileTypes}
-        onChange={onChange}
-        className="w-full p-3 border border-gray-300 rounded-md"
-      />
-    );
-  },
+  file: ({ value, onChange, name, props, handleIncrement }: FormFieldProps) => (
+    <FileField
+      value={value}
+      onChange={onChange}
+      name={name}
+      props={props}
+      handleIncrement={handleIncrement}
+    />
+  ),
+};
+
+export const FileField = ({ value, onChange, name, props, handleIncrement }: FormFieldProps) => {
+  // Get file info for display
+  const getFileInfo = (fileValue: any) => {
+    if (fileValue instanceof File) {
+      return {
+        name: fileValue.name,
+        size: Math.round(fileValue.size / 1024),
+      };
+    }
+    return null;
+  };
+
+  const fileInfo = getFileInfo(value);
+
+  return (
+    <div className="w-full">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+        <svg
+          className="w-10 h-10 text-gray-400 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          ></path>
+        </svg>
+        <p className="mb-2 text-sm text-gray-500">
+          <span className="font-semibold">Click to upload</span> or drag and drop
+        </p>
+        <p className="text-xs text-gray-500">
+          {props?.acceptedFileTypes
+            ? `Supported formats: ${props.acceptedFileTypes}`
+            : 'PDF, JPG, PNG, etc.'}
+        </p>
+
+        <Input
+          id={name}
+          name={name}
+          type="file"
+          className="hidden"
+          accept={props?.acceptedFileTypes}
+          onChange={onChange}
+          multiple={props?.multiple}
+        />
+
+        <label
+          htmlFor={name}
+          className="mt-4 px-4 py-2 bg-primaryColor text-white rounded-md cursor-pointer hover:bg-primaryColor/90 transition-colors"
+        >
+          Select Files
+        </label>
+      </div>
+
+      {fileInfo && (
+        <div className="mt-4 p-3 bg-gray-50 rounded-md">
+          <p className="text-sm font-medium">{fileInfo.name}</p>
+          {fileInfo.size && <p className="text-xs text-gray-500">{fileInfo.size} KB</p>}
+        </div>
+      )}
+    </div>
+  );
 };

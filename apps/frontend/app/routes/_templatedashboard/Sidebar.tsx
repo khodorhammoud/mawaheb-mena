@@ -1,12 +1,9 @@
-import {
-  sidebarEmployerNav,
-  sidebarFreelancerNav,
-} from "~/constants/navigation";
-import { useTranslation } from "react-i18next";
-import { NavLink, useLoaderData } from "@remix-run/react";
-import clsx from "clsx";
-import { AccountType } from "~/types/enums";
-import { FaUser } from "react-icons/fa6";
+import { sidebarEmployerNav, sidebarFreelancerNav } from '~/constants/navigation';
+import { useTranslation } from 'react-i18next';
+import { NavLink, useLoaderData } from '@remix-run/react';
+import clsx from 'clsx';
+import { AccountType } from '@mawaheb/db/enums';
+import { FaUser } from 'react-icons/fa6';
 
 export default function Sidebar() {
   const { accountType, profile } = useLoaderData<{
@@ -18,7 +15,7 @@ export default function Sidebar() {
   let menuNavigation;
   switch (accountType) {
     case AccountType.Freelancer:
-      menuNavigation = sidebarFreelancerNav(t);
+      menuNavigation = sidebarFreelancerNav(t, profile?.account?.accountStatus);
       break;
     case AccountType.Employer:
     default:
@@ -39,8 +36,7 @@ export default function Sidebar() {
                 alt="User Icon"
                 className="rounded-full w-full h-full"
               />
-            ) : profile?.account?.user?.firstName &&
-              profile?.account?.user?.lastName ? (
+            ) : profile?.account?.user?.firstName && profile?.account?.user?.lastName ? (
               <span className="text-xl font-bold">
                 {profile.account.user.firstName.charAt(0).toUpperCase()}
                 {profile.account.user.lastName.charAt(0).toUpperCase()}
@@ -54,28 +50,24 @@ export default function Sidebar() {
           <div className="flex flex-col gap-1 border-b border-gray-400 pb-8">
             {/* Display the full name */}
             <h2 className="text-lg font-medium">
-              {profile?.account?.user?.firstName}{" "}
+              {profile?.account?.user?.firstName}{' '}
               {profile?.account?.user?.lastName.charAt(0).toUpperCase()}.
             </h2>
-            <p className="text-sm text-gray-500">
-              {profile?.account?.location}
-            </p>
-            <p className="text-sm text-gray-500">
-              {profile?.account?.websiteURL}
-            </p>
+            <p className="text-sm text-gray-500">{profile?.account?.location}</p>
+            <p className="text-sm text-gray-500">{profile?.account?.websiteURL}</p>
           </div>
         </div>
 
         <nav className="mt-8">
-          {menuNavigation.map((navItem) => (
+          {menuNavigation.map(navItem => (
             <NavLink
               key={navItem.label}
               to={navItem.href}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center mb-2 xl:px-4 px-2 md:py-2 py-1 rounded-xl md:text-base text-sm transition-all group hover:translate-x-2 hover:text-primaryColor", // Container styles
+                  'flex items-center mb-2 xl:px-4 px-2 md:py-2 py-1 rounded-xl md:text-base text-sm transition-all group hover:translate-x-2 hover:text-primaryColor', // Container styles
                   {
-                    "": !isActive, // Hover background for inactive items
+                    '': !isActive, // Hover background for inactive items
                   }
                 )
               }
@@ -85,10 +77,10 @@ export default function Sidebar() {
                   {/* Icon Container with its own hover style */}
                   <div
                     className={clsx(
-                      "mr-2 md:py-2 py-2 md:px-4 px-3 rounded-xl transition-colors", // Icon container styling
+                      'mr-2 md:py-2 py-2 md:px-4 px-3 rounded-xl transition-colors', // Icon container styling
                       {
-                        "bg-blue-100 text-primaryColor translate-x-2": isActive, // Active icon background and text color
-                        "text-gray-600 group-hover:bg-primaryColor group-hover:text-white":
+                        'bg-blue-100 text-primaryColor translate-x-2': isActive, // Active icon background and text color
+                        'text-gray-600 group-hover:bg-primaryColor group-hover:text-white':
                           !isActive, // Hover styles for inactive icon
                       }
                     )}
@@ -99,11 +91,10 @@ export default function Sidebar() {
                   {/* Label with its own hover style */}
                   <span
                     className={clsx(
-                      "transition-colors", // Smooth transition for text
+                      'transition-colors', // Smooth transition for text
                       {
-                        "text-primaryColor translate-x-2": isActive, // Active text styles
-                        "text-gray-700 group-hover:text-primaryColor":
-                          !isActive, // Hover styles for inactive text
+                        'text-primaryColor translate-x-2': isActive, // Active text styles
+                        'text-gray-700 group-hover:text-primaryColor': !isActive, // Hover styles for inactive text
                       }
                     )}
                   >

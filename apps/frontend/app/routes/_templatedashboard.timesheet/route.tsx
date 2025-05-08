@@ -1,35 +1,34 @@
-// import type { TimesheetProps } from "../../types/Timesheet";
-import type { LoaderFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
+import type { LoaderFunctionArgs } from '@remix-run/node'; // or cloudflare/deno
 
 import {
-  requireUserIsEmployerPublished,
+  requireUserIsEmployerPublishedOrDeactivated,
   requireUserIsFreelancerPublished,
   requireUserOnboarded,
-} from "~/auth/auth.server";
+} from '~/auth/auth.server';
 import {
   getJobApplicationsByFreelancerId,
   getJobApplicationByJobIdAndFreelancerId,
   getEmployerJobs,
   getJobApplicationsByJobId,
-} from "~/servers/job.server";
-import TimeSheetPage from "./components/TimeSheetPage";
-import JobsPage from "./components/JobsPage";
-import { JobApplication } from "~/types/Job";
-import { useState } from "react";
+} from '~/servers/job.server';
+import TimeSheetPage from './components/TimeSheetPage';
+import JobsPage from './components/JobsPage';
+import { JobApplication } from '@mawaheb/db/types';
+import { useState } from 'react';
 import {
   getEmployerIdFromUserId,
   getFreelancerIdFromUserId,
   getUserAccountType,
-} from "~/servers/user.server";
-import { useLoaderData } from "@remix-run/react";
-import { AccountType } from "~/types/enums";
-import { FreelancerTimesheetHeader } from "./components/FreelancerTimesheetHeader";
-import { OtherFreelancers } from "./components/OtherFreelancers";
-import { EmployerJobsList } from "./components/EmployerJobsList";
+} from '~/servers/user.server';
+import { useLoaderData } from '@remix-run/react';
+import { AccountType } from '@mawaheb/db/enums';
+import { FreelancerTimesheetHeader } from './components/FreelancerTimesheetHeader';
+import { OtherFreelancers } from './components/OtherFreelancers';
+import { EmployerJobsList } from './components/EmployerJobsList';
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUserOnboarded(request);
   if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const accountType = await getUserAccountType(userId);
@@ -43,22 +42,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     profileId = freelancerId;
   } else if (accountType === AccountType.Employer) {
     // user must be an employer
-    await requireUserIsEmployerPublished(request);
+    await requireUserIsEmployerPublishedOrDeactivated(request);
     const employerId = await getEmployerIdFromUserId(userId);
     profileId = employerId;
   }
 
   if (!profileId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   if (accountType === AccountType.Freelancer) {
     // get current freelancer job applications
-    const jobApplicationsPartialData =
-      await getJobApplicationsByFreelancerId(profileId);
+    const jobApplicationsPartialData = await getJobApplicationsByFreelancerId(profileId);
 
     const jobApplications = await Promise.all(
-      jobApplicationsPartialData.map(async (jobApp) => {
+      jobApplicationsPartialData.map(async jobApp => {
         const jobApplication = await getJobApplicationByJobIdAndFreelancerId(
           jobApp.jobId,
           profileId
@@ -77,9 +75,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         parseInt(params.jobId),
         parseInt(params.freelancerId)
       );
-      const allJobApplications = await getJobApplicationsByJobId(
-        parseInt(params.jobId)
-      );
+      const allJobApplications = await getJobApplicationsByJobId(parseInt(params.jobId));
 
       return Response.json({ jobApplication, allJobApplications, accountType });
     } else {
@@ -91,12 +87,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function Page() {
-  const { accountType, jobs, jobApplication, allJobApplications } =
-    useLoaderData<typeof loader>();
+  const { accountType, jobs, jobApplication, allJobApplications } = useLoaderData<typeof loader>();
 
   const allowOverlap = true;
-  const [selectedJobApplication, setSelectedJobApplication] =
-    useState<JobApplication | null>(null);
+  const [selectedJobApplication, setSelectedJobApplication] = useState<JobApplication | null>(null);
 
   if (accountType === AccountType.Employer) {
     if (jobApplication) {

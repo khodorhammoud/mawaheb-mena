@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
-import { useLoaderData } from "@remix-run/react"; // Import to access loader data
+import { motion } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
+import { useLoaderData } from '@remix-run/react'; // Import to access loader data
 
 // Define the type for PostHowItWorksItem
 interface PostHowItWorksItem {
@@ -42,14 +42,12 @@ const Segments = () => {
 
   useEffect(() => {
     if (inView && ref.current) {
-      const elementTop =
-        ref.current.getBoundingClientRect().top + window.scrollY;
-      const targetScroll =
-        elementTop - window.innerHeight / 2 + ref.current.offsetHeight / 2;
+      const elementTop = ref.current.getBoundingClientRect().top + window.scrollY;
+      const targetScroll = elementTop - window.innerHeight / 2 + ref.current.offsetHeight / 2;
 
       window.scrollTo({
         top: targetScroll,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   }, [inView]);
@@ -61,14 +59,14 @@ const Segments = () => {
       animate={inView ? { opacity: 1, y: 50 } : { opacity: 0, y: 0 }} // the speed of popping from segments to languaged is detected here, to make it faster, make second y=50 :)
       transition={{ duration: 0.5 }}
       className="flex flex-col items-center justify-center gap-8 mt-[200px] lg:text-7xl text-5xl font-semibold font-['BespokeSerif-Variable'] lg:w-[850px] mx-auto"
-      style={{ minHeight: "calc(120vh - 400px)" }}
+      style={{ minHeight: 'calc(120vh - 400px)' }}
     >
       {/* Use the content from PostHowItWorks */}
       {/* First Line Centered */}
-      <p className="text-center">{postHowItWorks.content.split("\n")[0]}</p>
+      <p className="text-center">{postHowItWorks.content.split('\n')[0]}</p>
 
       {/* Second Line Centered */}
-      <p className="text-center">{postHowItWorks.content.split("\n")[1]}</p>
+      <p className="text-center">{postHowItWorks.content.split('\n')[1]}</p>
     </motion.div>
   );
 };

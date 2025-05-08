@@ -1,5 +1,5 @@
-import React from "react";
-import { useLoaderData } from "@remix-run/react";
+import React from 'react';
+import { useLoaderData } from '@remix-run/react';
 
 // Define the type for the blog card data coming from the loader
 interface BlogCardData {
@@ -20,20 +20,17 @@ interface BlogCardProps {
 }
 
 // BlogCard component
-const BlogCard: React.FC<BlogCardProps> = ({
-  imageURL,
-  name,
-  readFrom,
-  content,
-  link,
-}) => {
+const BlogCard: React.FC<BlogCardProps> = ({ imageURL, name, readFrom, content, link }) => {
   return (
     <a href={link} className="block border border-gray-300 max-w-sm rounded-xl">
       <img src={imageURL} alt={name} className="rounded-t-xl" />
       <h2 className="text-lg font-semibold mt-4 px-4 leading-5">{name}</h2>
       <p className="text-sm text-gray-600 px-4 mt-1 mb-4">{readFrom}</p>
       <p className="mt-2 text-gray-700 px-4 leading-tight">{content}</p>
-      <a href={link} className="text-blue-600 mt-4 inline-block px-4 mb-4">
+      <a
+        href={link}
+        className="bg-primaryColor text-white not-active-gradient mt-4 ml-4 rounded-xl inline-block px-5 py-1 mb-4"
+      >
         Read More &gt;
       </a>
     </a>

@@ -1,15 +1,10 @@
-import { useEffect, useState } from "react";
-import type {
-  TimesheetEntry,
-  EntryPopup,
-  TimeSlot,
-  TimesheetData,
-} from "~/types/Timesheet";
-import { useToast } from "~/components/hooks/use-toast";
-import { useFetcher } from "@remix-run/react";
-import { JobApplication } from "~/types/Job";
-import { subDays, addDays } from "date-fns";
-import { AccountType } from "~/types/enums";
+import { useEffect, useState } from 'react';
+import type { TimesheetEntry, EntryPopup, TimeSlot, TimesheetData } from '@mawaheb/db/types';
+import { useToast } from '~/components/hooks/use-toast';
+import { useFetcher } from '@remix-run/react';
+import { JobApplication } from '@mawaheb/db/types';
+import { subDays, addDays } from 'date-fns';
+import { AccountType } from '@mawaheb/db/enums';
 
 export const useTimesheet = (
   allowOverlap = true,
@@ -35,7 +30,7 @@ export const useTimesheet = (
       const entries = timesheetFetcher.data?.timesheetEntries || [];
       const groupedEntriesByDate = entries.reduce((acc, entry) => {
         const date = new Date(entry?.date);
-        const dateKey = date.toLocaleDateString("en-CA");
+        const dateKey = date.toLocaleDateString('en-CA');
 
         if (!acc[dateKey]) {
           acc[dateKey] = {
@@ -51,10 +46,7 @@ export const useTimesheet = (
           endTime: new Date(entry.endTime).getTime(),
         });
         // check if the day has at least one submission
-        if (
-          acc[dateKey].entries.length > 0 &&
-          acc[dateKey].entries[0].isSubmitted
-        ) {
+        if (acc[dateKey].entries.length > 0 && acc[dateKey].entries[0].isSubmitted) {
           acc[dateKey].isSubmitted = true;
         }
         return acc;
@@ -80,7 +72,7 @@ export const useTimesheet = (
 
     // Add freelancerId param only for employer view
     if (accountType === AccountType.Employer && freelancerId) {
-      params.append("freelancerId", freelancerId.toString());
+      params.append('freelancerId', freelancerId.toString());
     }
 
     timesheetFetcher.load(`/api/timesheet?${params}`);
@@ -93,12 +85,12 @@ export const useTimesheet = (
     date: new Date(),
     startTime: new Date().getTime(),
     endTime: new Date().getTime(),
-    description: "",
+    description: '',
   });
 
   const [popup, setPopup] = useState<EntryPopup>({
     isOpen: false,
-    selectedDay: "",
+    selectedDay: '',
     selectedTime: 0,
     isEdit: false,
     entryIndex: null,
@@ -111,11 +103,9 @@ export const useTimesheet = (
     clickedEntry: TimesheetEntry | null = null
   ) => {
     const isEdit = clickedEntry !== null;
-    const dateKey = date.toLocaleDateString("en-CA");
+    const dateKey = date.toLocaleDateString('en-CA');
     const entryIndex = isEdit
-      ? (timesheet[dateKey]?.entries.findIndex(
-          (e) => e.id === clickedEntry.id
-        ) ?? null)
+      ? (timesheet[dateKey]?.entries.findIndex(e => e.id === clickedEntry.id) ?? null)
       : null;
 
     setPopup({
@@ -139,7 +129,7 @@ export const useTimesheet = (
         date: date,
         startTime: newDate.getTime(),
         endTime: new Date(newDate.getTime() + 30 * 60000).getTime(),
-        description: "",
+        description: '',
       });
     }
   };
@@ -149,7 +139,7 @@ export const useTimesheet = (
 
     if (!formData.startTime || !formData.endTime) {
       toast({
-        description: "Please select a start and end time.",
+        description: 'Please select a start and end time.',
       });
       return;
     }
@@ -173,15 +163,15 @@ export const useTimesheet = (
 
       if (isOverlapping) {
         toast({
-          title: "Overlap Not Allowed",
-          description: "There is an overlap with another event.",
-          variant: "destructive",
+          title: 'Overlap Not Allowed',
+          description: 'There is an overlap with another event.',
+          variant: 'destructive',
         });
         return;
       }
     }
 
-    setTimesheet((prev) => {
+    setTimesheet(prev => {
       if (!prev[selectedDay]) {
         prev[selectedDay] = { entries: [], isSubmitted: false };
       }
@@ -199,15 +189,15 @@ export const useTimesheet = (
     });
     // save to db
     const formDataToSubmit = new FormData();
-    formDataToSubmit.append("date", formData?.date?.toDateString());
-    formDataToSubmit.append("startTime", String(formData?.startTime));
-    formDataToSubmit.append("endTime", String(formData?.endTime));
-    formDataToSubmit.append("description", formData?.description);
-    formDataToSubmit.append("jobApplicationId", String(jobApplication?.id));
+    formDataToSubmit.append('date', formData?.date?.toDateString());
+    formDataToSubmit.append('startTime', String(formData?.startTime));
+    formDataToSubmit.append('endTime', String(formData?.endTime));
+    formDataToSubmit.append('description', formData?.description);
+    formDataToSubmit.append('jobApplicationId', String(jobApplication?.id));
 
     timesheetFetcher.submit(formDataToSubmit, {
-      method: "POST",
-      action: "/api/timesheet",
+      method: 'POST',
+      action: '/api/timesheet',
     });
 
     handleClosePopup();
@@ -216,7 +206,7 @@ export const useTimesheet = (
   const handleDelete = () => {
     const { selectedDay, entryIndex } = popup;
     if (entryIndex === null) return;
-    setTimesheet((prev) => {
+    setTimesheet(prev => {
       const entries = [...prev[selectedDay].entries];
       entries.splice(entryIndex, 1);
       return {
@@ -231,33 +221,30 @@ export const useTimesheet = (
   const handleClosePopup = () => {
     setPopup({
       isOpen: false,
-      selectedDay: "",
+      selectedDay: '',
       selectedTime: 0,
       isEdit: false,
       entryIndex: null,
     });
   };
 
-  const handleTimesheetActions = (
-    action: "approve" | "reject",
-    date: string
-  ) => {
+  const handleTimesheetActions = (action: 'approve' | 'reject', date: string) => {
     const formData = new FormData();
-    formData.append("date", date);
-    formData.append("jobApplicationId", jobApplication.id.toString());
+    formData.append('date', date);
+    formData.append('jobApplicationId', jobApplication.id.toString());
 
     timeSheetActionsFetcher.submit(formData, {
-      method: "post",
+      method: 'post',
       action: `/api/timesheet/${action}`,
     });
   };
 
   const handleApproveSubmission = (date: string) => {
-    console.log("Approve submission for date:", date);
+    console.log('Approve submission for date:', date);
   };
 
   const handleRejectSubmission = (date: string) => {
-    console.log("Reject submission for date:", date);
+    console.log('Reject submission for date:', date);
   };
 
   return {

@@ -1,5 +1,5 @@
-import { EducationFormFieldType } from "~/types/User";
-import AppFormField from "~/common/form-fields";
+import { EducationFormFieldType } from '@mawaheb/db/types';
+import AppFormField from '~/common/form-fields';
 
 interface EducationComponentProps {
   data: EducationFormFieldType;
@@ -16,7 +16,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         placeholder="Degree"
         defaultValue={data.degree}
         label="Degree"
-        onChange={(e) => onTextChange({ ...data, degree: e.target.value })}
+        onChange={e => onTextChange({ ...data, degree: e.target.value })}
       />
       <AppFormField
         type="text"
@@ -25,7 +25,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         id="institution[]"
         name="institution[]"
         defaultValue={data.institution}
-        onChange={(e) => onTextChange({ ...data, institution: e.target.value })}
+        onChange={e => onTextChange({ ...data, institution: e.target.value })}
       />
       <AppFormField
         type="number"
@@ -33,10 +33,8 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         id="graduationYear[]"
         placeholder="Graduation Year"
         label="Graduation Year"
-        defaultValue={data.graduationYear.toString()}
-        onChange={(e) =>
-          onTextChange({ ...data, graduationYear: parseInt(e.target.value) })
-        }
+        defaultValue={data.graduationYear ? data.graduationYear.toString() : ''}
+        onChange={e => onTextChange({ ...data, graduationYear: parseInt(e.target.value) })}
         className="md:w-[50%]"
       />
     </div>

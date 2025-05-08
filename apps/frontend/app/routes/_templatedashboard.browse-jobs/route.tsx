@@ -1,27 +1,18 @@
-import {
-  LoaderFunctionArgs,
-  ActionFunctionArgs,
-  redirect,
-} from "@remix-run/node";
-import { useState } from "react";
-import { getCurrentUserAccountType } from "~/servers/user.server";
-import { AccountType } from "~/types/enums";
-import { requireUserIsFreelancerPublished } from "~/auth/auth.server";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import RecommendedJobs from "./recommendedJobs";
-import AllJobs from "./allJobs";
-import MyJobs from "./myJobs";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-} from "~/components/ui/sheet";
-import { Job } from "~/types/Job";
-import SingleJobView from "./singleJobView";
-import { getJobSkills } from "~/servers/skill.server";
-import { Skill } from "~/types/Skill";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { LoaderFunctionArgs, ActionFunctionArgs, redirect } from '@remix-run/node';
+import { useState } from 'react';
+import { getCurrentUserAccountType, getCurrentProfileInfo } from '~/servers/user.server';
+import { AccountType, AccountStatus } from '@mawaheb/db/enums';
+import { requireUserIsFreelancer } from '~/auth/auth.server';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import RecommendedJobs from './recommendedJobs';
+import AllJobs from './allJobs';
+import MyJobs from './myJobs';
+import { Sheet, SheetContent, SheetDescription, SheetHeader } from '~/components/ui/sheet';
+import { Job } from '@mawaheb/db/types';
+import SingleJobView from './singleJobView';
+import { getJobSkills } from '~/servers/skill.server';
+import { Skill } from '@mawaheb/db/types';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import {
   getReview,
   saveReview,
@@ -29,8 +20,8 @@ import {
   hasAcceptedApplication,
   getEmployerIdByJobId,
   getAccountIdbyUserId,
-} from "~/servers/job.server";
-import { getFreelancerIdByAccountId } from "~/servers/freelancer.server";
+} from '~/servers/job.server';
+import { getFreelancerIdByAccountId } from '~/servers/freelancer.server';
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
@@ -42,110 +33,144 @@ export type LoaderData = {
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  const accountId = await requireUserIsFreelancerPublished(request);
-  if (!accountId) {
-    return redirect("/login-employer");
+  const userId = await requireUserIsFreelancer(request);
+  if (!userId) {
+    return redirect('/login-employer');
+  }
+
+  // Get user profile to check account status
+  const profile = await getCurrentProfileInfo(request);
+
+  // Check if the user's account is deactivated or not published
+  if (!profile?.account || profile.account.accountStatus !== AccountStatus.Published) {
+    return redirect('/dashboard');
   }
 
   const formData = await request.formData();
 
-  const actionType = formData.get("_action");
-  const jobId = Number(formData.get("jobId"));
-  const employerId = Number(formData.get("employerId"));
-  const rating = Number(formData.get("rating"));
-  const comment = formData.get("comment") as string;
+  const actionType = formData.get('_action');
+  const jobId = Number(formData.get('jobId') || 0);
+  const employerId = Number(formData.get('employerId') || 0);
+  const rating = Number(formData.get('rating') || 0);
+  const comment = (formData.get('comment') as string) || '';
 
   if (!jobId || !employerId) {
     return Response.json({
       success: false,
-      message: "Invalid job or employer ID.",
+      message: 'Invalid job or employer ID.',
     });
   }
+
+  const accountId = await getAccountIdbyUserId(userId);
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
   if (!freelancerId) {
     return Response.json({
       success: false,
-      message: "Freelancer account not found.",
+      message: 'Freelancer account not found.',
     });
   }
 
-  // ✅ Check if the freelancer has an accepted job application for this employer
+  // Check if the freelancer has an accepted job application for this employer
   const hasApplication = await hasAcceptedApplication(freelancerId, employerId);
 
   if (!hasApplication) {
     return Response.json({
       success: false,
-      message:
-        "You must have an accepted job application to review this employer.",
+      message: 'You must have an accepted job application to review this employer.',
     });
   }
 
   try {
-    if (actionType === "review") {
-      const existingReview = await getReview(freelancerId, employerId);
+    if (actionType === 'review') {
+      const existingReview = await getReview({
+        freelancerId: freelancerId,
+        employerId: employerId,
+        reviewType: 'freelancer_review',
+      });
 
       if (existingReview) {
-        await updateReview({ employerId, freelancerId, rating, comment });
+        await updateReview({
+          freelancerId: freelancerId,
+          employerId: employerId,
+          rating,
+          comment,
+          reviewType: 'freelancer_review',
+        });
       } else {
-        await saveReview({ employerId, freelancerId, rating, comment });
+        await saveReview({
+          freelancerId: freelancerId,
+          employerId: employerId,
+          rating,
+          comment,
+          reviewType: 'freelancer_review',
+        });
       }
 
       return Response.json({ success: true });
     }
 
-    return Response.json({ success: false, message: "Invalid action type." });
+    return Response.json({ success: false, message: 'Invalid action type.' });
   } catch (error) {
     return Response.json({ success: false, message: (error as Error).message });
   }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const userId = await requireUserIsFreelancerPublished(request);
-  if (!userId) return redirect("/login-employer");
-  // console.log("🚀 Loader: Account ID =", userId); // Debug log
+  const userId = await requireUserIsFreelancer(request);
+  if (!userId) return redirect('/login-employer');
+  // console.log("🚀 Loader: Account ID =", userId);
+
+  // Get user profile to check account status
+  const profile = await getCurrentProfileInfo(request);
+
+  // Check if the user's account is deactivated or not published
+  if (!profile?.account || profile.account.accountStatus !== AccountStatus.Published) {
+    return redirect('/dashboard');
+  }
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
-  if (accountType !== AccountType.Freelancer) return redirect("/dashboard");
-  // console.log("🚀 Loader: Account Type =", accountType); // Debug log
+  if (accountType !== AccountType.Freelancer) return redirect('/dashboard');
+  // console.log("🚀 Loader: Account Type =", accountType);
 
   const url = new URL(request.url);
-  const jobId = parseInt(url.searchParams.get("jobId") || "0", 10);
-  let employerId = parseInt(url.searchParams.get("employerId") || "0", 10);
+  const jobId = parseInt(url.searchParams.get('jobId') || '0', 10);
+  let employerId = parseInt(url.searchParams.get('employerId') || '0', 10);
 
   if (jobId > 0 && employerId === 0) {
     employerId = (await getEmployerIdByJobId(jobId)) || 0;
   }
 
   const accountId = await getAccountIdbyUserId(userId);
-  // console.log("🚀 Loader: Account ID =", accountId); // Debug log
+  // console.log("🚀 Loader: Account ID =", accountId);
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId); // Debug log
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   if (!freelancerId) {
     return Response.json({
       success: false,
-      message: "Freelancer not found.",
+      message: 'Freelancer not found.',
       jobSkills: [],
       review: null,
       canReview: false,
     });
   }
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId); // Debug log
+  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
-  // console.log("🚀 Loader: Job Skills =", jobSkills); // Debug log
+  // console.log("🚀 Loader: Job Skills =", jobSkills);
 
-  // ✅ Ensure `hasAcceptedApplication` checks by employerId, not jobId
-  const canReview =
-    employerId > 0
-      ? await hasAcceptedApplication(freelancerId, employerId)
-      : false;
+  const canReview = employerId > 0 ? await hasAcceptedApplication(freelancerId, employerId) : false;
 
   let existingReview = null;
   if (employerId > 0) {
-    const fetchedReview = await getReview(freelancerId, employerId);
+    const fetchedReview = await getReview({
+      freelancerId: freelancerId,
+      employerId: employerId,
+      reviewType: 'freelancer_review',
+    });
+
     if (fetchedReview) {
       existingReview = {
         ...fetchedReview,
@@ -168,15 +193,13 @@ export default function Layout() {
 
   const fetcher = useFetcher<LoaderData>();
   const { freelancerId } = useLoaderData<LoaderData>();
-  console.log("freelancerId", freelancerId);
+  // console.log("freelancerId", freelancerId);
 
   const handleJobSelect = async (jobData: Job) => {
     setIsLoading(true);
     setSelectedJob(jobData);
     setOpen(true);
-    fetcher.load(
-      `/browse-jobs?jobId=${jobData.id}&employerId=${jobData.employerId}`
-    );
+    fetcher.load(`/browse-jobs?jobId=${jobData.id}&employerId=${jobData.employerId}`);
     setIsLoading(false);
   };
 
@@ -205,7 +228,7 @@ export default function Layout() {
                     canReview={fetcher.data?.canReview || false} // ✅ Pass canReview properly
                   />
                 ) : (
-                  "No job selected"
+                  'No job selected'
                 )}
               </SheetDescription>
             )}
@@ -220,10 +243,7 @@ export default function Layout() {
           <TabsTrigger value="my-jobs">My Jobs</TabsTrigger>
         </TabsList>
         <TabsContent value="recommended-jobs" className="">
-          <RecommendedJobs
-            onJobSelect={handleJobSelect}
-            freelancerId={freelancerId}
-          />
+          <RecommendedJobs onJobSelect={handleJobSelect} freelancerId={freelancerId} />
         </TabsContent>
         <TabsContent value="all-jobs">
           <AllJobs onJobSelect={handleJobSelect} />

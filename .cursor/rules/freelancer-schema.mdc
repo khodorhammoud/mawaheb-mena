@@ -1,0 +1,70 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: whenever the data schema of users of type Freelancer is needed, it can all be found here
+globs: 
+alwaysApply: false
+---
+
+a user's account is divided between 3 tables: usersTable, accountsTable, and either freelancersTable or EmployersTable based on if the user is a freelancer or an employer.
+
+The freelancer account contains the following information
+
+first_name
+last_name
+email
+country
+address
+region
+phone
+website_url
+social_media_links
+about (text)
+fields_of_expertise (text[])
+portfolio (jsonb: {
+  projectName: string
+  projectLink: string
+  projectDescription: string
+  attachmentId?: number
+  projectImageName?: string
+  projectImageUrl?: string
+}[])
+work_history (jsonb: {
+  title: string
+  company: string
+  currentlyWorkingThere: boolean
+  startDate: Date | string
+  endDate: Date | string
+  jobDescription: string
+}[])
+cv_link
+video_link
+certificates (jsonb: {
+  certificateName: string
+  issuedBy: string
+  yearIssued: number
+  attachmentId?: number
+  attachmentName?: string
+  attachmentUrl?: string
+}[])
+educations (jsonb:{
+  degree: string
+  field: string
+  institution: string
+  completedOn: string
+}[]),
+years_of_experience
+preferred_project_types
+hourly_rate
+compensation_type
+available_for_work (boolean)
+available_from (date)
+jobs_open_to
+hoursAvailableFrom
+hoursAvailableTo
+
+the database schema could be found here: [schema.ts](mdc:packages/db/src/schema/schema.ts)
+

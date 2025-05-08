@@ -1,10 +1,6 @@
 // ~/types.ts
 
-import {
-  AccountStatus,
-  CompensationType,
-  JobApplicationStatus,
-} from "~/types/enums";
+import { AccountStatus, CompensationType, JobApplicationStatus } from '@mawaheb/db/enums';
 
 /** For arrays in the freelancer object */
 export interface Portfolio {
@@ -90,6 +86,11 @@ export interface JobApplication {
   createdAt: string;
   freelancerId: number;
   matchScore?: number;
+  employerId?: number;
+  employerFirstName?: string;
+  employerLastName?: string;
+  employerEmail?: string;
+  employerAccountStatus?: string;
 }
 
 /** The loader data structure */

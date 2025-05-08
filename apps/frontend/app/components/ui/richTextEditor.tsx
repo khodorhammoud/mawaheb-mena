@@ -1,9 +1,10 @@
-import dynamic from "next/dynamic";
+import React, { Suspense } from "react";
 import "react-quill/dist/quill.snow.css";
 import DOMPurify from "dompurify";
 import "~/styles/wavy/wavy.css";
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+// Use React.lazy instead of Next.js dynamic
+const ReactQuill = React.lazy(() => import("react-quill"));
 
 interface RichTextEditorProps {
   value: string;
@@ -31,13 +32,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={`custom-quill ${className}`} style={style}>
-      <ReactQuill
-        theme="snow"
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className=""
-      />
+      <Suspense fallback={<div>Loading editor...</div>}>
+        <ReactQuill
+          theme="snow"
+          value={value}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className=""
+        />
+      </Suspense>
       {/* Optional hidden input for form compatibility */}
       {name && <input type="hidden" name={name} value={value} />}
     </div>
