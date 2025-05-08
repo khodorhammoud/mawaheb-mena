@@ -51,7 +51,7 @@ jobs:
 
       - name: Notify VM to deploy
         run: |
-          curl -X POST https://yourvm.domain.com/webhook \
+          curl -X POST http://159.89.104.24/github-webhook \
             -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"event": "deployed"}'

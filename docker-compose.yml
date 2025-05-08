@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: frontend.Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: frontend.Dockerfile
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:frontend-latest
+    container_name: frontend
     ports:
       - '5173:5173'
     environment:
@@ -26,9 +28,11 @@ services:
       start_period: 10s
 
   backend:
-    build:
-      context: .
-      dockerfile: backend.Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: backend.Dockerfile
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:backend-latest
+    container_name: backend
     ports:
       - '3002:3002'
     environment:
@@ -51,9 +55,11 @@ services:
       start_period: 10s
 
   cms:
-    build:
-      context: .
-      dockerfile: cms.Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: cms.Dockerfile
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:cms-latest
+    container_name: cms
     ports:
       - '3001:3001'
     environment:
