@@ -70,19 +70,19 @@ services:
       retries: 3
       start_period: 10s
 
-  neo4j:
-    image: neo4j:latest
-    volumes:
-      - ./apps/neo4j/db/logs:/logs
-      - ./apps/neo4j/db/config:/config
-      - ./apps/neo4j/db/data:/data
-      - ./apps/neo4j/db/plugins:/plugins
-    environment:
-      - NEO4J_AUTH=neo4j/password
-    ports:
-      - '7474:7474'
-      - '7687:7687'
-    restart: on-failure
+  # neo4j:
+  #   image: neo4j:latest
+  #   volumes:
+  #     - ./apps/neo4j/db/logs:/logs
+  #     - ./apps/neo4j/db/config:/config
+  #     - ./apps/neo4j/db/data:/data
+  #     - ./apps/neo4j/db/plugins:/plugins
+  #   environment:
+  #     - NEO4J_AUTH=neo4j/password
+  #   ports:
+  #     - '7474:7474'
+  #     - '7687:7687'
+  #   restart: on-failure
 
   redis:
     image: redis:latest
