@@ -21,6 +21,18 @@ jobs:
         # DOCKERHUB_USERNAME: your Docker Hub username
         # DOCKERHUB_TOKEN: a Docker Hub access token (get it from Docker Hub -> Account Settings -> Security -> New Access Token)
 
+      - name: Create frontend .env file from secret
+        run: |
+          printf "%b" "${{ secrets.FRONTEND_ENV_FILE }}" > ./apps/frontend/.env.production
+
+      - name: Create backend .env file from secret
+        run: |
+          printf "%b" "${{ secrets.BACKEND_ENV_FILE }}" > ./apps/backend/.env.production
+
+      - name: Create cms .env file from secret
+        run: |
+          printf "%b" "${{ secrets.CMS_ENV_FILE }}" > ./apps/cms/.env.production
+
       - name: Build Frontend image
         run: |
           docker build -f frontend.Dockerfile -t $IMAGE_REPO:frontend-latest .
