@@ -2,11 +2,14 @@ import { config } from '@keystone-6/core';
 import { lists } from './schema';
 import { withAuth, session } from './auth';
 
+// load env variables
+require('dotenv').config();
+
 export default withAuth(
   config({
     db: {
       provider: 'postgresql',
-      url: process.env.POSTGRESQL_CONNECTION_STRING as string,
+      url: process.env.DATABASE_URL as string,
       //  || 'postgresql://postgres:pass@localhost:5432/mawaheb-cms?schema=public',
       enableLogging: true,
       idField: { kind: 'uuid' },
