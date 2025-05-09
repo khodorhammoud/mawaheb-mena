@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   frontend:
     # build:
     #   context: .
     #   dockerfile: frontend.Dockerfile
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:frontend-latest
+    image: jasonjinkson/mawaheb-mena:frontend-latest
     container_name: frontend
     ports:
       - '5173:5173'
@@ -31,7 +29,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: backend.Dockerfile
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:backend-latest
+    image: jasonjinkson/mawaheb-mena:backend-latest
     container_name: backend
     ports:
       - '3002:3002'
@@ -46,7 +44,6 @@ services:
       - app-network
     depends_on:
       - redis
-      - neo4j
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3002/api/health || exit 1']
       interval: 30s
@@ -58,7 +55,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: cms.Dockerfile
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/mawaheb-mena:cms-latest
+    image: jasonjinkson/mawaheb-mena:cms-latest
     container_name: cms
     ports:
       - '3001:3001'
