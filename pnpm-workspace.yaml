@@ -1,3 +1,23 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+
+ignoredBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - canvas
+  - core-js
+  - core-js-pure
+  - esbuild
+  - fast-folder-size
+  - gifsicle
+  - highlight.js
+  - jpegtran-bin
+  - msgpackr-extract
+  - optipng-bin
+  - pngquant-bin
+  - prisma
+  - sqlite3
+  - unrs-resolver
