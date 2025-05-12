@@ -69,9 +69,10 @@ export function NotificationProvider({
     try {
       // Get the actual hostname but use port 3001 for backend
       const baseUrl =
-        typeof window !== 'undefined'
-          ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
-          : 'http://localhost:3001'; // Default fallback
+  typeof window !== 'undefined'
+    ? import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
+    : process.env.BACKEND_URL || 'http://localhost:3001';
+
 
       const response = await fetch(`${baseUrl}/notifications/user/${userId}?limit=50`);
       if (response.ok) {
@@ -107,9 +108,10 @@ export function NotificationProvider({
 
     // Get the actual hostname but use port 3001 for backend
     const baseUrl =
-      typeof window !== 'undefined'
-        ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
-        : 'http://localhost:3001'; // Default fallback
+  typeof window !== 'undefined'
+    ? import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
+    : process.env.BACKEND_URL || 'http://localhost:3001';
+
 
     const url = `${baseUrl}/events/notifications/${userId}`;
 

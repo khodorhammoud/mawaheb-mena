@@ -18,7 +18,7 @@ databaseURL = process.env.DATABASE_URL as string;
 // }
 
 // Check if DATABASE_URL is available (for local development)
-if (databaseURL) {
+if (databaseURL != '') {
   console.log('Using DATABASE_URL for connection:', databaseURL);
 
   try {
