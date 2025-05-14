@@ -1,103 +1,152 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+/*  apps/frontend/app/routes/_templateheaderfooter.signup-employer/route.tsx  */
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
+
 import SignUpEmployerPage from './Signup';
-import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
-import { RegistrationError } from '../../common/errors/UserError';
+
+import {
+  generateVerificationToken,
+  getProfileInfo,
+} from '../../servers/user.server';
 import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
-import { Employer } from '@mawaheb/db/types';
+
+import { RegistrationError } from '../../common/errors/UserError';
+import type { Employer } from '@mawaheb/db/types';
+
+/* ───────────────────────────── helpers ───────────────────────────── */
+
+const duplicateEmailResponse = () =>
+  json(
+    {
+      success: false,
+      error: {
+        message: 'The email address is already registered.',
+        fieldErrors: { email: 'The email address is already registered.' },
+      },
+    },
+    { status: 400 },
+  );
+
+/* ──────────────────────────── ACTION ─────────────────────────────── */
 
 export async function action({ request }: ActionFunctionArgs) {
-  let newEmployer: Employer | null = null;
-
   try {
-    const formData = await request.clone().formData();
+    /* 1. Basic field‑level validation */
+    const formData      = await request.clone().formData();
+    const email         = (formData.get('email')       ?? '').toString().trim();
+    const firstName     = (formData.get('firstName')   ?? '').toString().trim();
+    const lastName      = (formData.get('lastName')    ?? '').toString().trim();
+    const password      = (formData.get('password')    ?? '').toString();
+    const termsAccepted =  formData.get('termsAccepted');               // "on"
 
-    // Extract necessary fields
-    const termsAccepted = formData.get('termsAccepted');
-    const email = formData.get('email');
-    const firstName = formData.get('firstName');
-    const lastName = formData.get('lastName');
+    const fieldErrors: Record<string, string> = {};
+    if (!email)     fieldErrors.email     = 'Email Address is required';
+    if (!firstName) fieldErrors.firstName = 'First Name is required';
+    if (!lastName)  fieldErrors.lastName  = 'Last Name is required';
+    if (!password)  fieldErrors.password  = 'Password is required';
 
-    // Backend validation for terms acceptance
-    if (!termsAccepted || termsAccepted !== 'on') {
-      return Response.json(
+    if (Object.keys(fieldErrors).length)
+      return json({ success: false, error: { fieldErrors } }, 400);
+
+    if (termsAccepted !== 'on')
+      return json(
         {
           success: false,
-          error: {
-            message: 'You must accept the terms and conditions to proceed.',
-          },
+          error: { message: 'You must accept the terms and conditions to proceed.' },
         },
-        { status: 400 }
+        400,
       );
+
+    /* 2. Attempt registration (catch duplicate‑email → 400) */
+    let userId: number;
+    try {
+      userId = await authenticator.authenticate('register', request);
+    } catch (err: unknown) {
+      // remix‑auth‑form variants
+      if (err instanceof RegistrationError && err.code === 'Email already exists')
+        return duplicateEmailResponse();
+
+      if (err instanceof Response) {
+        /* NEW: treat any 401 as Duplicate E‑mail */
+        if (err.status === 401) return duplicateEmailResponse();
+
+        // JSON body fallback
+        const body = await err.clone().json().catch(() => ({}));
+        if (
+          body?.error?.code === 'Email already exists' ||
+          body?.error?.message?.toLowerCase()?.includes('email already exists') ||
+          body?.message?.toLowerCase()?.includes('email already exists')
+        )
+          return duplicateEmailResponse();
+      }
+
+      // plain Error thrown by strategy
+      if (
+        err instanceof Error &&
+        err.message.toLowerCase().includes('email already exists')
+      )
+        return duplicateEmailResponse();
+
+      throw err; // anything else bubbles to global handler
     }
 
-    const userId = await authenticator.authenticate('register', request);
-
-    newEmployer = (await getProfileInfo({ userId })) as Employer;
-
-    if (!newEmployer) {
-      return Response.json(
+    /* 3. Finish profile & send verification mail */
+    const newEmployer = (await getProfileInfo({ userId })) as Employer | null;
+    if (!newEmployer)
+      return json(
         {
           success: false,
-          error: {
-            message: 'Failed to register user. Please try again later.',
-          },
+          error: { message: 'Failed to register user. Please try again later.' },
         },
-        { status: 500 }
+        500,
       );
-    }
 
-    const verificationToken = await generateVerificationToken(userId);
+    const token = await generateVerificationToken(userId);
     await sendEmail({
       type: 'accountVerification',
-      email: email as string,
-      name: (firstName || lastName) as string,
+      email,
+      name: `${firstName} ${lastName}`,
       data: {
-        // TODO: change the verification link to the actual production URL
-        verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
+        verificationLink: `${process.env.HOST_URL}/verify-account?token=${token}`,
       },
     });
 
-    return Response.json({ success: true, newEmployer });
-  } catch (error) {
-    if (error instanceof RegistrationError && error.code === 'Email already exists') {
-      return Response.json(
-        {
-          success: false,
-          error: { message: 'The email address is already registered.' },
-        },
-        { status: 400 }
-      );
-    }
+    return json({ success: true, newEmployer });
+  } catch (err: unknown) {
+    /* final safety‑net – still convert dup‑email to 400 */
+    if (err instanceof RegistrationError && err.code === 'Email already exists')
+      return duplicateEmailResponse();
+    if (
+      err instanceof Error &&
+      err.message.toLowerCase().includes('email already exists')
+    )
+      return duplicateEmailResponse();
 
-    return Response.json(
+    console.error('[Signup Employer Error]', err);
+    return json(
       {
         success: false,
-        error: {
-          message: 'An unexpected error occurred. Please try again later.',
-        },
+        error: { message: 'An unexpected error occurred. Please try again later.' },
       },
-      { status: 500 }
+      500,
     );
   }
 }
 
+/* ──────────────────────────── LOADER ─────────────────────────────── */
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request);
-
-  // SO !--IMPORTANT--!
-  // If the user is authenticated, redirect to the dashboard.
-  if (user) {
-    return Response.json({ redirect: '/dashboard' });
-  }
-
-  // Otherwise, let them stay on the signup page.
-  return Response.json({ success: false });
+  if (user) return json({ redirect: '/dashboard' });
+  return json({ success: false });
 }
+
+/* ──────────────────────────── PAGE SHELL ─────────────────────────── */
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.8' }}>
+    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: 1.8 }}>
       <SignUpEmployerPage />
     </div>
   );

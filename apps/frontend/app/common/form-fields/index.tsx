@@ -16,6 +16,7 @@ interface AppFormFieldProps {
   defaultValue?: string | number;
   onChange?: any;
   min?: number;
+  error?: string; // ✅ Added error support
 }
 
 const AppFormField = ({
@@ -31,9 +32,9 @@ const AppFormField = ({
   defaultValue,
   onChange,
   min,
+  error,
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
-
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -46,13 +47,13 @@ const AppFormField = ({
 
   const handleNumberChange = event => {
     const { value } = event.target;
-    let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+    let numericValue = value.replace(/\D/g, '');
 
     if (min !== undefined && Number(numericValue) < min) {
-      numericValue = min.toString(); // ✅ Enforce min value
+      numericValue = min.toString();
     }
 
-    setSelectedValue(numericValue); // Update state
+    setSelectedValue(numericValue);
 
     if (onChange) {
       onChange({ target: { id, name, value: numericValue } });
@@ -72,8 +73,6 @@ const AppFormField = ({
   return (
     <div className={`relative w-full ${className}`}>
       {/* INPUTS */}
-      {/* INPUTS */}
-      {/* INPUTS */}
       {id === 'phoneState' ? (
         <PhoneNumberField
           id={id}
@@ -85,17 +84,16 @@ const AppFormField = ({
       ) : (
         <>
           {type === 'select' ? (
-            // select input
             <select
               id={id}
               name={name}
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none bg-white text-gray-900 autofill-fix`}
               spellCheck="false"
-              defaultValue={selectedValue} // Controlled component
+              defaultValue={selectedValue}
               onChange={e => {
                 const value = e.target.value;
-                setSelectedValue(value); // Update state with selected value
-                if (onChange) onChange(value); // Call the provided onChange handler
+                setSelectedValue(value);
+                if (onChange) onChange(value);
               }}
             >
               <option value="" disabled hidden></option>
@@ -105,9 +103,9 @@ const AppFormField = ({
                 </option>
               ))}
             </select>
-          ) : type === 'number' || id === 'number' ? ( // Numeric input for id="number"
+          ) : type === 'number' || id === 'number' ? (
             <input
-              type="number" // type="tel" is used for better UX on mobile devices
+              type="number"
               id={id}
               name={name}
               placeholder={placeholder}
@@ -115,32 +113,27 @@ const AppFormField = ({
               autoComplete="on"
               spellCheck="false"
               defaultValue={defaultValue}
-              onChange={handleNumberChange} // Custom handler for numeric validation
-              min={min} // ✅ Apply the min prop
+              onChange={handleNumberChange}
+              min={min}
             />
           ) : type === 'increment' ? (
             <div className="flex flex-col items-center space-y-4 w-full">
               <div className="flex items-center border border-gray-300 rounded-xl w-full">
-                {/* - Button */}
                 <button
                   type="button"
                   className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
-                  style={{ borderRight: 'none' }} // Remove the right border of the - button
+                  style={{ borderRight: 'none' }}
                   onClick={() => handleIncrement(-1)}
                 >
                   <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
                 </button>
-
-                {/* Input Display */}
                 <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
                   {selectedValue}
                 </div>
-
-                {/* + Button */}
                 <button
                   type="button"
                   className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
-                  style={{ borderLeft: 'none' }} // Remove the left border of the + button
+                  style={{ borderLeft: 'none' }}
                   onClick={() => handleIncrement(1)}
                 >
                   <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
@@ -148,19 +141,17 @@ const AppFormField = ({
               </div>
             </div>
           ) : type === 'textarea' ? (
-            // textarea input
             <textarea
               id={id}
               name={name}
               placeholder={placeholder}
-              style={{ height: textareaHeight }} // Apply dynamic height style
+              style={{ height: textareaHeight }}
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix resize-none`}
               spellCheck="false"
-              defaultValue={defaultValue} // Handle default value for textarea
-              onChange={onChange} // Attach `onChange` here
+              defaultValue={defaultValue}
+              onChange={onChange}
             ></textarea>
           ) : (
-            // else inputs
             <input
               type={type === 'password' && showPassword ? 'text' : type}
               id={id}
@@ -177,51 +168,34 @@ const AppFormField = ({
       )}
 
       {/* LABELS */}
-      {/* LABELS */}
-      {/* LABELS */}
       {type === 'password' ? (
-        // password label
-        <label
-          htmlFor={id}
-          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
-        >
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
           {label}
         </label>
       ) : type === 'textarea' ? (
-        // textarea label
-        <label
-          htmlFor={id}
-          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
-        >
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
           {label}
         </label>
       ) : (
-        // else labels
-        <label
-          htmlFor={id}
-          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
+        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
-        >
+                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
           {label}
         </label>
       )}
 
       {/* BUTTONS */}
-      {/* BUTTONS */}
-      {/* BUTTONS */}
       {type === 'password' && (
-        // password button
         <button
           type="button"
           onClick={togglePasswordVisibility}
@@ -231,38 +205,22 @@ const AppFormField = ({
         </button>
       )}
 
-      {/* PASSWORD SHOW & HIDE ICONS */}
-      {/* PASSWORD SHOW & HIDE ICONS */}
-      {/* PASSWORD SHOW & HIDE ICONS */}
-      {type === 'password' && showPasswordHint && (
-        <p className="text-xs text-gray-600 mt-3 mb-6 ml-4">
-          Password must be 8 characters, upper capital, lower case, symbols
-        </p>
-      )}
+{/* ✅ ERROR MESSAGE */}
+{error && (
+  <p className="ml-1 mt-2 text-sm text-red-600 font-medium">
+    {error}
+  </p>
+)}
+
+{type === 'password' && showPasswordHint && (
+  <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
+    Password must be 8 characters, upper capital, lower case, symbols
+  </p>
+)}
+
+
     </div>
   );
 };
-
-/* AppFormField.propTypes = {
-  type: PropTypes.string,
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  label: PropTypes.node,
-  placeholder: PropTypes.string,
-  showPasswordHint: PropTypes.bool,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ),
-  className: PropTypes.string,
-  col: PropTypes.number,
-  placeholderTextSize: PropTypes.string,
-  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onChange: PropTypes.func,
-  useRichText: PropTypes.bool,
-  min: PropTypes.number, // ✅ Add min to prop types
-}; */
 
 export default AppFormField;
