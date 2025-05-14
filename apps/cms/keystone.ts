@@ -2,6 +2,11 @@ import { config } from '@keystone-6/core';
 import { lists } from './schema';
 import { withAuth, session } from './auth';
 
+// load env variables
+require('dotenv').config();
+
+console.log(process.env.POSTGRESQL_CONNECTION_STRING);
+
 export default withAuth(
   config({
     db: {
