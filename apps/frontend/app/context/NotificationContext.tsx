@@ -21,6 +21,7 @@ declare global {
   interface Window {
     ENV?: {
       API_URL?: string;
+      BACKEND_URL?: string;
     };
   }
 }
@@ -70,7 +71,7 @@ export function NotificationProvider({
       // Get the actual hostname but use port 3001 for backend
       const baseUrl =
         typeof window !== 'undefined'
-          ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
+          ? `${window.ENV.BACKEND_URL}` // Use port 3001 for backend
           : 'http://localhost:3001'; // Default fallback
 
       const response = await fetch(`${baseUrl}/notifications/user/${userId}?limit=50`);
@@ -108,7 +109,7 @@ export function NotificationProvider({
     // Get the actual hostname but use port 3001 for backend
     const baseUrl =
       typeof window !== 'undefined'
-        ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
+        ? `${window.ENV.BACKEND_URL}` // Use port 3001 for backend
         : 'http://localhost:3001'; // Default fallback
 
     const url = `${baseUrl}/events/notifications/${userId}`;
