@@ -20,20 +20,23 @@ import { UserProvider } from '~/context/UserContext';
 
 export const handle = { i18n: ['translation'] };
 
-type LoaderData = {
-  locale: string;
-};
+function getPublicEnv() {
+  return {
+    BACKEND_URL: process.env.BACKEND_URL,
+  };
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18nServer.getLocale(request);
-  return json<LoaderData>(
-    { locale },
+  return Response.json(
+    { locale, ENV: getPublicEnv() },
     { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
   );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const loaderData = useRouteLoaderData<typeof loader>('root');
+  const { ENV } = useLoaderData<typeof loader>();
   return (
     // if loaderData is not null or empty, it will take the .locale property of the localeData
     // but if it is empty, "en" will be provided :)
@@ -41,6 +44,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(ENV)};`,
+          }}
+        />
         <Meta />
         <Links />
       </head>
@@ -67,6 +75,8 @@ export const meta: MetaFunction = () => {
 export default function App() {
   const { locale } = useLoaderData<typeof loader>();
   useChangeLanguage(locale);
+  const { ENV } = useLoaderData<typeof loader>();
+
   return (
     <UserProvider>
       <Outlet />
