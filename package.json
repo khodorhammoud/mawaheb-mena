@@ -1,18 +1,37 @@
 {
   "name": "mawaheb-mena-full-project",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "test": "turbo run test",
+    "test:frontend": "pnpm --filter frontend test",
+    "test:frontend:e2e": "pnpm --filter frontend e2e",
+    "db:test:up": "docker-compose -f docker-compose.test.yml up -d",
+    "db:test:down": "docker-compose -f docker-compose.test.yml down -v",
+    "db:test:setup": "node scripts/setup-test-db.js",
+    "db:test:cms:setup": "node scripts/setup-test-cms-db.js",
+    "db:test:cms:seed": "node scripts/seed-test-cms-db.js",
+    "db:test:teardown": "node scripts/teardown-test-db.js",
+    "db:test:cms:teardown": "node scripts/teardown-test-cms-db.js",
+    "test:setup:debug": "node scripts/test-setup.js",
+    "verify:schema": "node scripts/verify-schema-path.js",
+    "test:with-db": "pnpm db:test:up && pnpm db:test:setup && pnpm db:test:cms:setup && pnpm db:test:cms:seed && pnpm test && pnpm db:test:teardown && pnpm db:test:cms:teardown && pnpm db:test:down"
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
+    "@types/node": "^20.11.25",
     "@vitejs/plugin-react": "^4.3.1",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.42.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-react-hooks": "^5.1.0-rc-8971381549-20240625",
+    "postgres": "^3.4.4",
     "prettier": "^3.2.5",
+    "tsx": "^4.7.0",
     "turbo": "^2.0.11",
     "typedoc": "^0.26.2",
     "typescript": "^5.4.5"
