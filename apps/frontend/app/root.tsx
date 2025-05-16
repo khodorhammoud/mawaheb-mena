@@ -20,23 +20,22 @@ import { UserProvider } from '~/context/UserContext';
 
 export const handle = { i18n: ['translation'] };
 
-function getPublicEnv() {
-  return {
-    BACKEND_URL: process.env.BACKEND_URL,
-  };
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18nServer.getLocale(request);
   return Response.json(
-    { locale, ENV: getPublicEnv() },
+    {
+      locale,
+      ENV: {
+        BACKEND_URL: process.env.BACKEND_URL,
+      },
+    },
     { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
   );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const loaderData = useRouteLoaderData<typeof loader>('root');
-  const { ENV } = useLoaderData<typeof loader>();
+  const { ENV } = loaderData;
   return (
     // if loaderData is not null or empty, it will take the .locale property of the localeData
     // but if it is empty, "en" will be provided :)
