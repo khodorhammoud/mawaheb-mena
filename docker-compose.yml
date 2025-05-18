@@ -35,10 +35,11 @@ services:
       - '3002:3002'
     environment:
       - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - REDIS_HOST=redis
+      # - NODE_TLS_REJECT_UNAUTHORIZED=0
       - FRONTEND_URL=http://localhost:5173
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - PORT=3002
+      - REDIS_PORT=6379
     restart: unless-stopped
     networks:
       - app-network
