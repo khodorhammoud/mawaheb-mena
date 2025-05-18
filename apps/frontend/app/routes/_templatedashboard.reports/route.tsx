@@ -25,7 +25,7 @@ function Progress({ value = 0, className = '' }) {
 // Fetcher function to get the skillfolio data
 async function getSkillfolio(userId: number) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3002';
     const response = await fetch(`${backendUrl}/skillfolio/get/${userId}`);
 
     if (response.ok) {
