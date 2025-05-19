@@ -9,7 +9,6 @@ services:
       - '5173:5173'
     environment:
       - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
       - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
     networks:
@@ -62,7 +61,6 @@ services:
       - '3001:3001'
     environment:
       - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
       - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
     networks:
