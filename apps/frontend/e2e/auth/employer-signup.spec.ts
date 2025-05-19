@@ -102,7 +102,3 @@ test.describe('Employer Signup Flow', () => {
     });
   });
 });
-
-// 1- time out >
-// 2- test mara successfulll 2 la2
-// 3- lesh amrar l check ma 3m tesht8il, 3m ytsht8il l click

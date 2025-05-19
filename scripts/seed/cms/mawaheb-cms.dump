@@ -1,0 +1,1390 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.8
+-- Dumped by pg_dump version 16.3
+
+-- Started on 2025-03-13 12:44:10
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 5 (class 2615 OID 475161)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- TOC entry 3614 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 231 (class 1259 OID 516096)
+-- Name: Achievement; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Achievement" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    count integer NOT NULL,
+    "desc" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Achievement" OWNER TO postgres;
+
+--
+-- TOC entry 240 (class 1259 OID 548872)
+-- Name: AddAMember; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."AddAMember" (
+    id uuid NOT NULL,
+    name text DEFAULT ''::text NOT NULL,
+    "position" text DEFAULT ''::text NOT NULL,
+    role text DEFAULT ''::text NOT NULL,
+    "imageURL" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."AddAMember" OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 475755)
+-- Name: BlogCards; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."BlogCards" (
+    id uuid NOT NULL,
+    "imageURL" text DEFAULT ''::text NOT NULL,
+    name text DEFAULT ''::text NOT NULL,
+    "readFrom" text DEFAULT ''::text NOT NULL,
+    content text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."BlogCards" OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1259 OID 573440)
+-- Name: ContactUsForm; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ContactUsForm" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    "subHeadline" uuid
+);
+
+
+ALTER TABLE public."ContactUsForm" OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 475734)
+-- Name: FAQs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."FAQs" (
+    id uuid NOT NULL,
+    "faqNb" integer NOT NULL,
+    "faqQuestion" text DEFAULT ''::text NOT NULL,
+    "faqAnswer" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."FAQs" OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 475189)
+-- Name: Feature; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Feature" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    description text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Feature" OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 475206)
+-- Name: HowItWorks; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."HowItWorks" (
+    id uuid NOT NULL,
+    "stepNb" integer NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    description text DEFAULT ''::text NOT NULL,
+    "imageURL" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."HowItWorks" OWNER TO postgres;
+
+--
+-- TOC entry 238 (class 1259 OID 540672)
+-- Name: HowWeMakeDiff; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."HowWeMakeDiff" (
+    id uuid NOT NULL,
+    "boxId" integer NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    description text DEFAULT ''::text NOT NULL,
+    "iconSVG" text DEFAULT ''::text NOT NULL,
+    "belongingText" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."HowWeMakeDiff" OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 532480)
+-- Name: ImageSwiper; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ImageSwiper" (
+    id uuid NOT NULL,
+    "imageURL" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."ImageSwiper" OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 491520)
+-- Name: Job; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Job" (
+    id uuid NOT NULL,
+    "jobTitle" text DEFAULT ''::text NOT NULL,
+    "postedFrom" integer NOT NULL,
+    "priceAmout" integer NOT NULL,
+    "priceType" text DEFAULT ''::text NOT NULL,
+    "jobDesc" text DEFAULT ''::text NOT NULL,
+    "levelRequired" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Job" OWNER TO postgres;
+
+--
+-- TOC entry 245 (class 1259 OID 581632)
+-- Name: Location; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Location" (
+    id uuid NOT NULL,
+    location text DEFAULT ''::text NOT NULL,
+    area text DEFAULT ''::text NOT NULL,
+    "contactNumber" text DEFAULT ''::text NOT NULL,
+    email text DEFAULT ''::text NOT NULL,
+    "googleMapsLink" text DEFAULT ''::text NOT NULL,
+    "localTime" timestamp(3) without time zone,
+    "imageUrl" text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Location" OWNER TO postgres;
+
+--
+-- TOC entry 234 (class 1259 OID 524304)
+-- Name: Mawaheb; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Mawaheb" (
+    id uuid NOT NULL
+);
+
+
+ALTER TABLE public."Mawaheb" OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 524296)
+-- Name: MawahebDescription; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."MawahebDescription" (
+    id uuid NOT NULL,
+    description text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."MawahebDescription" OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 524288)
+-- Name: MawahebTopic; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."MawahebTopic" (
+    id uuid NOT NULL,
+    topic text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."MawahebTopic" OWNER TO postgres;
+
+--
+-- TOC entry 241 (class 1259 OID 548883)
+-- Name: MeetTheTeam; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."MeetTheTeam" (
+    id uuid NOT NULL,
+    "subHeadline" uuid
+);
+
+
+ALTER TABLE public."MeetTheTeam" OWNER TO postgres;
+
+--
+-- TOC entry 216 (class 1259 OID 475172)
+-- Name: Post; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Post" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    content jsonb DEFAULT '[{"type": "paragraph", "children": [{"text": ""}]}]'::jsonb NOT NULL,
+    author uuid
+);
+
+
+ALTER TABLE public."Post" OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 475709)
+-- Name: PostHowItWorks; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."PostHowItWorks" (
+    id uuid NOT NULL,
+    content text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."PostHowItWorks" OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 475717)
+-- Name: PreWhatTheySayAboutUs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."PreWhatTheySayAboutUs" (
+    id uuid NOT NULL,
+    content text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."PreWhatTheySayAboutUs" OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 499712)
+-- Name: Skill; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Skill" (
+    id uuid NOT NULL,
+    name text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Skill" OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 548864)
+-- Name: SubHeadline; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."SubHeadline" (
+    id uuid NOT NULL,
+    content text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."SubHeadline" OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 475181)
+-- Name: Tag; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Tag" (
+    id uuid NOT NULL,
+    name text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Tag" OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 475743)
+-- Name: Testimonials; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Testimonials" (
+    id uuid NOT NULL,
+    "iconSVG" text DEFAULT ''::text NOT NULL,
+    comment text DEFAULT ''::text NOT NULL,
+    "imageURL" text DEFAULT ''::text NOT NULL,
+    name text DEFAULT ''::text NOT NULL,
+    role text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."Testimonials" OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1259 OID 475162)
+-- Name: User; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."User" (
+    id uuid NOT NULL,
+    name text DEFAULT ''::text NOT NULL,
+    email text DEFAULT ''::text NOT NULL,
+    password text NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public."User" OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1259 OID 557056)
+-- Name: WantToJoinUs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."WantToJoinUs" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    "subHeadline" uuid,
+    emailbutton text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."WantToJoinUs" OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 475725)
+-- Name: WhyWorkWithUs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."WhyWorkWithUs" (
+    id uuid NOT NULL,
+    title text DEFAULT ''::text NOT NULL,
+    description text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."WhyWorkWithUs" OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 499720)
+-- Name: _Job_jobSkills; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."_Job_jobSkills" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+ALTER TABLE public."_Job_jobSkills" OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 524312)
+-- Name: _Mawaheb_mawahebDescription; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."_Mawaheb_mawahebDescription" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+ALTER TABLE public."_Mawaheb_mawahebDescription" OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 524309)
+-- Name: _Mawaheb_mawahebTopics; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."_Mawaheb_mawahebTopics" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+ALTER TABLE public."_Mawaheb_mawahebTopics" OWNER TO postgres;
+
+--
+-- TOC entry 242 (class 1259 OID 548888)
+-- Name: _MeetTheTeam_members; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."_MeetTheTeam_members" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+ALTER TABLE public."_MeetTheTeam_members" OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 475216)
+-- Name: _Post_tags; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."_Post_tags" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+ALTER TABLE public."_Post_tags" OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 475493)
+-- Name: forEmployersSubHeadline; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."forEmployersSubHeadline" (
+    id uuid NOT NULL,
+    content text DEFAULT ''::text NOT NULL
+);
+
+
+ALTER TABLE public."forEmployersSubHeadline" OWNER TO postgres;
+
+--
+-- TOC entry 3594 (class 0 OID 516096)
+-- Dependencies: 231
+-- Data for Name: Achievement; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Achievement" (id, title, count, "desc") FROM stdin;
+b994312c-a6ed-4b5d-8119-912149a2e45d	Open Jobs Opportunities	100	Our platform currently offers a multitude of open job opportunities, connecting freelancers with diverse jobs and clients seeking their expertise.
+9ba88285-05cd-4240-a152-fd2a8b0c0ebb	Jobs are done	40	Our platform has facilitated over 40 successful jobs, delivering exceptional results for clients and freelancers alike.
+d893ac5d-1849-40b0-8c50-9818bdda1c23	Jobs posted	50	Over 200 jobs were posted via our platform, providing ample opportunities for freelancers to find work.
+\.
+
+
+--
+-- TOC entry 3603 (class 0 OID 548872)
+-- Dependencies: 240
+-- Data for Name: AddAMember; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."AddAMember" (id, name, "position", role, "imageURL") FROM stdin;
+8930aa33-a38e-4e7a-a97e-eec766985d91	Khodor Hammoud	Founder	Operations Director	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+e0684c7d-58b7-4621-9289-9ccf2bb40423	hoooii	hii	hahh	helooz
+5280e6b3-f42b-430d-af2c-6d154ce0a7f2	Ibrahim Ammar	Fouder	Managing Director & CTO	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+ab5bd78c-bf91-46f9-a9dc-3398199e38a9	Khodor Hammoud	Fouder	Managing Director & CTO	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+56af06a4-548c-44b3-bb36-dad6cfff3b82	Samir Awarkeh	Founder	Regional Manager, Dunder Mifflin	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+f185daf8-ffd2-4351-889d-154d0725c572	wix	Mobarmij 7ata bl 7areb :)	baramaje :))))	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+\.
+
+
+--
+-- TOC entry 3590 (class 0 OID 475755)
+-- Dependencies: 227
+-- Data for Name: BlogCards; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."BlogCards" (id, "imageURL", name, "readFrom", content) FROM stdin;
+88c1325c-cd9b-4866-a284-0d6c41991dec	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Empowering Local Talent: Layla's Journey	10 mins read	Layla's story is a testament to the transformative power of opportunity and determination. Starting with basic programming knowledge...
+11eeb38d-6bd3-43d5-8b5f-863cc839ead2	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Empowering Local Talent: Layla's Journey	10 mins read	Layla's story is a testament to the transformative power of opportunity and determination. Starting with basic programming knowledge...
+4e814183-e728-4240-a990-8958429d94a5	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Empowering Local Talent: Layla's Journey	10 mins read	Layla's story is a testament to the transformative power of opportunity and determination. Starting with basic programming knowledge...
+\.
+
+
+--
+-- TOC entry 3607 (class 0 OID 573440)
+-- Dependencies: 244
+-- Data for Name: ContactUsForm; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."ContactUsForm" (id, title, "subHeadline") FROM stdin;
+036cd213-d4c2-42f1-b7d1-3f281066af5e	Have a question or need assistance? We're here to help! Reach out to us	5cda5d8a-7d69-4085-bf26-95a61fea4f12
+\.
+
+
+--
+-- TOC entry 3588 (class 0 OID 475734)
+-- Dependencies: 225
+-- Data for Name: FAQs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."FAQs" (id, "faqNb", "faqQuestion", "faqAnswer") FROM stdin;
+98306c86-50c9-4b33-ac0d-4c5c990bd9a7	1	How does your AI matching tool work?	Our AI matching tool analyzes project requirements, freelancer skills, and past performance data to identify the most suitable match for your project. It uses advanced algorithms to ensure precise and efficient matchmaking, saving you time and effort in finding the right freelancer.
+1c20c681-ad11-498d-a612-29c1e27945c7	2	What industries do your freelancers specialize in?	Our freelancers specialize in a wide range of industries including tech, design, writing, marketing, and more.
+2cad5cc3-9169-44e6-abbc-597fccb93136	3	How do you ensure the quality of freelancers on your platform?	We have a rigorous vetting process that includes reviewing portfolios, conducting interviews, and verifying skills and experience to ensure that we provide top-quality freelancers.
+c61773f7-5440-41e2-b4bd-d59170af98cc	4	What if I'm not satisfied with the freelancer's work?	If you're not satisfied with a freelancer's work, we offer a satisfaction guarantee and will work with you to find a suitable resolution, which may include reworking the project or matching you with a different freelancer.
+a9599ca7-039c-4d31-ae5c-adbf86fb7bff	5	What are your pricing and payment policies?	Our pricing is competitive and transparent. Payments are handled securely through our platform, and we offer various payment options to suit your needs.
+\.
+
+
+--
+-- TOC entry 3581 (class 0 OID 475189)
+-- Dependencies: 218
+-- Data for Name: Feature; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Feature" (id, title, description) FROM stdin;
+47e156fc-86d1-4d57-a230-1e6c26792041	Tailored Software Solutions	Harness the expertise of top-notch freelancers proficient in a wide array of skills to craft outstanding digital products tailored to your needs. Our curated talent pool includes specialists in front-end and back-end development, design, content creation.
+18122aa5-89f9-479a-ac3a-d820e5a8ef39	Expert Freelancer Matching	Let us assist you in finding exceptional freelancers who can deliver outstanding results for your next big idea. Our platform connects you with top talent, ensuring your projects are completed with the highest level of quality and professionalism.
+cd123402-6532-4126-9938-8329dbcfe0be	AI-Powered Matchmaking	Utilize our AI matching system to connect with the perfect freelancers who possess the precise skills to bring your vision to life. Experience seamless project execution with talent tailored to your specific needs, ensuring exceptional quality and results.
+0d64f258-171d-4aad-9eb8-c72fd2882d08	Comprehensive Crew Formation	Build your complete crew of talented freelancers with us, ensuring every aspect of your jobs is handled perfectly. From project initiation to final delivery, our experts will manage every detail, providing you with exceptional quality and seamless execution.
+\.
+
+
+--
+-- TOC entry 3582 (class 0 OID 475206)
+-- Dependencies: 219
+-- Data for Name: HowItWorks; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."HowItWorks" (id, "stepNb", title, description, "imageURL") FROM stdin;
+9cec0955-dbc1-4ea8-947d-b74531119267	1	Get in Touch	Start by reaching out to our team to begin the process. Whether you have a clear vision or need guidance, we’re here to assist you every step of the way.	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+d2e50394-9933-46ba-9000-c4cba540dc33	2	Define Your Vision	Let’s delve into the specifics of your jobs. Share your objectives, requirements, and any preferences you have regarding the skill set or experience of the freelancer you’re looking for.	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+a0194790-87e3-477f-b91e-3220f372bd97	3	AI-Powered Matchmaking	Our cutting-edge AI matching tool will analyze your job details and match you with the most suitable freelancer from our talented pool. With precision and efficiency, we ensure you’re paired with the perfect match.	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+1a4298bb-9915-4d65-8cb5-23cff711ee60	4	Unlock Success	Once the match is made, you’re on your way to success. Leverage the expertise of your matched freelancer as they bring your jobs to life. From development to delivery, we’re dedicated to ensuring your satisfaction and the success of your jobs.	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+\.
+
+
+--
+-- TOC entry 3601 (class 0 OID 540672)
+-- Dependencies: 238
+-- Data for Name: HowWeMakeDiff; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."HowWeMakeDiff" (id, "boxId", title, description, "iconSVG", "belongingText") FROM stdin;
+44d28cbe-5c97-4cbb-b99a-ca14073b1e0f	1	Pursuing Excellence	We relentlessly pursue excellence in all aspects of our work, striving to deliver exceptional quality and value to our clients and freelancers alike.	star-icon	At Mawaheb MENA, actions speak louder than words. Our values are the\n    cornerstone of our identity, shaping every interaction and decision\n    we make. They guide us as we strive to make a meaningful impact in\n    the freelance community.\n    <br />\n    <br />\n    We believe in ...
+7fe8efce-125c-43c9-9f15-1b5e023ffa77	2	Upholding Integrity	We conduct ourselves with unwavering honesty, transparency, and accountability, fostering trust and reliability in all our relationships.	integrity-icon	There is no food, no supplies, no water, even the houses are damaged and destroyed!\n    <br />\n    <br />\n    We love to ...
+3569dacf-34d5-44e9-8e2e-d73964e00c0b	3	Pursuing Excellence	We relentlessly pursue excellence in all aspects of our work, striving to deliver exceptional quality and value to our clients and freelancers alike.	star-icon	At Mawaheb MENA, actions speak louder than words. Our values are the\n    cornerstone of our identity, shaping every interaction and decision\n    we make. They guide us as we strive to make a meaningful impact in\n    the freelance community.\n    <br />\n    <br />\n    We believe in ...
+a658bfec-4a3a-48c0-99e5-01fba3a77eab	4	Pursuing Excellence	helllo	star-icon	mar&abaaaa
+\.
+
+
+--
+-- TOC entry 3600 (class 0 OID 532480)
+-- Dependencies: 237
+-- Data for Name: ImageSwiper; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."ImageSwiper" (id, "imageURL") FROM stdin;
+3a2b0e9f-3bab-40bc-8946-a8f3630e9532	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+69ab3875-c046-45c6-a864-749b040c49f6	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+62246d27-9dd2-4d98-95c8-b12392fb6554	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+4ede5eb2-ed4f-420d-ad9b-98095b9619db	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+a9fa7f00-0594-4f2d-bc66-e82c04706aea	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+\.
+
+
+--
+-- TOC entry 3591 (class 0 OID 491520)
+-- Dependencies: 228
+-- Data for Name: Job; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Job" (id, "jobTitle", "postedFrom", "priceAmout", "priceType", "jobDesc", "levelRequired") FROM stdin;
+6e88e7c7-0d73-4849-97d0-129d60c749e8	IOS, Android Sensor API Plugin for Unity	20	500	Fixed price	We are looking for the candidate having 0-3 years of experience in below technologies skills: IOS, ANdroinnd	Entry Level
+7c205585-a5f5-4c82-b6c0-107e2cea838a	IOS, Android Sensor API Plugin for Unity	20	500	Fixed price	We are looking for the candidate having 0-3 years of experience in below technologies skills: IOS, ANdroinnd	Entry Level
+\.
+
+
+--
+-- TOC entry 3608 (class 0 OID 581632)
+-- Dependencies: 245
+-- Data for Name: Location; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Location" (id, location, area, "contactNumber", email, "googleMapsLink", "localTime", "imageUrl") FROM stdin;
+7c37dbde-9417-4e0f-b8d9-c8ca2e793c84	Dubai	Business Bay	0547304995	info@mawaheb.mena	Google Maps	2024-09-30 22:14:00	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg
+\.
+
+
+--
+-- TOC entry 3597 (class 0 OID 524304)
+-- Dependencies: 234
+-- Data for Name: Mawaheb; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Mawaheb" (id) FROM stdin;
+ed6b085f-037f-4979-92d4-959228377710
+\.
+
+
+--
+-- TOC entry 3596 (class 0 OID 524296)
+-- Dependencies: 233
+-- Data for Name: MawahebDescription; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."MawahebDescription" (id, description) FROM stdin;
+3e07c3bd-3e65-4175-bd4e-ce7142f6fe22	We envision Mawaheb MENA as the paramount platform where talent meets opportunity, revolutionizing the freelance landscape in the MENA region and beyond.
+4c212495-7e3c-4384-9e24-e889cc04caf6	Our purpose is to serve as a catalyst for growth and opportunity, bridging the gap between talent and success in the MENA freelance ecosystem. We exist to empower freelancers with the skills, resources, and connections they need to thrive, while providing clients with access to top-tier professionals who can bring their jobs to life.
+a00cbf30-6e1e-44cc-af53-39c680f16f5e	Our mission is to uplift the freelance community in the MENA region by providing top-notch skills training, robust verification processes, and unparalleled opportunities for growth and collaboration.
+\.
+
+
+--
+-- TOC entry 3595 (class 0 OID 524288)
+-- Dependencies: 232
+-- Data for Name: MawahebTopic; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."MawahebTopic" (id, topic) FROM stdin;
+49a64802-d63e-4045-9902-89882d94db7e	Mawaheb MENA is more than just a job platform; it is a digital dynamic community dedicated to empowering freelancers, fostering skill enhancement, and facilitating seamless connections between skilled professionals and clients.
+adf718a7-56de-4616-80e0-b1f2dbded3c5	hieiiggjdffx
+\.
+
+
+--
+-- TOC entry 3604 (class 0 OID 548883)
+-- Dependencies: 241
+-- Data for Name: MeetTheTeam; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."MeetTheTeam" (id, "subHeadline") FROM stdin;
+27fb26bd-630a-4fb9-8d7d-a347d75f94a7	e569b204-ec45-45d7-b1b9-0575c1c89aba
+\.
+
+
+--
+-- TOC entry 3579 (class 0 OID 475172)
+-- Dependencies: 216
+-- Data for Name: Post; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Post" (id, title, content, author) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3585 (class 0 OID 475709)
+-- Dependencies: 222
+-- Data for Name: PostHowItWorks; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."PostHowItWorks" (id, content) FROM stdin;
+c5dbe3c4-3172-4671-88a3-877446e688bb	SEGMENTS THAT WE  ARE HAPPY OF WORK
+\.
+
+
+--
+-- TOC entry 3586 (class 0 OID 475717)
+-- Dependencies: 223
+-- Data for Name: PreWhatTheySayAboutUs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."PreWhatTheySayAboutUs" (id, content) FROM stdin;
+e945651c-d968-4ca4-998c-0ee1992545dd	 Python / Java / C# / C++ / Ruby / PHP / React /  Angular / Vue.js / Django / Ruby on Rails
+\.
+
+
+--
+-- TOC entry 3592 (class 0 OID 499712)
+-- Dependencies: 229
+-- Data for Name: Skill; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Skill" (id, name) FROM stdin;
+3d5f258a-2175-4185-a91d-7d9e50f04a68	Java Development
+f02e03e6-3c45-4e42-9d68-86fd4394f40f	Android
+1826a2e9-a673-4578-bd16-4be64e433c29	iOS
+57c4ec94-eb8b-47fb-90e3-440b650c2fc0	C#
+ec0fb74b-adcf-4043-a47c-0a76a3210299	C#
+986d50ce-7e17-4000-a261-714d45c2def2	Java Development
+\.
+
+
+--
+-- TOC entry 3602 (class 0 OID 548864)
+-- Dependencies: 239
+-- Data for Name: SubHeadline; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."SubHeadline" (id, content) FROM stdin;
+f21ef262-28d2-4b5f-a425-eb1900b14056	At Mawaheb MENA, our team is the heart and soul of our organization. Comprised of passionate individuals with diverse backgrounds and expertise, we're united by our shared commitment to empowering freelancers and driving success for our clients.
+ad876c7e-cc34-471f-9a86-e17540c0e01e	hello bro 
+4500d09d-a86d-4d1b-8782-a1f8e1becd1c	At Mawaheb MENA, our team is the heart and soul of our organization. Comprised of passionate individuals with diverse backgrounds and expertise, we're united by our shared commitment to empowering freelancers and driving success for our clients.
+c82cabed-907a-4f49-8ffb-03fc0e33cec2	helloz
+e569b204-ec45-45d7-b1b9-0575c1c89aba	At Mawaheb MENA, our team is the heart and soul of our organization. Comprised of passionate individuals with diverse backgrounds and expertise, we're united by our shared commitment to empowering freelancers and driving success for our clients.
+25eccf2e-3e29-42bf-90c1-9feb68f07631	We're on a mission to revolutionize the freelance industry. If you're ready to be part of an innovative team that's making a real impact, we want to hear from you. Let's create change together.
+d2c5092f-47b1-44be-bb9f-51b19976f6be	hii
+5cda5d8a-7d69-4085-bf26-95a61fea4f12	Whether you have questions about our platform, need technical support, or want to provide feedback, we're here to ensure you have a seamless experience with Mawaheb MENA
+\.
+
+
+--
+-- TOC entry 3580 (class 0 OID 475181)
+-- Dependencies: 217
+-- Data for Name: Tag; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Tag" (id, name) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3589 (class 0 OID 475743)
+-- Dependencies: 226
+-- Data for Name: Testimonials; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Testimonials" (id, "iconSVG", comment, "imageURL", name, role) FROM stdin;
+48442b71-ba95-4a60-90c9-6723b56cecf6	<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 48 48" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><mask id="ipTMaslowPyramids0"><g fill="none" stroke="#fff" stroke-width="4"><path fill="#555" fill-rule="evenodd" stroke-linejoin="round" d="m24 4l-9 15.98h18L24 4Z" clip-rule="evenodd"/><path stroke-linecap="round" d="M24 19.98L24.008 44"/><path stroke-linecap="round" stroke-linejoin="round" d="M11.347 25.975L2 42h15.005"/><path stroke-linecap="round" d="M9.1 30.995h7.904"/><path stroke-linecap="round" stroke-linejoin="round" d="M36.748 25.975L46.094 42H31"/><path stroke-linecap="round" d="M39.094 30.995H31.1"/></g></mask><path fill="currentColor" d="M0 0h48v48H0z" mask="url(#ipTMaslowPyramids0)"/></g></svg></svg>	"Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text"	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Rachelle Assad	CEO, Asaad for Construction
+26bbfde3-5370-4cbc-ad4e-d46db0e3a876	<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 48 48" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m24 15.94l-3.5 3.5h-4.94v4.95l-3.5 3.5l3.5 3.49v4.95h4.94l3.5 3.5l3.5-3.5h4.94v-4.95l3.5-3.49l-3.5-3.5v-4.95H27.5Zm14.36-9.75h-1.07a1.79 1.79 0 0 0-3.57 0H14.3a1.79 1.79 0 0 0-3.57 0H9.66A2.88 2.88 0 0 0 6.76 9v3.68h34.48V9.06a2.87 2.87 0 0 0-2.86-2.87Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M41.24 12.71H6.76v28a2.85 2.85 0 0 0 2.86 2.86h28.74a2.86 2.86 0 0 0 2.88-2.85h0Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M28.47 30.9A5.39 5.39 0 0 0 24 22.5m-4.47 2.37A5.4 5.4 0 0 0 24 33.28"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M24 23.33v2.03l-2.79-2.79L24 19.79h0v3.54zm0 9.11v-2.02l2.79 2.78L24 35.99v-3.55z"/></g></svg></svg>	"There are many variations of passages of Lorem Ipsum available, but the majority have injected humour"	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Sarah Johnson	CEO, Tech Innovators Inc
+498da697-eeac-4389-8ee5-5a2437ca1d4b	<svg width="512" height="512" viewBox="0 0 512 512" style="color:currentColor" xmlns="http://www.w3.org/2000/svg" class="h-full w-full"><rect width="512" height="512" x="0" y="0" rx="30" fill="transparent" stroke="transparent" stroke-width="0" stroke-opacity="100%" paint-order="stroke"></rect><svg width="256px" height="256px" viewBox="0 0 24 24" fill="currentColor" x="128" y="128" role="img" style="display:inline-block;vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 19a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5ZM10 5l2-2m-4.5 7a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5Zm.5 6l8-8M5.5 21a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5Zm13-13a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5ZM12 21l2-2"/></g></svg></svg>	"Various desktop publishing packages and web page editors now use Lorem Ipsum as their default model text."	https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg	Michael Scott	Regional Manager, Dunder Mifflin
+\.
+
+
+--
+-- TOC entry 3578 (class 0 OID 475162)
+-- Dependencies: 215
+-- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."User" (id, name, email, password, "createdAt") FROM stdin;
+86af9e6e-17ae-47da-b7ba-733c98b8725d	user	user@email.com	$2a$10$501m/SXV/WL6udCZu6pi9.1meEtYcAqQeKdG3HJw/fN92EUI/Y88O	2024-09-15 22:37:12.235
+\.
+
+
+--
+-- TOC entry 3606 (class 0 OID 557056)
+-- Dependencies: 243
+-- Data for Name: WantToJoinUs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."WantToJoinUs" (id, title, "subHeadline", emailbutton) FROM stdin;
+b2d834a0-d5de-42d3-8d8e-b37ce60d7230	WANT TO JOIN US	25eccf2e-3e29-42bf-90c1-9feb68f07631	apply@mawaheb.mena
+\.
+
+
+--
+-- TOC entry 3587 (class 0 OID 475725)
+-- Dependencies: 224
+-- Data for Name: WhyWorkWithUs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."WhyWorkWithUs" (id, title, description) FROM stdin;
+b6f65d3d-0b6b-4cd1-9041-e3d217e983db	WHY WORK WITH US?	At Mawaheb we understand the complexities involved in hiring freelancers. That's why we've streamlined the process to make it as effortless as possible for our clients. From handling all regulatory and legal obligations to ensuring compliance with industry standards, we take care of every detail so you can focus on your business goals. Trust us to navigate the intricacies of hiring, allowing you to enjoy a hassle-free experience from start to finish.
+\.
+
+
+--
+-- TOC entry 3593 (class 0 OID 499720)
+-- Dependencies: 230
+-- Data for Name: _Job_jobSkills; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."_Job_jobSkills" ("A", "B") FROM stdin;
+6e88e7c7-0d73-4849-97d0-129d60c749e8	3d5f258a-2175-4185-a91d-7d9e50f04a68
+6e88e7c7-0d73-4849-97d0-129d60c749e8	f02e03e6-3c45-4e42-9d68-86fd4394f40f
+6e88e7c7-0d73-4849-97d0-129d60c749e8	1826a2e9-a673-4578-bd16-4be64e433c29
+6e88e7c7-0d73-4849-97d0-129d60c749e8	57c4ec94-eb8b-47fb-90e3-440b650c2fc0
+7c205585-a5f5-4c82-b6c0-107e2cea838a	986d50ce-7e17-4000-a261-714d45c2def2
+\.
+
+
+--
+-- TOC entry 3599 (class 0 OID 524312)
+-- Dependencies: 236
+-- Data for Name: _Mawaheb_mawahebDescription; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."_Mawaheb_mawahebDescription" ("A", "B") FROM stdin;
+ed6b085f-037f-4979-92d4-959228377710	3e07c3bd-3e65-4175-bd4e-ce7142f6fe22
+ed6b085f-037f-4979-92d4-959228377710	4c212495-7e3c-4384-9e24-e889cc04caf6
+ed6b085f-037f-4979-92d4-959228377710	a00cbf30-6e1e-44cc-af53-39c680f16f5e
+\.
+
+
+--
+-- TOC entry 3598 (class 0 OID 524309)
+-- Dependencies: 235
+-- Data for Name: _Mawaheb_mawahebTopics; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."_Mawaheb_mawahebTopics" ("A", "B") FROM stdin;
+ed6b085f-037f-4979-92d4-959228377710	49a64802-d63e-4045-9902-89882d94db7e
+ed6b085f-037f-4979-92d4-959228377710	adf718a7-56de-4616-80e0-b1f2dbded3c5
+\.
+
+
+--
+-- TOC entry 3605 (class 0 OID 548888)
+-- Dependencies: 242
+-- Data for Name: _MeetTheTeam_members; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."_MeetTheTeam_members" ("A", "B") FROM stdin;
+5280e6b3-f42b-430d-af2c-6d154ce0a7f2	27fb26bd-630a-4fb9-8d7d-a347d75f94a7
+ab5bd78c-bf91-46f9-a9dc-3398199e38a9	27fb26bd-630a-4fb9-8d7d-a347d75f94a7
+56af06a4-548c-44b3-bb36-dad6cfff3b82	27fb26bd-630a-4fb9-8d7d-a347d75f94a7
+f185daf8-ffd2-4351-889d-154d0725c572	27fb26bd-630a-4fb9-8d7d-a347d75f94a7
+\.
+
+
+--
+-- TOC entry 3583 (class 0 OID 475216)
+-- Dependencies: 220
+-- Data for Name: _Post_tags; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."_Post_tags" ("A", "B") FROM stdin;
+\.
+
+
+--
+-- TOC entry 3584 (class 0 OID 475493)
+-- Dependencies: 221
+-- Data for Name: forEmployersSubHeadline; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."forEmployersSubHeadline" (id, content) FROM stdin;
+b8795566-41e9-4b4a-bfa5-60a0c3ff18b6	Mawaheb MENA a platform where you can find top talent, drive innovation, and achieve your business goals.
+\.
+
+
+--
+-- TOC entry 3389 (class 2606 OID 516104)
+-- Name: Achievement Achievement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Achievement"
+    ADD CONSTRAINT "Achievement_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3407 (class 2606 OID 548882)
+-- Name: AddAMember AddAMember_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."AddAMember"
+    ADD CONSTRAINT "AddAMember_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3381 (class 2606 OID 475765)
+-- Name: BlogCards BlogCards_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."BlogCards"
+    ADD CONSTRAINT "BlogCards_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3417 (class 2606 OID 573450)
+-- Name: ContactUsForm ContactUsForm_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ContactUsForm"
+    ADD CONSTRAINT "ContactUsForm_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3377 (class 2606 OID 475742)
+-- Name: FAQs FAQs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FAQs"
+    ADD CONSTRAINT "FAQs_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3363 (class 2606 OID 475197)
+-- Name: Feature Feature_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Feature"
+    ADD CONSTRAINT "Feature_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3365 (class 2606 OID 475215)
+-- Name: HowItWorks HowItWorks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."HowItWorks"
+    ADD CONSTRAINT "HowItWorks_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3403 (class 2606 OID 540682)
+-- Name: HowWeMakeDiff HowWeMakeDiff_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."HowWeMakeDiff"
+    ADD CONSTRAINT "HowWeMakeDiff_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3401 (class 2606 OID 532487)
+-- Name: ImageSwiper ImageSwiper_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ImageSwiper"
+    ADD CONSTRAINT "ImageSwiper_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3383 (class 2606 OID 491529)
+-- Name: Job Job_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Job"
+    ADD CONSTRAINT "Job_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3420 (class 2606 OID 581644)
+-- Name: Location Location_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Location"
+    ADD CONSTRAINT "Location_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3393 (class 2606 OID 524303)
+-- Name: MawahebDescription MawahebDescription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."MawahebDescription"
+    ADD CONSTRAINT "MawahebDescription_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3391 (class 2606 OID 524295)
+-- Name: MawahebTopic MawahebTopic_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."MawahebTopic"
+    ADD CONSTRAINT "MawahebTopic_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3395 (class 2606 OID 524308)
+-- Name: Mawaheb Mawaheb_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Mawaheb"
+    ADD CONSTRAINT "Mawaheb_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3409 (class 2606 OID 548887)
+-- Name: MeetTheTeam MeetTheTeam_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."MeetTheTeam"
+    ADD CONSTRAINT "MeetTheTeam_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3371 (class 2606 OID 475716)
+-- Name: PostHowItWorks PostHowItWorks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."PostHowItWorks"
+    ADD CONSTRAINT "PostHowItWorks_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3359 (class 2606 OID 475180)
+-- Name: Post Post_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Post"
+    ADD CONSTRAINT "Post_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3373 (class 2606 OID 475724)
+-- Name: PreWhatTheySayAboutUs PreWhatTheySayAboutUs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."PreWhatTheySayAboutUs"
+    ADD CONSTRAINT "PreWhatTheySayAboutUs_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3385 (class 2606 OID 499719)
+-- Name: Skill Skill_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Skill"
+    ADD CONSTRAINT "Skill_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3405 (class 2606 OID 548871)
+-- Name: SubHeadline SubHeadline_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."SubHeadline"
+    ADD CONSTRAINT "SubHeadline_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3361 (class 2606 OID 475188)
+-- Name: Tag Tag_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Tag"
+    ADD CONSTRAINT "Tag_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3379 (class 2606 OID 475754)
+-- Name: Testimonials Testimonials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Testimonials"
+    ADD CONSTRAINT "Testimonials_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3356 (class 2606 OID 475171)
+-- Name: User User_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."User"
+    ADD CONSTRAINT "User_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3414 (class 2606 OID 557064)
+-- Name: WantToJoinUs WantToJoinUs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."WantToJoinUs"
+    ADD CONSTRAINT "WantToJoinUs_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3375 (class 2606 OID 475733)
+-- Name: WhyWorkWithUs WhyWorkWithUs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."WhyWorkWithUs"
+    ADD CONSTRAINT "WhyWorkWithUs_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3369 (class 2606 OID 475500)
+-- Name: forEmployersSubHeadline forEmployersSubHeadline_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."forEmployersSubHeadline"
+    ADD CONSTRAINT "forEmployersSubHeadline_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3418 (class 1259 OID 573451)
+-- Name: ContactUsForm_subHeadline_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "ContactUsForm_subHeadline_idx" ON public."ContactUsForm" USING btree ("subHeadline");
+
+
+--
+-- TOC entry 3410 (class 1259 OID 548891)
+-- Name: MeetTheTeam_subHeadline_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "MeetTheTeam_subHeadline_idx" ON public."MeetTheTeam" USING btree ("subHeadline");
+
+
+--
+-- TOC entry 3357 (class 1259 OID 475220)
+-- Name: Post_author_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "Post_author_idx" ON public."Post" USING btree (author);
+
+
+--
+-- TOC entry 3354 (class 1259 OID 475219)
+-- Name: User_email_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "User_email_key" ON public."User" USING btree (email);
+
+
+--
+-- TOC entry 3415 (class 1259 OID 557065)
+-- Name: WantToJoinUs_subHeadline_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "WantToJoinUs_subHeadline_idx" ON public."WantToJoinUs" USING btree ("subHeadline");
+
+
+--
+-- TOC entry 3386 (class 1259 OID 499723)
+-- Name: _Job_jobSkills_AB_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "_Job_jobSkills_AB_unique" ON public."_Job_jobSkills" USING btree ("A", "B");
+
+
+--
+-- TOC entry 3387 (class 1259 OID 499724)
+-- Name: _Job_jobSkills_B_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "_Job_jobSkills_B_index" ON public."_Job_jobSkills" USING btree ("B");
+
+
+--
+-- TOC entry 3398 (class 1259 OID 524317)
+-- Name: _Mawaheb_mawahebDescription_AB_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "_Mawaheb_mawahebDescription_AB_unique" ON public."_Mawaheb_mawahebDescription" USING btree ("A", "B");
+
+
+--
+-- TOC entry 3399 (class 1259 OID 524318)
+-- Name: _Mawaheb_mawahebDescription_B_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "_Mawaheb_mawahebDescription_B_index" ON public."_Mawaheb_mawahebDescription" USING btree ("B");
+
+
+--
+-- TOC entry 3396 (class 1259 OID 524315)
+-- Name: _Mawaheb_mawahebTopics_AB_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "_Mawaheb_mawahebTopics_AB_unique" ON public."_Mawaheb_mawahebTopics" USING btree ("A", "B");
+
+
+--
+-- TOC entry 3397 (class 1259 OID 524316)
+-- Name: _Mawaheb_mawahebTopics_B_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "_Mawaheb_mawahebTopics_B_index" ON public."_Mawaheb_mawahebTopics" USING btree ("B");
+
+
+--
+-- TOC entry 3411 (class 1259 OID 548892)
+-- Name: _MeetTheTeam_members_AB_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "_MeetTheTeam_members_AB_unique" ON public."_MeetTheTeam_members" USING btree ("A", "B");
+
+
+--
+-- TOC entry 3412 (class 1259 OID 548893)
+-- Name: _MeetTheTeam_members_B_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "_MeetTheTeam_members_B_index" ON public."_MeetTheTeam_members" USING btree ("B");
+
+
+--
+-- TOC entry 3366 (class 1259 OID 475221)
+-- Name: _Post_tags_AB_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "_Post_tags_AB_unique" ON public."_Post_tags" USING btree ("A", "B");
+
+
+--
+-- TOC entry 3367 (class 1259 OID 475222)
+-- Name: _Post_tags_B_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "_Post_tags_B_index" ON public."_Post_tags" USING btree ("B");
+
+
+--
+-- TOC entry 3434 (class 2606 OID 573452)
+-- Name: ContactUsForm ContactUsForm_subHeadline_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ContactUsForm"
+    ADD CONSTRAINT "ContactUsForm_subHeadline_fkey" FOREIGN KEY ("subHeadline") REFERENCES public."SubHeadline"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- TOC entry 3430 (class 2606 OID 548894)
+-- Name: MeetTheTeam MeetTheTeam_subHeadline_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."MeetTheTeam"
+    ADD CONSTRAINT "MeetTheTeam_subHeadline_fkey" FOREIGN KEY ("subHeadline") REFERENCES public."SubHeadline"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- TOC entry 3421 (class 2606 OID 475223)
+-- Name: Post Post_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Post"
+    ADD CONSTRAINT "Post_author_fkey" FOREIGN KEY (author) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- TOC entry 3433 (class 2606 OID 557066)
+-- Name: WantToJoinUs WantToJoinUs_subHeadline_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."WantToJoinUs"
+    ADD CONSTRAINT "WantToJoinUs_subHeadline_fkey" FOREIGN KEY ("subHeadline") REFERENCES public."SubHeadline"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- TOC entry 3424 (class 2606 OID 499725)
+-- Name: _Job_jobSkills _Job_jobSkills_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Job_jobSkills"
+    ADD CONSTRAINT "_Job_jobSkills_A_fkey" FOREIGN KEY ("A") REFERENCES public."Job"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3425 (class 2606 OID 499730)
+-- Name: _Job_jobSkills _Job_jobSkills_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Job_jobSkills"
+    ADD CONSTRAINT "_Job_jobSkills_B_fkey" FOREIGN KEY ("B") REFERENCES public."Skill"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3428 (class 2606 OID 524329)
+-- Name: _Mawaheb_mawahebDescription _Mawaheb_mawahebDescription_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Mawaheb_mawahebDescription"
+    ADD CONSTRAINT "_Mawaheb_mawahebDescription_A_fkey" FOREIGN KEY ("A") REFERENCES public."Mawaheb"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3429 (class 2606 OID 524334)
+-- Name: _Mawaheb_mawahebDescription _Mawaheb_mawahebDescription_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Mawaheb_mawahebDescription"
+    ADD CONSTRAINT "_Mawaheb_mawahebDescription_B_fkey" FOREIGN KEY ("B") REFERENCES public."MawahebDescription"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3426 (class 2606 OID 524319)
+-- Name: _Mawaheb_mawahebTopics _Mawaheb_mawahebTopics_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Mawaheb_mawahebTopics"
+    ADD CONSTRAINT "_Mawaheb_mawahebTopics_A_fkey" FOREIGN KEY ("A") REFERENCES public."Mawaheb"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3427 (class 2606 OID 524324)
+-- Name: _Mawaheb_mawahebTopics _Mawaheb_mawahebTopics_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Mawaheb_mawahebTopics"
+    ADD CONSTRAINT "_Mawaheb_mawahebTopics_B_fkey" FOREIGN KEY ("B") REFERENCES public."MawahebTopic"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3431 (class 2606 OID 548899)
+-- Name: _MeetTheTeam_members _MeetTheTeam_members_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_MeetTheTeam_members"
+    ADD CONSTRAINT "_MeetTheTeam_members_A_fkey" FOREIGN KEY ("A") REFERENCES public."AddAMember"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3432 (class 2606 OID 548904)
+-- Name: _MeetTheTeam_members _MeetTheTeam_members_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_MeetTheTeam_members"
+    ADD CONSTRAINT "_MeetTheTeam_members_B_fkey" FOREIGN KEY ("B") REFERENCES public."MeetTheTeam"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3422 (class 2606 OID 475228)
+-- Name: _Post_tags _Post_tags_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Post_tags"
+    ADD CONSTRAINT "_Post_tags_A_fkey" FOREIGN KEY ("A") REFERENCES public."Post"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3423 (class 2606 OID 475233)
+-- Name: _Post_tags _Post_tags_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."_Post_tags"
+    ADD CONSTRAINT "_Post_tags_B_fkey" FOREIGN KEY ("B") REFERENCES public."Tag"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3615 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+
+
+--
+-- TOC entry 2158 (class 826 OID 483329)
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+-- ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres WITH GRANT OPTION;
+
+
+--
+-- TOC entry 2157 (class 826 OID 483328)
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+-- ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABLES TO postgres WITH GRANT OPTION;
+
+
+-- Completed on 2025-03-13 12:44:17
+
+--
+-- PostgreSQL database dump complete
+--
+

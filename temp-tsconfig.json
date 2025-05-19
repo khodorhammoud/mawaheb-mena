@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "outDir": "C:\\Users\\user\\Desktop\\work\\GIG Platform\\code\\mawaheb-mena\\temp-compiled",
+    "skipLibCheck": true
+  },
+  "include": [
+    "packages/db/src/schema/schema.ts",
+    "packages/db/src/types/*.ts"
+  ]
+}

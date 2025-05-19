@@ -11,7 +11,13 @@
     "typecheck": "tsc",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "e2e:debug": "playwright test --debug"
+    "e2e:debug": "playwright test --debug",
+    "test": "pnpm e2e",
+    "test:setup-db": "node ../../scripts/setup-test-db.js",
+    "test:teardown-db": "node ../../scripts/teardown-test-db.js",
+    "test:with-db": "pnpm test:setup-db && pnpm test && pnpm test:teardown-db",
+    "db:generate:test": "drizzle-kit generate --config=drizzle.test.config.ts",
+    "db:push:test": "drizzle-kit push --config=drizzle.test.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
@@ -89,11 +95,13 @@
     "@playwright/test": "^1.52.0",
     "@remix-run/dev": "^2.16.5",
     "@types/bcrypt": "^5.0.2",
+    "@types/node": "^20.11.25",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^16.5.0",
     "drizzle-dbml-generator": "^0.8.0",
     "drizzle-kit": "^0.23.0",
     "eslint": "^8.38.0",
