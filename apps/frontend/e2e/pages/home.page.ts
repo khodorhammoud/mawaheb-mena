@@ -18,11 +18,11 @@ export class HomePage {
 
     // Initialize locators (queries that will point to elements on the page):
 
-    this.navBar = page.locator('nav'); 
+    this.navBar = page.locator('nav');
     // → similar to: document.querySelector('nav')
     // → finds <nav> element on the page
 
-    this.loginButton = page.getByRole('link', { name: /login/i }); 
+    this.loginButton = page.getByRole('link', { name: /login/i });
     // → finds a <a> or <button role="link"> whose accessible name matches "login" (case-insensitive)
     // Example: <a href="/login">Login</a>
 
