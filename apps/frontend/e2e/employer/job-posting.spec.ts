@@ -18,7 +18,6 @@ import { LoginPage } from '../pages/login.page';
 
 // ✅ Group tests under "Employer job posting" → useful for organizing + reports
 test.describe('Employer job posting', () => {
-
   // ✅ Setup → runs before every test inside this group
   // → Logs in as employer using LoginPage class
   test.beforeEach(async ({ page }) => {
@@ -41,7 +40,7 @@ test.describe('Employer job posting', () => {
 
     // ✅ Select multiple required skills
     await page.getByRole('combobox', { name: /skills/i }).click(); // open skill dropdown
-    await page.getByRole('option', { name: /react/i }).click();    // select "React"
+    await page.getByRole('option', { name: /react/i }).click(); // select "React"
     await page.getByRole('option', { name: /typescript/i }).click(); // select "TypeScript"
     await page.press('body', 'Escape'); // close dropdown (Escape key)
 
@@ -63,7 +62,10 @@ test.describe('Employer job posting', () => {
     await page.getByRole('link', { name: /my jobs/i }).click();
 
     // ✅ Click the first job's "View Applications" button
-    await page.getByRole('link', { name: /view applications/i }).first().click();
+    await page
+      .getByRole('link', { name: /view applications/i })
+      .first()
+      .click();
 
     // ✅ Assert → applications should be visible
     await expect(page.getByText(/applications received/i)).toBeVisible(); // title/heading appears
@@ -75,6 +77,6 @@ test.describe('Employer job posting', () => {
 // ✅ second test → tests the "application review path" (open job → view candidates who applied)
 
 // ✅ overall: these 2 tests cover the main employer dashboard functionality:
-//    1. posting jobs   
+//    1. posting jobs
 //    2. viewing received applications
 // → all tests begin with login setup and assert key UI interactions
