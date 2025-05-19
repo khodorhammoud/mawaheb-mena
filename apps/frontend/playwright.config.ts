@@ -12,7 +12,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-  projects: [ // browsers to test on
+  projects: [
+    // browsers to test on
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },

@@ -2,6 +2,7 @@
 
 import { Page, Locator } from '@playwright/test';
 
+
 export class LoginPage {
   readonly page: Page;
   readonly emailInput: Locator;
@@ -19,7 +20,7 @@ export class LoginPage {
     // Initialize locators (queries that will point to elements on the page):
 
     this.emailInput = page.getByLabel('Email');
-    // ✅ finds an <input> that has a <label> "Email"
+    // ✅ finds an <input> that has a <label for ....> "Email"
     // Example HTML:
     // <label for="email">Email</label> <input id="email" ...>
 

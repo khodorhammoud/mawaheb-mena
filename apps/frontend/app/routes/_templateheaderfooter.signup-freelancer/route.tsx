@@ -1,101 +1,63 @@
-import SignUpFreelancerPage from './Signup';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
-import { RegistrationError } from '../../common/errors/UserError';
-import { sendEmail } from '../../servers/emails/emailSender.server';
-import { authenticator } from '../../auth/auth.server';
-import { Freelancer } from '@mawaheb/db/types';
+import { test, expect } from '@playwright/test';
+import { generateFreelancer } from '../utils/test-data'; // Use your real function!
 
-export async function action({ request }: ActionFunctionArgs) {
-  let newFreelancer: Freelancer | null = null;
+test.describe('Freelancer Signup Flow', () => {
+  test('signs up a new freelancer successfully', async ({ page }) => {
+    const freelancer = generateFreelancer();
 
-  try {
-    const formData = await request.clone().formData();
+    await page.goto('/signup-freelancer');
 
-    // Extract necessary fields
-    const termsAccepted = formData.get('termsAccepted');
-    const email = formData.get('email');
-    const firstName = formData.get('firstName');
-    const lastName = formData.get('lastName');
+    await page.getByLabel(/Email Address/i).fill(freelancer.email);
+    await page.getByLabel(/First Name/i).fill('Freela');
+    await page.getByLabel(/Last Name/i).fill('Tester');
+    await page.getByLabel(/Password/i).fill(freelancer.password);
 
-    // Backend validation for terms acceptance
-    if (!termsAccepted || termsAccepted !== 'on') {
-      return Response.json(
-        {
-          success: false,
-          error: {
-            message: 'You must accept the terms and conditions to proceed.',
-          },
-        },
-        { status: 400 }
-      );
-    }
+    // Accept terms checkbox
+    await page.getByLabel(/I accept the terms/i).check();
 
-    const userId = await authenticator.authenticate('register', request);
+    // Click the *first* "Continue" button (not the Google button)
+    await page.getByRole('button', { name: /^Continue$/ }).click();
 
-    newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
-
-    if (!newFreelancer) {
-      return Response.json(
-        {
-          success: false,
-          error: {
-            message: 'Failed to register user. Please try again later.',
-          },
-        },
-        { status: 500 }
-      );
-    }
-
-    const verificationToken = await generateVerificationToken(userId);
-    await sendEmail({
-      type: 'accountVerification',
-      email: email as string,
-      name: (firstName || lastName) as string,
-      data: {
-        // TODO: change the verification link to the actual production URL
-        verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
-      },
+    // Wait for the success message
+    await expect(page.getByText(/A verification email has been sent to you/i)).toBeVisible({
+      timeout: 60_000,
     });
+  });
 
-    return Response.json({ success: true, newFreelancer });
-  } catch (error) {
-    if (error instanceof RegistrationError && error.code === 'Email already exists') {
-      return Response.json(
-        {
-          success: false,
-          error: { message: 'The email address is already registered.' },
-        },
-        { status: 400 }
-      );
-    }
+  test('should show validation errors for missing fields', async ({ page }) => {
+    await page.goto('/signup-freelancer');
 
-    return Response.json(
-      {
-        success: false,
-        error: {
-          message: 'An unexpected error occurred. Please try again later.',
-        },
-      },
-      { status: 500 }
-    );
-  }
-}
+    await page.getByLabel(/I accept the terms/i).click({ force: true });
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request);
+    await page.getByRole('button', { name: /^Continue$/ }).click();
 
-  if (user) {
-    return Response.json({ redirect: '/dashboard' });
-  }
+    await expect(page.getByText(/Email Address is required/i)).toBeVisible();
+    await expect(page.getByText(/First Name is required/i)).toBeVisible();
+    await expect(page.getByText(/Last Name is required/i)).toBeVisible();
+    await expect(page.getByText(/Password is required/i)).toBeVisible();
+  });
 
-  return Response.json({ success: false });
-}
+  test('should show error for duplicate email', async ({ page }) => {
+    const freelancer = generateFreelancer();
 
-export default function Layout() {
-  return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.8' }}>
-      <SignUpFreelancerPage />
-    </div>
-  );
-}
+    // First, sign up
+    await page.goto('/signup-freelancer');
+    await page.getByLabel(/Email Address/i).fill(freelancer.email);
+    await page.getByLabel(/First Name/i).fill('Dup');
+    await page.getByLabel(/Last Name/i).fill('User');
+    await page.getByLabel(/Password/i).fill(freelancer.password);
+    await page.getByLabel(/I accept the terms/i).check();
+    await page.getByRole('button', { name: /^Continue$/ }).click();
+    await expect(page.getByText(/A verification email has been sent/i)).toBeVisible();
+
+    // Try to sign up again with the same email
+    await page.goto('/signup-freelancer');
+    await page.getByLabel(/Email Address/i).fill(freelancer.email);
+    await page.getByLabel(/First Name/i).fill('Dup');
+    await page.getByLabel(/Last Name/i).fill('User');
+    await page.getByLabel(/Password/i).fill(freelancer.password);
+    await page.getByLabel(/I accept the terms/i).check();
+    await page.getByRole('button', { name: /^Continue$/ }).click();
+    await expect(page.locator('div.bg-red-100')).toHaveText(/already registered/i);
+  });
+});
