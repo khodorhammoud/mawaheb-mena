@@ -787,7 +787,11 @@ async function setupTestDb() {
           await sql.unsafe(fkConstraint);
           console.log(`  ✅ Added foreign key constraint: ${fkConstraint}`);
         } catch (error) {
-          console.error(`  ❌ Error adding foreign key constraint: ${error.message}`);
+          if (error.message.includes('already exists')) {
+            console.log(`  ⚠️ Foreign key constraint already exists: ${fkConstraint}`);
+          } else {
+            console.error(`  ❌ Error adding foreign key constraint: ${error.message}`);
+          }
         }
       }
     }

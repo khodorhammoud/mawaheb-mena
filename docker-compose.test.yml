@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Test database for the main application
   test-db-main:
