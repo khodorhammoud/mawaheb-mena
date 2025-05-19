@@ -3,7 +3,6 @@ node_modules
 /.cache
 /build
 .env
-<<<<<<< HEAD
 .env.production
 .env.*
 **/.env
@@ -13,7 +12,4 @@ node_modules
 
 .ai_context/
 
-=======
-
-.ai_context/
->>>>>>> 566fb6c830c2608a0191a1938dd2fa87db473e75
+playwright-report
