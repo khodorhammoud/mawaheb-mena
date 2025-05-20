@@ -483,7 +483,14 @@ async function setupTestDb() {
             if (!columnName || !columnType) continue;
 
             // Convert camelCase to snake_case for DB column names
-            const dbColumnName = columnName.replace(/([A-Z])/g, '_$1').toLowerCase();
+            // const dbColumnName = columnName.replace(/([A-Z])/g, '_$1').toLowerCase();
+            // Default: convert camelCase to snake_case
+            let dbColumnName = columnName.replace(/([A-Z])/g, '_$1').toLowerCase();
+            // Try to extract the real column name from Drizzle call (e.g. varchar('password_hash'))
+            const dbNameMatch = columnType.match(/\(\s*['"]([\w-]+)['"]/);
+            if (dbNameMatch) {
+              dbColumnName = dbNameMatch[1];
+            }
 
             // Basic column type translation
             let sqlType = '';
@@ -693,7 +700,13 @@ async function setupTestDb() {
 
             // Skip id column if it's serial primary key (already added)
             if (!(columnName === 'id' && sqlType === 'SERIAL PRIMARY KEY')) {
-              columnTypes.push(`${dbColumnName} ${sqlType}`);
+              // Change this:
+              // columnTypes.push(`${dbColumnName} ${sqlType}`);
+              // To this:
+              const quotedDbColumnName = /[A-Z]/.test(dbColumnName)
+                ? `"${dbColumnName}"`
+                : dbColumnName;
+              columnTypes.push(`${quotedDbColumnName} ${sqlType}`);
             }
           }
         } catch (error) {
