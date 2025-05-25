@@ -15,8 +15,8 @@ import {
   freelancerSkillsTable,
   languagesTable,
   jobsTable,
-  // } from '@mawaheb/db';
-} from '../../../../packages/db/src';
+} from '@mawaheb/db';
+// } from '../../../../packages/db/src';
 
 import {
   // LoggedInUser,
