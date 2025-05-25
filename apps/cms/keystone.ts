@@ -2,8 +2,8 @@ import { config } from '@keystone-6/core';
 import { lists } from './schema';
 import { withAuth, session } from './auth';
 
-// load env variables
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default withAuth(
   config({
