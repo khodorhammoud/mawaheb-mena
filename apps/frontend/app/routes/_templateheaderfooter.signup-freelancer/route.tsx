@@ -1,8 +1,12 @@
 import SignUpFreelancerPage from './Signup';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/node';
+import {
+  generateVerificationToken,
+  getProfileInfo,
+  setUserVerified,
+} from '../../servers/user.server';
 import { RegistrationError } from '../../common/errors/UserError';
-import { sendEmail } from '../../servers/emails/emailSender.server';
+// import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
 import { Freelancer } from '@mawaheb/db/types';
 
@@ -31,8 +35,14 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
+    // 1. Register user and get their ID
     const userId = await authenticator.authenticate('register', request);
 
+    // 2. Set isVerified = true directly in the DB (NO email verification)
+    await setUserVerified(userId);
+
+    // 3. Commented out: fetch profile and send verification mail
+    /*
     newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
 
     if (!newFreelancer) {
@@ -59,6 +69,10 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     return Response.json({ success: true, newFreelancer });
+    */
+
+    // 4. Redirect to /login after registration and setting isVerified
+    return redirect('/login-freelancer');
   } catch (error) {
     if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(
