@@ -13,6 +13,7 @@
     "@keystone-6/fields-document": "^9.0.0",
     "@prisma/client": "5.22.0",
     "decamelize-keys": "^1.1.1",
+    "dotenv": "^16.5.0",
     "minimist-options": "^4.1.0",
     "quick-lru": "^4.0.1",
     "typescript": "^5.5.0"

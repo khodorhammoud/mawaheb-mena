@@ -15,7 +15,9 @@ import {
   freelancerSkillsTable,
   languagesTable,
   jobsTable,
-} from '@mawaheb/db';
+  // } from '@mawaheb/db';
+} from '../../../../packages/db/src';
+
 import {
   // LoggedInUser,
   User,
@@ -352,6 +354,19 @@ export async function getCurrentUserAccountType(request: Request): Promise<Accou
   const userId = currentUser.id;
   return await getUserAccountType(userId);
 }
+
+/**
+ * Sets the user as verified in the database.
+ * @param userId The user's id
+ */
+export async function setUserVerified(userId: number) {
+  // Drizzle expects camelCase as defined in the schema
+  await db
+    .update(UsersTable)
+    .set({ isVerified: true } as any)
+    .where(eq(UsersTable.id, userId));
+}
+
 /****************************************************************
  *                                                              *
  *                    user/account creation                     *
