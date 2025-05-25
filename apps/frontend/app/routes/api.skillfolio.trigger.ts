@@ -24,7 +24,8 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Make the API call to the backend
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const backendUrl =
+      typeof window !== 'undefined' ? `${window.ENV.BACKEND_URL}` : 'http://localhost:3002';
     const response = await fetch(`${backendUrl}/skillfolio/trigger`, {
       method: 'POST',
       headers: {
