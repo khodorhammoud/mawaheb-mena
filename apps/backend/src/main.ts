@@ -11,7 +11,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(3001); // i changed this port from 3000 to 3001
-  console.log(`🚀 Listening on http://localhost:3001`);
+  await app.listen(process.env.PORT); // i changed this port from 3000 to 3001
+  console.log(`🚀 Listening on http://localhost:${process.env.PORT}`);
 }
 bootstrap();

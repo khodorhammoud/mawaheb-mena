@@ -21,6 +21,7 @@ declare global {
   interface Window {
     ENV?: {
       API_URL?: string;
+      BACKEND_URL?: string;
     };
   }
 }
@@ -67,11 +68,9 @@ export function NotificationProvider({
 
     setLoading(true);
     try {
-      // Get the actual hostname but use port 3001 for backend
+      // Get the actual hostname but use port 3002 for backend
       const baseUrl =
-        typeof window !== 'undefined'
-          ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
-          : 'http://localhost:3001'; // Default fallback
+        typeof window !== 'undefined' ? `${window.ENV.BACKEND_URL}` : 'http://localhost:3002';
 
       const response = await fetch(`${baseUrl}/notifications/user/${userId}?limit=50`);
       if (response.ok) {
@@ -105,15 +104,8 @@ export function NotificationProvider({
       eventSource.close();
     }
 
-    // I HAD THE BELOW CODE:
-    // Get the actual hostname but use port 3001 for backend
-    // const baseUrl =
-    //   typeof window !== 'undefined'
-    //     ? `${process.env.BACKEND_URL}` // Use port 3001 for backend
-    //     : 'http://localhost:3001'; // Default fallback
-    // I REPLACE THE ABOVE CODE WITH THE ONE BELOW TO NOT HAVE PROCESS IS NOT DEFINED ERROR
     const baseUrl =
-      typeof window !== 'undefined' ? import.meta.env.VITE_BACKEND_URL : 'http://localhost:3002'; // fallback
+      typeof window !== 'undefined' ? `${window.ENV.BACKEND_URL}` : 'http://localhost:3002';
 
     const url = `${baseUrl}/events/notifications/${userId}`;
 
