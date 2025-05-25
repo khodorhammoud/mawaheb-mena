@@ -76,7 +76,7 @@ CREATE TABLE "employers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"account_id" integer,
 	"budget" integer,
-	"employerAccountType" "eployer_account_type",
+	"employerAccountType" "employer_account_type",
 	"company_name" varchar(100),
 	"employer_name" varchar(100),
 	"company_email" varchar(150),
