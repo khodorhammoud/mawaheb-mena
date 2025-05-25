@@ -30,12 +30,13 @@ export default function SingleJobView({ job, jobSkills, review, canReview }: Job
     message?: string;
   }>();
 
-  const relatedJobs =
-    fetcher.data?.jobs.map(job => ({
-      ...job,
-      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
-      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
-    })) || [];
+  const relatedJobs = Array.isArray(fetcher.data?.jobs)
+    ? fetcher.data.jobs.map(job => ({
+        ...job,
+        createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+        fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+      }))
+    : [];
 
   const requiredSkills = jobSkills.map(skill => ({
     name: skill.name,
