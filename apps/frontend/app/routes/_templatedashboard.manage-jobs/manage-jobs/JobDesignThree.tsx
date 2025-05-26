@@ -6,6 +6,7 @@ import { JobStatus } from '@mawaheb/db/enums';
 import { parseDate } from '~/lib/utils';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
+import { EXPERIENCE_LEVEL_LABELS } from '~/common/labels';
 
 export default function JobDesignThree({
   data,
@@ -70,8 +71,8 @@ export default function JobDesignThree({
             <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
           </div>
           <div>
-            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">
-              {job.experienceLevel}
+            <p className="xl:text-xl lg:text-lg text-base mt-4">
+              {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
             </p>
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>

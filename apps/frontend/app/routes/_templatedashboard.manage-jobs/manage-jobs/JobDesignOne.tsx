@@ -8,6 +8,8 @@ import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSect
 import { JobStatus, AccountStatus } from '@mawaheb/db/enums';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
+import { EXPERIENCE_LEVEL_LABELS } from '~/common/labels';
+import ReadMore from '~/common/ReadMore';
 
 export default function JobDesignOne({
   data,
@@ -64,7 +66,10 @@ export default function JobDesignOne({
                 <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
               </div>
               <div>
-                <p className="xl:text-xl lg:text-lg text-base">{job.experienceLevel}</p>
+                <p className="xl:text-xl lg:text-lg text-base mt-4">
+                  {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
+                </p>
+
                 <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
               </div>
             </div>
@@ -72,7 +77,11 @@ export default function JobDesignOne({
 
           <div className="xl:text-lg lg:text-base text-sm">
             <div className="">Description:</div>
-            <div className="" dangerouslySetInnerHTML={{ __html: job.description }}></div>
+            <ReadMore
+              className="lg:mt-6 mt-4 xl:text-lg lg:text-base text-sm"
+              html={job.description}
+              wordsPerChunk={40}
+            />
           </div>
 
           <div className="xl:text-base text-sm">
@@ -121,15 +130,19 @@ export default function JobDesignOne({
             <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
           </div>
           <div>
-            <p className="xl:text-xl lg:text-lg text-base mt-4">{job.experienceLevel}</p>
+            <p className="xl:text-xl lg:text-lg text-base mt-4">
+              {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
+            </p>
+
             <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
           </div>
         </div>
         {/* in that way, i remove the HTML tags */}
-        <div
+        <ReadMore
           className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
-          dangerouslySetInnerHTML={{ __html: job.description }}
-        ></div>
+          html={job.description}
+          wordsPerChunk={50}
+        />
 
         {/* SKILLS */}
         <div className="lg:mt-8 mt-4 xl:text-base text-sm">
