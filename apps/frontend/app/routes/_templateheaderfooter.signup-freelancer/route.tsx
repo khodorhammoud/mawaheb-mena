@@ -10,6 +10,9 @@ import { RegistrationError } from '../../common/errors/UserError';
 import { authenticator } from '../../auth/auth.server';
 import { Freelancer } from '@mawaheb/db/types';
 
+// 🟢 library for password validation
+import zxcvbn from 'zxcvbn';
+
 export async function action({ request }: ActionFunctionArgs) {
   let newFreelancer: Freelancer | null = null;
 
@@ -21,6 +24,50 @@ export async function action({ request }: ActionFunctionArgs) {
     const email = formData.get('email');
     const firstName = formData.get('firstName');
     const lastName = formData.get('lastName');
+    const password = formData.get('password') as string;
+
+    const fieldErrors: Record<string, string> = {};
+    if (!email) fieldErrors.email = 'Email Address is required';
+    if (!firstName) fieldErrors.firstName = 'First Name is required';
+    if (!lastName) fieldErrors.lastName = 'Last Name is required';
+    if (!password) fieldErrors.password = 'Password is required';
+
+    if (Object.keys(fieldErrors).length) {
+      return Response.json({ success: false, error: { fieldErrors } }, { status: 400 });
+    }
+
+    // 🟢 zxcvbn password strength validation
+    const pwdResult = zxcvbn(password);
+    // Accept only if score is 3 or above (good/strong)
+    if (pwdResult.score < 3) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: 'Password is too weak.',
+            fieldErrors: {
+              password:
+                (pwdResult.feedback.suggestions && pwdResult.feedback.suggestions.join(' ')) ||
+                'Password is too weak. Try adding numbers, symbols, or making it longer.',
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // 🟢 (Optional, but recommended): minimum length check
+    if (password.length < 8) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            fieldErrors: { password: 'Password must be at least 8 characters.' },
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     // Backend validation for terms acceptance
     if (!termsAccepted || termsAccepted !== 'on') {

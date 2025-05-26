@@ -15,6 +15,9 @@ import { authenticator } from '../../auth/auth.server';
 import { RegistrationError } from '../../common/errors/UserError';
 import type { Employer } from '@mawaheb/db/types';
 
+// library for password validation
+import zxcvbn from 'zxcvbn';
+
 /* ───────────────────────────── helpers ───────────────────────────── */
 
 const duplicateEmailResponse = () =>
@@ -49,6 +52,39 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (Object.keys(fieldErrors).length)
       return json({ success: false, error: { fieldErrors } }, 400);
+
+    // 🟢 password strength validation with zxcvbn
+    const pwdResult = zxcvbn(password);
+    // Accept only if score is 3 or above (good/strong)
+    if (pwdResult.score < 3) {
+      return json(
+        {
+          success: false,
+          error: {
+            message: 'Password is too weak.',
+            fieldErrors: {
+              password:
+                (pwdResult.feedback.suggestions && pwdResult.feedback.suggestions.join(' ')) ||
+                'Password is too weak. Try adding numbers, symbols, or making it longer.',
+            },
+          },
+        },
+        400
+      );
+    }
+
+    // 🟢 (Optional, but recommended): minimum length check
+    if (password.length < 8) {
+      return json(
+        {
+          success: false,
+          error: {
+            fieldErrors: { password: 'Password must be at least 8 characters.' },
+          },
+        },
+        400
+      );
+    }
 
     if (termsAccepted !== 'on')
       return json(
