@@ -118,14 +118,10 @@ export default function ManageJobs() {
         totalCount={totalCount}
         startJob={startJob}
         endJob={endJob}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
       />
-      <div className="flex justify-center mt-8 mb-16">
-        <Carousel
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </div>
     </div>
   );
 }
