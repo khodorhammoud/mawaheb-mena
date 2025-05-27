@@ -25,9 +25,9 @@ export async function fetchCMSData(queries: string[]) {
   async function fetchQueryData(query: string) {
     try {
       const response = await fetch(`${process.env.CMS_BASE_URL}/api/graphql`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           query, // Send the query in the POST request body
@@ -41,7 +41,7 @@ export async function fetchCMSData(queries: string[]) {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Error fetching query data:", query, error);
+      console.error('Error fetching query data:', query, error);
       return null; // Return null in case of a fetch error
     }
   }
