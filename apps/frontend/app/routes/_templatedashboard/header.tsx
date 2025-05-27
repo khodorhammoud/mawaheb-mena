@@ -119,7 +119,7 @@ export default function Header() {
 
         <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
           {/* Conditionally render the "Post Job" button */}
-          {accountType !== AccountType.Freelancer && (
+          {accountType !== AccountType.Freelancer && location.pathname !== '/new-job' && (
             <Link
               to="/new-job"
               onClick={handlePostJobClick}
