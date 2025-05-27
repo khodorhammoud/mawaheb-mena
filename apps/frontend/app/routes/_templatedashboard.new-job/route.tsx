@@ -53,7 +53,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const jobStatusResponse = await createJobPosting(jobData, skills);
 
     if (jobStatusResponse.success) {
-      return redirect('/dashboard');
+      // <-- ADD THE JOB ADDED PARAM
+      return redirect('/dashboard?job_added=1');
     } else {
       return Response.json(
         { success: false, error: { message: 'Failed to create job posting' } },
@@ -74,15 +75,8 @@ export async function loader({ request }) {
     // Get current user profile
     const employer = (await getCurrentProfileInfo(request)) as Employer;
 
-    console.log('New Job route: employer account status:', employer?.account?.accountStatus);
-    console.log(
-      'New Job route: comparing with AccountStatus.Deactivated:',
-      AccountStatus.Deactivated
-    );
-
     // Check if the employer is deactivated
     if (employer?.account?.accountStatus === AccountStatus.Deactivated) {
-      console.log('Employer is deactivated, redirecting to dashboard');
       return redirect('/dashboard');
     }
 
