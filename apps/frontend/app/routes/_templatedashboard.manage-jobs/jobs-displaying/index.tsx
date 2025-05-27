@@ -110,6 +110,7 @@ export default function JobManagement({
     JobStatus.Draft,
     JobStatus.Paused,
     JobStatus.Deleted,
+    JobStatus.Completed,
   ];
 
   const sortedStatuses = useMemo(() => {
