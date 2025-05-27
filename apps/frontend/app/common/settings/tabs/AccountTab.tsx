@@ -1,22 +1,29 @@
-import { useState, useEffect } from "react";
-import { useFetcher, useLoaderData } from "@remix-run/react";
-import AppFormField from "~/common/form-fields";
+import { useState, useEffect } from 'react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import AppFormField from '~/common/form-fields';
+import { getNames } from 'country-list';
 
 export default function AccountTab() {
   const { settingsInfo } = useLoaderData<{ settingsInfo: any }>();
   const settingsFetcher = useFetcher();
 
   // Parse phone number (split by "||" if it exists)
-  const storedPhone = settingsInfo.phone || "+961||"; // Ensure it has a default format
-  const [countryCode, storedPhoneNumber] = storedPhone.split("||");
+  const storedPhone = settingsInfo.phone || '+961||'; // Ensure it has a default format
+  const [countryCode, storedPhoneNumber] = storedPhone.split('||');
+
+  const [country, setCountry] = useState(settingsInfo.country || '');
 
   // State for controlled inputs
   const [selectedCountryCode, setSelectedCountryCode] = useState(countryCode);
-  const [phone, setPhone] = useState(storedPhoneNumber || ""); // Prevent undefined
+  const [phone, setPhone] = useState(storedPhoneNumber || ''); // Prevent undefined
 
   // 🔥 Error & Success Messages
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const COUNTRY_OPTIONS = getNames()
+    .sort()
+    .map(country => ({ value: country, label: country }));
 
   // 🔥 Listen for fetcher response and handle messages
   useEffect(() => {
@@ -27,11 +34,11 @@ export default function AccountTab() {
       };
 
       if (!response.success) {
-        setErrorMessage(response.error || "An error occurred.");
+        setErrorMessage(response.error || 'An error occurred.');
         setSuccessMessage(null);
       } else {
         setErrorMessage(null);
-        setSuccessMessage("Account settings updated successfully!");
+        setSuccessMessage('Account settings updated successfully!');
       }
     }
   }, [settingsFetcher.data]);
@@ -44,16 +51,12 @@ export default function AccountTab() {
       <div className="p-6 space-y-20 mb-60">
         {/* 🔥 Display error messages */}
         {errorMessage && (
-          <div className="bg-red-100 text-red-700 p-2 rounded-md">
-            {errorMessage}
-          </div>
+          <div className="bg-red-100 text-red-700 p-2 rounded-md">{errorMessage}</div>
         )}
 
         {/* 🔥 Display success message */}
         {successMessage && (
-          <div className="bg-green-100 text-green-700 p-2 rounded-md">
-            {successMessage}
-          </div>
+          <div className="bg-green-100 text-green-700 p-2 rounded-md">{successMessage}</div>
         )}
 
         {/* Account Info */}
@@ -96,12 +99,16 @@ export default function AccountTab() {
           <div className="text-lg font-semibold mt-1">Location</div>
           <div className="grid grid-cols-2 flex-col gap-4">
             {/* Country */}
-            <AppFormField
-              id="country"
-              name="country"
-              label="Country"
-              defaultValue={settingsInfo.country}
-            />
+            <div className="w-2/3 md:w-1/2 lg:w-full">
+              <AppFormField
+                id="countryDropdown"
+                name="country"
+                label="Country"
+                type="country"
+                defaultValue={country}
+                onChange={e => setCountry(e.target.value)}
+              />
+            </div>
 
             {/* Address */}
             <AppFormField
@@ -130,12 +137,7 @@ export default function AccountTab() {
               label="Address Line 1"
               defaultValue={settingsInfo.address}
             />
-            <AppFormField
-              id="address2"
-              name="address2"
-              label="Address Line 2"
-              defaultValue=""
-            />
+            <AppFormField id="address2" name="address2" label="Address Line 2" defaultValue="" />
             <AppFormField id="city" name="city" label="City" defaultValue="" />
             <AppFormField id="zip" name="zip" label="Zip" defaultValue="" />
           </div>
@@ -153,7 +155,7 @@ export default function AccountTab() {
                 label="Phone State"
                 type="select"
                 defaultValue={selectedCountryCode}
-                onChange={(e) => setSelectedCountryCode(e.target.value)}
+                onChange={e => setSelectedCountryCode(e.target.value)}
               />
             </div>
 
@@ -165,22 +167,18 @@ export default function AccountTab() {
                 placeholder="Phone Number"
                 label="Phone Number"
                 defaultValue={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={e => setPhone(e.target.value)}
               />
             </div>
 
             {/* 🔥 Hidden field to store formatted phone number */}
-            <input
-              type="hidden"
-              name="fullPhone"
-              value={`${selectedCountryCode}||${phone}`}
-            />
+            <input type="hidden" name="fullPhone" value={`${selectedCountryCode}||${phone}`} />
 
             <button
               type="submit"
               className="bg-primaryColor text-white xl:py-3 lg:py-1 sm:py-3 sm:px-2 py-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl w-2/3 md:w-1/2 lg:w-full text-sm"
             >
-              Save Phone Number
+              Save Changes
             </button>
           </div>
         </section>

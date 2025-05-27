@@ -1,6 +1,7 @@
 // import PropTypes from 'prop-types';
 import { useState, useEffect, ReactNode } from 'react';
 import PhoneNumberField from './phoneNbs/PhoneNumberField';
+import CountrySelectField from './counrtiesDropdown/CountrySelectField';
 
 // Define TypeScript interface for props
 interface AppFormFieldProps {
@@ -36,6 +37,8 @@ const AppFormField = ({
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedValue, setSelectedValue] = useState(defaultValue);
+
+  const [country, setCountry] = useState(defaultValue);
 
   useEffect(() => {
     setSelectedValue(defaultValue);
@@ -80,6 +83,17 @@ const AppFormField = ({
           defaultValue={defaultValue.toString()}
           placeholder={placeholder}
           onChange={onChange}
+        />
+      ) : id === 'countryDropdown' ? (
+        <CountrySelectField
+          id={id}
+          name={name}
+          defaultValue={String(defaultValue ?? selectedValue)}
+          onChange={e => {
+            setSelectedValue(e.target.value);
+            if (onChange) onChange(e);
+          }}
+          className={className}
         />
       ) : (
         <>
@@ -169,27 +183,36 @@ const AppFormField = ({
 
       {/* LABELS */}
       {type === 'password' ? (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       ) : type === 'textarea' ? (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       ) : (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       )}
@@ -205,20 +228,14 @@ const AppFormField = ({
         </button>
       )}
 
-{/* ✅ ERROR MESSAGE */}
-{error && (
-  <p className="ml-1 mt-2 text-sm text-red-600 font-medium">
-    {error}
-  </p>
-)}
+      {/* ✅ ERROR MESSAGE */}
+      {error && <p className="ml-1 mt-2 text-sm text-red-600 font-medium">{error}</p>}
 
-{type === 'password' && showPasswordHint && (
-  <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
-    Password must be 8 characters, upper capital, lower case, symbols
-  </p>
-)}
-
-
+      {type === 'password' && showPasswordHint && (
+        <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
+          Password must be 8 characters, upper capital, lower case, symbols
+        </p>
+      )}
     </div>
   );
 };
