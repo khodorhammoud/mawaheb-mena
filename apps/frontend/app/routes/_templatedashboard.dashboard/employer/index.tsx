@@ -80,7 +80,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (searchParams.get('job_added') === '1') {
       toast({
-        variant: 'success',
+        variant: 'default',
         title: 'Job added successfully!',
         description: 'Your job posting has been created.',
       });
