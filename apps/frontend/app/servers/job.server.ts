@@ -1373,27 +1373,14 @@ export async function updateJobApplicationStatus(
  * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
  *
  */
-export async function fetchJobsWithApplications(
-  employerId: number,
-  page: number = 1,
-  limit: number = 10,
-  statusFilter: string = 'all'
-) {
-  const offset = (page - 1) * limit;
-
+export async function fetchJobsWithApplications(employerId: number, statusFilter: string = 'all') {
   // Build the where clause
   const whereClause =
     statusFilter === 'all'
       ? eq(jobsTable.employerId, employerId)
       : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
 
-  // First, get total count of jobs with the filter
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(jobsTable)
-    .where(whereClause);
-
-  // Then fetch paginated jobs with their applications
+  // Fetch all jobs for this employer (filtered)
   const jobs = await db
     .select({
       id: jobsTable.id,
@@ -1412,15 +1399,46 @@ export async function fetchJobsWithApplications(
     })
     .from(jobsTable)
     .where(whereClause)
-    .orderBy(desc(jobsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
+    .orderBy(desc(jobsTable.createdAt));
+
+  const jobIds = jobs.map(j => j.id);
+  if (jobIds.length === 0) {
+    return {
+      jobs: [],
+      totalCount: 0,
+    };
+  }
+
+  // Fetch required skills for these jobs in one go
+  const jobSkills = await db
+    .select({
+      jobId: jobSkillsTable.jobId,
+      skill: {
+        id: skillsTable.id,
+        name: skillsTable.label,
+        isStarred: skillsTable.isHot,
+      },
+    })
+    .from(jobSkillsTable)
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(inArray(jobSkillsTable.jobId, jobIds));
+
+  // Map jobId -> skills array
+  const jobIdToSkills: Record<number, any[]> = {};
+  for (const js of jobSkills) {
+    if (!jobIdToSkills[js.jobId]) jobIdToSkills[js.jobId] = [];
+    jobIdToSkills[js.jobId].push(js.skill);
+  }
+
+  // Attach skills to each job
+  const jobsWithSkills = jobs.map(job => ({
+    ...job,
+    requiredSkills: jobIdToSkills[job.id] || [],
+  }));
 
   return {
-    jobs,
-    totalCount: count,
-    totalPages: Math.ceil(count / limit),
-    currentPage: page,
+    jobs: jobsWithSkills,
+    totalCount: jobsWithSkills.length,
   };
 }
 

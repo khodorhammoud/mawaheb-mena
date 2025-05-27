@@ -66,7 +66,7 @@ export default function JobDesignOne({
                 <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
               </div>
               <div>
-                <p className="xl:text-xl lg:text-lg text-base mt-4">
+                <p className="xl:text-xl lg:text-lg text-base">
                   {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
                 </p>
 
