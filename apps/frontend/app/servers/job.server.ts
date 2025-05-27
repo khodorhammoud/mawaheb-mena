@@ -1403,10 +1403,7 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
 
   const jobIds = jobs.map(j => j.id);
   if (jobIds.length === 0) {
-    return {
-      jobs: [],
-      totalCount: 0,
-    };
+    return { jobs: [], totalCount: 0 };
   }
 
   // Fetch required skills for these jobs in one go
@@ -1423,22 +1420,39 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
     .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
     .where(inArray(jobSkillsTable.jobId, jobIds));
 
-  // Map jobId -> skills array
+  // Fetch all applications for these jobs in one go
+  const applications = await db
+    .select({
+      jobId: jobApplicationsTable.jobId,
+      application: jobApplicationsTable, // or select specific fields as needed
+    })
+    .from(jobApplicationsTable)
+    .where(inArray(jobApplicationsTable.jobId, jobIds));
+
+  // Group skills/applications by jobId
   const jobIdToSkills: Record<number, any[]> = {};
   for (const js of jobSkills) {
     if (!jobIdToSkills[js.jobId]) jobIdToSkills[js.jobId] = [];
     jobIdToSkills[js.jobId].push(js.skill);
   }
 
-  // Attach skills to each job
-  const jobsWithSkills = jobs.map(job => ({
+  const jobIdToApplications: Record<number, any[]> = {};
+  for (const app of applications) {
+    if (!jobIdToApplications[app.jobId]) jobIdToApplications[app.jobId] = [];
+    jobIdToApplications[app.jobId].push(app.application);
+  }
+
+  // Attach skills and applications to each job
+  const jobsWithSkillsAndApps = jobs.map(job => ({
     ...job,
     requiredSkills: jobIdToSkills[job.id] || [],
+    applications: jobIdToApplications[job.id] || [],
+    applicationCount: jobIdToApplications[job.id]?.length || 0,
   }));
 
   return {
-    jobs: jobsWithSkills,
-    totalCount: jobsWithSkills.length,
+    jobs: jobsWithSkillsAndApps,
+    totalCount: jobsWithSkillsAndApps.length,
   };
 }
 

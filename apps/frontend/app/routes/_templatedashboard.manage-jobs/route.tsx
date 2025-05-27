@@ -1,9 +1,14 @@
 import { LoaderFunction, ActionFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { updateJobStatus, fetchJobsWithApplications } from '~/servers/job.server';
+import {
+  updateJobStatus,
+  fetchJobsWithApplications,
+  fetchJobApplications,
+} from '~/servers/job.server';
 import { requireUserAccountStatusPublishedOrDeactivated } from '~/auth/auth.server';
 import { getProfileInfo } from '~/servers/user.server';
 import JobManagement from './jobs-displaying';
+import { JobCardData } from '@mawaheb/db/types';
 
 // --- ACTION ---
 export const action: ActionFunction = async ({ request }) => {
@@ -26,17 +31,16 @@ export const loader: LoaderFunction = async ({ request }) => {
   const profile = await getProfileInfo({ userId });
   const employerId = profile.id;
 
-  // Fetch ALL jobs with skills, no paging
   const { jobs } = await fetchJobsWithApplications(employerId);
 
-  // Convert to JobCardData[] as expected by JobManagement
-  const jobsWithApplications = jobs.map(job => ({
+  // Now jobs[i] already has applications and applicationCount
+  const jobsWithApplications: JobCardData[] = jobs.map(job => ({
     job: {
       ...job,
       requiredSkills: job.requiredSkills || [],
     },
-    applications: [],
-    applicationCount: 0,
+    applications: job.applications,
+    applicationCount: job.applicationCount,
   }));
 
   return Response.json({
