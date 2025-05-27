@@ -66,12 +66,21 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
     budget: null,
   });
 
-  // ✅ Fetch jobs from the backend with pagination and filters - Only if verified is true
+  // Track if we are filtering/searching
+  const isFiltering =
+    !!searchQuery ||
+    !!filters.workingHours ||
+    !!filters.jobType ||
+    !!filters.experienceLevel ||
+    !!filters.budget;
+
+  // Always fetch ALL jobs (limit 1000, offset 0) if searching/filtering
   useEffect(() => {
     if (verified) {
       const searchParams = new URLSearchParams();
-      searchParams.set('limit', limit.toString());
-      searchParams.set('offset', offset.toString());
+      // If searching/filtering, fetch a large batch, else paginate
+      searchParams.set('limit', isFiltering ? '1000' : limit.toString());
+      searchParams.set('offset', isFiltering ? '0' : offset.toString());
       searchParams.set('searchQuery', searchQuery);
 
       // Add filter parameters
@@ -88,14 +97,14 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
         action: '/api/jobs-allJobs',
       });
     }
-  }, [verified, limit, offset, searchQuery, filters]);
+    // eslint-disable-next-line
+  }, [verified, limit, offset, searchQuery, JSON.stringify(filters)]);
 
   // Update loaded jobs when new data arrives - Only if verified is true
   useEffect(() => {
     if (verified && fetcher.data) {
-      if (isFirstLoad || offset === 0) {
-        // If it's the first load or filters were changed (offset reset to 0),
-        // replace all loaded jobs
+      if (isFirstLoad || offset === 0 || isFiltering) {
+        // Replace all loaded jobs on first load, or if offset reset to 0, or if filtering/searching
         setLoadedJobs(
           fetcher.data.jobs.map(job => ({
             ...job,
@@ -123,7 +132,7 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
       // Update total count
       setTotalCount(fetcher.data.totalCount);
     }
-  }, [verified, fetcher.data, isFirstLoad, offset]);
+  }, [verified, fetcher.data, isFirstLoad, offset, isFiltering]);
 
   // Set dummy data when not showing real jobs
   useEffect(() => {
@@ -156,7 +165,6 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
           <div className="filter blur-sm opacity-75 pointer-events-none">
             <JobCard key="blurred2" onSelect={() => {}} job={DUMMY_JOBS[1]} />
           </div>
-
           {/* Second row of blurred jobs */}
           <div className="filter blur-sm opacity-75 pointer-events-none">
             <JobCard key="blurred3" onSelect={() => {}} job={DUMMY_JOBS[0]} />
@@ -169,6 +177,20 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
     }
     return null;
   };
+
+  // --- DYNAMIC MESSAGE LOGIC: Only show one message at a time ---
+  const noJobsFound = loadedJobs.length === 0;
+  const noMoreJobs =
+    loadedJobs.length > 0 && loadedJobs.length === totalCount && fetcher.state !== 'loading';
+
+  // ---- ENHANCED LOAD MORE LOGIC ----
+  // Only show if not filtering, or filtering with enough jobs (10+)
+  const showLoadMoreButton =
+    loadedJobs.length > 0 &&
+    loadedJobs.length < totalCount &&
+    fetcher.data &&
+    fetcher.data.jobs.length === limit &&
+    (!isFiltering || loadedJobs.length >= 10);
 
   return (
     <div>
@@ -204,10 +226,10 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
         <>
           {/* ✅ Jobs List */}
           <div className="grid md:grid-cols-2 gap-x-10 max-w-6xl">
-            {loadedJobs.length > 0 ? (
-              loadedJobs.map(job => <JobCard key={job.id} onSelect={onJobSelect} job={job} />)
-            ) : (
+            {noJobsFound ? (
               <p className="text-center text-gray-500 col-span-2 py-8 text-xl">No jobs found.</p>
+            ) : (
+              loadedJobs.map(job => <JobCard key={job.id} onSelect={onJobSelect} job={job} />)
             )}
           </div>
 
@@ -218,30 +240,25 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
             </div>
           )}
 
-          {/* No More Jobs Message */}
-          {loadedJobs.length > 0 &&
-            loadedJobs.length === totalCount &&
-            fetcher.state !== 'loading' && (
-              <div className="mt-6 text-center">
-                <p className="text-gray-500">No more jobs available.</p>
-              </div>
-            )}
+          {/* No More Jobs Message (show only if jobs exist and not loading, and NOT if there are no jobs) */}
+          {noMoreJobs && !noJobsFound && (
+            <div className="mt-6 text-center">
+              <p className="text-gray-500">No more jobs available.</p>
+            </div>
+          )}
 
           {/* Load More Button - Only show if there are more jobs to load */}
-          {loadedJobs.length > 0 &&
-            loadedJobs.length < totalCount &&
-            fetcher.data &&
-            fetcher.data.jobs.length === limit && (
-              <div className="mt-6 text-center">
-                <button
-                  onClick={handleLoadMore}
-                  className="px-4 py-2 not-active-gradient rounded-xl text-white bg-primaryColor transition-colors"
-                  disabled={fetcher.state === 'loading'}
-                >
-                  {fetcher.state === 'loading' ? 'Loading...' : 'Load More Jobs'}
-                </button>
-              </div>
-            )}
+          {showLoadMoreButton && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={handleLoadMore}
+                className="px-4 py-2 not-active-gradient rounded-xl text-white bg-primaryColor transition-colors"
+                disabled={fetcher.state === 'loading'}
+              >
+                {fetcher.state === 'loading' ? 'Loading...' : 'Load More Jobs'}
+              </button>
+            </div>
+          )}
         </>
       ) : (
         // Dummy Jobs UI with Blurred Additional Jobs
