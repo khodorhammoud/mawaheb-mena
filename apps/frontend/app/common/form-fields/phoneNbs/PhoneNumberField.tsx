@@ -1,15 +1,9 @@
-import { useState, useEffect } from "react";
-import { FaChevronDown } from "react-icons/fa"; // Replace with your preferred arrow icon
+import { useState, useEffect } from 'react';
+import { FaChevronDown } from 'react-icons/fa'; // Replace with your preferred arrow icon
 
-const PhoneNumberField = ({
-  id,
-  name,
-  placeholder,
-  defaultValue = "",
-  onChange,
-}) => {
-  const [selectedCode, setSelectedCode] = useState(defaultValue || "+961");
-  const [selectedFlag, setSelectedFlag] = useState("");
+const PhoneNumberField = ({ id, name, placeholder, defaultValue = '', onChange }) => {
+  const [selectedCode, setSelectedCode] = useState(defaultValue || '+961');
+  const [selectedFlag, setSelectedFlag] = useState('');
   const [countries, setCountries] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -17,13 +11,13 @@ const PhoneNumberField = ({
     // 🏴🏳️ fetching countries dropdown
     const fetchCountries = async () => {
       try {
-        const response = await fetch("https://restcountries.com/v3.1/all");
+        const response = await fetch('https://restcountries.com/v3.1/all');
         const data = await response.json();
         const countryData = data
-          .filter((country) => country.idd?.root)
-          .map((country) => ({
-            code: `${country.idd.root}${country.idd.suffixes?.[0] || ""}`,
-            flag: country.flags?.png || "",
+          .filter(country => country.idd?.root)
+          .map(country => ({
+            code: `${country.idd.root}${country.idd.suffixes?.[0] || ''}`,
+            flag: country.flags?.png || '',
             name: country.name.common,
           }))
           .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
@@ -31,16 +25,14 @@ const PhoneNumberField = ({
 
         // Set the flag based on the `defaultValue` (fixing refresh issue)
         if (defaultValue) {
-          const matchedCountry = countryData.find(
-            (country) => country.code === defaultValue
-          );
+          const matchedCountry = countryData.find(country => country.code === defaultValue);
           if (matchedCountry) {
             setSelectedCode(matchedCountry.code);
             setSelectedFlag(matchedCountry.flag);
           }
         }
       } catch (error) {
-        console.error("Failed to fetch country codes:", error);
+        console.error('Failed to fetch country codes:', error);
       }
     };
 
@@ -71,38 +63,28 @@ const PhoneNumberField = ({
       >
         {/* Flag */}
         {selectedFlag && (
-          <img
-            src={selectedFlag}
-            alt="Selected Country Flag"
-            className="w-6 h-4 mr-2"
-          />
+          <img src={selectedFlag} alt="Selected Country Flag" className="w-6 h-4 mr-2" />
         )}
         {/* Code */}
         <span className="text-gray-700">{selectedCode}</span>
         {/* Icon */}
         <span className="ml-auto text-gray-500">
-          <FaChevronDown className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer" />
+          <FaChevronDown className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer -mr-2" />
         </span>
       </div>
 
       {/* Dropdown Options */}
       {dropdownOpen && (
         <div className="absolute mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-md z-10 max-h-60 overflow-y-auto">
-          {countries.map((country) => (
+          {countries.map(country => (
             <div
               key={country.code}
               className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() =>
-                handleCountryCodeChange(country.code, country.flag)
-              }
+              onClick={() => handleCountryCodeChange(country.code, country.flag)}
             >
               {/* Flag */}
               {country.flag && (
-                <img
-                  src={country.flag}
-                  alt={`${country.name} Flag`}
-                  className="w-6 h-4 mr-2"
-                />
+                <img src={country.flag} alt={`${country.name} Flag`} className="w-6 h-4 mr-2" />
               )}
               {/* Code */}
               <span>{country.code}</span>
