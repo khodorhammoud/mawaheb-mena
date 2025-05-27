@@ -1,0 +1,40 @@
+services:
+  # Test database for the main application
+  test-db-main:
+    image: postgres:15
+    container_name: mawaheb-test-db-main
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: mawaheb_test_db
+    ports:
+      - '5433:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U testuser -d mawaheb_test_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - test-db-main-data:/var/lib/postgresql/data
+
+  # Test database for the CMS
+  test-db-cms:
+    image: postgres:15
+    container_name: mawaheb-test-db-cms
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: mawaheb_test_cms_db
+    ports:
+      - '5434:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U testuser -d mawaheb_test_cms_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - test-db-cms-data:/var/lib/postgresql/data
+
+volumes:
+  test-db-main-data:
+  test-db-cms-data:
