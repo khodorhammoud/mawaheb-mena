@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
-import { getNames } from 'country-list';
 
 export default function AccountTab() {
   const { settingsInfo } = useLoaderData<{ settingsInfo: any }>();
@@ -20,10 +19,6 @@ export default function AccountTab() {
   // 🔥 Error & Success Messages
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const COUNTRY_OPTIONS = getNames()
-    .sort()
-    .map(country => ({ value: country, label: country }));
 
   // 🔥 Listen for fetcher response and handle messages
   useEffect(() => {
