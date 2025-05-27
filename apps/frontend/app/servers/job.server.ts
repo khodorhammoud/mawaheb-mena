@@ -941,6 +941,21 @@ export async function updateReview({
   return result;
 }
 
+export async function getJobApplicationStats(jobId: number) {
+  const allApplications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  const interested = allApplications.length;
+  // For now, use zero for the others until you add them to your schema
+  return {
+    interested,
+    interviewed: 0,
+    invites: 0,
+  };
+}
+
 /** ✅ Get employerId by Job ID */
 export async function getEmployerIdByJobId(jobId: number) {
   // console.log("🔍 Fetching employerId for jobId:", jobId);

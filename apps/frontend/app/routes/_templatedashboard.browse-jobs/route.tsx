@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, ActionFunctionArgs, redirect } from '@remix-run/node';
+import { LoaderFunctionArgs, ActionFunctionArgs, redirect, json } from '@remix-run/node';
 import { useState } from 'react';
 import { getCurrentUserAccountType, getCurrentProfileInfo } from '~/servers/user.server';
 import { AccountType, AccountStatus } from '@mawaheb/db/enums';
@@ -20,16 +20,17 @@ import {
   hasAcceptedApplication,
   getEmployerIdByJobId,
   getAccountIdbyUserId,
+  getJobApplicationStats,
 } from '~/servers/job.server';
 import { getFreelancerIdByAccountId } from '~/servers/freelancer.server';
 
 // ✅ Define a type for the Loader's return data
 export type LoaderData = {
-  job: Job & { applicationStatus?: string };
   jobSkills: Skill[];
   review?: { rating: number; comment: string; employerId: number } | null;
-  canReview: boolean; // ✅ Add this
+  canReview: boolean;
   freelancerId: number | null;
+  appStats: { interested: number; interviewed: number; invites: number };
 };
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -55,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const comment = (formData.get('comment') as string) || '';
 
   if (!jobId || !employerId) {
-    return Response.json({
+    return json({
       success: false,
       message: 'Invalid job or employer ID.',
     });
@@ -65,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const freelancerId = await getFreelancerIdByAccountId(accountId);
   if (!freelancerId) {
-    return Response.json({
+    return json({
       success: false,
       message: 'Freelancer account not found.',
     });
@@ -75,7 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const hasApplication = await hasAcceptedApplication(freelancerId, employerId);
 
   if (!hasApplication) {
-    return Response.json({
+    return json({
       success: false,
       message: 'You must have an accepted job application to review this employer.',
     });
@@ -107,19 +108,18 @@ export async function action({ request }: ActionFunctionArgs) {
         });
       }
 
-      return Response.json({ success: true });
+      return json({ success: true });
     }
 
-    return Response.json({ success: false, message: 'Invalid action type.' });
+    return json({ success: false, message: 'Invalid action type.' });
   } catch (error) {
-    return Response.json({ success: false, message: (error as Error).message });
+    return json({ success: false, message: (error as Error).message });
   }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserIsFreelancer(request);
   if (!userId) return redirect('/login-employer');
-  // console.log("🚀 Loader: Account ID =", userId);
 
   // Get user profile to check account status
   const profile = await getCurrentProfileInfo(request);
@@ -131,7 +131,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const accountType: AccountType = await getCurrentUserAccountType(request);
   if (accountType !== AccountType.Freelancer) return redirect('/dashboard');
-  // console.log("🚀 Loader: Account Type =", accountType);
 
   const url = new URL(request.url);
   const jobId = parseInt(url.searchParams.get('jobId') || '0', 10);
@@ -142,24 +141,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const accountId = await getAccountIdbyUserId(userId);
-  // console.log("🚀 Loader: Account ID =", accountId);
-
   const freelancerId = await getFreelancerIdByAccountId(accountId);
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
+
+  const appStats =
+    jobId > 0 ? await getJobApplicationStats(jobId) : { interested: 0, interviewed: 0, invites: 0 }; // this one is for the values of intervied: .. | Intersted: .. | Invite sent: .., we shall edit this function :)
 
   if (!freelancerId) {
-    return Response.json({
+    return json({
       success: false,
       message: 'Freelancer not found.',
       jobSkills: [],
       review: null,
       canReview: false,
+      appStats,
     });
   }
-  // console.log("🚀 Loader: Freelancer ID =", freelancerId);
 
   const jobSkills = jobId > 0 ? await getJobSkills(jobId) : [];
-  // console.log("🚀 Loader: Job Skills =", jobSkills);
 
   const canReview = employerId > 0 ? await hasAcceptedApplication(freelancerId, employerId) : false;
 
@@ -178,11 +176,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       };
     }
   }
-  return Response.json({
+
+  return json({
     jobSkills,
     review: existingReview,
     canReview,
     freelancerId,
+    appStats,
   });
 }
 
@@ -192,8 +192,8 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
 
   const fetcher = useFetcher<LoaderData>();
-  const { freelancerId } = useLoaderData<LoaderData>();
-  // console.log("freelancerId", freelancerId);
+  const loaderData = useLoaderData<LoaderData>();
+  const { freelancerId } = loaderData;
 
   const handleJobSelect = async (jobData: Job) => {
     setIsLoading(true);
@@ -201,6 +201,20 @@ export default function Layout() {
     setOpen(true);
     fetcher.load(`/browse-jobs?jobId=${jobData.id}&employerId=${jobData.employerId}`);
     setIsLoading(false);
+  };
+
+  // If the sheet is open and fetcher has data (means a job is selected), use fetcher.data; else use loaderData.
+  const singleJobProps = {
+    job: selectedJob as any, // Pass the job object (you may need to type-safely handle this)
+    jobSkills: fetcher.data?.jobSkills || loaderData.jobSkills || [],
+    review:
+      fetcher.data?.review &&
+      selectedJob &&
+      fetcher.data.review.employerId === selectedJob.employerId
+        ? fetcher.data.review
+        : loaderData.review,
+    canReview: fetcher.data?.canReview ?? loaderData.canReview,
+    appStats: fetcher.data?.appStats || loaderData.appStats,
   };
 
   return (
@@ -215,21 +229,7 @@ export default function Layout() {
               <div>Loading...</div>
             ) : (
               <SheetDescription>
-                {selectedJob ? (
-                  <SingleJobView
-                    job={selectedJob}
-                    jobSkills={fetcher.data?.jobSkills || []}
-                    review={
-                      fetcher.data?.review &&
-                      fetcher.data.review.employerId === selectedJob?.employerId
-                        ? fetcher.data.review
-                        : null
-                    }
-                    canReview={fetcher.data?.canReview || false} // ✅ Pass canReview properly
-                  />
-                ) : (
-                  'No job selected'
-                )}
+                {selectedJob ? <SingleJobView {...singleJobProps} /> : 'No job selected'}
               </SheetDescription>
             )}
           </SheetHeader>
