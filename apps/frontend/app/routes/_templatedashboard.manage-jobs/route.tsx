@@ -38,6 +38,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     job: {
       ...job,
       requiredSkills: job.requiredSkills || [],
+      expectedHourlyRate: job.expectedHourlyRate ?? 0, // <-- Ensure this field is present
     },
     applications: job.applications,
     applicationCount: job.applicationCount,

@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { navigation } from '~/constants/navigation';
-import { NavLink, useMatches } from '@remix-run/react';
+import { NavLink, useMatches, Link, useNavigate, useLocation } from '@remix-run/react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import '~/styles/wavy/wavy.css';
-import { Link, useNavigate } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
 import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { Dialog, DialogContent } from '~/components/ui/dialog';
@@ -93,6 +92,8 @@ export default function Header() {
     // Use the new /notification/:id URL pattern which is separate from the notifications list
     window.location.href = `/notification/${notificationId}`;
   };
+
+  const location = useLocation();
 
   return (
     <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30">

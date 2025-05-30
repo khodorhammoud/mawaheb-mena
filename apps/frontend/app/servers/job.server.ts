@@ -51,6 +51,7 @@ export async function createJobPosting(
         locationPreference: jobData.locationPreference,
         projectType: jobData.projectType,
         budget: jobData.budget,
+        expectedHourlyRate: jobData.expectedHourlyRate || null,
         experienceLevel: jobData.experienceLevel,
         status: jobData.status,
       })
@@ -147,6 +148,7 @@ export async function updateJob(jobId: number, jobData: Partial<Job>) {
           locationPreference: jobData.locationPreference?.trim(),
           projectType: jobData.projectType?.trim(),
           budget: jobData.budget || null,
+          expectedHourlyRate: jobData.expectedHourlyRate || null,
           experienceLevel: jobData.experienceLevel?.trim(),
           status: jobData.status || 'draft', // ✅ Default to "draft" if null
         })
@@ -184,6 +186,7 @@ export async function getEmployerJobs(
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Added here!
       experienceLevel: jobsTable.experienceLevel,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
@@ -205,9 +208,6 @@ export async function getEmployerJobs(
   const jobsMap = new Map<number, Job>();
 
   // Loops through the raw job data
-  // If the job doesn't exist in the map, it adds the job without skills
-  // If a skill is found, it adds the skill to the job's requiredSkills list
-  // This ensures that each job is stored once and its skills are properly grouped
   for (const row of jobsRaw) {
     if (!jobsMap.has(row.id)) {
       jobsMap.set(row.id, {
@@ -219,6 +219,7 @@ export async function getEmployerJobs(
         locationPreference: row.locationPreference,
         projectType: row.projectType,
         budget: row.budget,
+        expectedHourlyRate: row.expectedHourlyRate, // <-- Added here!
         experienceLevel: row.experienceLevel,
         status: row.status as JobStatus,
         createdAt: row.createdAt,
@@ -238,7 +239,6 @@ export async function getEmployerJobs(
   }
 
   // Converts the Map structure back into an array of jobs (which is the expected output format)
-  // Now, each job has a clean list of skills inside requiredSkills
   return Array.from(jobsMap.values());
 }
 
@@ -253,6 +253,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Added here
       experienceLevel: jobsTable.experienceLevel,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
@@ -283,6 +284,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
     locationPreference: jobRaw[0].locationPreference,
     projectType: jobRaw[0].projectType,
     budget: jobRaw[0].budget,
+    expectedHourlyRate: jobRaw[0].expectedHourlyRate, // <-- Added here
     experienceLevel: jobRaw[0].experienceLevel,
     status: jobRaw[0].status as JobStatus,
     createdAt: jobRaw[0].createdAt,
@@ -1088,6 +1090,7 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
       employerId: jobsTable.employerId,
       status: jobsTable.status,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Add this
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
@@ -1147,6 +1150,7 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     ...job,
     status: job.status as JobStatus,
     requiredSkills: [], // Add empty array as default for required skills
+    expectedHourlyRate: job.expectedHourlyRate, // <-- Add this
   }));
 }
 
@@ -1395,13 +1399,14 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
       ? eq(jobsTable.employerId, employerId)
       : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
 
-  // Fetch all jobs for this employer (filtered)
+  // Fetch all jobs for this employer (filtered)\
   const jobs = await db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
       description: jobsTable.description,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- ADD THIS LINE!
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,

@@ -30,7 +30,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const skillsRaw = formData.get('jobSkills') as string;
     const skills: { name: string; isStarred: boolean }[] = JSON.parse(skillsRaw);
 
-    // ✅ Create job object (WITHOUT `requiredSkills`)
+    // ✅ Extract expectedHourlyRate
+    const expectedHourlyRate = parseInt(formData.get('expectedHourlyRate') as string, 10) || 0;
+
+    // ✅ Create job object (INCLUDING expectedHourlyRate)
     const jobData: Job = {
       id: null,
       employerId: employer.id,
@@ -42,13 +45,11 @@ export async function action({ request }: ActionFunctionArgs) {
       locationPreference: formData.get('location') as string,
       projectType: formData.get('projectType') as string,
       budget: parseInt(formData.get('budget') as string, 10) || 0,
+      expectedHourlyRate, // <-- Add this line
       experienceLevel: formData.get('experienceLevel') as string,
       status: jobStatus,
       fulfilledAt: null,
     };
-
-    // console.log("📝 Job Data to be inserted:", jobData);
-    // console.log("📌 Skills to be linked:", skills);
 
     const jobStatusResponse = await createJobPosting(jobData, skills);
 
