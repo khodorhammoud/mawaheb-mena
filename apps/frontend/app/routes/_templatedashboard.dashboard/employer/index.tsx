@@ -96,25 +96,25 @@ export default function Dashboard() {
       title: 'Active Jobs',
       count: activeJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: activeJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: activeJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Drafted Jobs',
       count: draftedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: draftedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: draftedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Closed Jobs',
       count: closedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: closedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: closedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Paused Jobs',
       count: pausedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: pausedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: pausedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
   ];
 

@@ -1,6 +1,6 @@
 /*  apps/frontend/app/routes/_templateheaderfooter.signup-employer/route.tsx  */
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 
 import SignUpEmployerPage from './Signup';
 
@@ -15,10 +15,13 @@ import { authenticator } from '../../auth/auth.server';
 import { RegistrationError } from '../../common/errors/UserError';
 import type { Employer } from '@mawaheb/db/types';
 
+// library for password validation
+import zxcvbn from 'zxcvbn';
+
 /* ───────────────────────────── helpers ───────────────────────────── */
 
 const duplicateEmailResponse = () =>
-  json(
+  Response.json(
     {
       success: false,
       error: {
@@ -33,12 +36,13 @@ const duplicateEmailResponse = () =>
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    /* 1. Basic field‑level validation */
+    /* 1. Basic field‑level validation */
     const formData = await request.clone().formData();
     const email = (formData.get('email') ?? '').toString().trim();
     const firstName = (formData.get('firstName') ?? '').toString().trim();
     const lastName = (formData.get('lastName') ?? '').toString().trim();
     const password = (formData.get('password') ?? '').toString();
+    const confirmPassword = (formData.get('confirmPassword') ?? '').toString();
     const termsAccepted = formData.get('termsAccepted'); // "on"
 
     const fieldErrors: Record<string, string> = {};
@@ -46,20 +50,59 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!firstName) fieldErrors.firstName = 'First Name is required';
     if (!lastName) fieldErrors.lastName = 'Last Name is required';
     if (!password) fieldErrors.password = 'Password is required';
+    if (!confirmPassword) fieldErrors.confirmPassword = 'Password confirmation is required';
+
+    // Password confirmation validation
+    if (password && confirmPassword && password !== confirmPassword) {
+      fieldErrors.confirmPassword = 'Passwords do not match';
+    }
 
     if (Object.keys(fieldErrors).length)
-      return json({ success: false, error: { fieldErrors } }, 400);
+      return Response.json({ success: false, error: { fieldErrors } }, { status: 400 });
+
+    // 🟢 password strength validation with zxcvbn
+    const pwdResult = zxcvbn(password);
+    // Accept only if score is 3 or above (good/strong)
+    if (pwdResult.score < 3) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: 'Password is too weak.',
+            fieldErrors: {
+              password:
+                (pwdResult.feedback.suggestions && pwdResult.feedback.suggestions.join(' ')) ||
+                'Password is too weak. Try adding numbers, symbols, or making it longer.',
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // 🟢 (Optional, but recommended): minimum length check
+    if (password.length < 8) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            fieldErrors: { password: 'Password must be at least 8 characters.' },
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     if (termsAccepted !== 'on')
-      return json(
+      return Response.json(
         {
           success: false,
           error: { message: 'You must accept the terms and conditions to proceed.' },
         },
-        400
+        { status: 400 }
       );
 
-    /* 2. Attempt registration (catch duplicate‑email → 400) */
+    /* 2. Attempt registration (catch duplicate‑email → 400) */
     let userId: number;
     try {
       userId = await authenticator.authenticate('register', request);
@@ -89,13 +132,13 @@ export async function action({ request }: ActionFunctionArgs) {
       if (err instanceof Error && err.message.toLowerCase().includes('email already exists'))
         return duplicateEmailResponse();
 
-      throw err; // anything else bubbles to global handler
+      throw err; // anything else bubbles to global handler
     }
 
-    /* 3. Set isVerified = true for this user (instead of sending verification email) */
+    /* 3. Set isVerified = true for this user (instead of sending verification email) */
     await setUserVerified(userId); // ✅ No ts-expect-error, full type safety
 
-    /* 4. Commented out: Finish profile & send verification mail */
+    /* 4. Commented out: Finish profile & send verification mail */
     /*
     const newEmployer = (await getProfileInfo({ userId })) as Employer | null;
     if (!newEmployer)
@@ -120,8 +163,12 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ success: true, newEmployer });
     */
 
-    // 5. Redirect to /login after registration and setting isVerified
-    return redirect('/login-employer');
+    // 5. Return success response instead of immediate redirect
+    return Response.json({
+      success: true,
+      message: 'Account created successfully! You will be redirected to the login page.',
+      redirectTo: '/login-employer',
+    });
   } catch (err: unknown) {
     /* final safety‑net – still convert dup‑email to 400 */
     if (err instanceof RegistrationError && err.code === 'Email already exists')
@@ -130,12 +177,12 @@ export async function action({ request }: ActionFunctionArgs) {
       return duplicateEmailResponse();
 
     console.error('[Signup Employer Error]', err);
-    return json(
+    return Response.json(
       {
         success: false,
         error: { message: 'An unexpected error occurred. Please try again later.' },
       },
-      500
+      { status: 500 }
     );
   }
 }
@@ -144,8 +191,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request);
-  if (user) return json({ redirect: '/dashboard' });
-  return json({ success: false });
+  if (user) return Response.json({ redirect: '/dashboard' });
+  return Response.json({ success: false });
 }
 
 /* ──────────────────────────── PAGE SHELL ─────────────────────────── */
