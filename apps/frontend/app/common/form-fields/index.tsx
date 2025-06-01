@@ -14,6 +14,7 @@ interface AppFormFieldProps {
   showPasswordHint?: boolean;
   col?: number;
   defaultValue?: string | number;
+  value?: string | number;
   onChange?: any;
   min?: number;
   error?: string; // ✅ Added error support
@@ -30,16 +31,21 @@ const AppFormField = ({
   showPasswordHint = true,
   col = 4,
   defaultValue,
+  value,
   onChange,
   min,
   error,
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(defaultValue);
+  const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
 
   useEffect(() => {
-    setSelectedValue(defaultValue);
-  }, [defaultValue]);
+    if (value !== undefined) {
+      setSelectedValue(value);
+    } else {
+      setSelectedValue(defaultValue);
+    }
+  }, [defaultValue, value]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -160,8 +166,18 @@ const AppFormField = ({
               className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
-              defaultValue={selectedValue}
-              onChange={onChange}
+              {...(value !== undefined
+                ? { value: selectedValue }
+                : { defaultValue: selectedValue })}
+              onChange={e => {
+                const newValue = e.target.value;
+                if (value === undefined) {
+                  setSelectedValue(newValue);
+                }
+                if (onChange) {
+                  onChange(e);
+                }
+              }}
             />
           )}
         </>
@@ -169,27 +185,36 @@ const AppFormField = ({
 
       {/* LABELS */}
       {type === 'password' ? (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       ) : type === 'textarea' ? (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
               peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
               sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
               peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+              peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       ) : (
-        <label htmlFor={id} className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
+        <label
+          htmlFor={id}
+          className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1">
+                peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+        >
           {label}
         </label>
       )}
@@ -205,20 +230,14 @@ const AppFormField = ({
         </button>
       )}
 
-{/* ✅ ERROR MESSAGE */}
-{error && (
-  <p className="ml-1 mt-2 text-sm text-red-600 font-medium">
-    {error}
-  </p>
-)}
+      {/* ✅ ERROR MESSAGE */}
+      {error && <p className="ml-1 mt-2 text-sm text-red-600 font-medium">{error}</p>}
 
-{type === 'password' && showPasswordHint && (
-  <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
-    Password must be 8 characters, upper capital, lower case, symbols
-  </p>
-)}
-
-
+      {type === 'password' && showPasswordHint && (
+        <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
+          Password must be 8 characters, upper capital, lower case, symbols
+        </p>
+      )}
     </div>
   );
 };

@@ -25,12 +25,19 @@ export async function action({ request }: ActionFunctionArgs) {
     const firstName = formData.get('firstName');
     const lastName = formData.get('lastName');
     const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
 
     const fieldErrors: Record<string, string> = {};
     if (!email) fieldErrors.email = 'Email Address is required';
     if (!firstName) fieldErrors.firstName = 'First Name is required';
     if (!lastName) fieldErrors.lastName = 'Last Name is required';
     if (!password) fieldErrors.password = 'Password is required';
+    if (!confirmPassword) fieldErrors.confirmPassword = 'Password confirmation is required';
+
+    // Password confirmation validation
+    if (password && confirmPassword && password !== confirmPassword) {
+      fieldErrors.confirmPassword = 'Passwords do not match';
+    }
 
     if (Object.keys(fieldErrors).length) {
       return Response.json({ success: false, error: { fieldErrors } }, { status: 400 });
@@ -118,8 +125,12 @@ export async function action({ request }: ActionFunctionArgs) {
     return Response.json({ success: true, newFreelancer });
     */
 
-    // 4. Redirect to /login after registration and setting isVerified
-    return redirect('/login-freelancer');
+    // 4. Return success response instead of immediate redirect
+    return Response.json({
+      success: true,
+      message: 'Account created successfully! You will be redirected to the login page.',
+      redirectTo: '/login-freelancer',
+    });
   } catch (error) {
     if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(
