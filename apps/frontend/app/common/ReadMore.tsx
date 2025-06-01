@@ -3,39 +3,38 @@ import { useState, useEffect } from 'react';
 interface ReadMoreProps {
   html: string;
   wordsPerChunk?: number;
-  className?: string; // 👈 Add this line
+  className?: string;
 }
 
 export default function ReadMore({ html, wordsPerChunk = 100, className }: ReadMoreProps) {
-  const [chunks, setChunks] = useState<string[]>([]);
-  const [visibleChunks, setVisibleChunks] = useState(1);
+  const [previewText, setPreviewText] = useState('');
+  const [fullText, setFullText] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     const text = tempDiv.textContent || tempDiv.innerText || '';
     const words = text.split(/\s+/);
-    const chunkArr = [];
-    for (let i = 0; i < words.length; i += wordsPerChunk) {
-      chunkArr.push(words.slice(i, i + wordsPerChunk).join(' '));
-    }
-    setChunks(chunkArr);
+
+    setFullText(text);
+    setPreviewText(words.slice(0, wordsPerChunk).join(' '));
   }, [html, wordsPerChunk]);
 
-  if (chunks.length === 0) {
+  if (!fullText) {
     return null;
   }
 
-  const canReadMore = visibleChunks < chunks.length;
+  const shouldShowReadMore = fullText.split(/\s+/).length > wordsPerChunk;
 
   return (
     <div className={className}>
-      <div>{chunks.slice(0, visibleChunks).join(' ')}</div>
-      {canReadMore && (
-        <button
-          className="text-primaryColor underline mt-2"
-          onClick={() => setVisibleChunks(v => v + 1)}
-        >
+      <div>
+        {isExpanded ? fullText : previewText}
+        {!isExpanded && shouldShowReadMore && '...'}
+      </div>
+      {shouldShowReadMore && !isExpanded && (
+        <button className="text-primaryColor underline mt-2" onClick={() => setIsExpanded(true)}>
           Read more
         </button>
       )}
