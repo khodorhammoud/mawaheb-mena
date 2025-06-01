@@ -26,13 +26,13 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
   // Generate years for dropdown
   const years = Array.from({ length: 11 }, (_, i) => getYear(new Date()) - 5 + i);
 
+  const handleClickOutside = (event: MouseEvent) => {
+    if (calendarRef.current && !calendarRef.current.contains(event.target as Node) && onClose) {
+      onClose();
+    }
+  };
   // Close calendar when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
