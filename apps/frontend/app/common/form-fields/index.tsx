@@ -15,6 +15,7 @@ interface AppFormFieldProps {
   showPasswordHint?: boolean;
   col?: number;
   defaultValue?: string | number;
+  value?: string | number;
   onChange?: any;
   min?: number;
   error?: string; // ✅ Added error support
@@ -31,18 +32,23 @@ const AppFormField = ({
   showPasswordHint = true,
   col = 4,
   defaultValue,
+  value,
   onChange,
   min,
   error,
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(defaultValue);
+  const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
 
   const [country, setCountry] = useState(defaultValue);
 
   useEffect(() => {
-    setSelectedValue(defaultValue);
-  }, [defaultValue]);
+    if (value !== undefined) {
+      setSelectedValue(value);
+    } else {
+      setSelectedValue(defaultValue);
+    }
+  }, [defaultValue, value]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -174,8 +180,18 @@ const AppFormField = ({
               className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
-              defaultValue={selectedValue}
-              onChange={onChange}
+              {...(value !== undefined
+                ? { value: selectedValue }
+                : { defaultValue: selectedValue })}
+              onChange={e => {
+                const newValue = e.target.value;
+                if (value === undefined) {
+                  setSelectedValue(newValue);
+                }
+                if (onChange) {
+                  onChange(e);
+                }
+              }}
             />
           )}
         </>

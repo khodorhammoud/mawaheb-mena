@@ -100,7 +100,7 @@ const ZoomingText: React.FC<ZoomingTextProps> = ({ scrollY, fingerIconPosition }
       >
         <motion.p
           style={{ scale: zoomScaleP1, y: positionYP1 }}
-          className="text-center text-5xl font-bold mt-[65vh] 2xl:mt-[56vh]"
+          className="text-center text-5xl font-bold"
         >
           WHAT THEY SAY
         </motion.p>
@@ -124,7 +124,6 @@ const REVERSE_MS = 1100;
 
 // --- COMBINED COMPONENT ---
 export default function SegmentsLanguagesZoomingText() {
-  // All loader data at once
   const { postHowItWorks, preWhatTheySayAboutUs } = useLoaderData<LoaderData>();
 
   // --- Segments logic ---
@@ -178,6 +177,18 @@ export default function SegmentsLanguagesZoomingText() {
   const [languagesPinned, setLanguagesPinned] = useState(false);
   const [languagesPhase, setLanguagesPhase] = useState<0 | 1 | 2>(0);
 
+  // ---- NEW FOR ANIMATION ----
+  const [leavingZoom, setLeavingZoom] = useState(false);
+  const prevPhase = useRef<0 | 1 | 2>(0);
+
+  useEffect(() => {
+    if (prevPhase.current === 2 && languagesPhase < 2) {
+      setLeavingZoom(true);
+      setTimeout(() => setLeavingZoom(false), 500); // match transition duration
+    }
+    prevPhase.current = languagesPhase;
+  }, [languagesPhase]);
+
   const fadeOpacity = useTransform(scrollY, [0, 10], [1, 0], { clamp: true });
   const zoomScale = useTransform(scrollY, [10, ZOOM_MAX], [0, 1], { clamp: true });
   const zoomOpacity = useTransform(scrollY, [10, ZOOM_MAX], [0, 1], { clamp: true });
@@ -193,13 +204,11 @@ export default function SegmentsLanguagesZoomingText() {
   }
 
   function runTween(from: number, to: number, ms: number, done: () => void) {
-    // 🚀 EARLY EXIT if difference is tiny
     if (Math.abs(from - to) < 30) {
       scrollY.set(0);
       done();
       return;
     }
-
     if (tweenRunningRef.current) return;
     tweenRunningRef.current = true;
     const unlock = lockWheelTouch();
@@ -259,6 +268,7 @@ export default function SegmentsLanguagesZoomingText() {
         }
         const delta = window.scrollY - targetY;
         if (delta >= 0) scrollY.set(delta);
+        // Animate out text, then animate in zoom
         if (delta >= 30 && languagesPhase === 0) setLanguagesPhase(1);
         if (delta >= 60 && languagesPhase === 1) setLanguagesPhase(2);
         if (languagesPhase === 1 && !forwardDoneRef.current) {
@@ -329,7 +339,7 @@ export default function SegmentsLanguagesZoomingText() {
         ))}
       </motion.div>
 
-      {/* Languages section with zoom/animation/ZoomingText */}
+      {/* Languages section with crossfade animation between text and ZoomingText */}
       <div>
         <motion.div
           ref={languagesRef}
@@ -343,37 +353,62 @@ export default function SegmentsLanguagesZoomingText() {
             backfaceVisibility: 'hidden',
             perspective: 1000,
             transform: 'translate3d(0,0,0)',
+            position: 'relative',
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.4, 0.0, 0.2, 1] }}
-            style={{
-              opacity: fadeOpacity,
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden',
-              perspective: 1000,
-              transform: 'translate3d(0,0,0)',
-            }}
-          >
-            <p className="text-center">{languageLines[0]}</p>
-            <p className="text-center">{languageLines[1]}</p>
-          </motion.div>
-          <motion.div
-            style={{
-              position: 'absolute',
-              scale: zoomScale,
-              opacity: zoomOpacity,
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden',
-              perspective: 1000,
-              transform: 'translate3d(0,0,0)',
-            }}
-            className="text-4xl font-['BespokeSerif-Variable']"
-          >
-            <ZoomingText scrollY={scrollY} />
-          </motion.div>
+          <AnimatePresence>
+            {/* Show lines if not phase 2, unless leavingZoom is true */}
+            {languagesPhase < 2 && !leavingZoom && (
+              <motion.div
+                key="lines"
+                initial={{ opacity: 1, y: 0, scale: 1 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.04, y: -28 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                style={{
+                  opacity: fadeOpacity,
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                  perspective: 1000,
+                  transform: 'translate3d(0,0,0)',
+                }}
+              >
+                <p className="text-center">{languageLines[0]}</p>
+                <p className="text-center">{languageLines[1]}</p>
+              </motion.div>
+            )}
+            {/* Show ZoomingText if phase 2 or we're leaving */}
+            {(languagesPhase === 2 || leavingZoom) && (
+              <motion.div
+                key="zoom"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.04 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  scale: zoomScale,
+                  opacity: zoomOpacity,
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                  perspective: 1000,
+                }}
+                className="text-4xl font-['BespokeSerif-Variable']"
+              >
+                <ZoomingText scrollY={scrollY} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </>
