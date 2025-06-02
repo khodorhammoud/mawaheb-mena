@@ -64,16 +64,6 @@ export default function Header({
       <div className="lg:flex hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
         <button
           className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
-            activeFilter === 'all'
-              ? 'bg-primaryColor text-white'
-              : 'bg-white text-primaryColor border border-primaryColor'
-          }`}
-          onClick={() => handleFilterClick('all')}
-        >
-          All Jobs
-        </button>
-        <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
             activeFilter === JobStatus.Active
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'
@@ -111,6 +101,16 @@ export default function Header({
           onClick={() => handleFilterClick(JobStatus.Closed)}
         >
           Closed Jobs
+        </button>
+        <button
+          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+            activeFilter === 'all'
+              ? 'bg-primaryColor text-white'
+              : 'bg-white text-primaryColor border border-primaryColor'
+          }`}
+          onClick={() => handleFilterClick('all')}
+        >
+          All Jobs
         </button>
       </div>
 
