@@ -1,99 +1,60 @@
-import { useState, useEffect } from 'react';
-import { FaChevronDown } from 'react-icons/fa'; // Replace with your preferred arrow icon
+import { useState } from 'react';
+import { Country } from '@mawaheb/db/enums';
+import { COUNTRY_FLAGS, PHONE_CODES } from '@mawaheb/db/types/country-meta';
+import { ComboBox } from '~/components/ui/combobox'; // your ComboBox
 
-const PhoneNumberField = ({ id, name, placeholder, defaultValue = '', onChange }) => {
-  const [selectedCode, setSelectedCode] = useState(defaultValue || '+961');
-  const [selectedFlag, setSelectedFlag] = useState('');
-  const [countries, setCountries] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+const COUNTRIES = Object.values(Country);
 
-  useEffect(() => {
-    // 🏴🏳️ fetching countries dropdown
-    const fetchCountries = async () => {
-      try {
-        const response = await fetch('https://restcountries.com/v3.1/all');
-        const data = await response.json();
-        const countryData = data
-          .filter(country => country.idd?.root)
-          .map(country => ({
-            code: `${country.idd.root}${country.idd.suffixes?.[0] || ''}`,
-            flag: country.flags?.png || '',
-            name: country.name.common,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
-        setCountries(countryData);
+const countryMetaList = COUNTRIES.map(country => ({
+  country,
+  code: PHONE_CODES[country],
+  flag: COUNTRY_FLAGS[country],
+}));
 
-        // Set the flag based on the `defaultValue` (fixing refresh issue)
-        if (defaultValue) {
-          const matchedCountry = countryData.find(country => country.code === defaultValue);
-          if (matchedCountry) {
-            setSelectedCode(matchedCountry.code);
-            setSelectedFlag(matchedCountry.flag);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch country codes:', error);
-      }
-    };
+export default function PhoneNumberField({
+  id,
+  name,
+  defaultValue = '+961',
+  onChange,
+  className = 'w-full',
+}) {
+  // Set default selection
+  const defaultCountry =
+    countryMetaList.find(c => c.code === defaultValue) ||
+    countryMetaList.find(c => c.country === Country.Lebanon);
 
-    fetchCountries();
-  }, []);
+  const [selected, setSelected] = useState(defaultCountry?.code);
 
-  const handleCountryCodeChange = (code, flag) => {
-    setSelectedCode(code);
-    setSelectedFlag(flag);
-    setDropdownOpen(false);
-
-    if (onChange) {
-      onChange({
-        target: {
-          name: `${name}-code`,
-          value: code,
-        },
-      });
-    }
-  };
+  function handleSelect(val) {
+    setSelected(val);
+    const meta = countryMetaList.find(c => c.code === val);
+    onChange?.({
+      target: {
+        id,
+        name: name || 'phone-code',
+        value: meta?.code || '',
+      },
+    });
+  }
 
   return (
-    <div className="relative">
-      {/* Selected Dropdown */}
-      <div
-        className="flex items-center border border-gray-300 rounded-xl px-5 py-3 bg-white cursor-pointer"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-      >
-        {/* Flag */}
-        {selectedFlag && (
-          <img src={selectedFlag} alt="Selected Country Flag" className="w-6 h-4 mr-2" />
-        )}
-        {/* Code */}
-        <span className="text-gray-700">{selectedCode}</span>
-        {/* Icon */}
-        <span className="ml-auto text-gray-500">
-          <FaChevronDown className="h-6 w-6 hover:bg-slate-100 transition-all hover:rounded-xl p-1 text-primaryColor cursor-pointer -mr-2" />
-        </span>
-      </div>
-
-      {/* Dropdown Options */}
-      {dropdownOpen && (
-        <div className="absolute mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-md z-10 max-h-60 overflow-y-auto">
-          {countries.map(country => (
-            <div
-              key={country.code}
-              className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleCountryCodeChange(country.code, country.flag)}
-            >
-              {/* Flag */}
-              {country.flag && (
-                <img src={country.flag} alt={`${country.name} Flag`} className="w-6 h-4 mr-2" />
-              )}
-              {/* Code */}
-              <span>{country.code}</span>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className={className}>
+      <ComboBox
+        options={countryMetaList.map(c => ({
+          value: c.code,
+          label: (
+            <span className="flex items-center gap-2">
+              {c.flag && <img src={c.flag} alt="" className="w-5 h-4" />}
+              <span className="font-medium">{c.code}</span>
+            </span>
+          ),
+        }))}
+        value={selected}
+        onChange={handleSelect}
+        placeholder="Select code"
+        className="border-none hover:bg-transparent w-full"
+      />
+      <input type="hidden" id={id} name={name} value={selected || ''} readOnly />
     </div>
   );
-};
-
-export default PhoneNumberField;
+}

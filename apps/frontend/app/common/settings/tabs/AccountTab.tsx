@@ -94,7 +94,7 @@ export default function AccountTab() {
           <div className="text-lg font-semibold mt-1">Location</div>
           <div className="grid grid-cols-2 flex-col gap-4">
             {/* Country */}
-            <div className="w-2/3 md:w-1/2 lg:w-full">
+            <div className="">
               <AppFormField
                 id="countryDropdown"
                 name="country"
@@ -102,6 +102,7 @@ export default function AccountTab() {
                 type="country"
                 defaultValue={country}
                 onChange={e => setCountry(e.target.value)}
+                className="w-full"
               />
             </div>
 
