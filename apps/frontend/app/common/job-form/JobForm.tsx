@@ -29,6 +29,12 @@ interface JobFormProps {
   isEdit?: boolean;
 }
 
+const experienceLevelLabels: Record<string, string> = {
+  entry_level: 'Entry Level',
+  mid_level: 'Mid Level',
+  senior_level: 'Expert Level',
+};
+
 export default function JobForm({ job, jobCategories, isEdit = false }: JobFormProps) {
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
     Array.isArray(job?.requiredSkills)
@@ -199,7 +205,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                         : 'text-gray-600 border-gray-300'
                     }`}
                   >
-                    {level}
+                    {experienceLevelLabels[level] || level}
                   </Badge>
                 ))}
               </div>
