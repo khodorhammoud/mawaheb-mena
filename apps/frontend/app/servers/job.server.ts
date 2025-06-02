@@ -592,6 +592,26 @@ function calculateMatchScore(
   return finalScore;
 }
 
+/**
+ * getJobRecommendations:
+ * ------------------------------------------
+ * 1. Finds the freelancer and their account data by freelancerId.
+ * 2. Fetches all skills (with experience) linked to this freelancer.
+ * 3. Gets all job IDs that the freelancer has already applied to.
+ * 4. Fetches all 'Active' jobs from employers whose account is NOT deactivated,
+ *    excluding jobs the freelancer already applied to.
+ * 5. For each job:
+ *      - Gets its required skills.
+ *      - Calculates a match score between the job and the freelancer.
+ *      - If the match score >= MINIMUM_MATCH_SCORE (default: 50), includes this job in results.
+ *      - Adds info about matching/missing skills.
+ * 6. Sorts the recommendations by match score (descending).
+ * 7. Returns the top `limit` jobs as recommendations for the freelancer.
+ *
+ * In summary: Returns a list of 'best fit' jobs for a freelancer,
+ *             only jobs they haven't applied to, scored by skill/profile match.
+ */
+// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess )
 export async function getJobRecommendations(
   freelancerId: number,
   limit: number = 10
@@ -772,7 +792,19 @@ export async function getAllJobs(limit?: number, offset?: number) {
   }
 
   const jobs = await query;
-  return jobs;
+
+  // --- Deduplicate jobs by ID ---
+  const uniqueJobs = Object.values(
+    jobs.reduce(
+      (acc, job) => {
+        acc[job.id] = job;
+        return acc;
+      },
+      {} as Record<number, (typeof jobs)[0]>
+    )
+  );
+
+  return uniqueJobs;
 }
 
 // ✅ Get My Jobs (Jobs Freelancer Applied To)

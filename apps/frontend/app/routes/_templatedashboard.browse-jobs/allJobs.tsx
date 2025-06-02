@@ -19,6 +19,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'mid_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 25,
     employerId: 1,
     jobCategoryId: 1,
     fulfilledAt: null,
@@ -35,6 +36,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'senior_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 30,
     employerId: 2,
     jobCategoryId: 2,
     fulfilledAt: null,
@@ -209,15 +211,19 @@ export default function AllJobs({ onJobSelect }: AllJobsProps) {
 
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          {totalCount > 0 && (
-            <>
-              <span className="font-bold text-primaryColor text-base">
-                {loadedJobs.length} {loadedJobs.length === 1 ? 'job' : 'jobs'}
-              </span>
-              {` out of `}
-              <span className="">{totalCount} total</span>
-            </>
-          )}
+          <span>
+            You have{' '}
+            <span className="font-bold text-primaryColor text-base">{loadedJobs.length}</span>
+            {' job'}
+            {loadedJobs.length === 1 ? '' : 's'} matching this filter
+            {typeof totalCount === 'number' && totalCount > 0 ? (
+              <>
+                {' out of '}
+                <span className="font-bold text-primaryColor text-base">{totalCount}</span> in total
+              </>
+            ) : null}
+            .
+          </span>
         </p>
       )}
 

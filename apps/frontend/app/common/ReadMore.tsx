@@ -7,34 +7,34 @@ interface ReadMoreProps {
 }
 
 export default function ReadMore({ html, wordsPerChunk = 100, className }: ReadMoreProps) {
-  const [previewText, setPreviewText] = useState('');
-  const [fullText, setFullText] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [words, setWords] = useState<string[]>([]);
+  const [chunksShown, setChunksShown] = useState(1);
 
   useEffect(() => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     const text = tempDiv.textContent || tempDiv.innerText || '';
-    const words = text.split(/\s+/);
-
-    setFullText(text);
-    setPreviewText(words.slice(0, wordsPerChunk).join(' '));
+    setWords(text.split(/\s+/));
+    setChunksShown(1); // Reset when html or chunk size changes
   }, [html, wordsPerChunk]);
 
-  if (!fullText) {
-    return null;
-  }
+  if (!words.length) return null;
 
-  const shouldShowReadMore = fullText.split(/\s+/).length > wordsPerChunk;
+  const totalChunks = Math.ceil(words.length / wordsPerChunk);
+  const shownWords = words.slice(0, chunksShown * wordsPerChunk).join(' ');
+  const hasMore = chunksShown < totalChunks;
 
   return (
     <div className={className}>
       <div>
-        {isExpanded ? fullText : previewText}
-        {!isExpanded && shouldShowReadMore && '...'}
+        {shownWords}
+        {hasMore && '...'}
       </div>
-      {shouldShowReadMore && !isExpanded && (
-        <button className="text-primaryColor underline mt-2" onClick={() => setIsExpanded(true)}>
+      {hasMore && (
+        <button
+          className="text-primaryColor underline mt-2"
+          onClick={() => setChunksShown(s => s + 1)}
+        >
           Read more
         </button>
       )}
