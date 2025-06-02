@@ -1,4 +1,4 @@
-// All jobs that are not applied to yet :)
+// All jobs that are not applied to yet + !!! active jobs i think i think !!! :)
 
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'mid_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 25,
     employerId: 1,
     jobCategoryId: 1,
     fulfilledAt: null,
@@ -35,6 +36,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'senior_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 30,
     employerId: 2,
     jobCategoryId: 2,
     fulfilledAt: null,
@@ -243,15 +245,12 @@ export default function RecommendedJobs({
 
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          {totalJobsCount > 0 && (
-            <>
-              <span className="font-bold text-primaryColor text-base">
-                {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-              </span>
-              {` out of `}
-              <span>{totalJobsCount} total</span>
-            </>
-          )}
+          <span>
+            You have{' '}
+            <span className="font-bold text-primaryColor text-base">{filteredJobs.length}</span>
+            {' job'}
+            {filteredJobs.length === 1 ? '' : 's'} matching this filter.
+          </span>
         </p>
       )}
 
