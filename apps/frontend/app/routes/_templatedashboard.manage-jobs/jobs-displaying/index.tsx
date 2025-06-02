@@ -16,7 +16,7 @@ export default function JobManagement({
   data,
   userAccountStatus,
   initialFilter = 'all',
-  initialViewMode = 'one',
+  initialViewMode = 'three',
 }: JobManagementProps) {
   const [viewMode, setViewMode] = useState(initialViewMode);
   const [activeFilter, setActiveFilter] = useState<JobStatus | 'all'>(
@@ -104,6 +104,7 @@ export default function JobManagement({
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
         onSearch={setSearchQuery}
+        viewMode={viewMode} // <<< ADD THIS PROP!
       />
 
       <p className="text-black text-sm mt-2 ml-1 mb-2">

@@ -18,7 +18,7 @@ export default function Home() {
       <LayoutContainer>
         {/* this is still gloomy, but it represents the navigation  */}
         {/* this represents the herosection file inside herosection folder ( the name of employers and so on ... )*/}
-        {/* <FeaturesSection /> */}
+        <FeaturesSection />
         {/* this is the features i have in the website ( 1- Ai 2- Software Solutions 3- ..... ) */}
         <HowItWorks />
         {/* this is the How it works section, that has 4 steps first, and the big header, besides the list of the coding languages, and ends by the what they say about us section that has  */}
@@ -31,9 +31,9 @@ export default function Home() {
         {/* i moved the MainHeading to the WhyWorkWithUs.tsx file ❤️ */}
         <FAQ />
         {/* this is the FAQ component that uses Card Component that is in the component \ ui folder in the common folder 💖 */}
-        {/* <ContactUs /> */}
+        <ContactUs />
         {/* this should be in a component in another folder and shall be called here as the other components */}
-        {/* <BlogCardsList /> */}
+        <BlogCardsList />
       </LayoutContainer>
     </>
     // I've just noticed that this Component has a closing tag 👍
