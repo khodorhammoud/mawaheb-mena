@@ -15,7 +15,7 @@ interface JobManagementProps {
 export default function JobManagement({
   data,
   userAccountStatus,
-  initialFilter = 'all',
+  initialFilter = 'active',
   initialViewMode = 'three',
 }: JobManagementProps) {
   const [viewMode, setViewMode] = useState(initialViewMode);
