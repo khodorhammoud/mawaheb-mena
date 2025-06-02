@@ -1,33 +1,24 @@
-import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "~/components/ui/popover";
-import { Button } from "~/components/ui/button";
-import AppFormField from "~/common/form-fields";
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '~/components/ui/popover';
+import { Button } from '~/components/ui/button';
+import AppFormField from '~/common/form-fields';
 
 interface WorkingHoursFilterProps {
   filters: { workingHours: { from: string; to: string } | null };
   setFilters: (filters: any) => void;
 }
 
-export default function WorkingHoursFilter({
-  filters,
-  setFilters,
-}: WorkingHoursFilterProps) {
+export default function WorkingHoursFilter({ filters, setFilters }: WorkingHoursFilterProps) {
   const [workingHours, setWorkingHours] = useState({
-    from: filters.workingHours?.from || "",
-    to: filters.workingHours?.to || "",
+    from: filters.workingHours?.from || '',
+    to: filters.workingHours?.to || '',
   });
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fadeOut, setFadeOut] = useState(false);
   const [inputKey, setInputKey] = useState(0);
-  const [hasValue, setHasValue] = useState<boolean>(
-    filters.workingHours !== null
-  );
+  const [hasValue, setHasValue] = useState<boolean>(filters.workingHours !== null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -45,7 +36,7 @@ export default function WorkingHoursFilter({
       return;
     }
     if (from < 0 || to < 0) {
-      showError("Values cannot be negative.");
+      showError('Values cannot be negative.');
       return;
     }
     if (from >= to) {
@@ -63,10 +54,10 @@ export default function WorkingHoursFilter({
 
   const clearWorkingHours = () => {
     setFilters((prev: any) => ({ ...prev, workingHours: null }));
-    setWorkingHours({ from: "", to: "" });
+    setWorkingHours({ from: '', to: '' });
     setErrorMessage(null);
     setHasValue(false);
-    setInputKey((prevKey) => prevKey + 1);
+    setInputKey(prevKey => prevKey + 1);
     setIsOpen(false);
   };
 
@@ -82,20 +73,20 @@ export default function WorkingHoursFilter({
     }, 2000);
   };
 
-  const handleInputChange = (e: any, field: "from" | "to") => {
+  const handleInputChange = (e: any, field: 'from' | 'to') => {
     let value = e.target.value;
 
     // Prevents negative input by resetting the field if a negative number is typed
-    if (value.includes("-")) {
-      showError("Values cannot be negative.");
-      setWorkingHours((prev) => ({ ...prev, [field]: "" }));
+    if (value.includes('-')) {
+      showError('Values cannot be negative.');
+      setWorkingHours(prev => ({ ...prev, [field]: '' }));
       return;
     }
 
     // Only allow numbers (removes non-numeric characters)
     if (!/^\d*$/.test(value)) return;
 
-    setWorkingHours((prev) => ({ ...prev, [field]: value }));
+    setWorkingHours(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -105,13 +96,13 @@ export default function WorkingHoursFilter({
           className="group border border-gray-300 text-primaryColor bg-white rounded-[10px] px-3 py-2 flex items-center gap-2 hover:bg-primaryColor hover:text-white transition not-active-gradient text-sm leading-4"
           onClick={() => setIsOpen(true)}
         >
-          Working Hours
+          <span className="whitespace-nowrap">Working Hours</span>
           {hasValue && (
             <X
               size={20}
               className="text-gray-500 p-[2px] rounded-full transition 
               group-hover:text-white hover:bg-gray-400"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 clearWorkingHours();
               }}
@@ -132,7 +123,7 @@ export default function WorkingHoursFilter({
           {errorMessage && (
             <div
               className={`px-4 py-3 rounded relative mt-2 mb-6 text-center bg-red-100 border border-red-400 text-red-700 transition-opacity duration-500 ${
-                fadeOut ? "opacity-0" : "opacity-100"
+                fadeOut ? 'opacity-0' : 'opacity-100'
               }`}
             >
               {errorMessage}
@@ -141,24 +132,24 @@ export default function WorkingHoursFilter({
 
           <div className="flex gap-4 mb-4" key={inputKey}>
             <AppFormField
-              key={inputKey + "-from"}
+              key={inputKey + '-from'}
               id="from"
               name="from"
               type="text"
               placeholder="From (hours)"
               label="From (hours)"
               defaultValue={workingHours.from}
-              onChange={(e) => handleInputChange(e, "from")}
+              onChange={e => handleInputChange(e, 'from')}
             />
             <AppFormField
-              key={inputKey + "-to"}
+              key={inputKey + '-to'}
               id="to"
               name="to"
               type="text"
               placeholder="To (hours)"
               label="To (hours)"
               defaultValue={workingHours.to}
-              onChange={(e) => handleInputChange(e, "to")}
+              onChange={e => handleInputChange(e, 'to')}
             />
           </div>
 

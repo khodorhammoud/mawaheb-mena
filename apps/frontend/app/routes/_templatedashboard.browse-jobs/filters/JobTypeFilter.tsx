@@ -38,7 +38,7 @@ export default function JobTypeFilter({ filters, setFilters }: JobTypeFilterProp
           value={selectedJobType}
           onChange={handleChange}
           placeholder="Job Type"
-          className="w-full text-primaryColor hover:text-primaryColor"
+          className="text-primaryColor hover:text-primaryColor lg:w-40"
         />
       </div>
       {/* Show X button only when selectedJobType is not empty */}
