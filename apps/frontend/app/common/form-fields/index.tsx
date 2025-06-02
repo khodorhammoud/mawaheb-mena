@@ -87,19 +87,20 @@ const AppFormField = ({
           id={id}
           name={name}
           defaultValue={defaultValue.toString()}
-          placeholder={placeholder}
           onChange={onChange}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
         />
       ) : id === 'countryDropdown' ? (
         <CountrySelectField
           id={id}
           name={name}
+          value={selectedValue}
           defaultValue={String(defaultValue ?? selectedValue)}
           onChange={e => {
             setSelectedValue(e.target.value);
             if (onChange) onChange(e);
           }}
-          className={className}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
         />
       ) : (
         <>

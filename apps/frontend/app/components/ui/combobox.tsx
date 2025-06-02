@@ -1,67 +1,96 @@
-import { useState } from "react";
-import React from "react";
+'use client';
+
+import * as React from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+
+import { cn } from '~/lib/utils';
+import { Button } from '~/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '~/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+
+export type ComboBoxOption = {
+  value: string;
+  label: React.ReactNode;
+};
 
 interface ComboBoxProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  children: React.ReactNode;
-}
-
-export function ComboBox({ value, onValueChange, children }: ComboBoxProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleToggle = () => setIsOpen((prev) => !prev);
-  const handleSelect = (value: string) => {
-    onValueChange(value);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative w-full">
-      {/* ComboBox Trigger */}
-      <button
-        onClick={handleToggle}
-        className="border border-gray-300 text-primaryColor bg-white rounded-[10px] px-4 py-2 flex items-center gap-2 hover:bg-primaryColor hover:text-white transition w-full"
-      >
-        {value || "Select an option"}
-      </button>
-
-      {/* Dropdown content */}
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full border bg-white shadow-md rounded-md z-10">
-          {React.Children.map(children, (child: any) => {
-            if (child.type === ComboBoxItem) {
-              return React.cloneElement(child, {
-                onSelect: handleSelect,
-              });
-            }
-            return child;
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface ComboBoxItemProps {
-  value: string;
-  onSelect?: (value: string) => void;
+  options: ComboBoxOption[];
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
   className?: string;
-  children: React.ReactNode;
 }
 
-export function ComboBoxItem({
-  value,
-  onSelect,
-  className,
-  children,
-}: ComboBoxItemProps) {
+export function ComboBox({ options, value, onChange, placeholder, className }: ComboBoxProps) {
+  const [open, setOpen] = React.useState(false);
+  const selectedOption = options.find(option => option.value === value);
+
+  // 👇 Add these lines
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const [popoverWidth, setPopoverWidth] = React.useState<number>();
+
+  React.useLayoutEffect(() => {
+    if (triggerRef.current) {
+      setPopoverWidth(triggerRef.current.offsetWidth);
+    }
+  }, [open]);
+
   return (
-    <button
-      onClick={() => onSelect && onSelect(value)}
-      className={`${className} px-4 py-2 cursor-pointer hover:bg-primaryColor hover:text-white transition`}
-    >
-      {children}
-    </button>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          ref={triggerRef} // 👈 Add this
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'w-full justify-between px-4 md:py-1 border border-gray-300 rounded-xl focus:outline-none text-l bg-white text-gray-900',
+            className
+          )}
+        >
+          {selectedOption ? selectedOption.label : placeholder || 'Select...'}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="p-0"
+        style={popoverWidth ? { width: popoverWidth } : undefined} // 👈 Dynamically set width
+      >
+        <Command>
+          <CommandInput placeholder={placeholder || 'Search...'} />
+          <CommandList>
+            <CommandEmpty>No option found.</CommandEmpty>
+            <CommandGroup>
+              {options.map(option => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={currentValue => {
+                    onChange?.(currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="flex items-center gap-2">{option.label}</span>
+                  <Check
+                    className={cn(
+                      'ml-auto h-4 w-4',
+                      value === option.value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
