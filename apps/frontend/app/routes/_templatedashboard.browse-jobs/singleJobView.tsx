@@ -10,6 +10,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/solid';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
 import AppFormField from '~/common/form-fields';
 import { FaStar } from 'react-icons/fa';
+import ReadMore from '~/common/ReadMore';
 
 interface JobCardProps {
   job: Job & { applicationStatus?: string };
@@ -82,6 +83,7 @@ export default function SingleJobView({
       const params = new URLSearchParams({
         jobType: 'by-employer',
         employerId: job.employerId.toString(),
+        excludeJobId: job.id.toString(),
       });
 
       fetcher.submit(null, {
@@ -109,7 +111,12 @@ export default function SingleJobView({
 
       <div className="grid grid-cols-[60%,40%] mb-8">
         <div className="px-6 py-4 border-r border-gray-200">
-          <div className="mb-12" dangerouslySetInnerHTML={{ __html: job.description }} />
+          <ReadMore
+            className="mb-12 text-base"
+            html={job.description}
+            wordsPerChunk={40} // or whatever chunk size you want
+          />
+
           <div className="flex justify-between items-center mb-12">
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">${job.budget}</span>
