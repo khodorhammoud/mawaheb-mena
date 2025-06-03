@@ -8,6 +8,7 @@ type JobBase = Omit<InferSelectModel<typeof jobsTable>, 'createdAt' | 'fulfilled
 export type Job = JobBase & {
   createdAt: Date | string;
   fulfilledAt: Date | string | null;
+  expectedHourlyRate?: number | null;
   requiredSkills?: { id: number; name: string; isStarred: boolean }[];
 };
 

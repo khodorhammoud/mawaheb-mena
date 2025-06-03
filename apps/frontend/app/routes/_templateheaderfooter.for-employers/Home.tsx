@@ -5,8 +5,6 @@ import HowItWorks from './howitworks/HowItWorks';
 import FAQ from './FAQ';
 import ContactUs from './ContactUs';
 import '../../styles/wavy/wavy.css';
-import Segments from './Segments';
-import Languages from './Languages';
 import BlogCardsList from './BlogCard';
 import WhyWorkWithUs from './WhyWorkWithUs';
 import SegmentsLanguagesZoomingText from './SegmentsLanguagesZoomingText';

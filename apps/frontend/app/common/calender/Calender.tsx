@@ -26,13 +26,13 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
   // Generate years for dropdown
   const years = Array.from({ length: 11 }, (_, i) => getYear(new Date()) - 5 + i);
 
+  const handleClickOutside = (event: MouseEvent) => {
+    if (calendarRef.current && !calendarRef.current.contains(event.target as Node) && onClose) {
+      onClose();
+    }
+  };
   // Close calendar when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -60,7 +60,7 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
       days.push(
         <div
           key={i}
-          className={`p-2 text-center cursor-pointer rounded-full ${
+          className={`p-1 text-center cursor-pointer rounded-full ${
             isSelected ? 'bg-primaryColor text-white' : 'hover:border hover:border-primaryColor'
           }`}
           onKeyDown={e => {
@@ -71,8 +71,8 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
           tabIndex={0}
           role="button"
           style={{
-            width: '2.5rem',
-            height: '2.5rem',
+            width: '2rem',
+            height: '2rem',
           }}
           onClick={() => {
             onDateSelect(day); // Trigger parent function
@@ -92,7 +92,7 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
         <button
           type="button" // Prevent form submission
           onClick={prevMonth}
-          className="p-2 px-3 bg-gray-200 rounded hover:bg-gray-300"
+          className="p-1 px-3 bg-gray-200 rounded hover:bg-gray-300"
         >
           &lt;
         </button>
@@ -131,7 +131,7 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
       </div>
 
       {/* Calendar days */}
-      <div className="grid grid-cols-7 text-base gap-2 mt-2 border-b pb-2">{renderDays()}</div>
+      <div className="grid grid-cols-7 text-base gap-0 mt-2 border-b pb-2">{renderDays()}</div>
 
       {/* Buttons */}
       <div className="flex justify-end text-sm gap-2 mt-2">

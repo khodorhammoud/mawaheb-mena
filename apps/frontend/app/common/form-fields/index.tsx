@@ -1,6 +1,7 @@
 // import PropTypes from 'prop-types';
 import { useState, useEffect, ReactNode } from 'react';
 import PhoneNumberField from './phoneNbs/PhoneNumberField';
+import CountrySelectField from './counrtiesDropdown/CountrySelectField';
 
 // Define TypeScript interface for props
 interface AppFormFieldProps {
@@ -38,6 +39,8 @@ const AppFormField = ({
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
+
+  const [country, setCountry] = useState(defaultValue);
 
   useEffect(() => {
     if (value !== undefined) {
@@ -84,8 +87,20 @@ const AppFormField = ({
           id={id}
           name={name}
           defaultValue={defaultValue.toString()}
-          placeholder={placeholder}
           onChange={onChange}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+        />
+      ) : id === 'countryDropdown' ? (
+        <CountrySelectField
+          id={id}
+          name={name}
+          value={selectedValue}
+          defaultValue={String(defaultValue ?? selectedValue)}
+          onChange={e => {
+            setSelectedValue(e.target.value);
+            if (onChange) onChange(e);
+          }}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
         />
       ) : (
         <>

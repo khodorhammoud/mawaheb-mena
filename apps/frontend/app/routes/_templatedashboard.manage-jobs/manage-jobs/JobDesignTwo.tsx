@@ -9,6 +9,7 @@ import { JobStatus } from '@mawaheb/db/enums';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
 import Job from './Job';
+import { EXPERIENCE_LEVEL_LABELS } from '~/common/labels';
 
 export default function JobDesignTwo({
   data,
@@ -79,7 +80,9 @@ export default function JobDesignTwo({
               <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
             </div>
             <div>
-              <p className="text-lg mt-4">{job.experienceLevel}</p>
+              <p className="xl:text-xl lg:text-lg text-base mt-4">
+                {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
+              </p>
               <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
             </div>
           </div>
@@ -115,27 +118,51 @@ export default function JobDesignTwo({
               status === JobStatus.Draft ? 'hidden' : ''
             } ${status === JobStatus.Closed || status === JobStatus.Paused ? 'grid grid-cols-3 !gap-16' : ''}`}
           >
-            {/* Applicants ProfilePhotosSection */}
-            <ProfilePhotosSection
-              label="Applicants"
-              images={applicantsPhotos}
-              profiles={data.applications}
-            />
+            {/* For PAUSED and CLOSED jobs */}
+            {status === JobStatus.Closed || status === JobStatus.Paused ? (
+              <div className="flex gap-6">
+                <ProfilePhotosSection
+                  label="Applicants"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                />
 
-            {/* Interviewed ProfilePhotosSection */}
-            <ProfilePhotosSection
-              label="Interviewed"
-              images={applicantsPhotos}
-              profiles={data.applications}
-            />
+                <ProfilePhotosSection
+                  label="Interviewed"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                />
 
-            {/* Hired ProfilePhotosSection */}
-            <ProfilePhotosSection
-              label="Hired"
-              images={applicantsPhotos}
-              profiles={data.applications}
-              className={`${status === JobStatus.Active || status === JobStatus.Paused ? 'hidden' : ''}`}
-            />
+                <ProfilePhotosSection
+                  label="Hired"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                  className={`${status === JobStatus.Paused ? 'hidden' : ''}`}
+                />
+              </div>
+            ) : (
+              // All jobs except PAUSED and CLOSED
+              <>
+                <ProfilePhotosSection
+                  label="Applicants"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                />
+
+                <ProfilePhotosSection
+                  label="Interviewed"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                />
+
+                <ProfilePhotosSection
+                  label="Hired"
+                  images={applicantsPhotos}
+                  profiles={data.applications}
+                  className={status === JobStatus.Active ? 'hidden' : ''}
+                />
+              </>
+            )}
           </div>
 
           {/* CALENDAR */}
