@@ -18,6 +18,8 @@ const DUMMY_JOBS: (Job & { applicationStatus: string })[] = [
     experienceLevel: 'mid_level',
     status: 'active',
     createdAt: new Date(),
+
+    expectedHourlyRate: 25,
     employerId: 1,
     jobCategoryId: 1,
     fulfilledAt: null,
@@ -35,6 +37,7 @@ const DUMMY_JOBS: (Job & { applicationStatus: string })[] = [
     experienceLevel: 'senior_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 30,
     employerId: 2,
     jobCategoryId: 2,
     fulfilledAt: null,
@@ -69,10 +72,30 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     budget: null,
   });
 
+  // --- NEW: Track if we're filtering/searching ---
+  const isFiltering =
+    !!searchQuery ||
+    !!filters.workingHours ||
+    !!filters.jobType ||
+    !!filters.experienceLevel ||
+    !!filters.budget;
+
+  // --- MAIN CHANGE: Always fetch ALL jobs (limit 1000) if searching/filtering ---
   useEffect(() => {
     if (verified) {
       const searchParams = new URLSearchParams();
-      searchParams.set('limit', limit.toString());
+      // If searching/filtering, fetch a large batch (1000), else paginate
+      searchParams.set('limit', isFiltering ? '1000' : limit.toString());
+
+      // Pass search/filters as query params to backend
+      if (searchQuery) searchParams.set('search', searchQuery);
+      if (filters.workingHours?.from)
+        searchParams.set('workingHoursFrom', filters.workingHours.from);
+      if (filters.workingHours?.to) searchParams.set('workingHoursTo', filters.workingHours.to);
+      if (filters.jobType) searchParams.set('jobType', filters.jobType);
+      if (filters.experienceLevel) searchParams.set('experienceLevel', filters.experienceLevel);
+      if (filters.budget) searchParams.set('budget', filters.budget);
+
       setIsLoading(true);
 
       fetcher.submit(searchParams, {
@@ -80,7 +103,8 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
         action: '/api/jobs-myJobs',
       });
     }
-  }, [verified, limit]); // Add verified to dependencies
+    // eslint-disable-next-line
+  }, [verified, limit, searchQuery, JSON.stringify(filters)]); // Added new deps for filter/search
 
   // Update loaded jobs when new data arrives
   useEffect(() => {
@@ -101,7 +125,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     }
   }, [verified]);
 
-  // ✅ Apply frontend filtering
+  // ✅ Apply frontend filtering (mainly for dummy mode)
   const filteredJobs = loadedJobs.filter(job => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -110,9 +134,9 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     const matchesWorkingHours =
       !filters.workingHours ||
       (!filters.workingHours.from && !filters.workingHours.to) ||
-      (filters.workingHours.from &&
+      (filters.workingHours?.from &&
         job.workingHoursPerWeek >= filters.workingHours.from &&
-        filters.workingHours.to &&
+        filters.workingHours?.to &&
         job.workingHoursPerWeek <= filters.workingHours.to);
 
     const matchesJobType = !filters.jobType || job.projectType === filters.jobType;
@@ -193,6 +217,15 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     setLimit(prevLimit => prevLimit + 10); // Increase limit by 10
   };
 
+  // ---- ENHANCED LOAD MORE LOGIC ----
+  // Only show if not filtering, or filtering with enough jobs (10+)
+  const showLoadMoreButton =
+    loadedJobs.length > 0 &&
+    loadedJobs.length < totalCount &&
+    fetcher.data &&
+    fetcher.data.jobs.length === limit &&
+    (!isFiltering || filteredJobs.length >= 10); // <--- the magic
+
   return (
     <div>
       {/* <h1>
@@ -210,15 +243,19 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       {/* Jobs Found */}
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          {totalCount > 0 && (
-            <>
-              <span className="font-bold text-primaryColor text-base">
-                {loadedJobs.length} {loadedJobs.length === 1 ? 'job' : 'jobs'}
-              </span>
-              {` out of `}
-              <span>{totalCount} total</span>
-            </>
-          )}
+          <span>
+            You have{' '}
+            <span className="font-bold text-primaryColor text-base">{filteredJobs.length}</span>
+            {' job'}
+            {filteredJobs.length === 1 ? '' : 's'} matching this filter
+            {typeof totalCount === 'number' && totalCount > 0 ? (
+              <>
+                {' out of '}
+                <span className="font-bold text-primaryColor text-base">{totalCount}</span> in total
+              </>
+            ) : null}
+            .
+          </span>
         </p>
       )}
 
@@ -257,20 +294,17 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
           )}
 
           {/* Load More Button - Only show if there are more jobs to load */}
-          {loadedJobs.length > 0 &&
-            loadedJobs.length < totalCount &&
-            fetcher.data &&
-            fetcher.data.jobs.length === limit && (
-              <div className="mt-6 text-center">
-                <button
-                  onClick={handleLoadMore}
-                  className="px-4 py-2 not-active-gradient rounded-xl text-white bg-primaryColor transition-colors"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Loading...' : 'Load More Jobs'}
-                </button>
-              </div>
-            )}
+          {showLoadMoreButton && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={handleLoadMore}
+                className="px-4 py-2 not-active-gradient rounded-xl text-white bg-primaryColor transition-colors"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Loading...' : 'Load More Jobs'}
+              </button>
+            </div>
+          )}
         </section>
       ) : (
         // Dummy Jobs UI with Blurred Additional Jobs - No status categories shown

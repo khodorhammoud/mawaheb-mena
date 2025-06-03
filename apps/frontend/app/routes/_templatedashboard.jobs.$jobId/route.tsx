@@ -157,8 +157,38 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const formData = await request.formData();
-    const actionType = formData.get('_action');
 
+    // 🔥 Handle status update
+    if (formData.has('applicationId') && formData.has('status')) {
+      const applicationId = parseInt(formData.get('applicationId') as string, 10);
+      const status = formData.get('status') as JobApplicationStatus;
+
+      if (!applicationId || !status) {
+        return Response.json({
+          success: false,
+          message: 'Missing required data for status update',
+        });
+      }
+
+      try {
+        // 👇 Make sure you have this function!
+        await updateJobApplicationStatus(applicationId, status);
+
+        return Response.json({
+          success: true,
+          message: 'Job application status updated successfully',
+        });
+      } catch (error) {
+        console.error('Error updating job application status:', error);
+        return Response.json({
+          success: false,
+          message: 'Failed to update job application status',
+        });
+      }
+    }
+
+    // 🔥 Existing review logic
+    const actionType = formData.get('_action');
     if (actionType === 'review') {
       const freelancerId = parseInt(formData.get('freelancerId') as string, 10);
       const rating = parseInt(formData.get('rating') as string, 10);

@@ -28,9 +28,11 @@ export async function loader({ params, request }: { params: { jobId: number }; r
   const jobCategories = await getAllJobCategories();
   const allSkills = await getAllSkills();
 
+  // --- FIX: include expectedHourlyRate in the job object passed down
   return Response.json({
     job: {
       ...job,
+      expectedHourlyRate: job.expectedHourlyRate ?? '', // make sure it's passed to the form!
       experienceLevel: job.experienceLevel as ExperienceLevel,
     },
     jobCategories: jobCategories || [],
@@ -79,6 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
       requiredSkills, // Pass correctly parsed skills
       projectType: formData.get('projectType') as string,
       budget: parseInt(formData.get('budget') as string, 10) || undefined,
+      expectedHourlyRate: parseInt(formData.get('expectedHourlyRate') as string, 10) || 0, // <-- ADD THIS LINE
       experienceLevel: formData.get('experienceLevel') as ExperienceLevel,
       status: formData.get('status') as string,
       jobCategoryId: parseInt(formData.get('jobCategory') as string, 10) || null,

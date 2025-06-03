@@ -1,5 +1,5 @@
 {
-  "id": "917e8dae-ef10-45f0-b18b-d2d719a37360",
+  "id": "71c29c50-c968-4b23-a658-be4558502ea4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1164,6 +1164,12 @@
         },
         "budget": {
           "name": "budget",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expected_hourly_rate": {
+          "name": "expected_hourly_rate",
           "type": "integer",
           "primaryKey": false,
           "notNull": false

@@ -77,7 +77,7 @@ importers:
         version: 0.42.0(@neondatabase/serverless@1.0.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/pg@8.11.14)(gel@2.1.0)(pg@8.15.6)(postgres@3.4.5)(prisma@5.22.0)(sqlite3@5.1.7)
       eslint-import-resolver-alias:
         specifier: ^1.1.2
-        version: 1.1.2(eslint-plugin-import@2.31.0)
+        version: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-plugin-react-hooks:
         specifier: ^5.1.0-rc-8971381549-20240625
         version: 5.2.0(eslint@8.57.1)
@@ -347,6 +347,9 @@ importers:
       '@types/react-router':
         specifier: ^5.1.20
         version: 5.1.20
+      '@zxcvbn-ts/core':
+        specifier: ^3.0.4
+        version: 3.0.4
       bcrypt-ts:
         specifier: ^5.0.2
         version: 5.0.3
@@ -359,6 +362,9 @@ importers:
       cmdk:
         specifier: ^1.0.0
         version: 1.1.1(@types/react-dom@18.3.7(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      country-list:
+        specifier: ^2.3.0
+        version: 2.3.0
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -476,6 +482,9 @@ importers:
       zod:
         specifier: ^3.23.8
         version: 3.24.3
+      zxcvbn:
+        specifier: ^4.4.2
+        version: 4.4.2
     devDependencies:
       '@playwright/test':
         specifier: ^1.52.0
@@ -495,6 +504,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.7
         version: 18.3.7(@types/react@18.3.20)
+      '@types/zxcvbn':
+        specifier: ^4.4.5
+        version: 4.4.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.7.4
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
@@ -518,7 +530,7 @@ importers:
         version: 8.57.1
       eslint-import-resolver-alias:
         specifier: ^1.1.2
-        version: 1.1.2(eslint-plugin-import@2.31.0)
+        version: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-import-resolver-typescript:
         specifier: ^3.6.3
         version: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.1)
@@ -4756,6 +4768,9 @@ packages:
   '@types/yargs@17.0.33':
     resolution: {integrity: sha512-WpxBCKWPLr4xSsHgz511rFJAM+wS28w2zEO1QDNY5zM/S8ok70NNfztH0xwhqKyaK0OHCbN98LDAZuy1ctxDkA==}
 
+  '@types/zxcvbn@4.4.5':
+    resolution: {integrity: sha512-FZJgC5Bxuqg7Rhsm/bx6gAruHHhDQ55r+s0JhDh8CQ16fD7NsJJ+p8YMMQDhSQoIrSmjpqqYWA96oQVMNkjRyA==}
+
   '@typescript-eslint/eslint-plugin@6.21.0':
     resolution: {integrity: sha512-oy9+hTPCUFpngkEZUSzbf9MxI65wbKFoQYsgPdILTfbUldp5ovUuphZVe4i30emU9M/kP+T64Di0mxl7dSw3MA==}
     engines: {node: ^16.0.0 || >=18.0.0}
@@ -5099,6 +5114,9 @@ packages:
 
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  '@zxcvbn-ts/core@3.0.4':
+    resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
 
   '@zxing/text-encoding@0.9.0':
     resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}
@@ -6219,6 +6237,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  country-list@2.3.0:
+    resolution: {integrity: sha512-qZk66RlmQm7fQjMYWku1AyjlKPogjPEorAZJG88owPExoPV8EsyCcuFLvO2afTXHEhi9liVOoyd+5A6ZS5QwaA==}
 
   create-jest@29.7.0:
     resolution: {integrity: sha512-Adz2bdH0Vq3F53KEMJOoftQFutWCukm6J24wbPWRO4k1kMY7gS7ds/uoJkNuV8wDCtWWnuwGcJwpWcih+zEW1Q==}
@@ -7547,6 +7568,10 @@ packages:
   fast-xml-parser@4.5.3:
     resolution: {integrity: sha512-RKihhV+SHsIUGXObeVy9AXiBbFwkVk7Syp8XgwN5U3JV416+Gwp/GO9i0JYKmikykgz/UHRrrV4ROuZEo/T0ig==}
     hasBin: true
+
+  fastest-levenshtein@1.0.16:
+    resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
+    engines: {node: '>= 4.9.1'}
 
   fastest-stable-stringify@2.0.2:
     resolution: {integrity: sha512-bijHueCGd0LqqNK9b5oCMHc0MluJAx0cwqASgbWMvkO01lCYgIhacVRLcaDz3QnyYIRNJRDwMb41VuT6pHJ91Q==}
@@ -13738,6 +13763,9 @@ packages:
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
+  zxcvbn@4.4.2:
+    resolution: {integrity: sha512-Bq0B+ixT/DMyG8kgX2xWcI5jUvCwqrMxSFam7m0lAf78nf04hv6lNCsyLYdyYTrCVMqNDY/206K7eExYCeSyUQ==}
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -18626,6 +18654,8 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
+  '@types/zxcvbn@4.4.5': {}
+
   '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
@@ -18949,7 +18979,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.8.3)
       eslint-config-prettier: 9.1.0(eslint@8.57.1)
-      eslint-import-resolver-alias: 1.1.2(eslint-plugin-import@2.31.0)
+      eslint-import-resolver-alias: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.1)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.1)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
@@ -19084,6 +19114,10 @@ snapshots:
   '@xtuc/ieee754@1.2.0': {}
 
   '@xtuc/long@4.2.2': {}
+
+  '@zxcvbn-ts/core@3.0.4':
+    dependencies:
+      fastest-levenshtein: 1.0.16
 
   '@zxing/text-encoding@0.9.0':
     optional: true
@@ -20368,6 +20402,8 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
+  country-list@2.3.0: {}
+
   create-jest@29.7.0(@types/node@20.17.32)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.32)(typescript@5.8.3)):
     dependencies:
       '@jest/types': 29.6.3
@@ -21535,7 +21571,7 @@ snapshots:
       eslint-plugin-turbo: 2.5.2(eslint@8.57.1)(turbo@2.5.2)
       turbo: 2.5.2
 
-  eslint-import-resolver-alias@1.1.2(eslint-plugin-import@2.31.0):
+  eslint-import-resolver-alias@1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1)):
     dependencies:
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1)
 
@@ -22143,6 +22179,8 @@ snapshots:
   fast-xml-parser@4.5.3:
     dependencies:
       strnum: 1.1.2
+
+  fastest-levenshtein@1.0.16: {}
 
   fastest-stable-stringify@2.0.2: {}
 
@@ -29587,3 +29625,5 @@ snapshots:
   zwitch@1.0.5: {}
 
   zwitch@2.0.4: {}
+
+  zxcvbn@4.4.2: {}

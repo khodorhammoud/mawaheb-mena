@@ -14,11 +14,11 @@ import { Button } from '~/components/ui/button';
 import { useToast } from '~/components/hooks/use-toast';
 import { ToastAction } from '~/components/ui/toast';
 import { AccountType, AccountStatus } from '@mawaheb/db/enums';
+import { zxcvbn } from '@zxcvbn-ts/core';
 
-/* --------------------------------------------------
-   Adjust or remove these types as needed to match
-   your actual loader data and responses.
--------------------------------------------------- */
+// ----------------------------------------------
+// Loader/Fake Data Types
+// ----------------------------------------------
 type LoaderData = {
   user: {
     id: number;
@@ -33,19 +33,15 @@ type LoaderData = {
 type SettingsFetcherData = {
   success?: boolean;
   error?: string;
-  formType?: string; // e.g., 'privacyTab' or 'deactivateAccount'
-  isDeactivated?: boolean; // for deactivation
-  hasActiveJobs?: boolean; // for deletion eligibility
-  disabledMessage?: string; // if user cannot delete
+  formType?: string;
+  isDeactivated?: boolean;
+  hasActiveJobs?: boolean;
+  disabledMessage?: string;
+  message?: string; // Success message
 };
 
 type ExportDataResponse = {
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  user: { id: number; firstName: string; lastName: string; email: string };
   account: {
     id: number;
     accountType: string;
@@ -67,13 +63,17 @@ type ExportDataResponse = {
   timesheetEntries: any[];
   languages: any[];
   skills: any[];
-  userAccountStatus: AccountStatus; // from HEAD
+  userAccountStatus: AccountStatus;
 };
 
+// ----------------------------------------------
+// PrivacyTab Component
+// ----------------------------------------------
 export default function PrivacyTab() {
+  // Loader data for user/account status
   const { user, userAccountStatus: initialAccountStatus } = useLoaderData<LoaderData>();
 
-  // Fetchers
+  // Fetchers for all async actions
   const settingsFetcher = useFetcher<SettingsFetcherData>();
   const exportFetcher = useFetcher<ExportDataResponse>();
   const deleteFetcher = useFetcher<SettingsFetcherData>();
@@ -83,30 +83,45 @@ export default function PrivacyTab() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Deactivate/Reactivate Account State
+  // Account Status
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
   const [currentAccountStatus, setCurrentAccountStatus] =
     useState<AccountStatus>(initialAccountStatus);
 
-  // Password Update State
+  // Password update state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Generic Error/Success Messages
+  // Success/Error messages
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Delete Account State
+  // Account delete state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteDisabled, setDeleteDisabled] = useState(false);
   const [deleteDisabledMessage, setDeleteDisabledMessage] = useState('');
   const [feedback, setFeedback] = useState('');
 
-  /* -------------------------------
-   * Keep "currentAccountStatus" updated
-   * if loader data changes externally
-   -------------------------------- */
+  // -------------------------------
+  // ZXCVBN Password Strength Checker
+  // -------------------------------
+  const [passwordScore, setPasswordScore] = useState(0);
+  const [passwordFeedback, setPasswordFeedback] = useState('');
+
+  // Check password strength when newPassword changes
+  useEffect(() => {
+    if (newPassword) {
+      const result = zxcvbn(newPassword);
+      setPasswordScore(result.score); // 0 to 4
+      setPasswordFeedback(result.feedback.suggestions.join(' '));
+    } else {
+      setPasswordScore(0);
+      setPasswordFeedback('');
+    }
+  }, [newPassword]);
+
+  // Keep currentAccountStatus in sync with loader data
   useEffect(() => {
     if (
       initialAccountStatus &&
@@ -117,41 +132,36 @@ export default function PrivacyTab() {
     }
   }, [initialAccountStatus, currentAccountStatus, settingsFetcher.data]);
 
-  /* --------------------------------------------
-   * Handle Settings Fetcher for:
-   *  1) Password Update
-   *  2) Deactivate/Reactivate Account
-   ---------------------------------------------*/
+  // console.log('FETCHER DATA', settingsFetcher.data); // for ensuring if the password is changed!
+
+  // Handle password update / account deactivate/reactivate success & errors
   useEffect(() => {
     if (!settingsFetcher.data) return;
-
-    // If it was the password update form
     if (
       settingsFetcher.data.formType === 'privacyTab' &&
       settingsFetcher.state === 'idle' &&
-      !settingsFetcher.data.isDeactivated // not an account status update
+      !settingsFetcher.data.isDeactivated
     ) {
       if (!settingsFetcher.data.success) {
         setErrorMessage(settingsFetcher.data.error || 'An error occurred.');
         setSuccessMessage(null);
       } else {
         setErrorMessage(null);
-        setSuccessMessage('Password updated successfully!');
+        setSuccessMessage(settingsFetcher.data.message || 'Password updated successfully!');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        setPasswordScore(0);
+        setPasswordFeedback('');
       }
     }
-
-    // If it was the deactivateAccount form
+    // (Account deactivate/reactivate message logic below unchanged)
     if (settingsFetcher.data.formType === 'deactivateAccount') {
       if (settingsFetcher.data.success) {
         const newStatus = settingsFetcher.data.isDeactivated
           ? AccountStatus.Deactivated
           : AccountStatus.Published;
-
         setCurrentAccountStatus(newStatus);
-
         toast({
           variant: 'default',
           title:
@@ -162,11 +172,9 @@ export default function PrivacyTab() {
               : 'Your account has been reactivated successfully.',
           action: <ToastAction altText="Close">Close</ToastAction>,
         });
-
         setShowDeactivateDialog(false);
       } else {
         setCurrentAccountStatus(initialAccountStatus);
-
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -177,9 +185,7 @@ export default function PrivacyTab() {
     }
   }, [settingsFetcher.data, settingsFetcher.state, initialAccountStatus, toast]);
 
-  /* --------------------------------
-   * Listen for delete eligibility or errors
-   --------------------------------*/
+  // Listen for delete eligibility/errors
   useEffect(() => {
     if (deleteFetcher.data) {
       const response = deleteFetcher.data;
@@ -199,9 +205,7 @@ export default function PrivacyTab() {
     }
   }, [deleteFetcher.data]);
 
-  /* --------------------------------
-   * Listen for export data response
-   --------------------------------*/
+  // Listen for export data response (download json)
   useEffect(() => {
     if (exportFetcher.data) {
       // If there's an error field
@@ -231,14 +235,10 @@ export default function PrivacyTab() {
     }
   }, [exportFetcher.data]);
 
-  /* --------------------------------
-   * Listen for feedback fetcher response
-   * - final delete
-   --------------------------------*/
+  // Listen for feedback fetcher response (final delete)
   useEffect(() => {
     if (feedbackFetcher.data) {
       if (feedbackFetcher.data.success) {
-        // e.g. navigate out after deletion
         navigate('/auth/logout');
       } else if (feedbackFetcher.data.error) {
         setErrorMessage(feedbackFetcher.data.error);
@@ -246,9 +246,7 @@ export default function PrivacyTab() {
     }
   }, [feedbackFetcher.data, navigate]);
 
-  /* --------------------------------
-   * On mount, check if user can delete
-   --------------------------------*/
+  // On mount, check if user can delete
   useEffect(() => {
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
@@ -256,13 +254,19 @@ export default function PrivacyTab() {
     deleteFetcher.submit(formData, { method: 'post' });
   }, []);
 
-  // Validate password form
+  // ---------------------------------------
+  // Validate password form (add zxcvbn check)
+  // ---------------------------------------
   const isFormValid =
-    currentPassword && newPassword && confirmPassword && newPassword === confirmPassword;
+    currentPassword &&
+    newPassword &&
+    confirmPassword &&
+    newPassword === confirmPassword &&
+    passwordScore >= 3; // password must be 'good' or better (score 3 or 4)
 
-  /* ----------------------------------------------------
-   * Handlers: Export, Delete, Confirm Delete, Deactivate
-   -----------------------------------------------------*/
+  // --------------------------------------
+  // Handlers for export/delete/deactivate
+  // --------------------------------------
   const handleExportData = () => {
     const formData = new FormData();
     formData.append('formType', 'exportData');
@@ -286,11 +290,9 @@ export default function PrivacyTab() {
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
     formData.append('action', 'deleteAccount');
-
     if (feedback.trim()) {
       formData.append('feedback', feedback);
     }
-
     feedbackFetcher.submit(formData, { method: 'post' });
     setIsDeleteDialogOpen(false);
   };
@@ -299,6 +301,7 @@ export default function PrivacyTab() {
     settingsFetcher.submit({ formType: 'deactivateAccount' }, { method: 'post' });
   };
 
+  // Account deactivation warning block
   const getDeactivationWarning = () => {
     if (user.accountType === AccountType.Employer) {
       return (
@@ -326,30 +329,34 @@ export default function PrivacyTab() {
     }
   };
 
-  /* =====================================================
-     RENDER
-  ===================================================== */
+  // =====================================================
+  //                 RENDER
+  // =====================================================
   return (
     <div className="">
       {/* Password Update Form */}
       <settingsFetcher.Form method="post">
-        {/* Hidden input to differentiate from other forms */}
         <input type="hidden" name="formType" value="privacyTab" />
 
         <div className="p-6 space-y-12">
-          {/* Error or Success messages for password updates */}
-          {errorMessage && (
-            <div className="bg-red-100 text-red-700 p-2 rounded-md">{errorMessage}</div>
+          {/* Error/Success messages (show after submit) */}
+          {/* Top of form, can move below button if you prefer */}
+          {settingsFetcher.data?.success && settingsFetcher.data?.message && (
+            <div className="bg-green-100 text-green-700 p-2 rounded-md mt-2">
+              {settingsFetcher.data.message}
+            </div>
           )}
-          {successMessage && (
-            <div className="bg-green-100 text-green-700 p-2 rounded-md">{successMessage}</div>
+          {settingsFetcher.data?.error && (
+            <div className="bg-red-100 text-red-700 p-2 rounded-md mt-2">
+              {settingsFetcher.data.error}
+            </div>
           )}
 
           {/* Password Section */}
           <section className="grid lg:grid-cols-[15%_75%] gap-8">
             <div className="text-lg font-semibold">Password</div>
             <div>
-              <div className="text-base mt-1 mb-2">Change Password</div>
+              <div className="text-base mt-1 mb-4">Change Password</div>
               <div className="flex flex-col md:gap-8 gap-6">
                 <AppFormField
                   className="w-1/2"
@@ -371,25 +378,31 @@ export default function PrivacyTab() {
                       defaultValue={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
                     />
-                    <p className="text-[12px] text-gray-500 mt-1 ml-2 leading-3">
-                      Password must be 8 characters, upper case, lower case, symbols.
-                    </p>
+                    {/* Password strength bar + feedback */}
+                    {passwordScore < 3 && newPassword && (
+                      <div className="text-red-500 text-xs mt-1">Password is too weak!</div>
+                    )}
                   </div>
-                  <AppFormField
-                    className="w-1/2"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    type="password"
-                    defaultValue={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                  />
+                  <div>
+                    <AppFormField
+                      className="w-1/2"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      label="Confirm Password"
+                      type="password"
+                      defaultValue={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                    {/* {passwordScore < 3 && newPassword && (
+                      <div className="text-red-500 text-xs mt-1">Password is too weak!</div>
+                    )} */}
+                  </div>
                 </div>
               </div>
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`bg-primaryColor text-white sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-6 ${
+                className={`bg-primaryColor text-white sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-2 mt-4 ${
                   isFormValid ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
                 }`}
               >
