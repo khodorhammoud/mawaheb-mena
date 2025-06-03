@@ -20,14 +20,20 @@ interface JobFormProps {
     requiredSkills: Skill[];
     projectType: string;
     budget: number;
+    expectedHourlyRate?: number; // ADDED
     experienceLevel: ExperienceLevel;
-    // experienceLevel: string;
     jobCategoryId: number | null;
   };
   jobCategories: JobCategory[];
   onSubmit?: (formData: any) => void;
   isEdit?: boolean;
 }
+
+const experienceLevelLabels: Record<string, string> = {
+  entry_level: 'Entry Level',
+  mid_level: 'Mid Level',
+  senior_level: 'Expert Level',
+};
 
 export default function JobForm({ job, jobCategories, isEdit = false }: JobFormProps) {
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
@@ -117,7 +123,6 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
               />
 
               {/* Skills */}
-
               <RequiredSkills selectedSkills={requiredSkills} onChange={setRequiredSkills} />
 
               {/* Project Type */}
@@ -144,6 +149,19 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 defaultValue={String(job?.budget || '')}
                 className="col-span-1 w-full"
               />
+
+              {/* === NEW FIELD: Expected Hourly Rate === */}
+              <AppFormField
+                type="number"
+                id="expectedHourlyRate"
+                name="expectedHourlyRate"
+                label="Expected Hourly Rate"
+                placeholder="Enter expected hourly rate"
+                min={0}
+                defaultValue={job?.expectedHourlyRate ?? ''}
+                className="col-span-1 w-full"
+              />
+              {/* ====================================== */}
             </div>
 
             {/* Job Category */}
@@ -161,7 +179,11 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                   <Badge
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${selectedCategory === category.id ? 'bg-blue-100 text-blue-600 border-blue-600' : 'text-gray-600 border-gray-300'}`}
+                    className={`cursor-pointer px-4 py-2 rounded-full border bg-white hover:bg-blue-100 ${
+                      selectedCategory === category.id
+                        ? 'bg-blue-100 text-blue-600 border-blue-600'
+                        : 'text-gray-600 border-gray-300'
+                    }`}
                   >
                     {category.label}
                   </Badge>
@@ -183,7 +205,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                         : 'text-gray-600 border-gray-300'
                     }`}
                   >
-                    {level}
+                    {experienceLevelLabels[level] || level}
                   </Badge>
                 ))}
               </div>

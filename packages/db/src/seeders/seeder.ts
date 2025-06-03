@@ -1853,6 +1853,7 @@ async function seed() {
               status: status,
               createdAt: faker.date.recent({ days: 30 }),
               fulfilledAt: status === JobStatus.Completed ? faker.date.recent({ days: 10 }) : null,
+              expectedHourlyRate: faker.number.int({ min: 10, max: 100 }),
             })
             .returning({ id: jobsTable.id });
 

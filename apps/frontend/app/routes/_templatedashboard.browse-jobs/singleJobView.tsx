@@ -1,4 +1,4 @@
-import { useFetcher, Form } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { Job } from '@mawaheb/db/types';
 import JobCard from './jobCard';
@@ -15,10 +15,17 @@ interface JobCardProps {
   job: Job & { applicationStatus?: string };
   jobSkills: Skill[];
   review?: { rating: number; comment: string; employerId: number } | null;
-  canReview: boolean; // ✅ Ensure this is included
+  canReview: boolean;
+  appStats: { interested: number; interviewed: number; invites: number }; // <-- added!
 }
 
-export default function SingleJobView({ job, jobSkills, review, canReview }: JobCardProps) {
+export default function SingleJobView({
+  job,
+  jobSkills,
+  review,
+  canReview,
+  appStats, // <-- use this, not useLoaderData()
+}: JobCardProps) {
   const fetcher = useFetcher<{
     jobs: Job[];
     success?: boolean;
@@ -134,9 +141,9 @@ export default function SingleJobView({ job, jobSkills, review, canReview }: Job
           <div className="mb-6">
             <p className="text-base font-medium text-gray-900 mb-2">Activity on this job</p>
             <ul className="text-sm text-gray-700 space-y-1">
-              <li>Interested: 3</li>
-              <li>Interviewed: 1</li>
-              <li>Invites sent: 0</li>
+              <li>Interested: {appStats.interested}</li>
+              <li>Interviewed: {appStats.interviewed}</li>
+              <li>Invites sent: {appStats.invites}</li>
             </ul>
           </div>
         </div>
@@ -195,23 +202,24 @@ export default function SingleJobView({ job, jobSkills, review, canReview }: Job
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
-            {[1, 2, 3, 4, 5].map(star => (
-              <button
-                key={star}
-                onClick={() => setRating(star)}
-                className={`text-3xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-              >
-                <FaStar className="w-6 h-6" />
-              </button>
-            ))}
-          </div>
-
           <reviewFetcher.Form method="post" action="/browse-jobs">
             <input type="hidden" name="_action" value="review" />
             <input type="hidden" name="jobId" value={job.id || ''} />
             <input type="hidden" name="employerId" value={job.employerId || ''} />
             <input type="hidden" name="rating" value={rating || 0} />
+
+            <div className="flex bg-gray-100 rounded-xl gap-3 mt-4 mb-2 py-4 px-4">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`text-3xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                  type="button"
+                >
+                  <FaStar className="w-6 h-6" />
+                </button>
+              ))}
+            </div>
 
             <AppFormField
               id="reviewComment"
@@ -240,6 +248,7 @@ export default function SingleJobView({ job, jobSkills, review, canReview }: Job
           </reviewFetcher.Form>
         </DialogContent>
       </Dialog>
+
       {/* Related Jobs Section */}
       {relatedJobs.length > 0 && (
         <div className="grid grid-cols-[60%,40%] mb-10">

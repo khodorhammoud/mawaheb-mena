@@ -1,5 +1,5 @@
 // import Sidebar from "~/routes/_templatedashboard/Sidebar";
-import { Link, useLoaderData, useNavigate } from '@remix-run/react';
+import { Link, useLoaderData, useNavigate, useSearchParams } from '@remix-run/react'; // <-- add useSearchParams
 // import { useState } from "react";
 // import type { Employer } from '@mawaheb/db/types';
 import { AccountStatus } from '@mawaheb/db/enums';
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // <-- add useEffect
 
 type JobData = {
   title: string;
@@ -28,14 +28,15 @@ type ApplicantData = {
   count: number;
 };
 
-// i am here since the account type is an employer.
-// now if the employer is onboarded, then i will be directed to index.tsx inside dashboard-screen. Else, i am still not onboarded, and i am directed to index.tsx inside onboarding-screen
 export default function Dashboard() {
   // const { accountOnboarded } = useLoaderData<{ accountOnboarded: boolean }>();
   // Fetch loader data
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+  // 👇 ADD THIS LINE
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const loaderData = useLoaderData<any>();
 
@@ -75,31 +76,45 @@ export default function Dashboard() {
     }
   };
 
+  // 👇 ADD THIS EFFECT TO SHOW TOAST
+  useEffect(() => {
+    if (searchParams.get('job_added') === '1') {
+      toast({
+        variant: 'default',
+        title: 'Job added successfully!',
+        description: 'Your job posting has been created.',
+      });
+      // Remove the param so it doesn't keep popping up
+      searchParams.delete('job_added');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams, toast]);
+
   // Job postings data
   const jobData: JobData[] = [
     {
       title: 'Active Jobs',
       count: activeJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: activeJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: activeJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Drafted Jobs',
       count: draftedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: draftedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: draftedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Closed Jobs',
       count: closedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: closedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: closedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
     {
       title: 'Paused Jobs',
       count: pausedJobCount,
       change: '+0 from last month', // Update this dynamically if needed
-      changeColor: pausedJobCount > 0 ? 'text-green-500' : 'text-red-500',
+      changeColor: pausedJobCount > 0 ? 'text-green-700' : 'text-red-600',
     },
   ];
 
