@@ -1,4 +1,4 @@
-// All jobs that are not applied to yet :)
+// All jobs that are not applied to yet + !!! active jobs i think i think !!! :)
 
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'mid_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 25,
     employerId: 1,
     jobCategoryId: 1,
     fulfilledAt: null,
@@ -35,6 +36,7 @@ const DUMMY_JOBS: Job[] = [
     experienceLevel: 'senior_level',
     status: 'active',
     createdAt: new Date(),
+    expectedHourlyRate: 30,
     employerId: 2,
     jobCategoryId: 2,
     fulfilledAt: null,
@@ -72,12 +74,37 @@ export default function RecommendedJobs({
     budget: null,
   });
 
-  // ✅ Use useFetcher to load Recommended jobs dynamically - Only if verified is true
+  // Track if user is filtering/searching
+  const isFiltering =
+    !!searchQuery ||
+    !!filters.workingHours ||
+    !!filters.jobType ||
+    !!filters.experienceLevel ||
+    !!filters.budget;
+
+  // --------------- MAIN CHANGE ---------------
+  // Use useEffect to fetch jobs from backend WITH all search/filter params!
   useEffect(() => {
     if (verified) {
       const searchParams = new URLSearchParams();
       searchParams.set('freelancerId', freelancerId.toString());
-      searchParams.set('limit', limit.toString());
+
+      // If NOT filtering/searching, apply normal limit (pagination).
+      // If filtering/searching, fetch ALL jobs (or a higher limit, like 1000).
+      if (isFiltering) {
+        searchParams.set('limit', '1000');
+      } else {
+        searchParams.set('limit', limit.toString());
+      }
+
+      // Add filters/search to backend call
+      if (searchQuery) searchParams.set('search', searchQuery);
+      if (filters.workingHours?.from)
+        searchParams.set('workingHoursFrom', filters.workingHours.from);
+      if (filters.workingHours?.to) searchParams.set('workingHoursTo', filters.workingHours.to);
+      if (filters.jobType) searchParams.set('jobType', filters.jobType);
+      if (filters.experienceLevel) searchParams.set('experienceLevel', filters.experienceLevel);
+      if (filters.budget) searchParams.set('budget', filters.budget);
 
       setIsLoading(true);
       fetcher.submit(searchParams, {
@@ -85,13 +112,15 @@ export default function RecommendedJobs({
         action: '/api/jobs-recommendationJobs',
       });
     }
-  }, [verified, freelancerId, limit]); // Add verified to dependencies
+    // eslint-disable-next-line
+  }, [verified, freelancerId, limit, searchQuery, JSON.stringify(filters)]);
+  // ^^^ add searchQuery/filters as deps, so we refetch on any search/filter change
 
   // Update state when data arrives - Only if verified is true
   useEffect(() => {
     if (verified && fetcher.data) {
-      if (isFirstLoad || limit === initialLimit) {
-        // Initialize or reset jobs
+      // When searching/filtering, always "reset" loadedJobs to just the returned results
+      if (isFiltering || isFirstLoad || limit === initialLimit) {
         setLoadedJobs(
           fetcher.data.jobs.map(job => ({
             ...job,
@@ -115,11 +144,10 @@ export default function RecommendedJobs({
         });
       }
 
-      // Update total count
       setTotalJobsCount(fetcher.data.totalCount);
       setIsLoading(false);
     }
-  }, [verified, fetcher.data, isFirstLoad, initialLimit, limit]);
+  }, [verified, fetcher.data, isFirstLoad, initialLimit, limit, isFiltering]);
 
   // Set dummy data when not showing real jobs
   useEffect(() => {
@@ -131,7 +159,7 @@ export default function RecommendedJobs({
     }
   }, [verified]);
 
-  // ✅ Apply frontend filtering logic
+  // ✅ Still keep frontend filtering for DUMMY data
   const filteredJobs = loadedJobs.filter(job => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -166,13 +194,16 @@ export default function RecommendedJobs({
     setLimit(prevLimit => prevLimit + 10); // Increase limit by 10
   };
 
-  // Determine whether to show load more button - only in real jobs mode
+  // ----------- ENHANCED LOAD MORE LOGIC -----------
+  // Only show load more button if not filtering, OR filtering but there are enough filtered jobs.
   const showLoadMoreButton =
     verified &&
     loadedJobs.length > 0 &&
     loadedJobs.length < totalJobsCount &&
     fetcher.data?.jobs &&
-    fetcher.data.jobs.length === initialLimit;
+    fetcher.data.jobs.length === initialLimit &&
+    // New: do NOT show if filtering & less than initialLimit results
+    (!isFiltering || filteredJobs.length >= initialLimit);
 
   // For the dummy mode, create 4 additional blurred jobs
   const createBlurredJobs = () => {
@@ -214,15 +245,12 @@ export default function RecommendedJobs({
 
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          {totalJobsCount > 0 && (
-            <>
-              <span className="font-bold text-primaryColor text-base">
-                {loadedJobs.length} {loadedJobs.length === 1 ? 'job' : 'jobs'}
-              </span>
-              {` out of `}
-              <span>{totalJobsCount} total</span>
-            </>
-          )}
+          <span>
+            You have{' '}
+            <span className="font-bold text-primaryColor text-base">{filteredJobs.length}</span>
+            {' job'}
+            {filteredJobs.length === 1 ? '' : 's'} matching this filter.
+          </span>
         </p>
       )}
 

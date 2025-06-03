@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { navigation } from '~/constants/navigation';
-import { NavLink, useMatches } from '@remix-run/react';
+import { NavLink, useMatches, Link, useNavigate, useLocation } from '@remix-run/react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import '~/styles/wavy/wavy.css';
-import { Link, useNavigate } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
 import { BsSearch, BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { Dialog, DialogContent } from '~/components/ui/dialog';
@@ -94,6 +93,8 @@ export default function Header() {
     window.location.href = `/notification/${notificationId}`;
   };
 
+  const location = useLocation();
+
   return (
     <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30">
       <div className="grid lg:grid-cols-[2fr,1fr] grid-cols-[9fr,4fr] md:gap-8 gap-2 items-center justify-around py-4">
@@ -119,7 +120,7 @@ export default function Header() {
 
         <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
           {/* Conditionally render the "Post Job" button */}
-          {accountType !== AccountType.Freelancer && (
+          {accountType !== AccountType.Freelancer && location.pathname !== '/new-job' && (
             <Link
               to="/new-job"
               onClick={handlePostJobClick}

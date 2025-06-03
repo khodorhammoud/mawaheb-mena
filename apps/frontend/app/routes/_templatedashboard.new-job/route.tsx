@@ -30,7 +30,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const skillsRaw = formData.get('jobSkills') as string;
     const skills: { name: string; isStarred: boolean }[] = JSON.parse(skillsRaw);
 
-    // ✅ Create job object (WITHOUT `requiredSkills`)
+    // ✅ Extract expectedHourlyRate
+    const expectedHourlyRate = parseInt(formData.get('expectedHourlyRate') as string, 10) || 0;
+
+    // ✅ Create job object (INCLUDING expectedHourlyRate)
     const jobData: Job = {
       id: null,
       employerId: employer.id,
@@ -42,18 +45,17 @@ export async function action({ request }: ActionFunctionArgs) {
       locationPreference: formData.get('location') as string,
       projectType: formData.get('projectType') as string,
       budget: parseInt(formData.get('budget') as string, 10) || 0,
+      expectedHourlyRate, // <-- Add this line
       experienceLevel: formData.get('experienceLevel') as string,
       status: jobStatus,
       fulfilledAt: null,
     };
 
-    // console.log("📝 Job Data to be inserted:", jobData);
-    // console.log("📌 Skills to be linked:", skills);
-
     const jobStatusResponse = await createJobPosting(jobData, skills);
 
     if (jobStatusResponse.success) {
-      return redirect('/dashboard');
+      // <-- ADD THE JOB ADDED PARAM
+      return redirect('/dashboard?job_added=1');
     } else {
       return Response.json(
         { success: false, error: { message: 'Failed to create job posting' } },
@@ -74,15 +76,8 @@ export async function loader({ request }) {
     // Get current user profile
     const employer = (await getCurrentProfileInfo(request)) as Employer;
 
-    console.log('New Job route: employer account status:', employer?.account?.accountStatus);
-    console.log(
-      'New Job route: comparing with AccountStatus.Deactivated:',
-      AccountStatus.Deactivated
-    );
-
     // Check if the employer is deactivated
     if (employer?.account?.accountStatus === AccountStatus.Deactivated) {
-      console.log('Employer is deactivated, redirecting to dashboard');
       return redirect('/dashboard');
     }
 
