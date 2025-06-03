@@ -756,9 +756,29 @@ export async function getJobRecommendations(
 }
 
 // ✅ Get All Jobs (No Restrictions)
-export async function getAllJobs(limit?: number, offset?: number) {
-  // Query to select all jobs that are active even if the freelancer applied
-  const query = db
+export async function getAllJobs(limit, offset, freelancerId) {
+  // 1. Get the list of unique job IDs for pagination
+  const jobIdRows = await db
+    .select({ id: jobsTable.id })
+    .from(jobsTable)
+    .leftJoin(employersTable, eq(employersTable.id, jobsTable.employerId))
+    .leftJoin(accountsTable, eq(accountsTable.id, employersTable.accountId))
+    .where(
+      and(
+        eq(jobsTable.status, JobStatus.Active),
+        not(eq(accountsTable.accountStatus, 'deactivated'))
+      )
+    )
+    .orderBy(desc(jobsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const jobIds = jobIdRows.map(r => r.id);
+
+  if (!jobIds.length) return [];
+
+  // 2. Fetch all job fields and application status for these jobs only
+  const jobs = await db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
@@ -775,36 +795,26 @@ export async function getAllJobs(limit?: number, offset?: number) {
       projectType: jobsTable.projectType,
     })
     .from(jobsTable)
-    .leftJoin(jobApplicationsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
-    .leftJoin(employersTable, eq(employersTable.id, jobsTable.employerId))
-    .leftJoin(accountsTable, eq(accountsTable.id, employersTable.accountId))
-    .where(
+    .leftJoin(
+      jobApplicationsTable,
       and(
-        eq(jobsTable.status, JobStatus.Active),
-        not(eq(accountsTable.accountStatus, 'deactivated')) // Use accountStatus instead of status
+        eq(jobApplicationsTable.jobId, jobsTable.id),
+        freelancerId !== undefined ? eq(jobApplicationsTable.freelancerId, freelancerId) : undefined
       )
     )
+    .where(inArray(jobsTable.id, jobIds))
     .orderBy(desc(jobsTable.createdAt));
 
-  // Apply pagination if provided
-  if (limit !== undefined && offset !== undefined) {
-    query.limit(limit).offset(offset);
+  // Now, no duplicates, always correct count
+  const uniqueJobs = {};
+  for (const job of jobs) {
+    uniqueJobs[job.id] = {
+      ...job,
+      applicationStatus: job.applicationStatus || undefined,
+    };
   }
 
-  const jobs = await query;
-
-  // --- Deduplicate jobs by ID ---
-  const uniqueJobs = Object.values(
-    jobs.reduce(
-      (acc, job) => {
-        acc[job.id] = job;
-        return acc;
-      },
-      {} as Record<number, (typeof jobs)[0]>
-    )
-  );
-
-  return uniqueJobs;
+  return Object.values(uniqueJobs);
 }
 
 // ✅ Get My Jobs (Jobs Freelancer Applied To)

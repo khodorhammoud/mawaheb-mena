@@ -25,8 +25,11 @@ export type JobFilter = {
   employerId?: number;
   page?: number;
   pageSize?: number;
-  jobIdsToExclude?: number[]; // add this to exclude job applied to
+  excludeJobId?: number; // <-- ADD THIS
+  jobIdsToExclude?: number[]; // keep if used elsewhere
   query?: string;
+  orderBy?: string; // <-- ADD THIS (optional, for sorting)
+  orderDirection?: 'asc' | 'desc'; // <-- ADD THIS (optional, for sorting)
 };
 
 export type JobApplication = {
