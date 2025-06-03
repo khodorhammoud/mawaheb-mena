@@ -253,17 +253,13 @@ export default function Header({
         <a
           href="#"
           onClick={() => setViewMode('three')}
-          className={`inline-block active:drop-shadow-inner transition-transform duration-150 hover:scale-110 ${
-            viewMode === 'three'
-              ? 'bg-blue-100/90 ring-2/20 ring-blue-300 shadow-xl rounded-xl scale-110'
-              : ''
-          }`}
+          className={`inline-block transition-transform duration-150 hover:scale-110 ${viewMode === 'three' ? 'scale-110' : ''}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6 -mt-2 -mr-1"
+            className="w-6 h-6 -mt-2 -mr-1 transition-transform duration-150"
             fill="#fff"
-            strokeWidth="1.3"
+            strokeWidth={`${viewMode == 'three' ? '1.8' : '1.3'}`}
             stroke="#27638a"
           >
             <path
@@ -276,26 +272,34 @@ export default function Header({
         <a
           href="#"
           onClick={() => setViewMode('two')}
-          className={`inline-block active:drop-shadow-inner transition-transform duration-150 hover:scale-110 ${
-            viewMode === 'two'
-              ? 'bg-blue-50 ring-2/20 ring-blue-300 shadow-xl rounded-xl scale-110'
-              : ''
+          className={`inline-block transition-transform duration-150 hover:scale-110 ${
+            viewMode === 'two' ? ' scale-110' : ''
           }`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6 ml-1" fill="#27638a">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-6 ml-1"
+            fill="#27638a"
+            stroke="#27638a"
+            strokeWidth={`${viewMode == 'two' ? '1.8' : '1.2'}`}
+          >
             <path d="M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
           </svg>
         </a>
         <a
           href="#"
           onClick={() => setViewMode('one')}
-          className={`inline-block active:drop-shadow-inner transition-transform duration-150 hover:scale-110 ${
-            viewMode === 'one'
-              ? 'bg-blue-50 ring-2/20 ring-blue-300 shadow-xl rounded-xl scale-110'
-              : ''
+          className={`inline-block transition-transform duration-150 hover:scale-110 ${
+            viewMode === 'one' ? 'scale-110' : ''
           }`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6" fill="#27638a">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-6"
+            fill="#27638a"
+            stroke="#27638a"
+            strokeWidth={`${viewMode == 'one' ? '1.8' : '1.2'}`}
+          >
             <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
           </svg>
         </a>
