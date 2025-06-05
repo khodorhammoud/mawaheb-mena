@@ -1,5 +1,18 @@
 import { db } from '@mawaheb/db/server';
-import { and, desc, eq, ilike, inArray, isNull, not, or, sql } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  not,
+  or,
+  sql,
+  gte,
+  lte,
+  notInArray,
+} from 'drizzle-orm';
 import { Job, JobApplication, JobCardData, JobFilter } from '@mawaheb/db/types';
 import {
   jobApplicationsTable,
@@ -756,28 +769,79 @@ export async function getJobRecommendations(
 }
 
 // ✅ Get All Jobs (No Restrictions)
-export async function getAllJobs(limit, offset, freelancerId) {
-  // 1. Get the list of unique job IDs for pagination
+// Fetch jobs with advanced filtering, pagination, and deduplication.
+// Supports filters for project type, location, experience, employer, budget, working hours, search, etc.
+export async function getAllJobs(
+  limit?: number,
+  offset?: number,
+  freelancerId?: number,
+  filters: JobFilter = {}
+) {
+  // 1. Build WHERE clauses dynamically based on filters
+  const whereClauses = [
+    // Only active jobs
+    eq(jobsTable.status, JobStatus.Active),
+    // Exclude jobs where the employer's account is deactivated
+    not(eq(accountsTable.accountStatus, 'deactivated')),
+  ];
+
+  // Filter: project type(s)
+  if (filters.projectType && filters.projectType.length)
+    whereClauses.push(inArray(jobsTable.projectType, filters.projectType));
+
+  // Filter: location preference(s)
+  if (filters.locationPreference && filters.locationPreference.length)
+    whereClauses.push(inArray(jobsTable.locationPreference, filters.locationPreference));
+
+  // Filter: experience level(s)
+  if (filters.experienceLevel && filters.experienceLevel.length)
+    whereClauses.push(inArray(jobsTable.experienceLevel, filters.experienceLevel));
+
+  // Filter: specific employer
+  if (filters.employerId) whereClauses.push(eq(jobsTable.employerId, filters.employerId));
+
+  // Filter: exclude specific job IDs (e.g., jobs already applied to)
+  if (filters.jobIdsToExclude && filters.jobIdsToExclude.length)
+    whereClauses.push(not(inArray(jobsTable.id, filters.jobIdsToExclude)));
+
+  // Filter: minimum budget (returns jobs with budget >= value)
+  if (filters.budget !== undefined) whereClauses.push(gte(jobsTable.budget, filters.budget));
+
+  // Filter: minimum working hours per week (returns jobs with workingHoursPerWeek >= value)
+  if (filters.workingHoursFrom !== undefined)
+    whereClauses.push(gte(jobsTable.workingHoursPerWeek, filters.workingHoursFrom));
+
+  // Filter: maximum working hours per week (returns jobs with workingHoursPerWeek <= value)
+  if (filters.workingHoursTo !== undefined)
+    whereClauses.push(lte(jobsTable.workingHoursPerWeek, filters.workingHoursTo));
+
+  // Filter: free-text search in title or description
+  if (filters.query)
+    whereClauses.push(
+      or(
+        ilike(jobsTable.title, `%${filters.query}%`),
+        ilike(jobsTable.description, `%${filters.query}%`)
+      )
+    );
+
+  // 2. Get list of unique job IDs for pagination (with all active filters)
   const jobIdRows = await db
     .select({ id: jobsTable.id })
     .from(jobsTable)
     .leftJoin(employersTable, eq(employersTable.id, jobsTable.employerId))
     .leftJoin(accountsTable, eq(accountsTable.id, employersTable.accountId))
-    .where(
-      and(
-        eq(jobsTable.status, JobStatus.Active),
-        not(eq(accountsTable.accountStatus, 'deactivated'))
-      )
-    )
+    .where(and(...whereClauses))
     .orderBy(desc(jobsTable.createdAt))
     .limit(limit)
     .offset(offset);
 
+  // Extract job IDs from result
   const jobIds = jobIdRows.map(r => r.id);
 
+  // If no jobs found, return an empty array early
   if (!jobIds.length) return [];
 
-  // 2. Fetch all job fields and application status for these jobs only
+  // 3. Fetch all job details and application status for jobs matching filtered IDs
   const jobs = await db
     .select({
       id: jobsTable.id,
@@ -799,21 +863,24 @@ export async function getAllJobs(limit, offset, freelancerId) {
       jobApplicationsTable,
       and(
         eq(jobApplicationsTable.jobId, jobsTable.id),
+        // Only join on freelancerId if it is specified
         freelancerId !== undefined ? eq(jobApplicationsTable.freelancerId, freelancerId) : undefined
       )
     )
     .where(inArray(jobsTable.id, jobIds))
     .orderBy(desc(jobsTable.createdAt));
 
-  // Now, no duplicates, always correct count
+  // Remove duplicates (by job ID) and ensure consistent data shape
   const uniqueJobs = {};
   for (const job of jobs) {
     uniqueJobs[job.id] = {
       ...job,
+      // Only include applicationStatus if it exists
       applicationStatus: job.applicationStatus || undefined,
     };
   }
 
+  // Return jobs as an array
   return Object.values(uniqueJobs);
 }
 
@@ -1193,6 +1260,122 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     status: job.status as JobStatus,
     requiredSkills: [], // Add empty array as default for required skills
     expectedHourlyRate: job.expectedHourlyRate, // <-- Add this
+  }));
+}
+
+// this function filteres jobs that will appear in SingleJobView, according to matching skills, if any, and according to job level (senior/mid_level) + excluding jobs that the freelancer had applied to of course :)
+export async function getSuggestedJobsForJob(
+  job: Job,
+  freelancerId: number,
+  limit: number = 4
+): Promise<Job[]> {
+  // console.log('[getSuggestedJobsForJob] called with:', { jobId: job?.id, job, limit });
+
+  // Always required conditions
+  const conditions = [
+    eq(jobsTable.status, JobStatus.Active),
+    not(eq(jobsTable.id, job.id)), // Exclude the current job
+    not(eq(accountsTable.accountStatus, 'deactivated')),
+  ];
+
+  // Conditions for suggesting jobs:
+  // Only suggest jobs with the same experience level (e.g. 'mid_level')
+  if (job.experienceLevel) {
+    conditions.push(eq(jobsTable.experienceLevel, job.experienceLevel));
+  }
+  // Only suggest jobs with the same project type (e.g. 'long-term')
+  // if (job.projectType) {
+  //   conditions.push(eq(jobsTable.projectType, job.projectType));
+  // }
+  // Only suggest jobs with the same location preference (e.g. 'remote')
+  // if (job.locationPreference) {
+  //   conditions.push(eq(jobsTable.locationPreference, job.locationPreference));
+  // }
+  // Only suggest jobs from same category (e.g. 'Software Development')
+  // if (job.jobCategoryId) {
+  //   conditions.push(eq(jobsTable.jobCategoryId, job.jobCategoryId));
+  // }
+
+  // SKILL SIMILARITY LOGIC START
+  // Grab required skill IDs
+  const skillIds = Array.isArray(job.requiredSkills)
+    ? job.requiredSkills.map(s => (typeof s === 'object' ? s.id : s)).filter(Boolean)
+    : [];
+
+  // Add skill similarity filter if we have skillIds
+  if (skillIds.length > 0) {
+    conditions.push(inArray(jobSkillsTable.skillId, skillIds));
+  }
+
+  // --- EXCLUDE JOBS THE FREELANCER APPLIED TO (robust way) ---
+  // Step 1: Get all job IDs the freelancer applied to
+  const appliedJobs = await db
+    .select({ jobId: jobApplicationsTable.jobId })
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.freelancerId, freelancerId));
+  const appliedIdsArr = appliedJobs.map(r => r.jobId);
+
+  // --- DEBUG LOGS START ---
+  // console.log('FREELANCER APPLIED JOB IDS:', appliedIdsArr);
+  // console.log('FREELANCER ID:', freelancerId);
+  // --- DEBUG LOGS END ---
+
+  if (appliedIdsArr.length > 0) {
+    // Exclude jobs with these IDs
+    conditions.push(notInArray(jobsTable.id, appliedIdsArr));
+  }
+  // --- END EXCLUSION ---
+
+  // Build query with all conditions at once
+  const jobs = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      employerId: jobsTable.employerId,
+      status: jobsTable.status,
+      budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
+      experienceLevel: jobsTable.experienceLevel,
+      jobCategoryId: jobsTable.jobCategoryId,
+      workingHoursPerWeek: jobsTable.workingHoursPerWeek,
+      locationPreference: jobsTable.locationPreference,
+      projectType: jobsTable.projectType,
+      createdAt: jobsTable.createdAt,
+      fulfilledAt: jobsTable.fulfilledAt,
+    })
+    .from(jobsTable)
+    .leftJoin(employersTable, eq(employersTable.id, jobsTable.employerId))
+    .leftJoin(accountsTable, eq(accountsTable.id, employersTable.accountId))
+    .leftJoin(jobSkillsTable, eq(jobSkillsTable.jobId, jobsTable.id))
+    .where(and(...conditions))
+    .orderBy(desc(jobsTable.createdAt))
+    .limit(limit * 3);
+
+  // --- MORE DEBUG LOGS ---
+  // console.log(
+  //   'ALL JOB IDS RETURNED:',
+  //   jobs.map(j => j.id)
+  // );
+
+  // Deduplicate jobs by id (avoid dupes from skill joins)
+  const seen = new Set();
+  const uniqueJobs: typeof jobs = [];
+  for (const j of jobs) {
+    if (!seen.has(j.id)) {
+      seen.add(j.id);
+      uniqueJobs.push(j);
+    }
+    if (uniqueJobs.length >= limit) break;
+  }
+
+  // console.log('Suggested jobs raw:', uniqueJobs);
+
+  return uniqueJobs.map(j => ({
+    ...j,
+    status: j.status as JobStatus,
+    requiredSkills: [], // (You can fill this if needed)
+    expectedHourlyRate: j.expectedHourlyRate,
   }));
 }
 
