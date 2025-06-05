@@ -25,11 +25,11 @@ export type JobFilter = {
   employerId?: number;
   page?: number;
   pageSize?: number;
-  excludeJobId?: number; // <-- ADD THIS
-  jobIdsToExclude?: number[]; // keep if used elsewhere
+  jobIdsToExclude?: number[]; // add this to exclude job applied to
   query?: string;
-  orderBy?: string; // <-- ADD THIS (optional, for sorting)
-  orderDirection?: 'asc' | 'desc'; // <-- ADD THIS (optional, for sorting)
+  budget?: number;
+  workingHoursFrom?: number;
+  workingHoursTo?: number;
 };
 
 export type JobApplication = {

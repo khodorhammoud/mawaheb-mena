@@ -1,5 +1,4 @@
-import { useFetcher } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Job } from '@mawaheb/db/types';
 import JobCard from './jobCard';
 import { Button } from '~/components/ui/button';
@@ -11,13 +10,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/u
 import AppFormField from '~/common/form-fields';
 import { FaStar } from 'react-icons/fa';
 import ReadMore from '~/common/ReadMore';
+import { useFetcher } from '@remix-run/react';
 
 interface JobCardProps {
   job: Job & { applicationStatus?: string };
   jobSkills: Skill[];
   review?: { rating: number; comment: string; employerId: number } | null;
   canReview: boolean;
-  appStats: { interested: number; interviewed: number; invites: number }; // <-- added!
+  appStats: { interested: number; interviewed: number; invites: number };
+  suggestedJobs: Job[];
+  onSelect: (job: Job) => void; // <<==== ADD THIS LINE!
+  refetchJob: (job: Job) => void; // <<< add this!
 }
 
 export default function SingleJobView({
@@ -25,25 +28,14 @@ export default function SingleJobView({
   jobSkills,
   review,
   canReview,
-  appStats, // <-- use this, not useLoaderData()
+  appStats,
+  suggestedJobs,
+  onSelect, // <<==== ADD THIS LINE
+  refetchJob,
 }: JobCardProps) {
-  const fetcher = useFetcher<{
-    jobs: Job[];
-    success?: boolean;
-    error?: { message: string };
-  }>();
-
-  const reviewFetcher = useFetcher<{
-    success?: boolean;
-    message?: string;
-  }>();
-
-  const relatedJobs =
-    fetcher.data?.jobs.map(job => ({
-      ...job,
-      createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
-      fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
-    })) || [];
+  // Only fetcher for review
+  const reviewFetcher = useFetcher<{ success?: boolean; message?: string }>();
+  const interestFetcher = useFetcher<{ success?: boolean; error?: string }>();
 
   const requiredSkills = jobSkills.map(skill => ({
     name: skill.name,
@@ -54,7 +46,7 @@ export default function SingleJobView({
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
-  // ✅ Ensure correct employer review is loaded
+  // Ensure correct employer review is loaded
   const isCorrectReview = review && review.employerId === job.employerId;
   const hasReview = isCorrectReview && review.rating !== undefined && review.comment !== undefined;
 
@@ -66,7 +58,13 @@ export default function SingleJobView({
     setOpen(true);
   };
 
-  // ✅ Set review data when opening the modal
+  useEffect(() => {
+    if (reviewFetcher.data?.success) {
+      refetchJob(job); // <<< call the parent-provided function!
+    }
+  }, [reviewFetcher.data]);
+
+  // Set review data when opening the modal
   useEffect(() => {
     if (isCorrectReview) {
       setRating(review.rating);
@@ -76,22 +74,6 @@ export default function SingleJobView({
       setComment('');
     }
   }, [review, job.employerId]);
-
-  // ✅ Fetch related jobs when employerId changes
-  useEffect(() => {
-    if (job.employerId) {
-      const params = new URLSearchParams({
-        jobType: 'by-employer',
-        employerId: job.employerId.toString(),
-        excludeJobId: job.id.toString(),
-      });
-
-      fetcher.submit(null, {
-        method: 'get',
-        action: `/api/jobs-related?${params.toString()}`,
-      });
-    }
-  }, [job.employerId]);
 
   // Close dialog when review is successfully submitted
   useEffect(() => {
@@ -111,11 +93,7 @@ export default function SingleJobView({
 
       <div className="grid grid-cols-[60%,40%] mb-8">
         <div className="px-6 py-4 border-r border-gray-200">
-          <ReadMore
-            className="mb-12 text-base"
-            html={job.description}
-            wordsPerChunk={40} // or whatever chunk size you want
-          />
+          <ReadMore className="mb-12 text-base" html={job.description} wordsPerChunk={40} />
 
           <div className="flex justify-between items-center mb-12">
             <div className="flex flex-col items-start gap-1">
@@ -155,7 +133,7 @@ export default function SingleJobView({
           </div>
         </div>
 
-        {/* ✅ Interested / Review Employer / Edit Review Button */}
+        {/* Interested / Review Employer / Edit Review Button */}
         <div className="pl-6 pr-6 pt-4">
           {job.applicationStatus ? (
             canReview ? (
@@ -175,20 +153,28 @@ export default function SingleJobView({
             )
           ) : (
             <Button
-              disabled={fetcher.data?.success === true || fetcher.state === 'submitting'}
+              disabled={
+                interestFetcher.data?.success === true || interestFetcher.state === 'submitting'
+              }
               onClick={() => {
-                if (!fetcher.data?.success) {
-                  fetcher.submit(null, {
+                if (!interestFetcher.data?.success) {
+                  interestFetcher.submit(null, {
                     method: 'post',
                     action: `/api/jobs/${job.id}/interested`,
                   });
                 }
               }}
               className={`w-full mb-4 not-active-gradient ${
-                fetcher.data?.success ? 'bg-slate-600 cursor-not-allowed' : 'bg-primaryColor'
+                interestFetcher.data?.success
+                  ? 'bg-slate-600 cursor-not-allowed'
+                  : 'bg-primaryColor'
               } text-white py-2 rounded-xl font-semibold`}
             >
-              {fetcher.data?.success ? 'Applied' : 'Interested'}
+              {interestFetcher.data?.success
+                ? 'Applied'
+                : interestFetcher.data?.error
+                  ? `Error: the job is fullfilled`
+                  : 'Interested'}
             </Button>
           )}
           <div className="flex items-start text-gray-500 text-sm">
@@ -200,7 +186,7 @@ export default function SingleJobView({
         </div>
       </div>
 
-      {/* ✅ Review Employer Modal (Closes when clicking outside) */}
+      {/* Review Employer Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-6 bg-white rounded-lg">
           <DialogHeader>
@@ -256,18 +242,14 @@ export default function SingleJobView({
         </DialogContent>
       </Dialog>
 
-      {/* Related Jobs Section */}
-      {relatedJobs.length > 0 && (
+      {/* --- SUGGESTED JOBS SECTION --- */}
+      {suggestedJobs.length > 0 && (
         <div className="grid grid-cols-[60%,40%] mb-10">
           <div className="pl-6 py-10 pr-2">
-            <p className="text-lg mb-6">Employer&apos;s recent jobs ({relatedJobs.length})</p>
-            {relatedJobs.length > 0 ? (
-              relatedJobs.map(relatedJob => (
-                <JobCard key={relatedJob.id} job={relatedJob} onSelect={() => {}} />
-              ))
-            ) : (
-              <p className="text-gray-500">No related jobs found.</p>
-            )}
+            <p className="text-lg mb-6">Suggested Jobs for You ({suggestedJobs.length})</p>
+            {suggestedJobs.map(relatedJob => (
+              <JobCard key={relatedJob.id} job={relatedJob} onSelect={onSelect} /> // << Make sure this is passed! />
+            ))}
           </div>
           <div className=""></div>
         </div>
