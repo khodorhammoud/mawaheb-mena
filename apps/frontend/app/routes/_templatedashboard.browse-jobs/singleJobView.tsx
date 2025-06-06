@@ -21,6 +21,7 @@ interface JobCardProps {
   suggestedJobs: Job[];
   onSelect: (job: Job) => void; // <<==== ADD THIS LINE!
   refetchJob: (job: Job) => void; // <<< add this!
+  scrollSheetTop?: () => void;
 }
 
 export default function SingleJobView({
@@ -32,6 +33,7 @@ export default function SingleJobView({
   suggestedJobs,
   onSelect, // <<==== ADD THIS LINE
   refetchJob,
+  scrollSheetTop,
 }: JobCardProps) {
   // Only fetcher for review
   const reviewFetcher = useFetcher<{ success?: boolean; message?: string }>();
@@ -248,7 +250,13 @@ export default function SingleJobView({
           <div className="pl-6 py-10 pr-2">
             <p className="text-lg mb-6">Suggested Jobs for You ({suggestedJobs.length})</p>
             {suggestedJobs.map(relatedJob => (
-              <JobCard key={relatedJob.id} job={relatedJob} onSelect={onSelect} /> // << Make sure this is passed! />
+              <JobCard
+                key={relatedJob.id}
+                job={relatedJob}
+                onSelect={onSelect}
+                isSuggested={true}
+                scrollSheetTop={scrollSheetTop} // Pass it down!
+              />
             ))}
           </div>
           <div className=""></div>

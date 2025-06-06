@@ -1,7 +1,7 @@
 // this route has so much uses calls a function that filteres jobs that will appear in SingleJobView, according to matching skills, if any, and according to job level (senior/mid_level) + excluding jobs that the freelancer had applied to of course :)
 
 import { LoaderFunctionArgs, ActionFunctionArgs, redirect, json } from '@remix-run/node';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { getCurrentUserAccountType, getCurrentProfileInfo } from '~/servers/user.server';
 import { AccountType, AccountStatus } from '@mawaheb/db/enums';
 import { requireUserIsFreelancer } from '~/auth/auth.server';
@@ -224,6 +224,14 @@ export default function Layout() {
     setIsLoading(false);
   };
 
+  const sheetContentRef = useRef<HTMLDivElement>(null);
+  // The function that actually scrolls the modal to top
+  const scrollSheetTop = () => {
+    if (sheetContentRef.current) {
+      sheetContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // --- All props for the single job modal (handles live updates) ---
   const singleJobProps = {
     job: selectedJob as any, // Pass the job object (TS ignore if null)
@@ -239,6 +247,7 @@ export default function Layout() {
     suggestedJobs: fetcher.data?.suggestedJobs || loaderData.suggestedJobs || [],
     onSelect: handleJobSelect, // <-- CRITICAL: pass the handler for clicking suggested jobs!
     refetchJob: reloadJob,
+    scrollSheetTop,
   };
 
   return (
@@ -246,6 +255,7 @@ export default function Layout() {
       {/* --- JOB DETAILS MODAL SHEET --- */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
+          ref={sheetContentRef} // Attach ref here!
           side="right"
           className="bg-white xl:w-[800px] lg:w-[800px] md:w-3/4 w-full px-2 max-h-screen overflow-y-auto"
         >
