@@ -24,10 +24,37 @@ import { TbBrandGithubFilled, TbBrandDribbbleFilled } from 'react-icons/tb';
 import { AccountBio } from '@mawaheb/db/types';
 import AppFormField from '~/common/form-fields';
 import { AccountType, Country } from '@mawaheb/db/enums';
+import { toast } from '~/components/hooks/use-toast';
 
 interface BioInfoProps {
   profile: any;
   canEdit?: boolean;
+}
+
+// function that is used to see if the linked in account is valid - gitlab account is valid - etc..
+function validateSocialLinks(data: Record<string, string>) {
+  const errors: string[] = [];
+
+  if (data.website && !/^https?:\/\/.+/.test(data.website)) {
+    errors.push('Personal Website must start with http:// or https://');
+  }
+  if (data.linkedin && !/^https:\/\/(www\.)?linkedin\.com\/.+/.test(data.linkedin)) {
+    errors.push('LinkedIn must be a valid LinkedIn URL');
+  }
+  if (data.github && !/^https:\/\/(www\.)?github\.com\/.+/.test(data.github)) {
+    errors.push('GitHub must be a valid GitHub URL');
+  }
+  if (data.gitlab && !/^https:\/\/(www\.)?gitlab\.com\/.+/.test(data.gitlab)) {
+    errors.push('GitLab must be a valid GitLab URL');
+  }
+  if (data.dribbble && !/^https:\/\/(www\.)?dribbble\.com\/.+/.test(data.dribbble)) {
+    errors.push('Dribbble must be a valid Dribbble URL');
+  }
+  if (data.stackoverflow && !/^https:\/\/(www\.)?stackoverflow\.com\/.+/.test(data.stackoverflow)) {
+    errors.push('StackOverflow must be a valid StackOverflow URL');
+  }
+
+  return errors;
 }
 
 export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
@@ -58,7 +85,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   const websiteInputRef = useRef<HTMLInputElement>(null);
 
   // when i click Add Country lets say, the app will run handleTriggerClick("country"), and this will make the focusedField constant be filled with 'country', so react will remember that like:
-  // “Aha! The user clicked the country field. I’ll focus that later.” :))
+  // "Aha! The user clicked the country field. I'll focus that later." :))
   const handleTriggerClick = (fieldName: string) => {
     if (!canEdit) return;
     setFocusedField(fieldName); // tells the useEffect which field to focus
@@ -77,7 +104,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
       switch (focusedField) {
         case 'country':
           countryInputRef.current?.focus(); // Focuses the matching input field using .focus()
-          countryInputRef.current?.click(); // ✅ This opens the dropdown
+          countryInputRef.current?.click(); // ✅ This opens the dropdown :))))))
           break;
         case 'address':
           addressInputRef.current?.focus();
@@ -111,6 +138,28 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
       setFocusedField(null); // clear the focus
     }
   };
+
+  // for seeing iof the URL's are valid using validateSocialLinks function
+  function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const data = {
+      website: formData.get('website')?.toString().trim() || '',
+      linkedin: formData.get('linkedin')?.toString().trim() || '',
+      github: formData.get('github')?.toString().trim() || '',
+      gitlab: formData.get('gitlab')?.toString().trim() || '',
+      dribbble: formData.get('dribbble')?.toString().trim() || '',
+      stackoverflow: formData.get('stackoverflow')?.toString().trim() || '',
+    };
+
+    const errors = validateSocialLinks(data);
+
+    if (errors.length > 0) {
+      e.preventDefault(); // 🛑 Stop form submit
+      errors.forEach(err => toast({ variant: 'destructive', title: 'Error', description: err }));
+    }
+  }
 
   // console.log("🔥 HEADING COMPONENT: bioInfo Received:", bioInfo);
   // console.log("🔥 HEADING COMPONENT: Final Profile Data:", profileData);
@@ -168,7 +217,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                   )}
 
                   {/* FORM */}
-                  <bioFetcher.Form method="post" className="">
+                  <bioFetcher.Form method="post" className="" onSubmit={handleFormSubmit}>
                     <input
                       type="hidden"
                       name="target-updated"
