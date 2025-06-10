@@ -66,7 +66,6 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   }>();
 
   const [open, setOpen] = useState(false); // Bio dialog state
-  const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
 
   // a state to save a value even after redering, this value will be used to know where we shall focus
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -123,18 +122,10 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
     return () => clearTimeout(timeout);
   }, [open, focusedField]); // 🔁 runs when open or focusedField changes
 
-  // Handle showing the bio submission message
-  useEffect(() => {
-    if (bioFetcher.data) {
-      setShowBioMessage(true);
-    }
-  }, [bioFetcher.data]);
-
   // Reset messages when the bio dialog is closed
   const handleBioDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      setShowBioMessage(false);
       setFocusedField(null); // clear the focus
     }
   };
@@ -160,6 +151,22 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
       errors.forEach(err => toast({ variant: 'destructive', title: 'Error', description: err }));
     }
   }
+
+  useEffect(() => {
+    if (bioFetcher.data?.success) {
+      setOpen(false); // 🔒 Close dialog
+      toast({
+        title: 'Success',
+        description: 'Bio updated successfully!',
+      });
+    } else if (bioFetcher.data?.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: bioFetcher.data.error.message,
+      });
+    }
+  }, [bioFetcher.data]);
 
   // console.log("🔥 HEADING COMPONENT: bioInfo Received:", bioInfo);
   // console.log("🔥 HEADING COMPONENT: Final Profile Data:", profileData);
@@ -202,20 +209,6 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                     <DialogTitle className="mt-3 lg:text-lg text-base">Bio</DialogTitle>
                   </DialogHeader>
 
-                  {/* ERROR MESSAGE */}
-                  {showBioMessage && bioFetcher.data?.error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                      <span className="block sm:inline">{bioFetcher.data.error.message}</span>
-                    </div>
-                  )}
-
-                  {/* SUCCESS MESSAGE */}
-                  {showBioMessage && bioFetcher.data?.success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 lg:px-4 px-2 lg:py-3 py-2 rounded relative mb-4">
-                      <span className="block sm:inline">Bio updated successfully</span>
-                    </div>
-                  )}
-
                   {/* FORM */}
                   <bioFetcher.Form method="post" className="" onSubmit={handleFormSubmit}>
                     <input
@@ -225,7 +218,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                         accountType === AccountType.Employer ? 'employer-bio' : 'freelancer-bio'
                       } // this value should match the target in the route.tsx
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 ml-1">
                       {/* FIRST NAME */}
                       <div>
                         <AppFormField
@@ -283,7 +276,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                     <h3 className="text-lg mb-6 mt-6">My online profiles</h3>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                       {/* PERSONAL WEBSITE */}
-                      <div className="relative">
+                      <div className="relative ml-1">
                         <AppFormField
                           id="website"
                           name="website"
@@ -313,7 +306,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                       </div>
 
                       {/* GitHub */}
-                      <div className="relative">
+                      <div className="relative ml-1">
                         <AppFormField
                           id="github"
                           name="github"
@@ -343,7 +336,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                       </div>
 
                       {/* Dribbble */}
-                      <div className="relative">
+                      <div className="relative ml-1">
                         <AppFormField
                           id="dribbble"
                           name="dribbble"
