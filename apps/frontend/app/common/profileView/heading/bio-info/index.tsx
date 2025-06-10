@@ -41,6 +41,9 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   const [open, setOpen] = useState(false); // Bio dialog state
   const [showBioMessage, setShowBioMessage] = useState(false); // Track bio message visibility
 
+  // a state to save a value even after redering, this value will be used to know where we shall focus
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   const bioFetcher = useFetcher<{
     success?: boolean;
     error?: { message: string };
@@ -50,17 +53,48 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   const profileData = profile || bioInfo;
 
   // Refs for location and website input fields
-  const countryInputRef = useRef<HTMLInputElement>(null);
+  const countryInputRef = useRef<HTMLButtonElement>(null); // CountrySelectField uses a <button> trigger, not an input, so we target that
   const addressInputRef = useRef<HTMLInputElement>(null);
   const websiteInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle opening the bio dialog and focusing the relevant input
-  // ✅ Prevent opening dialog if `canEdit === false`
-  const handleTriggerClick = (ref: MutableRefObject<HTMLInputElement>) => {
+  // when i click Add Country lets say, the app will run handleTriggerClick("country"), and this will make the focusedField constant be filled with 'country', so react will remember that like:
+  // “Aha! The user clicked the country field. I’ll focus that later.” :))
+  const handleTriggerClick = (fieldName: string) => {
     if (!canEdit) return;
+    setFocusedField(fieldName); // tells the useEffect which field to focus
     setOpen(true);
-    setTimeout(() => ref.current?.focus(), 100);
   };
+
+  //   ✅ What does it do when it runs?
+  // When both open === true and focusedField !== null, it:
+  // Starts a small timeout (50ms) — to wait for the dialog to finish opening.
+  // Checks what the current focusedField is
+  // Focuses the matching input field using .focus()
+  useEffect(() => {
+    if (!open || !focusedField) return;
+
+    const timeout = setTimeout(() => {
+      switch (focusedField) {
+        case 'country':
+          countryInputRef.current?.focus(); // Focuses the matching input field using .focus()
+          countryInputRef.current?.click(); // ✅ This opens the dropdown
+          break;
+        case 'address':
+          addressInputRef.current?.focus();
+          break;
+        case 'website':
+          websiteInputRef.current?.focus();
+          break;
+        default:
+          break;
+      }
+    }, 50); // slight delay for dialog mount
+    // Why did we use this slight timeout:
+    // Dialogs in most UI libraries (like shadcn, Radix, etc.) take time to mount.
+    // If you try to focus an input before the DOM is ready, it fails.
+
+    return () => clearTimeout(timeout);
+  }, [open, focusedField]); // 🔁 runs when open or focusedField changes
 
   // Handle showing the bio submission message
   useEffect(() => {
@@ -72,7 +106,10 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   // Reset messages when the bio dialog is closed
   const handleBioDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
-    if (!isOpen) setShowBioMessage(false);
+    if (!isOpen) {
+      setShowBioMessage(false);
+      setFocusedField(null); // clear the focus
+    }
   };
 
   // console.log("🔥 HEADING COMPONENT: bioInfo Received:", bioInfo);
@@ -165,7 +202,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                       {/* Country Dropdown */}
                       <div>
                         <AppFormField
-                          id="country"
+                          id="countryDropdown"
                           name="country"
                           label="Country"
                           type="select"
@@ -177,6 +214,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                             })),
                           ]}
                           defaultValue={profileData?.country || profileData?.account?.country || ''}
+                          ref={countryInputRef} // ✅ This is the key line
                         />
                       </div>
                       {/* Address Input */}
@@ -187,6 +225,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           label="Address"
                           className=""
                           defaultValue={profileData?.address || profileData?.account?.address || ''}
+                          ref={addressInputRef} // ✅ also this
                         />
                         <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                       </div>
@@ -204,6 +243,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           defaultValue={
                             profileData?.websiteURL || profileData?.account?.websiteURL || ''
                           } // comment that for the wierd error (cannot find ...)
+                          ref={websiteInputRef} // ✅ and this one too
                         />
                         <FaGlobe className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor  hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                       </div>
@@ -311,7 +351,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
               ) : (
                 canEdit && (
                   <Button
-                    onClick={() => handleTriggerClick?.(countryInputRef)}
+                    onClick={() => handleTriggerClick('country')}
                     className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
@@ -329,7 +369,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
               ) : (
                 canEdit && (
                   <Button
-                    onClick={() => handleTriggerClick?.(addressInputRef)}
+                    onClick={() => handleTriggerClick('address')}
                     className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white xl:mr-2 mr-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaMapMarkerAlt className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
@@ -344,7 +384,7 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
               ) : (
                 canEdit && (
                   <Button
-                    onClick={() => handleTriggerClick?.(websiteInputRef)}
+                    onClick={() => handleTriggerClick('website')}
                     className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white ml-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
                   >
                     <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
