@@ -38,6 +38,11 @@ import { SplinePointerIcon } from 'lucide-react';
  * =====================================================================
  */
 const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) => {
+  type FetcherData = {
+    success?: { message: string };
+    error?: { message: string };
+  };
+
   const {
     cardTitle,
     cardSubtitle,
@@ -50,20 +55,17 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     acceptedFileTypes,
     multiple,
     editable = true,
-    showStatusMessage = true,
-    showLoadingOnSubmit = false,
     formRef,
   } = props;
 
-  const [inputValue, setInputValue] = useState<any>(value || null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
   const [showParseButton, setShowParseButton] = useState(false);
   const [parsing, setParsing] = useState(false);
 
-  const formContentRef = useRef<any>(null);
-  const fetcher = useFetcher<{ success?: boolean; error?: { message: string } }>();
+  // const formContentRef = useRef<any>(null);
+  const fetcher = useFetcher<FetcherData>();
 
   // Check if the file is a CV (based on fieldName)
   const isCVField = fieldName === 'cvFile';
@@ -121,20 +123,9 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
         if (fileObjects.length > 0) {
           setSelectedFiles(fileObjects);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected(fileObjects);
-          }
-
-          // Show parse button if this is a CV file and is likely a PDF or Word doc
-          if (isCVField) {
-            const hasValidCVFile = fileObjects.some(
-              file =>
-                file.type === 'application/pdf' ||
-                file.type ===
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            );
-            setShowParseButton(hasValidCVFile);
-          }
+          // if (formContentRef.current) {
+          //   formContentRef.current.setFilesSelected(fileObjects);
+          // }
         }
       }
     }
@@ -188,14 +179,14 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => {
     return {
-      getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
+      // getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
       filesSelected: selectedFiles,
       filesToDelete: filesToDelete,
       setFilesSelected: (files: File[]) => {
         setSelectedFiles(files);
-        if (formContentRef.current) {
-          formContentRef.current.setFilesSelected(files);
-        }
+        // if (formContentRef.current) {
+        //   formContentRef.current.setFilesSelected(files);
+        // }
       },
       clearFiles: () => {
         setSelectedFiles([]);
@@ -205,9 +196,9 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
         } catch (error) {
           console.error('Error clearing filesToDelete from localStorage:', error);
         }
-        if (formContentRef.current) {
-          formContentRef.current.setFilesSelected([]);
-        }
+        // if (formContentRef.current) {
+        //   formContentRef.current.setFilesSelected([]);
+        // }
       },
     };
   });
@@ -284,12 +275,12 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     if (fetcher.state === 'idle' && parsing) {
       setParsing(false);
 
-      const data = fetcher.data as { success?: boolean; error?: { message: string } };
+      const data = fetcher.data as { success?: { message: string }; error?: { message: string } };
 
       if (data?.success) {
         toast({
           title: 'CV Parsed',
-          description: 'Your CV was successfully parsed and your profile has been updated.',
+          description: data.success.message,
         });
         setDialogOpen(false); // ✅ close dialog here
       } else if (data?.error) {
@@ -464,6 +455,28 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
 
   // Use the provided fetcher or the local one
   const fetcher = props.fetcher || localFetcher;
+
+  // Toast for fetcher field updates
+  useEffect(() => {
+    if (!fetcher || !fetcher.data) return;
+
+    // Show error toast if any
+    if (fetcher.data.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Update failed',
+        description: fetcher.data.error.message || 'There was a problem saving your changes.',
+      });
+    } else if (fetcher.data.success) {
+      toast({
+        variant: 'default',
+        title: 'Saved!',
+        description: fetcher.data.success.message || 'Your changes were saved successfully.',
+      });
+    }
+    // Optionally: reset fetcher state after toast (if you want)
+    // fetcher.data = null; // Do this ONLY if you control fetcher state (remix fetcher doesn't allow this directly)
+  }, [fetcher?.data]);
 
   // Custom submit that closes the dialog after submission
   const handleSubmit = (e: React.FormEvent, formData: FormData) => {

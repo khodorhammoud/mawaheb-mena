@@ -30,11 +30,12 @@ import {
 } from '~/servers/freelancer.server';
 import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
+import { isValidYouTubeUrl } from '~/utils/video';
 
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserVerified(request);
   const formData = await request.formData();
-  const targetUpdated = formData.get('target-updated');
+  console.log('🟢 [DEBUG] FormData:', Object.fromEntries(formData.entries()));
 
   // Get the full user account info to determine account type
   const userAccount = await getCurrentUserAccountInfo(request);
@@ -55,7 +56,75 @@ export async function action({ request }: ActionFunctionArgs) {
         status: 404,
       });
     }
+
+    // **VIDEO VALIDATION**
+    const videoLink = formData.get('videoLink') as string | null;
+    if (videoLink && !isValidYouTubeUrl(videoLink)) {
+      return Response.json(
+        {
+          success: false,
+          error: { message: 'Invalid video URL. Please provide a valid YouTube link.' },
+        },
+        { status: 400 }
+      );
+    }
+
+    const file = formData.get('videoFile') as File | null;
+
+    if (file && typeof file === 'object' && 'type' in file) {
+      // Accept only real video MIME types
+      const allowedTypes = [
+        'video/mp4',
+        'video/webm',
+        'video/ogg',
+        'video/quicktime', // mov
+        // Add more as you like
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        return Response.json(
+          {
+            success: false,
+            error: {
+              message: 'Invalid file type. Please upload a valid video file (MP4, WebM, MOV).',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      // (Optional) Limit size
+      const maxSizeMB = 100;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        return Response.json(
+          {
+            success: false,
+            error: { message: `Video file is too large. Max allowed size is ${maxSizeMB}MB.` },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const response = await handleFreelancerOnboardingAction(formData, profile);
+
+    // ✅ If there's no success.message, we inject a generic one
+    if (
+      response?.status === 200 &&
+      response?.headers.get('Content-Type')?.includes('application/json')
+    ) {
+      const cloned = response.clone();
+      const json = await cloned.json();
+      if (json?.success === true || (json?.success && typeof json.success === 'object')) {
+        if (!json.success.message) {
+          json.success = { message: 'Profile updated successfully!' };
+          return Response.json(json); // 🔥 Inject toast-friendly response
+        }
+      }
+    }
+
+    console.log('✅ Final response before return:', await response.clone().json());
+
     return response;
   } else if (userAccount.accountType === 'employer') {
     const profile = (await getCurrentProfileInfo(request)) as Employer;
@@ -225,7 +294,6 @@ export default function Layout() {
 
   return (
     <div>
-      {/* adding the header like that shall be temporary, and i shall ask about it */}
       {accountType === AccountType.Employer ? (
         <EmployerOnboardingScreen />
       ) : (

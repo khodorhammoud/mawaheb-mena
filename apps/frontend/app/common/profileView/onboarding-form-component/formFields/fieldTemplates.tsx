@@ -32,10 +32,6 @@ export const TextFieldTemplate: FieldTemplateState = {
     // });
 
     const { isHtml, content: sanitizedContent } = parseHtmlContent(value);
-
-    const parsed = parseHtmlContent(value as string);
-    // console.log("✅ [FieldTemplates] Parsed Content:", parsed);
-
     // console.log("✅ Parsed Content:", sanitizedContent); // Debugging line
 
     return (
@@ -340,17 +336,13 @@ export const IncrementFieldTemplate: FieldTemplateState = {
   ),
 };
 
-// function extractYouTubeId(url: string) {
-//   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-//   const match = url.match(regExp);
-//   return match && match[2].length === 11 ? match[2] : null;
-// }
-
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
-    // Generate thumbnail on mount for non-YouTube videos
-    const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+    // Avoid crash: Only call includes if videoUrl is string
+    const isYouTube =
+      typeof videoUrl === 'string' &&
+      (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
 
     // States
     const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -375,18 +367,15 @@ export const VideoFieldTemplate: FieldTemplateState = {
     };
 
     React.useEffect(() => {
-      if (!isYouTube) {
+      if (!isYouTube && typeof videoUrl === 'string') {
         captureThumbnail(videoUrl);
       }
     }, [videoUrl, isYouTube]);
 
-    // Check if the URL is a YouTube video
-
     // Validate if the URL is a valid video file
-    const isValidVideoUrl = (url: string) => {
-      const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
-      return videoExtensions.some(ext => url.endsWith(ext));
-    };
+    const isValidVideoUrl = (url: string) =>
+      typeof url === 'string' &&
+      ['.mp4', '.webm', '.ogg', '.mov', '.mkv'].some(ext => url.endsWith(ext));
 
     if (!isYouTube && !isValidVideoUrl(videoUrl)) {
       return (
