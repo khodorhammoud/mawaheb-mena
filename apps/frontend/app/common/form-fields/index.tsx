@@ -17,6 +17,7 @@ interface AppFormFieldProps {
   defaultValue?: string | number;
   value?: string | number;
   onChange?: any;
+  onBlur?: () => void;
   min?: number;
   error?: string; // ✅ Added error support
 }
@@ -40,6 +41,7 @@ const AppFormField = forwardRef<
       defaultValue,
       value,
       onChange,
+      onBlur,
       min,
       error,
     },
@@ -47,8 +49,6 @@ const AppFormField = forwardRef<
   ) => {
     const [showPassword, setShowPassword] = useState(false);
     const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
-
-    const [country, setCountry] = useState(defaultValue);
 
     useEffect(() => {
       if (value !== undefined) {
@@ -62,7 +62,7 @@ const AppFormField = forwardRef<
       setShowPassword(!showPassword);
     };
 
-    const handleNumberChange = event => {
+    const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
       let numericValue = value.replace(/\D/g, '');
 
@@ -73,7 +73,13 @@ const AppFormField = forwardRef<
       setSelectedValue(numericValue);
 
       if (onChange) {
-        onChange({ target: { id, name, value: numericValue } });
+        onChange({
+          target: {
+            id,
+            name,
+            value: numericValue,
+          },
+        });
       }
     };
 
@@ -123,7 +129,7 @@ const AppFormField = forwardRef<
                 onChange={e => {
                   const value = e.target.value;
                   setSelectedValue(value);
-                  if (onChange) onChange(value);
+                  if (onChange) onChange(e);
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
               >
@@ -147,6 +153,7 @@ const AppFormField = forwardRef<
                 onChange={handleNumberChange}
                 min={min}
                 ref={ref as React.Ref<HTMLInputElement>}
+                onBlur={onBlur}
               />
             ) : type === 'increment' ? (
               <div className="flex flex-col items-center space-y-4 w-full">
@@ -193,19 +200,9 @@ const AppFormField = forwardRef<
                 className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
                 autoComplete="on"
                 spellCheck="false"
-                {...(value !== undefined
-                  ? { value: selectedValue }
-                  : { defaultValue: selectedValue })}
-                onChange={e => {
-                  const newValue = e.target.value;
-                  if (value === undefined) {
-                    setSelectedValue(newValue);
-                  }
-                  if (onChange) {
-                    onChange(e);
-                  }
-                }}
-                ref={ref as React.Ref<HTMLInputElement>} // ✅ cast for input
+                value={value ?? ''}
+                onChange={onChange}
+                ref={ref as React.Ref<HTMLInputElement>}
               />
             )}
           </>

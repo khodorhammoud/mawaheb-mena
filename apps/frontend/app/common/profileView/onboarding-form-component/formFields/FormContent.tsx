@@ -5,6 +5,9 @@ import RepeatableFields from './RepeatableFields';
 import type { FormContentProps } from '../types';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { X } from 'lucide-react';
+import { toast } from '~/components/hooks/use-toast';
+
+import { useFetcher } from '@remix-run/react';
 
 const FormContent = forwardRef<any, FormContentProps>(
   (
@@ -12,7 +15,6 @@ const FormContent = forwardRef<any, FormContentProps>(
       formType,
       formState,
       onSubmit,
-      fetcher,
       showStatusMessage,
       formName,
       fieldName,
@@ -38,6 +40,13 @@ const FormContent = forwardRef<any, FormContentProps>(
     const [filesSelected, setFilesSelected] = useState<File[]>([]);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
+
+    type MyFetcherData = {
+      error?: { message: string };
+      success?: { message: string };
+    };
+
+    const fetcher = useFetcher<MyFetcherData>();
 
     // Local storage key for saving files
     const getLocalStorageKey = () => `${formName}_${fieldName}_files`;
@@ -491,9 +500,14 @@ const FormContent = forwardRef<any, FormContentProps>(
       }
 
       if (fetcher.data?.success) {
+        const successMessage =
+          typeof fetcher.data.success === 'object'
+            ? fetcher.data.success.message
+            : 'Successfully saved!';
+
         return (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 mt-2">
-            <span className="block sm:inline">Successfully saved!</span>
+            <span className="block sm:inline">{successMessage}</span>
           </div>
         );
       }
@@ -502,7 +516,7 @@ const FormContent = forwardRef<any, FormContentProps>(
     return (
       <div className="">
         {/* this is where i leave space betweeen the title and the content in the dialogs */}
-        <form
+        <fetcher.Form
           method="post"
           className="space-y-6 mt-2"
           onSubmit={handleFormSubmit}
@@ -529,7 +543,7 @@ const FormContent = forwardRef<any, FormContentProps>(
                 </Button>
                 {/* {formSubmitted && fetcher.state !== 'submitting' && (
                   <DialogClose asChild>
-                    <Button variant="outline">Close</Button>
+                  <Button variant="outline">Close</Button>
                   </DialogClose>
                 )} */}
               </div>
@@ -553,7 +567,7 @@ const FormContent = forwardRef<any, FormContentProps>(
               </div>
             </DialogFooter>
           )}
-        </form>
+        </fetcher.Form>
       </div>
     );
   }

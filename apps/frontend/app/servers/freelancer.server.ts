@@ -90,7 +90,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         updateFreelancerEducation(freelancer, parsedData.education),
       ]);
 
-      return Response.json({ success: true });
+      return Response.json({ success: { message: 'CV parsed and profile updated!' } });
     } catch (error) {
       console.error('Error processing CV:', error);
       return Response.json({
@@ -118,32 +118,38 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       userId: userId,
     };
     const bioStatus = await updateAccountBio(bio, freelancer.account);
-    return Response.json({ success: bioStatus.success });
+    return Response.json({
+      success: bioStatus.success ? { message: 'Bio updated successfully!' } : false,
+    });
   }
 
   async function handleFreelancerHourlyRate(formData: FormData, freelancer: Freelancer) {
     // use formName from GeneralizableFormCard
     const hourlyRate = parseInt(formData.get('hourlyRate') as string, 10); // use fieldName from GeneralizableFormCard
     const hourlyRateStatus = await updateFreelancerHourlyRate(freelancer, hourlyRate);
-    return Response.json({ success: hourlyRateStatus.success });
+    return Response.json({ success: { message: 'Hourly rate updated!' } });
   }
 
   async function handleFreelancerYearsOfExperience(formData: FormData, freelancer: Freelancer) {
     const yearsExperience = parseInt(formData.get('yearsOfExperience') as string) || 0;
     const yearsStatus = await updateFreelancerYearsOfExperience(freelancer, yearsExperience);
-    return Response.json({ success: yearsStatus.success });
+    return Response.json({
+      success: yearsStatus.success ? { message: 'Experience updated!' } : false,
+    });
   }
 
   async function handleFreelancerVideo(formData: FormData, freelancer: Freelancer) {
-    const videoLink = formData.get('videoLink') as string;
+    const videoLink = formData.get('videoLink') as string; // must match fieldName
+    console.log('🔥 videoLink from formData:', formData.get('videoLink'));
+
     const videoStatus = await updateFreelancerVideoLink(freelancer.id, videoLink);
-    return Response.json({ success: videoStatus.success });
+    return Response.json({ success: { message: 'Intro video saved successfully!' } });
   }
 
   async function handleFreelancerAbout(formData: FormData, freelancer: Freelancer) {
     const aboutContent = formData.get('about') as string;
     const aboutStatus = await updateFreelancerAbout(freelancer, aboutContent);
-    return Response.json({ success: aboutStatus.success });
+    return Response.json({ success: { message: 'About section saved!' } });
   }
 
   async function handleFreelancerPortfolio(formData: FormData, freelancer: Freelancer) {
@@ -177,7 +183,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         portfolioImages
       );
 
-      return Response.json({ success: portfolioStatus.success });
+      return Response.json({
+        success: portfolioStatus.success ? { message: 'Portfolio saved!' } : false,
+      });
     } catch (error) {
       console.error('Error processing freelancer portfolio:', error);
 
@@ -202,7 +210,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       });
     }
     const workHistoryStatus = await updateFreelancerWorkHistory(freelancer, workHistoryParsed);
-    return Response.json({ success: workHistoryStatus.success });
+    return Response.json({
+      success: workHistoryStatus.success ? { message: 'Work history updated!' } : false,
+    });
   }
 
   async function handleFreelancerCertificates(formData: FormData, freelancer: Freelancer) {
@@ -222,7 +232,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         certificatesParsed,
         certificatesImages
       );
-      return Response.json({ success: certificatesStatus.success });
+      return Response.json({
+        success: certificatesStatus.success ? { message: 'Certificates saved!' } : false,
+      });
     } catch (error) {
       return Response.json({
         success: false,
@@ -237,7 +249,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     try {
       const educationParsed = JSON.parse(education) as EducationFormFieldType[];
       const educationStatus = await updateFreelancerEducation(freelancer, educationParsed);
-      return Response.json({ success: educationStatus.success });
+      return Response.json({
+        success: educationStatus.success ? { message: 'Education saved!' } : false,
+      });
     } catch (error) {
       return Response.json({
         success: false,
@@ -268,7 +282,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       );
     }
 
-    const availableFrom = availableFromInput ? new Date(availableFromInput) : new Date(); // Default to today's date if no input is provided
+    const availableFrom = availableFromInput ? new Date(availableFromInput) : new Date();
 
     const result = await updateFreelancerAvailability({
       accountId: freelancer.accountId,
@@ -280,7 +294,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     });
 
     return result
-      ? Response.json({ success: true })
+      ? Response.json({ success: { message: 'Availability updated successfully!' } })
       : Response.json(
           {
             success: false,
@@ -297,7 +311,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const result = await updateFreelancerAvailabilityStatus(freelancer.accountId, availableForWork);
 
     return result
-      ? Response.json({ success: true })
+      ? Response.json({ success: { message: 'Availability status updated successfully!' } })
       : Response.json(
           {
             success: false,
@@ -316,7 +330,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         freelancer.id,
         languagesParsed.map(language => language.id)
       );
-      return Response.json({ success: languagesStatus.success });
+      return Response.json({
+        success: languagesStatus.success ? { message: 'Languages updated!' } : false,
+      });
     } catch (error) {
       console.error('Error parsing languages', error);
       return Response.json(
@@ -333,7 +349,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
       const skillsStatus = await updateFreelancerSkills(freelancer.id, skillsParsed);
 
-      return Response.json({ success: skillsStatus.success });
+      return Response.json({
+        success: skillsStatus.success ? { message: 'Skills updated!' } : false,
+      });
     } catch (error) {
       console.error('🔥 FREELANCER SERVER: Error updating skills', error);
       return Response.json(
@@ -358,7 +376,6 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       : Response.json({
           success: false,
           error: { message: 'Failed to update onboarding status' },
-
           status: 500,
         });
   }
@@ -737,17 +754,12 @@ export async function updateFreelancerAbout(
   }
 }
 
-export async function updateFreelancerVideoLink(
-  freelancerId: number,
-  videoLink: string
-): Promise<{ success: boolean }> {
+export async function updateFreelancerVideoLink(freelancerId: number, videoLink: string | null) {
   return db
     .update(freelancersTable)
-    .set({ videoLink: videoLink })
-    .where(eq(freelancersTable.accountId, freelancerId))
-    .then(() => {
-      return { success: true };
-    })
+    .set({ videoLink })
+    .where(eq(freelancersTable.id, freelancerId))
+    .then(() => ({ success: true }))
     .catch(error => {
       console.error('Error updating freelancer video link', error);
       return { success: false };
