@@ -7,6 +7,7 @@ interface VideoUploadProps {
   acceptedFileTypes?: string; // e.g., "video/*"
   maxFileSize?: number; // Size in MB
   onClear?: () => void; // 👈 add this!
+  name: string; // 👈 ✅ required for proper <input> binding
 }
 
 export default function VideoUpload({
@@ -14,7 +15,8 @@ export default function VideoUpload({
   file: externalFile = null,
   acceptedFileTypes = 'video/*',
   maxFileSize = 50,
-  onClear, // ✅ add this here!
+  onClear,
+  name, // ✅ destructure it
 }: VideoUploadProps) {
   const [file, setFile] = useState<File | null>(externalFile);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -49,6 +51,8 @@ export default function VideoUpload({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
+    console.log('📹 Selected file:', selectedFile);
+
     if (selectedFile) {
       if (selectedFile.size > maxFileSize * 1024 * 1024) {
         alert(`Video size exceeds ${maxFileSize} MB`);
@@ -63,6 +67,8 @@ export default function VideoUpload({
     setFile(null);
     onFileChange(null);
   };
+
+  console.log(name);
 
   return (
     <div
@@ -82,7 +88,7 @@ export default function VideoUpload({
             type="button"
             onClick={() => {
               clearFile();
-              onClear?.(); // ✅ call it if provided
+              onClear?.(); // ✅ still here bro
             }}
             className="text-red-500 hover:text-red-700"
           >
@@ -101,9 +107,10 @@ export default function VideoUpload({
             </div>
             <input
               type="file"
-              className="hidden"
+              name={name}
               accept={acceptedFileTypes}
               onChange={handleFileChange}
+              className="hidden"
             />
           </label>
           <span className="text-gray-500 text-xs mt-2">(Max. File size: {maxFileSize} MB)</span>

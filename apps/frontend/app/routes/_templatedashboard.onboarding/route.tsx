@@ -27,6 +27,7 @@ import {
   getFreelancerAvailability,
   handleFreelancerOnboardingAction,
   fetchFreelancerSkills,
+  updateFreelancerVideoLink,
 } from '~/servers/freelancer.server';
 import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
@@ -57,16 +58,45 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
 
-    // **VIDEO VALIDATION**
-    const videoLink = formData.get('videoLink') as string | null;
-    if (videoLink && !isValidYouTubeUrl(videoLink)) {
-      return Response.json(
-        {
-          success: false,
-          error: { message: 'Invalid video URL. Please provide a valid YouTube link.' },
-        },
-        { status: 400 }
+    // This is inside your action handler
+    const rawVideoEntry = formData.get('videoLink');
+
+    // 🚩 1. REMOVE video (user cleared field, either string or empty File)
+    if (
+      (typeof rawVideoEntry === 'string' && rawVideoEntry.trim() === '') ||
+      (rawVideoEntry instanceof File && rawVideoEntry.size === 0)
+    ) {
+      console.log(
+        '🔥🔥🔥 REMOVE: updateFreelancerVideoLink called with NULL (empty string or empty file)'
       );
+      await updateFreelancerVideoLink(profile.id, null);
+      return Response.json({
+        success: { message: 'Video removed from your profile!' },
+      });
+    }
+
+    // 🚩 2. File Upload (user uploaded a video file)
+    if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
+      // ...your upload logic...
+      const uploadedUrl = `/uploads/${rawVideoEntry.name}`;
+      await updateFreelancerVideoLink(profile.id, uploadedUrl);
+      return Response.json({ success: { message: 'Video file uploaded and saved!' } });
+    }
+
+    // 🚩 3. YouTube URL (user pasted a link)
+    if (typeof rawVideoEntry === 'string' && rawVideoEntry.trim().length > 0) {
+      const url = rawVideoEntry.trim();
+      if (!isValidYouTubeUrl(url)) {
+        return Response.json(
+          {
+            success: false,
+            error: { message: 'Invalid video URL. Please provide a valid YouTube link.' },
+          },
+          { status: 400 }
+        );
+      }
+      await updateFreelancerVideoLink(profile.id, url);
+      return Response.json({ success: { message: 'YouTube video saved!' } });
     }
 
     const file = formData.get('videoFile') as File | null;

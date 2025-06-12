@@ -262,6 +262,10 @@ const FormContent = forwardRef<any, FormContentProps>(
 
       const formData = prepareFormData(e.target as HTMLFormElement);
 
+      for (let [key, value] of formData.entries()) {
+        console.log('formData key:', key, '| value:', value);
+      }
+
       // Mark form as submitted
       setFormSubmitted(true);
 

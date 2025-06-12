@@ -195,10 +195,11 @@ export const FormFields = {
     return (
       <div className="space-y-4 ml-1 mr-1">
         {/* File upload */}
-        {!youtubeUrl && !videoFile && (
+        {!youtubeUrl && (
           <VideoUpload
+            name={name}
+            file={videoFile} // ✅ you need this line
             onFileChange={handleVideoUpload}
-            file={videoFile}
             onClear={() => {
               setVideoFile(null);
               onChange?.({ target: { value: '', name } } as any);
@@ -270,7 +271,14 @@ export const FormFields = {
             type="file"
             name={name}
             style={{ display: 'none' }}
-            // Just render it and let the browser handle the file binding
+            accept="video/*"
+            ref={ref => {
+              if (ref && videoFile) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(videoFile);
+                ref.files = dataTransfer.files;
+              }
+            }}
           />
         )}
       </div>
