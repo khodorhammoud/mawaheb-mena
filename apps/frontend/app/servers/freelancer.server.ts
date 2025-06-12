@@ -34,12 +34,14 @@ import {
 } from './cloudStorage.server';
 import { FreelancerSkill } from '~/routes/_templatedashboard.onboarding/types';
 import { deleteAttachmentById } from '~/servers/attachment.server';
+import { isValidVideoUrl } from '~/utils/video';
 
 /***************************************************
  ************Insert/update freelancer info************
  *************************************************** */
 
 export async function handleFreelancerOnboardingAction(formData: FormData, freelancer: Freelancer) {
+  console.log('🔥🔥🔥 HIT MAIN ACTION with target:', formData.get('target-updated'));
   const target = formData.get('target-updated') as string;
   const userId = freelancer.account.user.id;
 
@@ -139,11 +141,41 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
   }
 
   async function handleFreelancerVideo(formData: FormData, freelancer: Freelancer) {
-    const videoLink = formData.get('videoLink') as string; // must match fieldName
-    console.log('🔥 videoLink from formData:', formData.get('videoLink'));
+    const rawVideoEntry = formData.get('videoLink');
+    console.log('[DEBUG] rawVideoEntry:', rawVideoEntry, '| Type:', typeof rawVideoEntry);
 
-    const videoStatus = await updateFreelancerVideoLink(freelancer.id, videoLink);
-    return Response.json({ success: { message: 'Intro video saved successfully!' } });
+    // Handle File Upload
+    if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
+      console.log('[DEBUG] Detected File upload:', rawVideoEntry.name, rawVideoEntry.size);
+      // TODO: Replace the line below with your real upload logic
+      const uploadedUrl = `/uploads/${rawVideoEntry.name}`;
+      await updateFreelancerVideoLink(freelancer.id, uploadedUrl);
+      return Response.json({ success: { message: 'Video file uploaded and saved!' } });
+    }
+
+    // Handle YouTube/URL
+    if (typeof rawVideoEntry === 'string') {
+      const url = rawVideoEntry.trim();
+      console.log('[DEBUG] Detected string videoLink:', url);
+      if (!url) {
+        return Response.json({ error: { message: 'Video URL is empty!' } }, { status: 400 });
+      }
+      // Only check if it’s a valid YouTube or video URL when it's a string
+      if (!isValidVideoUrl(url)) {
+        return Response.json(
+          { error: { message: 'Invalid video URL. Please provide a valid YouTube link.' } },
+          { status: 400 }
+        );
+      }
+      await updateFreelancerVideoLink(freelancer.id, url);
+      return Response.json({ success: { message: 'YouTube video saved!' } });
+    }
+
+    // Fallback: Neither file nor string
+    return Response.json(
+      { error: { message: 'No valid video input provided (neither URL nor file).' } },
+      { status: 400 }
+    );
   }
 
   async function handleFreelancerAbout(formData: FormData, freelancer: Freelancer) {
@@ -391,6 +423,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     case 'freelancer-years-of-experience':
       return handleFreelancerYearsOfExperience(formData, freelancer);
     case 'freelancer-video':
+      console.log('🔥 HIT freelancer-video case!');
       return handleFreelancerVideo(formData, freelancer);
     case 'freelancer-about':
       return handleFreelancerAbout(formData, freelancer);
@@ -413,6 +446,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     case 'freelancer-onboard':
       return handleFreelancerOnboard(userId);
     default:
+      console.log('❌ DEFAULT CASE. target was:', target);
       throw new Error('Unknown target update');
   }
 }
@@ -754,7 +788,9 @@ export async function updateFreelancerAbout(
   }
 }
 
+// for the video upload in freelancers onboarding view
 export async function updateFreelancerVideoLink(freelancerId: number, videoLink: string | null) {
+  // console.log('la nshoof iza l function inside freelancer.server is working');
   return db
     .update(freelancersTable)
     .set({ videoLink })
