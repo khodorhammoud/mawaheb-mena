@@ -339,6 +339,8 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
+    console.log('VideoFieldTemplate value:', value);
+
     // Avoid crash: Only call includes if videoUrl is string
     const isYouTube =
       typeof videoUrl === 'string' &&

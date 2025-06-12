@@ -29,7 +29,7 @@ import {
   fetchFreelancerSkills,
   updateFreelancerVideoLink,
 } from '~/servers/freelancer.server';
-import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
+import { getAttachmentSignedURL, uploadFile } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
 import { isValidYouTubeUrl } from '~/utils/video';
 
@@ -66,9 +66,6 @@ export async function action({ request }: ActionFunctionArgs) {
       (typeof rawVideoEntry === 'string' && rawVideoEntry.trim() === '') ||
       (rawVideoEntry instanceof File && rawVideoEntry.size === 0)
     ) {
-      console.log(
-        '🔥🔥🔥 REMOVE: updateFreelancerVideoLink called with NULL (empty string or empty file)'
-      );
       await updateFreelancerVideoLink(profile.id, null);
       return Response.json({
         success: { message: 'Video removed from your profile!' },
@@ -77,10 +74,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 🚩 2. File Upload (user uploaded a video file)
     if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
-      // ...your upload logic...
-      const uploadedUrl = `/uploads/${rawVideoEntry.name}`;
-      await updateFreelancerVideoLink(profile.id, uploadedUrl);
-      return Response.json({ success: { message: 'Video file uploaded and saved!' } });
+      console.log('[ACTION] Got a video file to upload:', {
+        name: rawVideoEntry.name,
+        size: rawVideoEntry.size,
+        type: rawVideoEntry.type,
+      });
+
+      // Upload to S3 and get URL
+      const uploadResult = await uploadFile('freelancer-video', rawVideoEntry); // uses S3!
+      console.log('[ACTION] S3 Upload Result:', uploadResult);
+
+      const s3Url = uploadResult.url;
+      console.log('[ACTION] S3 URL to be saved in DB:', s3Url);
+
+      // Save to DB
+      const dbResult = await updateFreelancerVideoLink(profile.id, s3Url);
+      console.log('[ACTION] DB Update Result:', dbResult);
+
+      return Response.json({ success: { message: 'Video file uploaded to S3 and saved!' } });
     }
 
     // 🚩 3. YouTube URL (user pasted a link)
@@ -236,6 +247,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
+    let videoUrl = null;
+
+    if (videoLink && typeof videoLink === 'string') {
+      if (
+        videoLink.includes('youtube.com') ||
+        videoLink.includes('youtu.be') ||
+        videoLink.includes('vimeo.com')
+      ) {
+        // Public video links (YouTube/Vimeo): use directly
+        videoUrl = videoLink;
+      } else {
+        // S3 key OR S3 URL: always generate signed URL!
+        // If it's already a full S3 URL, extract the key from the URL
+        let s3Key = videoLink;
+        if (videoLink.startsWith('http') && videoLink.includes('.amazonaws.com/')) {
+          // Example: https://bucket.s3.region.amazonaws.com/key
+          const urlParts = videoLink.split('.amazonaws.com/');
+          if (urlParts.length === 2) s3Key = urlParts[1].split('?')[0];
+        }
+        videoUrl = await getAttachmentSignedURL(s3Key);
+      }
+    } else {
+      videoUrl = null;
+    }
 
     // Process portfolio
     const portfolio = Array.isArray(profile.portfolio)
@@ -294,6 +329,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProfile: profile,
       about,
       videoLink,
+      videoUrl,
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,

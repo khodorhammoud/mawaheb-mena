@@ -18,7 +18,7 @@ type MyFetcherData = {
 
 export default function FreelancerOnboardingScreen() {
   const actionData = useActionData<ActionData>();
-  const { accountOnboarded, currentProfile, freelancerSkills, freelancerLanguages } =
+  const { accountOnboarded, currentProfile, freelancerSkills, videoUrl, freelancerLanguages } =
     useLoaderData<FreelancerOnboardingData>();
   const fetcher = useFetcher<MyFetcherData>();
 
@@ -136,6 +136,7 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-video"
             fieldName="videoLink"
             editable={true}
+            value={videoUrl}
           />
 
           {/* About */}
