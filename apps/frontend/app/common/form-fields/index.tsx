@@ -19,6 +19,7 @@ interface AppFormFieldProps {
   onChange?: any;
   min?: number;
   error?: string; // ✅ Added error support
+  maxLength?: number;
 }
 
 const AppFormField = ({
@@ -36,6 +37,7 @@ const AppFormField = ({
   onChange,
   min,
   error,
+  maxLength,
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
@@ -171,6 +173,7 @@ const AppFormField = ({
               spellCheck="false"
               defaultValue={defaultValue}
               onChange={onChange}
+              maxLength={maxLength} // <- add this line!
             ></textarea>
           ) : (
             <input
@@ -193,6 +196,7 @@ const AppFormField = ({
                   onChange(e);
                 }
               }}
+              maxLength={maxLength}
             />
           )}
         </>
