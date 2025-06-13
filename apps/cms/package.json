@@ -12,6 +12,7 @@
     "@keystone-6/core": "^6.0.0",
     "@keystone-6/fields-document": "^9.0.0",
     "@prisma/client": "5.22.0",
+    "prisma": "5.22.0",
     "decamelize-keys": "^1.1.1",
     "dotenv": "^16.5.0",
     "minimist-options": "^4.1.0",
@@ -19,6 +20,6 @@
     "typescript": "^5.5.0"
   },
   "devDependencies": {
-    "prisma": "4.16.2"
+    "prisma": "5.22.0"
   }
 }
