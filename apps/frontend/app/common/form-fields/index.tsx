@@ -1,6 +1,7 @@
 // import PropTypes from 'prop-types';
 import { useState, useEffect, ReactNode } from 'react';
 import PhoneNumberField from './phoneNbs/PhoneNumberField';
+import CountrySelectField from './counrtiesDropdown/CountrySelectField';
 
 // Define TypeScript interface for props
 interface AppFormFieldProps {
@@ -14,8 +15,10 @@ interface AppFormFieldProps {
   showPasswordHint?: boolean;
   col?: number;
   defaultValue?: string | number;
+  value?: string | number;
   onChange?: any;
   min?: number;
+  error?: string; // ✅ Added error support
 }
 
 const AppFormField = ({
@@ -29,16 +32,23 @@ const AppFormField = ({
   showPasswordHint = true,
   col = 4,
   defaultValue,
+  value,
   onChange,
   min,
+  error,
 }: AppFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
 
-  const [selectedValue, setSelectedValue] = useState(defaultValue);
+  const [country, setCountry] = useState(defaultValue);
 
   useEffect(() => {
-    setSelectedValue(defaultValue);
-  }, [defaultValue]);
+    if (value !== undefined) {
+      setSelectedValue(value);
+    } else {
+      setSelectedValue(defaultValue);
+    }
+  }, [defaultValue, value]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -46,13 +56,13 @@ const AppFormField = ({
 
   const handleNumberChange = event => {
     const { value } = event.target;
-    let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+    let numericValue = value.replace(/\D/g, '');
 
     if (min !== undefined && Number(numericValue) < min) {
-      numericValue = min.toString(); // ✅ Enforce min value
+      numericValue = min.toString();
     }
 
-    setSelectedValue(numericValue); // Update state
+    setSelectedValue(numericValue);
 
     if (onChange) {
       onChange({ target: { id, name, value: numericValue } });
@@ -72,30 +82,39 @@ const AppFormField = ({
   return (
     <div className={`relative w-full ${className}`}>
       {/* INPUTS */}
-      {/* INPUTS */}
-      {/* INPUTS */}
       {id === 'phoneState' ? (
         <PhoneNumberField
           id={id}
           name={name}
           defaultValue={defaultValue.toString()}
-          placeholder={placeholder}
           onChange={onChange}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+        />
+      ) : id === 'countryDropdown' ? (
+        <CountrySelectField
+          id={id}
+          name={name}
+          value={selectedValue}
+          defaultValue={String(defaultValue ?? selectedValue)}
+          onChange={e => {
+            setSelectedValue(e.target.value);
+            if (onChange) onChange(e);
+          }}
+          className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
         />
       ) : (
         <>
           {type === 'select' ? (
-            // select input
             <select
               id={id}
               name={name}
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none bg-white text-gray-900 autofill-fix`}
               spellCheck="false"
-              defaultValue={selectedValue} // Controlled component
+              defaultValue={selectedValue}
               onChange={e => {
                 const value = e.target.value;
-                setSelectedValue(value); // Update state with selected value
-                if (onChange) onChange(value); // Call the provided onChange handler
+                setSelectedValue(value);
+                if (onChange) onChange(value);
               }}
             >
               <option value="" disabled hidden></option>
@@ -105,9 +124,9 @@ const AppFormField = ({
                 </option>
               ))}
             </select>
-          ) : type === 'number' || id === 'number' ? ( // Numeric input for id="number"
+          ) : type === 'number' || id === 'number' ? (
             <input
-              type="number" // type="tel" is used for better UX on mobile devices
+              type="number"
               id={id}
               name={name}
               placeholder={placeholder}
@@ -115,32 +134,27 @@ const AppFormField = ({
               autoComplete="on"
               spellCheck="false"
               defaultValue={defaultValue}
-              onChange={handleNumberChange} // Custom handler for numeric validation
-              min={min} // ✅ Apply the min prop
+              onChange={handleNumberChange}
+              min={min}
             />
           ) : type === 'increment' ? (
             <div className="flex flex-col items-center space-y-4 w-full">
               <div className="flex items-center border border-gray-300 rounded-xl w-full">
-                {/* - Button */}
                 <button
                   type="button"
                   className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
-                  style={{ borderRight: 'none' }} // Remove the right border of the - button
+                  style={{ borderRight: 'none' }}
                   onClick={() => handleIncrement(-1)}
                 >
                   <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
                 </button>
-
-                {/* Input Display */}
                 <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
                   {selectedValue}
                 </div>
-
-                {/* + Button */}
                 <button
                   type="button"
                   className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
-                  style={{ borderLeft: 'none' }} // Remove the left border of the + button
+                  style={{ borderLeft: 'none' }}
                   onClick={() => handleIncrement(1)}
                 >
                   <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
@@ -148,19 +162,17 @@ const AppFormField = ({
               </div>
             </div>
           ) : type === 'textarea' ? (
-            // textarea input
             <textarea
               id={id}
               name={name}
               placeholder={placeholder}
-              style={{ height: textareaHeight }} // Apply dynamic height style
+              style={{ height: textareaHeight }}
               className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix resize-none`}
               spellCheck="false"
-              defaultValue={defaultValue} // Handle default value for textarea
-              onChange={onChange} // Attach `onChange` here
+              defaultValue={defaultValue}
+              onChange={onChange}
             ></textarea>
           ) : (
-            // else inputs
             <input
               type={type === 'password' && showPassword ? 'text' : type}
               id={id}
@@ -169,18 +181,25 @@ const AppFormField = ({
               className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
               autoComplete="on"
               spellCheck="false"
-              defaultValue={selectedValue}
-              onChange={onChange}
+              {...(value !== undefined
+                ? { value: selectedValue }
+                : { defaultValue: selectedValue })}
+              onChange={e => {
+                const newValue = e.target.value;
+                if (value === undefined) {
+                  setSelectedValue(newValue);
+                }
+                if (onChange) {
+                  onChange(e);
+                }
+              }}
             />
           )}
         </>
       )}
 
       {/* LABELS */}
-      {/* LABELS */}
-      {/* LABELS */}
       {type === 'password' ? (
-        // password label
         <label
           htmlFor={id}
           className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
@@ -192,7 +211,6 @@ const AppFormField = ({
           {label}
         </label>
       ) : type === 'textarea' ? (
-        // textarea label
         <label
           htmlFor={id}
           className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
@@ -204,7 +222,6 @@ const AppFormField = ({
           {label}
         </label>
       ) : (
-        // else labels
         <label
           htmlFor={id}
           className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
@@ -218,10 +235,7 @@ const AppFormField = ({
       )}
 
       {/* BUTTONS */}
-      {/* BUTTONS */}
-      {/* BUTTONS */}
       {type === 'password' && (
-        // password button
         <button
           type="button"
           onClick={togglePasswordVisibility}
@@ -231,38 +245,16 @@ const AppFormField = ({
         </button>
       )}
 
-      {/* PASSWORD SHOW & HIDE ICONS */}
-      {/* PASSWORD SHOW & HIDE ICONS */}
-      {/* PASSWORD SHOW & HIDE ICONS */}
+      {/* ✅ ERROR MESSAGE */}
+      {error && <p className="ml-1 mt-2 text-sm text-red-600 font-medium">{error}</p>}
+
       {type === 'password' && showPasswordHint && (
-        <p className="text-xs text-gray-600 mt-3 mb-6 ml-4">
+        <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
           Password must be 8 characters, upper capital, lower case, symbols
         </p>
       )}
     </div>
   );
 };
-
-/* AppFormField.propTypes = {
-  type: PropTypes.string,
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  label: PropTypes.node,
-  placeholder: PropTypes.string,
-  showPasswordHint: PropTypes.bool,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ),
-  className: PropTypes.string,
-  col: PropTypes.number,
-  placeholderTextSize: PropTypes.string,
-  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onChange: PropTypes.func,
-  useRichText: PropTypes.bool,
-  min: PropTypes.number, // ✅ Add min to prop types
-}; */
 
 export default AppFormField;

@@ -5,7 +5,6 @@ import { SlBadge } from 'react-icons/sl';
 import { FaDollarSign, FaFileUpload } from 'react-icons/fa';
 import { AiFillStar } from 'react-icons/ai';
 import { FreelancerOnboardingData } from '../types';
-import { Freelancer } from '~/types/User';
 
 export default function FreelancerOnboardingScreen() {
   type ActionData = {

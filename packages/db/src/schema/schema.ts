@@ -450,7 +450,6 @@ export const jobCategoriesTable = pgTable('job_categories', {
  * @property created_at - timestamp
  * @property fulfilledAt - timestamp
  */
-
 export const jobsTable = pgTable('jobs', {
   id: serial('id').primaryKey(),
   employerId: integer('employer_id').references(() => employersTable.id),
@@ -462,6 +461,7 @@ export const jobsTable = pgTable('jobs', {
   //locationPreferenceTypeEnum("location_preference_type"),
   projectType: projectTypeEnum('project_type'),
   budget: integer('budget'),
+  expectedHourlyRate: integer('expected_hourly_rate'),
   experienceLevel: experienceLevelEnum('experience_level'),
   status: text('status'), //jobStatusEnum("status"),
   createdAt: timestamp('created_at').default(sql`now()`),
