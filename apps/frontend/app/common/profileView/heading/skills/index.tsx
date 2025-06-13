@@ -304,6 +304,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 >
                   {skill.isStarred && <FaStar className="text-yellow-500" />}
                   {skill.label}
+                  <span className="text-black font-semibold">({skill.yearsOfExperience})</span>
                 </Badge>
               ))}
 
@@ -330,6 +331,9 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                         >
                           {skill.isStarred && <FaStar className="text-yellow-500" />}
                           {skill.label}
+                          <span className="text-black font-semibold">
+                            ({skill.yearsOfExperience})
+                          </span>
                         </Badge>
                       ))}
                     </div>
