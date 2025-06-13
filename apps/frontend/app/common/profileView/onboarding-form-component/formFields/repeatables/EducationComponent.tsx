@@ -17,6 +17,7 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         defaultValue={data.degree}
         label="Degree"
         onChange={e => onTextChange({ ...data, degree: e.target.value })}
+        maxLength={100}
       />
       <AppFormField
         type="text"

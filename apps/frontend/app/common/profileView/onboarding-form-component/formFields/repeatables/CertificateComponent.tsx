@@ -124,6 +124,7 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           label="Certificate Name"
           defaultValue={data.certificateName}
           onChange={e => onTextChange({ ...data, certificateName: e.target.value })}
+          maxLength={100}
         />
 
         <AppFormField

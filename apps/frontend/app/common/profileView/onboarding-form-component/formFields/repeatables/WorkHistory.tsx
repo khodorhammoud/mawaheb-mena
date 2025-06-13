@@ -31,6 +31,7 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
           label="Title"
           className="w-1/2 border-gray-300 rounded-md"
           onChange={e => onTextChange({ ...data, title: e.target.value })}
+          maxLength={100}
         />
         <AppFormField
           type="text"

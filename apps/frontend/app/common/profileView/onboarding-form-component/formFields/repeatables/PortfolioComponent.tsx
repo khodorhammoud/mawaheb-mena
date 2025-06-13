@@ -1,4 +1,4 @@
-import { PortfolioFormFieldType } from '@mawaheb/db/enums';
+import { PortfolioFormFieldType } from '@mawaheb/db/types';
 import { FaLink } from 'react-icons/fa';
 import AppFormField from '~/common/form-fields';
 import FileUpload from '~/common/upload/fileUpload';
@@ -107,6 +107,7 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
             placeholder="Project Name"
             defaultValue={data.projectName}
             onChange={e => onTextChange({ ...data, projectName: e.target.value })}
+            maxLength={100}
           />
         </div>
 
