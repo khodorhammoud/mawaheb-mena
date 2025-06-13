@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "~swiper/swiper-bundle.min.css";
+@import '~swiper/swiper-bundle.min.css';
 
 @layer base {
   :root {

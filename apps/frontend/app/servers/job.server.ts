@@ -51,6 +51,7 @@ export async function createJobPosting(
         locationPreference: jobData.locationPreference,
         projectType: jobData.projectType,
         budget: jobData.budget,
+        expectedHourlyRate: jobData.expectedHourlyRate || null,
         experienceLevel: jobData.experienceLevel,
         status: jobData.status,
       })
@@ -147,6 +148,7 @@ export async function updateJob(jobId: number, jobData: Partial<Job>) {
           locationPreference: jobData.locationPreference?.trim(),
           projectType: jobData.projectType?.trim(),
           budget: jobData.budget || null,
+          expectedHourlyRate: jobData.expectedHourlyRate || null,
           experienceLevel: jobData.experienceLevel?.trim(),
           status: jobData.status || 'draft', // ✅ Default to "draft" if null
         })
@@ -184,6 +186,7 @@ export async function getEmployerJobs(
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Added here!
       experienceLevel: jobsTable.experienceLevel,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
@@ -205,9 +208,6 @@ export async function getEmployerJobs(
   const jobsMap = new Map<number, Job>();
 
   // Loops through the raw job data
-  // If the job doesn't exist in the map, it adds the job without skills
-  // If a skill is found, it adds the skill to the job's requiredSkills list
-  // This ensures that each job is stored once and its skills are properly grouped
   for (const row of jobsRaw) {
     if (!jobsMap.has(row.id)) {
       jobsMap.set(row.id, {
@@ -219,6 +219,7 @@ export async function getEmployerJobs(
         locationPreference: row.locationPreference,
         projectType: row.projectType,
         budget: row.budget,
+        expectedHourlyRate: row.expectedHourlyRate, // <-- Added here!
         experienceLevel: row.experienceLevel,
         status: row.status as JobStatus,
         createdAt: row.createdAt,
@@ -238,7 +239,6 @@ export async function getEmployerJobs(
   }
 
   // Converts the Map structure back into an array of jobs (which is the expected output format)
-  // Now, each job has a clean list of skills inside requiredSkills
   return Array.from(jobsMap.values());
 }
 
@@ -253,6 +253,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Added here
       experienceLevel: jobsTable.experienceLevel,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
@@ -283,6 +284,7 @@ export async function getJobById(jobId: number): Promise<Job | null> {
     locationPreference: jobRaw[0].locationPreference,
     projectType: jobRaw[0].projectType,
     budget: jobRaw[0].budget,
+    expectedHourlyRate: jobRaw[0].expectedHourlyRate, // <-- Added here
     experienceLevel: jobRaw[0].experienceLevel,
     status: jobRaw[0].status as JobStatus,
     createdAt: jobRaw[0].createdAt,
@@ -590,6 +592,26 @@ function calculateMatchScore(
   return finalScore;
 }
 
+/**
+ * getJobRecommendations:
+ * ------------------------------------------
+ * 1. Finds the freelancer and their account data by freelancerId.
+ * 2. Fetches all skills (with experience) linked to this freelancer.
+ * 3. Gets all job IDs that the freelancer has already applied to.
+ * 4. Fetches all 'Active' jobs from employers whose account is NOT deactivated,
+ *    excluding jobs the freelancer already applied to.
+ * 5. For each job:
+ *      - Gets its required skills.
+ *      - Calculates a match score between the job and the freelancer.
+ *      - If the match score >= MINIMUM_MATCH_SCORE (default: 50), includes this job in results.
+ *      - Adds info about matching/missing skills.
+ * 6. Sorts the recommendations by match score (descending).
+ * 7. Returns the top `limit` jobs as recommendations for the freelancer.
+ *
+ * In summary: Returns a list of 'best fit' jobs for a freelancer,
+ *             only jobs they haven't applied to, scored by skill/profile match.
+ */
+// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess )
 export async function getJobRecommendations(
   freelancerId: number,
   limit: number = 10
@@ -770,7 +792,19 @@ export async function getAllJobs(limit?: number, offset?: number) {
   }
 
   const jobs = await query;
-  return jobs;
+
+  // --- Deduplicate jobs by ID ---
+  const uniqueJobs = Object.values(
+    jobs.reduce(
+      (acc, job) => {
+        acc[job.id] = job;
+        return acc;
+      },
+      {} as Record<number, (typeof jobs)[0]>
+    )
+  );
+
+  return uniqueJobs;
 }
 
 // ✅ Get My Jobs (Jobs Freelancer Applied To)
@@ -941,6 +975,21 @@ export async function updateReview({
   return result;
 }
 
+export async function getJobApplicationStats(jobId: number) {
+  const allApplications = await db
+    .select()
+    .from(jobApplicationsTable)
+    .where(eq(jobApplicationsTable.jobId, jobId));
+
+  const interested = allApplications.length;
+  // For now, use zero for the others until you add them to your schema
+  return {
+    interested,
+    interviewed: 0,
+    invites: 0,
+  };
+}
+
 /** ✅ Get employerId by Job ID */
 export async function getEmployerIdByJobId(jobId: number) {
   // console.log("🔍 Fetching employerId for jobId:", jobId);
@@ -1073,6 +1122,7 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
       employerId: jobsTable.employerId,
       status: jobsTable.status,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- Add this
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
@@ -1132,6 +1182,7 @@ export async function getJobsFiltered(filter: JobFilter): Promise<Job[]> {
     ...job,
     status: job.status as JobStatus,
     requiredSkills: [], // Add empty array as default for required skills
+    expectedHourlyRate: job.expectedHourlyRate, // <-- Add this
   }));
 }
 
@@ -1373,33 +1424,21 @@ export async function updateJobApplicationStatus(
  * @returns Promise<Job[]> - A promise that resolves to an array of enriched job objects,
  *
  */
-export async function fetchJobsWithApplications(
-  employerId: number,
-  page: number = 1,
-  limit: number = 10,
-  statusFilter: string = 'all'
-) {
-  const offset = (page - 1) * limit;
-
+export async function fetchJobsWithApplications(employerId: number, statusFilter: string = 'all') {
   // Build the where clause
   const whereClause =
     statusFilter === 'all'
       ? eq(jobsTable.employerId, employerId)
       : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
 
-  // First, get total count of jobs with the filter
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(jobsTable)
-    .where(whereClause);
-
-  // Then fetch paginated jobs with their applications
+  // Fetch all jobs for this employer (filtered)\
   const jobs = await db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
       description: jobsTable.description,
       budget: jobsTable.budget,
+      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- ADD THIS LINE!
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -1412,15 +1451,60 @@ export async function fetchJobsWithApplications(
     })
     .from(jobsTable)
     .where(whereClause)
-    .orderBy(desc(jobsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
+    .orderBy(desc(jobsTable.createdAt));
+
+  const jobIds = jobs.map(j => j.id);
+  if (jobIds.length === 0) {
+    return { jobs: [], totalCount: 0 };
+  }
+
+  // Fetch required skills for these jobs in one go
+  const jobSkills = await db
+    .select({
+      jobId: jobSkillsTable.jobId,
+      skill: {
+        id: skillsTable.id,
+        name: skillsTable.label,
+        isStarred: skillsTable.isHot,
+      },
+    })
+    .from(jobSkillsTable)
+    .leftJoin(skillsTable, eq(jobSkillsTable.skillId, skillsTable.id))
+    .where(inArray(jobSkillsTable.jobId, jobIds));
+
+  // Fetch all applications for these jobs in one go
+  const applications = await db
+    .select({
+      jobId: jobApplicationsTable.jobId,
+      application: jobApplicationsTable, // or select specific fields as needed
+    })
+    .from(jobApplicationsTable)
+    .where(inArray(jobApplicationsTable.jobId, jobIds));
+
+  // Group skills/applications by jobId
+  const jobIdToSkills: Record<number, any[]> = {};
+  for (const js of jobSkills) {
+    if (!jobIdToSkills[js.jobId]) jobIdToSkills[js.jobId] = [];
+    jobIdToSkills[js.jobId].push(js.skill);
+  }
+
+  const jobIdToApplications: Record<number, any[]> = {};
+  for (const app of applications) {
+    if (!jobIdToApplications[app.jobId]) jobIdToApplications[app.jobId] = [];
+    jobIdToApplications[app.jobId].push(app.application);
+  }
+
+  // Attach skills and applications to each job
+  const jobsWithSkillsAndApps = jobs.map(job => ({
+    ...job,
+    requiredSkills: jobIdToSkills[job.id] || [],
+    applications: jobIdToApplications[job.id] || [],
+    applicationCount: jobIdToApplications[job.id]?.length || 0,
+  }));
 
   return {
-    jobs,
-    totalCount: count,
-    totalPages: Math.ceil(count / limit),
-    currentPage: page,
+    jobs: jobsWithSkillsAndApps,
+    totalCount: jobsWithSkillsAndApps.length,
   };
 }
 

@@ -1,10 +1,17 @@
 import SignUpFreelancerPage from './Signup';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { generateVerificationToken, getProfileInfo } from '../../servers/user.server';
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/node';
+import {
+  generateVerificationToken,
+  getProfileInfo,
+  setUserVerified,
+} from '../../servers/user.server';
 import { RegistrationError } from '../../common/errors/UserError';
-import { sendEmail } from '../../servers/emails/emailSender.server';
+// import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
 import { Freelancer } from '@mawaheb/db/types';
+
+// 🟢 library for password validation
+import zxcvbn from 'zxcvbn';
 
 export async function action({ request }: ActionFunctionArgs) {
   let newFreelancer: Freelancer | null = null;
@@ -17,6 +24,57 @@ export async function action({ request }: ActionFunctionArgs) {
     const email = formData.get('email');
     const firstName = formData.get('firstName');
     const lastName = formData.get('lastName');
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    const fieldErrors: Record<string, string> = {};
+    if (!email) fieldErrors.email = 'Email Address is required';
+    if (!firstName) fieldErrors.firstName = 'First Name is required';
+    if (!lastName) fieldErrors.lastName = 'Last Name is required';
+    if (!password) fieldErrors.password = 'Password is required';
+    if (!confirmPassword) fieldErrors.confirmPassword = 'Password confirmation is required';
+
+    // Password confirmation validation
+    if (password && confirmPassword && password !== confirmPassword) {
+      fieldErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (Object.keys(fieldErrors).length) {
+      return Response.json({ success: false, error: { fieldErrors } }, { status: 400 });
+    }
+
+    // 🟢 zxcvbn password strength validation
+    const pwdResult = zxcvbn(password);
+    // Accept only if score is 3 or above (good/strong)
+    if (pwdResult.score < 3) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            message: 'Password is too weak.',
+            fieldErrors: {
+              password:
+                (pwdResult.feedback.suggestions && pwdResult.feedback.suggestions.join(' ')) ||
+                'Password is too weak. Try adding numbers, symbols, or making it longer.',
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // 🟢 (Optional, but recommended): minimum length check
+    if (password.length < 8) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            fieldErrors: { password: 'Password must be at least 8 characters.' },
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     // Backend validation for terms acceptance
     if (!termsAccepted || termsAccepted !== 'on') {
@@ -31,8 +89,14 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
+    // 1. Register user and get their ID
     const userId = await authenticator.authenticate('register', request);
 
+    // 2. Set isVerified = true directly in the DB (NO email verification)
+    await setUserVerified(userId);
+
+    // 3. Commented out: fetch profile and send verification mail
+    /*
     newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
 
     if (!newFreelancer) {
@@ -59,6 +123,14 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     return Response.json({ success: true, newFreelancer });
+    */
+
+    // 4. Return success response instead of immediate redirect
+    return Response.json({
+      success: true,
+      message: 'Account created successfully! You will be redirected to the login page.',
+      redirectTo: '/login-freelancer',
+    });
   } catch (error) {
     if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(

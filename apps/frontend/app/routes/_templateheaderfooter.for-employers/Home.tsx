@@ -5,10 +5,9 @@ import HowItWorks from './howitworks/HowItWorks';
 import FAQ from './FAQ';
 import ContactUs from './ContactUs';
 import '../../styles/wavy/wavy.css';
-import Segments from './Segments';
-import Languages from './Languages';
 import BlogCardsList from './BlogCard';
 import WhyWorkWithUs from './WhyWorkWithUs';
+import SegmentsLanguagesZoomingText from './SegmentsLanguagesZoomingText';
 
 // To know more, press crtl + click on component you what to know about
 
@@ -24,8 +23,9 @@ export default function Home() {
         <HowItWorks />
         {/* this is the How it works section, that has 4 steps first, and the big header, besides the list of the coding languages, and ends by the what they say about us section that has  */}
         {/* Here, there should be a Header component that carries (SEGMENTS THAT WE ARE HAPPY OF WORK), and a List component let's say that carries the list of the coding languages, and ends with a Testimonials component by the what they say about us section that has */}
-        <Segments />
-        <Languages />
+        {/* <Segments />
+        <Languages /> */}
+        <SegmentsLanguagesZoomingText />
         <WhyWorkWithUs />
         {/* this is a MainHeading that has a props inside it 💖, and it represents the (WHY WORK WITH US) section */}
         {/* i moved the MainHeading to the WhyWorkWithUs.tsx file ❤️ */}
