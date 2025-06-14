@@ -36,8 +36,27 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const targetUpdated = formData.get('target-updated');
 
+  // Log everything coming in
+  console.log('🎯 [ACTION] Incoming target-updated:', targetUpdated);
+
+  // Log all FormData entries (works in Node with for...of!)
+  for (const [key, value] of formData.entries()) {
+    // If it's a file, show some details
+    if (value instanceof File) {
+      console.log(`📦 [ACTION] FILE key: ${key}`, {
+        name: value.name,
+        size: value.size,
+        type: value.type,
+      });
+    } else {
+      console.log(`📝 [ACTION] FIELD key: ${key} value:`, value);
+    }
+  }
+
   // Get the full user account info to determine account type
   const userAccount = await getCurrentUserAccountInfo(request);
+  console.log('🔍 [ACTION] userAccount:', userAccount);
+
   if (!userAccount) {
     return Response.json({
       success: false,
@@ -48,6 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (userAccount.accountType === 'freelancer') {
     const profile = (await getCurrentProfileInfo(request)) as Freelancer;
+    console.log('👤 [ACTION] Freelancer profile:', profile);
     if (!profile) {
       return Response.json({
         success: false,
@@ -56,9 +76,11 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
     const response = await handleFreelancerOnboardingAction(formData, profile);
+    console.log('✅ [ACTION] Response from handleFreelancerOnboardingAction:', response);
     return response;
   } else if (userAccount.accountType === 'employer') {
     const profile = (await getCurrentProfileInfo(request)) as Employer;
+    console.log('👤 [ACTION] Employer profile:', profile);
     if (!profile) {
       return Response.json({
         success: false,
@@ -67,7 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
     const response = await handleEmployerOnboardingAction(formData, profile);
-
+    console.log('✅ [ACTION] Response from handleEmployerOnboardingAction:', response);
     return response;
   }
 
@@ -80,9 +102,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Get the account type and profile info
   const accountType = await getCurrentUserAccountType(request);
-  let profile = await getCurrentProfileInfo(request);
+  // console.log('🚀 Loader: Account Type', accountType);
 
+  let profile = await getCurrentProfileInfo(request);
   if (!profile) {
+    // console.log('❌ Profile not found!');
     return Response.json({
       success: false,
       error: { message: 'Profile information not found.' },
@@ -189,7 +213,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const initialSkills = await fetchSkills(true, 10);
     const freelancerSkills = await fetchFreelancerSkills(profile.id);
 
-    return Response.json({
+    // Log **raw** profile, **parsed** portfolio, and processedPortfolio
+    // console.log('🖼️ Raw portfolio:', profile.portfolio);
+    // console.log('🖼️ Processed portfolio:', processedPortfolio);
+
+    // Log the final output object
+    const responseData = {
       accountType,
       bioInfo,
       currentProfile: profile,
@@ -207,7 +236,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       allLanguages,
       initialSkills,
       freelancerSkills,
-    });
+    };
+
+    return Response.json(responseData);
   }
 
   return Response.json({

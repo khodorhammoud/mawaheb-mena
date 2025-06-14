@@ -29,6 +29,7 @@ import PortfolioComponent from './formFields/repeatables/PortfolioComponent';
 import EducationComponent from './formFields/repeatables/EducationComponent';
 import CertificateComponent from './formFields/repeatables/CertificateComponent';
 import WorkHistoryComponent from './formFields/repeatables/WorkHistory';
+import { Files } from 'lucide-react';
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<OnboardingEmployerFields | OnboardingFreelancerFields>();
@@ -166,7 +167,10 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     });
   };
 
-  const handleFileChange = (index: number, file: File) => {
+  const handleFileChange = (index: number, files: File[] | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0]; // Always use the first file
+
     const updatedInputFiles = [...repeatableInputFiles];
     updatedInputFiles[index] = file;
     setRepeatableInputFiles(updatedInputFiles);
@@ -482,7 +486,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                             <PortfolioComponent
                               data={dataItem}
                               onTextChange={updatedData => handleDataChange(index, updatedData)}
-                              onFileChange={file => handleFileChange(index, file)}
+                              onFileChange={files => handleFileChange(index, files)}
                             />
                           ) : // WORK HISTORYSECTION
                           props.repeatableFieldName === 'workHistory' ? (
@@ -495,7 +499,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                             <CertificateComponent
                               data={dataItem}
                               onTextChange={updatedData => handleDataChange(index, updatedData)}
-                              onFileChange={file => handleFileChange(index, file)}
+                              onFileChange={files => handleFileChange(index, files)}
                             />
                           ) : // EDUCATION
                           props.repeatableFieldName === 'educations' ? (
