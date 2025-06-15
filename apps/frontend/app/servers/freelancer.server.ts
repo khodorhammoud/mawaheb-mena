@@ -204,7 +204,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const workHistory = formData.get('workHistory') as string;
     let workHistoryParsed: WorkHistoryFormFieldType[];
     try {
-      workHistoryParsed = JSON.parse(workHistory) as WorkHistoryFormFieldType[];
+      workHistoryParsed = JSON.parse(workHistory);
     } catch (error) {
       return Response.json({
         success: false,
