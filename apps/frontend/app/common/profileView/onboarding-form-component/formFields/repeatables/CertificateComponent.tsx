@@ -3,6 +3,7 @@ import AppFormField from '~/common/form-fields';
 import FileUpload from '~/common/upload/fileUpload';
 import { useRef, useState } from 'react';
 import { IoPencilSharp } from 'react-icons/io5';
+import YearPickerField from '~/common/form-fields/yearPickerField/YearPickerField';
 
 interface CertificateComponentProps {
   data: CertificateFormFieldType;
@@ -137,15 +138,11 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           onChange={e => onTextChange({ ...data, issuedBy: e.target.value })}
         />
 
-        <AppFormField
-          type="number"
+        <YearPickerField
           id="yearIssued[]"
-          name="yearIssued[]"
-          placeholder="Year Issued"
           label="Year Issued"
-          defaultValue={data.yearIssued ? data.yearIssued.toString() : ''}
-          onChange={e => onTextChange({ ...data, yearIssued: parseInt(e.target.value) || 0 })}
-          className="md:w-[50%]"
+          year={data.yearIssued}
+          onYearChange={year => onTextChange({ ...data, yearIssued: year })}
         />
       </div>
     </div>
