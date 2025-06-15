@@ -1,5 +1,6 @@
 import { EducationFormFieldType } from '@mawaheb/db/types';
 import AppFormField from '~/common/form-fields';
+import YearDropdownField from '~/common/form-fields/yearPickerField/YearPickerField';
 
 interface EducationComponentProps {
   data: EducationFormFieldType;
@@ -28,15 +29,11 @@ function EducationComponent({ data, onTextChange }: EducationComponentProps) {
         defaultValue={data.institution}
         onChange={e => onTextChange({ ...data, institution: e.target.value })}
       />
-      <AppFormField
-        type="number"
-        name="graduationYear[]"
+      <YearDropdownField
         id="graduationYear[]"
-        placeholder="Graduation Year"
         label="Graduation Year"
-        defaultValue={data.graduationYear ? data.graduationYear.toString() : ''}
-        onChange={e => onTextChange({ ...data, graduationYear: parseInt(e.target.value) })}
-        className="md:w-[50%]"
+        year={data.graduationYear}
+        onYearChange={year => onTextChange({ ...data, graduationYear: year })}
       />
     </div>
   );
