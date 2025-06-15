@@ -18,6 +18,14 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
     onTextChange({ ...data, jobDescription: content });
   };
 
+  const handleCheckboxChange = (value: boolean) => {
+    const newData = { ...data, currentlyWorkingThere: value };
+    if (value) {
+      newData.endDate = undefined; // 🔥 clear endDate if currently working
+    }
+    onTextChange(newData);
+  };
+
   return (
     <div className="p-1">
       {/* Forms */}
@@ -50,8 +58,9 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
         <Checkbox
           id="currentlyWorkingThere"
           checked={data.currentlyWorkingThere}
-          onCheckedChange={(e: boolean) => onTextChange({ ...data, currentlyWorkingThere: e })}
+          onCheckedChange={handleCheckboxChange}
         />
+
         <label htmlFor="currentlyWorkingThere" className="text-gray-600">
           I currently work here
         </label>
@@ -84,10 +93,11 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={'outline'}
+              disabled={data.currentlyWorkingThere} // ⛔ block interaction
+              variant="outline"
               className={`w-1/2 border-gray-300 rounded-md text-left font-normal ${
                 !data.endDate ? 'text-muted-foreground' : ''
-              }`}
+              } ${data.currentlyWorkingThere ? 'opacity-50 cursor-not-allowed' : ''}`} // ⚠️ visual feedback
             >
               {data.endDate ? format(data.endDate, 'PPP') : <span>End Date</span>}
             </Button>
@@ -96,7 +106,11 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
             <Calendar
               mode="single"
               selected={data.endDate}
-              onSelect={e => onTextChange({ ...data, endDate: e })}
+              onSelect={e => {
+                if (!data.currentlyWorkingThere) {
+                  onTextChange({ ...data, endDate: e });
+                }
+              }}
               initialFocus
             />
           </PopoverContent>
