@@ -200,7 +200,7 @@ const AppFormField = forwardRef<
                 className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
                 autoComplete="on"
                 spellCheck="false"
-                value={value ?? ''}
+                defaultValue={defaultValue ?? ''}
                 onChange={onChange}
                 ref={ref as React.Ref<HTMLInputElement>}
               />
