@@ -97,6 +97,8 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
         style={{
           width: `${popoverWidth}px`,
           zIndex: 1000,
+          maxHeight: '400px', // 👈 control height here
+          overflowY: 'auto', // 👈 make it scrollable vertically
         }}
         className="p-8 bg-white shadow-xl rounded-xl"
       >
