@@ -74,7 +74,7 @@ export async function getFreelancerAccounts(): Promise<Account[]> {
     id: row.id,
     account: {
       user: row.user,
-      accountStatus: row.account.accountStatus as AccountStatus,
+      accountStatus: row.account?.accountStatus as AccountStatus,
     },
   }));
 }
@@ -102,7 +102,7 @@ export async function getEmployerAccounts(): Promise<Account[]> {
     id: row.id,
     account: {
       user: row.user,
-      accountStatus: row.account.accountStatus as AccountStatus,
+      accountStatus: row.account?.accountStatus as AccountStatus,
     },
   }));
 }
