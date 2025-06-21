@@ -31,12 +31,23 @@ import {
 import { getAttachmentSignedURL } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
 
+// Util to safely parse array data
+function safeParseArray(data: any): any[] {
+  try {
+    return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
+  } catch {
+    return [];
+  }
+}
+
 // --- ACTION: handles both employer & freelancer onboarding saves ---
 export async function action({ request }: ActionFunctionArgs) {
   await requireUserVerified(request);
   const formData = await request.formData();
 
   const userAccount = await getCurrentUserAccountInfo(request);
+  console.log('🔍 [ACTION] userAccount:', userAccount);
+
   if (!userAccount) {
     return Response.json({
       success: false,
@@ -54,10 +65,9 @@ export async function action({ request }: ActionFunctionArgs) {
         status: 404,
       });
     }
-    return handleFreelancerOnboardingAction(formData, profile);
-  }
-
-  if (userAccount.accountType === 'employer') {
+    const response = await handleFreelancerOnboardingAction(formData, profile);
+    return response;
+  } else if (userAccount.accountType === 'employer') {
     const profile = (await getCurrentProfileInfo(request)) as Employer;
     if (!profile) {
       return Response.json({
@@ -66,24 +76,20 @@ export async function action({ request }: ActionFunctionArgs) {
         status: 404,
       });
     }
-    return handleEmployerOnboardingAction(formData, profile);
+    const response = await handleEmployerOnboardingAction(formData, profile);
+    return response;
   }
 
-  return Response.json({
-    success: false,
-    error: { message: 'Unknown account type.' },
-    status: 400,
-  });
+  return null;
 }
 
-// --- LOADER: fetches all required onboarding data for employer or freelancer ---
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserVerified(request);
-
   const accountType = await getCurrentUserAccountType(request);
   let profile = await getCurrentProfileInfo(request);
 
   if (!profile) {
+    // console.log('❌ [DEBUG] No profile found!');
     return Response.json({
       success: false,
       error: { message: 'Profile information not found.' },
@@ -91,16 +97,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  // If already onboarded, redirect as appropriate
+  // Onboarded user: redirect away
   if (profile.account?.user?.isOnboarded) {
     if (profile.account?.accountStatus === 'published') {
+      // console.log('🔀 [DEBUG] Redirect: Already onboarded, published → /dashboard');
       return redirect('/dashboard');
+    } else {
+      // console.log('🔀 [DEBUG] Redirect: Already onboarded, not published → /identification');
+      return redirect('/identification');
     }
-    return redirect('/identification');
   }
 
   if (accountType === AccountType.Employer) {
     profile = profile as Employer;
+    // No need to debug employer image issues for now
     const bioInfo = await getAccountBio(profile.account);
     const employerIndustriesRaw = await getEmployerIndustries(profile);
     const employerIndustries = employerIndustriesRaw.map(i => ({
@@ -146,34 +156,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
 
-    // Portfolio and certificates: resolve file URLs
-    const portfolio = Array.isArray(profile.portfolio)
-      ? profile.portfolio
-      : JSON.parse(profile.portfolio || '[]');
-    const processedPortfolio = await Promise.all(
-      portfolio.map(async item => {
-        if (item.projectImageName) {
-          item.projectImageUrl = await getAttachmentSignedURL(item.projectImageName);
-        }
-        return item;
-      })
-    );
-    const certificates = Array.isArray(profile.certificates)
-      ? profile.certificates
-      : JSON.parse(profile.certificates || '[]');
-    const processedCertificates = await Promise.all(
-      certificates.map(async item => {
-        if (item.attachmentName) {
-          item.attachmentUrl = await getAttachmentSignedURL(item.attachmentName);
-        }
-        return item;
-      })
-    );
+    // Focused image/cert log
+    // Safely parse portfolio and other arrays
+    const processedProfile = {
+      profile,
+      portfolio: safeParseArray(profile.portfolio),
+      workHistory: safeParseArray(profile.workHistory),
+      certificates: safeParseArray(profile.certificates),
+      educations: safeParseArray(profile.educations),
+    };
 
     const educations = profile.educations;
     const workHistory = profile.workHistory;
-
-    // Languages, skills, etc.
     const freelancerLanguages = await getFreelancerLanguages(profile.id);
     const allLanguages = await getAllLanguages();
     const freelancerAvailability = await getFreelancerAvailability(profile.accountId);
@@ -189,6 +183,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const initialSkills = await fetchSkills(true, 10);
     const freelancerSkills = await fetchFreelancerSkills(profile.id);
 
+    // Show summary
+    // console.log('🟩 [DEBUG] Loader response keys:', {
+    //   portfolioCount: processedPortfolio.length,
+    //   certificatesCount: processedCertificates.length,
+    //   portfolioSample: processedPortfolio.slice(0, 1),
+    // });
+
     return Response.json({
       accountType,
       bioInfo,
@@ -198,8 +199,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      portfolio: JSON.stringify(processedPortfolio),
-      certificates: JSON.stringify(processedCertificates),
+      portfolio: profile.portfolio,
+      certificates: profile.certificates,
       educations,
       workHistory,
       freelancerAvailability: availabilityData,
@@ -210,6 +211,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
+  // console.log('❌ [DEBUG] Account type not found!');
   return Response.json({
     success: false,
     error: { message: 'Account type not found.' },
