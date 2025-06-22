@@ -36,7 +36,7 @@ export function ComboBox({ options, value, onChange, placeholder, className }: C
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [popoverWidth, setPopoverWidth] = React.useState<number>();
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     if (triggerRef.current) {
       setPopoverWidth(triggerRef.current.offsetWidth);
     }

@@ -7,11 +7,13 @@ import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import ReadMore from '~/common/ReadMore';
 
 interface JobProps {
-  job: JobType & { applicationStatus?: string }; // ✅ Add applicationStatus
+  job: JobType & { applicationStatus?: string };
   onSelect: (job: JobType) => void;
+  isSuggested?: boolean;
+  scrollSheetTop?: () => void;
 }
 
-export default function JobCard({ job, onSelect }: JobProps) {
+export default function JobCard({ job, onSelect, isSuggested = false, scrollSheetTop }: JobProps) {
   const fetcher = useFetcher<{
     jobSkills: { id: number; name: string; isStarred: boolean }[];
   }>();
@@ -26,6 +28,14 @@ export default function JobCard({ job, onSelect }: JobProps) {
       setSkills(fetcher.data.jobSkills);
     }
   }, [fetcher.data]);
+
+  //  to go to the top when clicking on the interested of a JobCard fetched as suggestions
+  function handleClick() {
+    if (isSuggested && scrollSheetTop) {
+      scrollSheetTop();
+    }
+    onSelect(job);
+  }
 
   return (
     <div className="lg:grid xl:p-6 p-4 bg-white border rounded-xl shadow-xl gap-4 mb-10">
@@ -66,10 +76,9 @@ export default function JobCard({ job, onSelect }: JobProps) {
         </div>
       </div>
 
-      {/* ✅ Change Button Text if Job is Applied */}
       <Button
         className="border border-gray-300 text-primaryColor bg-white rounded-[10px] md:text-base text-sm xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white hover:bg-primaryColor not-active-gradient mt-4 self-end"
-        onClick={() => onSelect(job)}
+        onClick={handleClick}
       >
         {job.applicationStatus ? 'Read more' : 'Interested'}
       </Button>
