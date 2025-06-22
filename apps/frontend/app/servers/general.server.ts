@@ -50,20 +50,19 @@ export async function fetchSkillsSearch(searchTerm: string, limit: number = 10) 
 
 // fetch industries that match metadata search term or title search term
 export async function fetchIndustriesSearch(searchTerm: string, limit: number = 10) {
+  // console.log('🔍 [fetchIndustriesSearch] Called with searchTerm:', searchTerm);
+
   try {
     const industries = await db
-      .select()
+      .select({ id: industriesTable.id, name: industriesTable.label })
       .from(industriesTable)
-      .where(
-        or(
-          ilike(industriesTable.metadata, `%${searchTerm}%`),
-          ilike(industriesTable.label, `%${searchTerm}%`)
-        )
-      )
+      .where(ilike(industriesTable.label, `%${searchTerm}%`))
       .limit(limit);
+
+    // console.log('✅ [fetchIndustriesSearch] Found industries:', industries.length);
     return industries;
   } catch (error) {
-    console.error(error);
+    console.error('❌ [fetchIndustriesSearch] Error:', error);
     return [];
   }
 }
