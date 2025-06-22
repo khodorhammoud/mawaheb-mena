@@ -38,6 +38,19 @@ export default function SingleJobView({
   // Only fetcher for review
   const reviewFetcher = useFetcher<{ success?: boolean; message?: string }>();
   const interestFetcher = useFetcher<{ success?: boolean; error?: string }>();
+  const fetcher = useFetcher<{
+    jobs: Job[];
+    success?: boolean;
+    error?: { message: string };
+  }>();
+
+  const relatedJobs = Array.isArray(fetcher.data?.jobs)
+    ? fetcher.data.jobs.map(job => ({
+        ...job,
+        createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+        fulfilledAt: job.fulfilledAt ? new Date(job.fulfilledAt) : null,
+      }))
+    : [];
 
   const requiredSkills = jobSkills.map(skill => ({
     name: skill.name,
