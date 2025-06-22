@@ -40,8 +40,11 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
   }, [profile.languages]);
 
   useEffect(() => {
-    if (languageFetcher.data?.success || languageFetcher.data?.error) {
-      setShowLanguageMessage(true);
+    if (languageFetcher.data?.success) {
+      setLanguagesServedOpen(false); // CLOSE dialog on success
+      setShowLanguageMessage(false); // Optionally reset error/message
+    } else if (languageFetcher.data?.error) {
+      setShowLanguageMessage(true); // Show error message only if error
     }
   }, [languageFetcher.data]);
 
@@ -69,7 +72,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
   const maxVisibleLanguages = 2;
   const extraLanguages = selectedLanguages.length - maxVisibleLanguages;
   const visibleLanguages = selectedLanguages.slice(0, maxVisibleLanguages);
-  const hiddenLanguages = selectedLanguages.slice(maxVisibleLanguages);
+  // const hiddenLanguages = selectedLanguages.slice(maxVisibleLanguages);
 
   // console.log("Received profile.languages:", profile.languages);
 
@@ -113,6 +116,24 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                   fieldName="freelancer-languages"
                   searchPlaceholder="Search or type language"
                 />
+              </div>
+
+              <div className="border-t border-gray-300 my-6 ml-2 mr-6"></div>
+              <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">Choosed Languages:</p>
+
+              <div className="flex flex-wrap items-start gap-2 w-full">
+                {selectedLanguages.length > 0 ? (
+                  selectedLanguages.map(language => (
+                    <Badge
+                      key={language.id}
+                      className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center gap-2"
+                    >
+                      {language.language}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm italic">No languages added</span>
+                )}
               </div>
 
               <DialogFooter className="mt-6">
@@ -160,7 +181,7 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
                   </DialogHeader>
 
                   <div className="flex flex-wrap items-start gap-2 mt-4">
-                    {hiddenLanguages.map(language => (
+                    {selectedLanguages.map(language => (
                       <Badge
                         key={language.id}
                         className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center w-fit"

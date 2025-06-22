@@ -91,8 +91,11 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
   }, [selectedSkills]);
 
   useEffect(() => {
-    if (skillsFetcher.data?.success || skillsFetcher.data?.error) {
-      setShowMessage(true);
+    if (skillsFetcher.data?.success) {
+      setSkillsDialogOpen(false); // CLOSE dialog on success
+      setShowMessage(false); // Optionally reset message
+    } else if (skillsFetcher.data?.error) {
+      setShowMessage(true); // Show error if present
     }
   }, [skillsFetcher.data]);
 
@@ -224,10 +227,11 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 </div>
 
                 <div className="border-t border-gray-300 my-6 ml-2 mr-6"></div>
+                <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">Choosed Skills:</p>
 
-                <div className="space-y-4">
+                <div className="flex flex-wrap gap-y-4 gap-x-4">
                   {freelancerSkills.map(skill => (
-                    <div key={skill.skillId} className="flex flex-col gap-2">
+                    <div key={skill.skillId} className="flex gap-2 items-center">
                       <div className="relative inline-block group">
                         <Badge
                           className={`cursor-pointer xl:px-4 px-3 xl:py-2 py-1 max-w-fit ${
@@ -247,7 +251,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                         <div className="flex items-center gap-2 w-fit border border-gray-300 rounded">
                           <button
                             type="button"
-                            className="p-2 px-4 rounded hover:bg-gray-100"
+                            className="p-1 px-3 rounded hover:bg-gray-100"
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
@@ -257,10 +261,10 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                           >
                             -
                           </button>
-                          <div className="text-sm">{skill.yearsOfExperience}</div>
+                          <div className="text-xs">{skill.yearsOfExperience}</div>
                           <button
                             type="button"
-                            className="p-2 px-4 rounded hover:bg-gray-100"
+                            className="p-1 px-3 rounded hover:bg-gray-100"
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
@@ -300,6 +304,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 >
                   {skill.isStarred && <FaStar className="text-yellow-500" />}
                   {skill.label}
+                  <span className="text-black font-semibold">({skill.yearsOfExperience})</span>
                 </Badge>
               ))}
 
@@ -319,13 +324,16 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                     </DialogHeader>
 
                     <div className="flex flex-wrap items-start gap-2 mt-4">
-                      {freelancerSkills.slice(2).map(skill => (
+                      {freelancerSkills.map(skill => (
                         <Badge
                           key={skill.skillId}
                           className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center gap-2"
                         >
                           {skill.isStarred && <FaStar className="text-yellow-500" />}
                           {skill.label}
+                          <span className="text-black font-semibold">
+                            ({skill.yearsOfExperience})
+                          </span>
                         </Badge>
                       ))}
                     </div>
