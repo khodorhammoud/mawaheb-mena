@@ -3,7 +3,7 @@ import { RepeatableInputType } from '../types';
 import type { FieldTemplateState, FormStateType } from '../types';
 import { IoBriefcaseSharp } from 'react-icons/io5';
 import { RiAwardFill } from 'react-icons/ri';
-import { FaTimes, FaGraduationCap } from 'react-icons/fa';
+import { FaTimes, FaGraduationCap, FaArrowRight } from 'react-icons/fa';
 import { parseHtmlContent } from '~/utils/api-helpers';
 
 interface FieldTemplateProps {
@@ -226,16 +226,17 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                 })()}
               </div>
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                <h1 className="xl:text-xl lg:text-lg text-base mb-4">
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex">
                   {item.projectName || 'Unnamed Project'}
                   {item.projectLink && (
                     <a
                       href={item.projectLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 underline"
+                      className="inline-flex items-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition"
                     >
                       View Project
+                      <FaArrowRight className="w-2 h-3 mt-[1px] group-hover:translate-x-1 transition-transform" />
                     </a>
                   )}
                 </h1>

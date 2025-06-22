@@ -15,9 +15,26 @@ export default function FreelancerOnboardingScreen() {
     useLoaderData<FreelancerOnboardingData>();
   const fetcher = useFetcher();
 
+  // Add this helper
+  const safeParseArray = (data: any): any[] => {
+    try {
+      return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
+    } catch {
+      return [];
+    }
+  };
+
+  const normalizedProfile = {
+    ...currentProfile,
+    portfolio: safeParseArray(currentProfile.portfolio),
+    workHistory: safeParseArray(currentProfile.workHistory),
+    certificates: safeParseArray(currentProfile.certificates),
+    educations: safeParseArray(currentProfile.educations),
+  };
+
   // Create a profile object that matches what the Heading component expects
   const profileWithSkillsAndLanguages = {
-    ...currentProfile,
+    ...normalizedProfile,
     skills:
       freelancerSkills?.map(skill => ({
         skillId: skill.skillId,
@@ -27,6 +44,8 @@ export default function FreelancerOnboardingScreen() {
       })) || [],
     languages: freelancerLanguages || [],
   };
+
+  // console.log('🔥 Portfolio Data in GeneralizableFormCard:', normalizedProfile.portfolio);
 
   return (
     <div className="container mx-auto px-4">

@@ -33,6 +33,7 @@ import { saveAttachment, deleteAttachmentById } from '~/servers/attachment.serve
 
 export async function handleEmployerOnboardingAction(formData: FormData, employer: Employer) {
   const target = formData.get('target-updated') as string;
+
   const userId = employer.account.user.id;
 
   async function handleEmployerAbout(formData: FormData, employer: Employer) {
@@ -62,10 +63,46 @@ export async function handleEmployerOnboardingAction(formData: FormData, employe
   }
 
   async function handleEmployerIndustries(formData: FormData, employer: Employer) {
-    const industries = formData.get('employer-industries') as string;
-    const industriesIds = industries.split(',').map(industry => parseInt(industry));
-    const industriesStatus = await updateEmployerIndustries(employer, industriesIds);
-    return Response.json({ success: industriesStatus.success });
+    let industryIds: number[] = [];
+
+    try {
+      const raw = formData.get('employer-industries');
+
+      if (raw) {
+        // Case 1: If it's a stringified array -> parse
+        if (typeof raw === 'string' && raw.trim().startsWith('[')) {
+          const parsed = JSON.parse(raw);
+          industryIds = parsed.map((item: any) => parseInt(item.id)).filter(Boolean);
+        }
+
+        // Case 2: If it's a comma-separated list
+        else if (typeof raw === 'string') {
+          industryIds = raw
+            .split(',')
+            .map(str => parseInt(str))
+            .filter(Boolean);
+        }
+
+        // Case 3: If it's already a FormData array (multiple keys)
+        else if (Array.isArray(raw)) {
+          industryIds = raw.map((id: any) => parseInt(id)).filter(Boolean);
+        }
+      }
+
+      if (industryIds.length === 0) {
+        return Response.json({ error: 'No valid industry IDs.' }, { status: 400 });
+      }
+
+      // console.log('🎯 Saving industries with IDs:', industryIds);
+      const industriesStatus = await updateEmployerIndustries(employer, industryIds);
+      return Response.json({ success: industriesStatus.success });
+    } catch (err) {
+      console.error('❌ Failed to handle employer industries:', err);
+      return Response.json(
+        { error: 'Invalid industries format or empty values.' },
+        { status: 400 }
+      );
+    }
   }
 
   async function handleEmployerYearsInBusiness(formData: FormData, employer: Employer) {
@@ -110,6 +147,7 @@ export async function handleEmployerOnboardingAction(formData: FormData, employe
       return handleEmployerBio(formData, userId, employer);
     case 'employer-industries':
       return handleEmployerIndustries(formData, employer);
+
     case 'employer-years-in-business':
       return handleEmployerYearsInBusiness(formData, employer);
     case 'employer-budget':
@@ -167,32 +205,24 @@ export async function updateAccountBio(
   return { success: true };
 }
 
-export async function updateEmployerIndustries(
-  employer: Employer,
-  industries: number[]
-): Promise<SuccessVerificationLoaderStatus> {
-  const employerId = employer.id;
+export async function updateEmployerIndustries(employer: Employer, industryIds: number[]) {
   try {
-    // delete all existing employer industries
     await db
       .delete(employerIndustriesTable)
-      .where(eq(employerIndustriesTable.employerId, employerId));
+      .where(eq(employerIndustriesTable.employerId, employer.id));
 
-    // make sure industries are unique
-    industries = [...new Set(industries)];
+    await db.insert(employerIndustriesTable).values(
+      industryIds.map(industryId => ({
+        employerId: employer.id,
+        industryId,
+      }))
+    );
 
-    // insert new industries
-    for (const industry of industries) {
-      await db.insert(employerIndustriesTable).values({
-        employerId,
-        industryId: industry,
-      });
-    }
-  } catch (error) {
-    console.error('Error updating employer industries', error);
-    throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('❌ Failed to update employer industries:', err);
+    return { success: false };
   }
-  return { success: true };
 }
 
 export async function updateEmployerYearsInBusiness(
@@ -346,27 +376,20 @@ export async function getAllIndustries(): Promise<Industry[]> {
   }
 }
 
-export const getEmployerIndustries = async (employer: Employer): Promise<Industry[]> => {
-  const employerId = employer.id;
-  try {
-    const industries = await db
-      .select({
-        id: industriesTable.id,
-        label: industriesTable.label,
-        metadata: industriesTable.metadata,
-      })
-      .from(industriesTable)
-      .leftJoin(employerIndustriesTable, eq(employerIndustriesTable.industryId, industriesTable.id))
-      .where(eq(employerIndustriesTable.employerId, employerId));
-    if (!industries) {
-      throw new Error('Failed to get employer industries');
-    }
-    return industries;
-  } catch (error) {
-    console.error('Error getting employer industries', error);
-    throw error;
-  }
-};
+export async function getEmployerIndustries(employer: Employer) {
+  const industries = await db
+    .select({
+      id: industriesTable.id,
+      label: industriesTable.label,
+      metadata: industriesTable.metadata,
+    })
+    .from(industriesTable)
+    .innerJoin(employerIndustriesTable, eq(industriesTable.id, employerIndustriesTable.industryId))
+    .where(eq(employerIndustriesTable.employerId, employer.id));
+
+  // console.log('📥 getEmployerIndustries ->', industries); // 👈 ADD THIS
+  return industries;
+}
 
 export async function getEmployerYearsInBusiness(employer: Employer): Promise<number> {
   const accountId = employer.accountId;

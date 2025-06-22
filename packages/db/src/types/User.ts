@@ -87,6 +87,7 @@ export type Employer = {
   socialMediaLinks?: AccountSocialMediaLinks;
   account?: UserAccount;
   isOnboarded: boolean; // this is used in the loader :)
+  industries?: { id: number; name: string }[]; // <-- ADD THIS LINE
 };
 
 export type Freelancer = {
