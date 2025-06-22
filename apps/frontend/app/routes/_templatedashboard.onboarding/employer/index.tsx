@@ -9,7 +9,10 @@ import { EmployerOnboardingData } from '../types';
 
 export default function EmployerOnboardingScreen() {
   // Use loader data to retrieve the user information
-  const { currentProfile } = useLoaderData<{ currentProfile: Employer }>();
+  const { currentProfile, employerIndustries } = useLoaderData<{
+    currentProfile: Employer;
+    employerIndustries: { id: number; name: string }[];
+  }>();
 
   type ActionData = {
     error?: { message: string };
