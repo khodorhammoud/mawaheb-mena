@@ -20,6 +20,7 @@ interface AppFormFieldProps {
   onBlur?: () => void;
   min?: number;
   error?: string; // ✅ Added error support
+  maxLength?: number;
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -44,11 +45,14 @@ const AppFormField = forwardRef<
       onBlur,
       min,
       error,
+      maxLength,
     },
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
     const [selectedValue, setSelectedValue] = useState(value !== undefined ? value : defaultValue);
+
+    const [country, setCountry] = useState(defaultValue);
 
     useEffect(() => {
       if (value !== undefined) {
@@ -189,6 +193,7 @@ const AppFormField = forwardRef<
                 spellCheck="false"
                 defaultValue={defaultValue}
                 onChange={onChange}
+                maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
               ></textarea>
             ) : (
@@ -200,8 +205,20 @@ const AppFormField = forwardRef<
                 className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
                 autoComplete="on"
                 spellCheck="false"
+                {...(value !== undefined
+                  ? { value: selectedValue }
+                  : { defaultValue: selectedValue })}
+                onChange={e => {
+                  const newValue = e.target.value;
+                  if (value === undefined) {
+                    setSelectedValue(newValue);
+                  }
+                  if (onChange) {
+                    onChange(e);
+                  }
+                }}
                 defaultValue={defaultValue ?? ''}
-                onChange={onChange}
+                maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
               />
             )}

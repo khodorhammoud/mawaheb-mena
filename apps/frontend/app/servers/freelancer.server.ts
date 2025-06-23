@@ -31,6 +31,7 @@ import {
   // generatePresignedUrl,
   // uploadFileToBucket,sd
   saveAttachments,
+  uploadFileToS3,
 } from './cloudStorage.server';
 import { FreelancerSkill } from '~/routes/_templatedashboard.onboarding/types';
 import { deleteAttachmentById } from '~/servers/attachment.server';
@@ -192,23 +193,33 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         throw new Error('Portfolio data is missing or invalid.');
       }
 
-      // Parse the portfolio JSON from the form
       const portfolioParsed = JSON.parse(portfolio) as PortfolioFormFieldType[];
+      const portfolioImages: (File | null)[] = [];
 
-      const portfolioImages: File[] = [];
-
-      // Iterate over the portfolio entries to gather files from the form data
+      // Loop and update each portfolio item
       for (let index = 0; index < portfolioParsed.length; index++) {
-        const portfolioImage = formData.get(`portfolio-attachment[${index}]`) as unknown as File;
+        const file = formData.get(`portfolio-attachment[${index}]`) as File | null;
 
-        if (portfolioImage && portfolioImage.size > 0) {
-          portfolioImages.push(portfolioImage);
-        } else {
-          portfolioImages.push(null); // No image for this portfolio entry
+        // If a file exists, upload it and set the public URL
+        if (file && file.size > 0) {
+          const s3Result = await uploadFile('portfolio', file); // { key, bucket, url }
+          // Set the S3 URL in the portfolio entry
+          portfolioParsed[index].projectImageUrl = s3Result.url; // <- THIS is the url you show in UI
+          portfolioParsed[index].projectImageName = s3Result.key; // optional, save S3 key for future
+          // You can store the attachmentId here too if you save it in DB
         }
+        // If image URL is a blob, clear it so only valid images remain
+        else if (
+          portfolioParsed[index].projectImageUrl &&
+          portfolioParsed[index].projectImageUrl.startsWith('blob:')
+        ) {
+          portfolioParsed[index].projectImageUrl = '';
+          portfolioParsed[index].projectImageName = '';
+        }
+        // If no file and no blob, just leave whatever's there (old S3 URL)
       }
 
-      // Update freelancer portfolio and process attachments
+      // Now save to DB (no blobs, only S3 URLs or empty string)
       const portfolioStatus = await updateFreelancerPortfolio(
         freelancer,
         portfolioParsed,
@@ -233,7 +244,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const workHistory = formData.get('workHistory') as string;
     let workHistoryParsed: WorkHistoryFormFieldType[];
     try {
-      workHistoryParsed = JSON.parse(workHistory) as WorkHistoryFormFieldType[];
+      workHistoryParsed = JSON.parse(workHistory);
     } catch (error) {
       return Response.json({
         success: false,
@@ -251,6 +262,10 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const certificates = formData.get('certificates') as string;
 
     try {
+      if (!certificates) {
+        throw new Error('Certificates data is missing or invalid.');
+      }
+
       const certificatesParsed = JSON.parse(certificates) as CertificateFormFieldType[];
       const certificatesImages: File[] = [];
       for (let index = 0; index < certificatesParsed.length; index++) {

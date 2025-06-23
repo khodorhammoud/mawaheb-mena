@@ -1,79 +1,100 @@
-// this is the code that is targeted using the fetcher inside all jobs
+// i used for the AllJobs tab these codes: Job.ts / job.server.ts / allJobs.tsx / this file :)
+// -- HOW IT ALL CONNECTS --
+// 1. User applies filters/search on the AllJobs tab UI (allJobs.tsx).
+// 2. allJobs.tsx sends filter/search params to the API loader (this file) using fetcher.submit.
+// 3. The loader parses these params, builds a JobFilter, and calls getAllJobs() in job.server.ts.
+// 4. getAllJobs() queries the database using the filter criteria and returns the filtered job data.
+// 5. The loader returns these jobs as JSON to allJobs.tsx, which renders the job cards.
+// 6. All types are shared and enforced via Job.ts for safety and clarity.
 
 import { LoaderFunctionArgs } from '@remix-run/node';
-import { getAllJobs, getJobsFiltered } from '../servers/job.server';
+import { getAllJobs } from '../servers/job.server';
+import { requireUserIsFreelancerPublished } from '../auth/auth.server';
 import { JobFilter } from '@mawaheb/db/types';
-import { getCurrentProfileInfo } from '~/servers/user.server';
-import { json } from '@remix-run/node';
 
+// Loader function to handle fetching jobs with filtering and pagination
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getCurrentProfileInfo(request);
+  try {
+    // Ensure the user is an authenticated freelancer (and published)
+    const userId = await requireUserIsFreelancerPublished(request);
+    if (!userId) {
+      // User not authorized, return 401 response
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  // TODO: check user is published, and whether it's important for the user to be a freelancer or employer
+    // Parse query parameters from the request URL
+    const url = new URL(request.url);
 
-  // Parse the URL parameters
-  const url = new URL(request.url);
-  const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-  const offset = parseInt(url.searchParams.get('offset') || '0', 10);
-  const searchQuery = url.searchParams.get('searchQuery') || '';
+    // Parse pagination settings: limit (number of jobs), offset (start position)
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
 
-  // Check if we have any filters
-  const hasFilters =
-    url.searchParams.has('jobType') ||
-    url.searchParams.has('experienceLevel') ||
-    url.searchParams.has('locationPreference') ||
-    url.searchParams.has('employerId') ||
-    searchQuery.length > 0;
+    // Parse freelancer ID (if present, used for application status)
+    const freelancerId = url.searchParams.has('freelancerId')
+      ? parseInt(url.searchParams.get('freelancerId')!, 10)
+      : undefined;
 
-  let jobs;
-  let totalCount;
+    // Parse job filtering criteria from query params
+    const jobType = url.searchParams.getAll('jobType'); // array (frontend sends jobType)
+    const locationPreference = url.searchParams.getAll('locationPreference'); // array
+    const experienceLevel = url.searchParams.getAll('experienceLevel'); // array
 
-  if (hasFilters) {
-    // Parse filter parameters
-    const filter: JobFilter = {
-      page: Math.floor(offset / limit) + 1,
-      pageSize: limit,
-      query: searchQuery,
+    // Optional employer filter (show jobs from a specific employer)
+    const employerId = url.searchParams.has('employerId')
+      ? parseInt(url.searchParams.get('employerId')!, 10)
+      : undefined;
+
+    // Optional pagination via page/pageSize
+    const page = url.searchParams.has('page')
+      ? parseInt(url.searchParams.get('page')!, 10)
+      : undefined;
+    const pageSize = url.searchParams.has('pageSize')
+      ? parseInt(url.searchParams.get('pageSize')!, 10)
+      : undefined;
+
+    // Exclude job IDs already applied to (array of job IDs)
+    const jobIdsToExclude = url.searchParams.getAll('jobIdsToExclude').map(Number);
+
+    // Parse numeric filters (budget, working hours)
+    const budgetRaw = url.searchParams.get('budget');
+    const budget = budgetRaw ? parseInt(budgetRaw, 10) : undefined;
+
+    const workingHoursFromRaw = url.searchParams.get('workingHoursFrom');
+    const workingHoursFrom = workingHoursFromRaw ? parseInt(workingHoursFromRaw, 10) : undefined;
+
+    const workingHoursToRaw = url.searchParams.get('workingHoursTo');
+    const workingHoursTo = workingHoursToRaw ? parseInt(workingHoursToRaw, 10) : undefined;
+
+    // Map frontend 'searchQuery' param to backend 'query' (for text search)
+    const queryRaw = url.searchParams.get('searchQuery');
+    const query = queryRaw || undefined;
+
+    // Build the filters object, using only populated/defined filter values
+    const filters: JobFilter = {
+      projectType: jobType.length ? jobType : undefined, // jobType → projectType (backend expects 'projectType')
+      locationPreference: locationPreference.length ? locationPreference : undefined,
+      experienceLevel: experienceLevel.length ? experienceLevel : undefined,
+      employerId,
+      page,
+      pageSize,
+      jobIdsToExclude: jobIdsToExclude.length ? jobIdsToExclude : undefined,
+      query, // maps searchQuery to query
+      budget,
+      workingHoursFrom,
+      workingHoursTo,
     };
 
-    // Add job type filter if provided
-    if (url.searchParams.has('jobType') && url.searchParams.get('jobType')) {
-      filter.projectType = [url.searchParams.get('jobType') as string];
-    }
+    // Fetch jobs (returns jobs based on all active filters and pagination)
+    const jobs = await getAllJobs(limit, offset, freelancerId, filters);
 
-    // Add experience level filter if provided
-    if (url.searchParams.has('experienceLevel') && url.searchParams.get('experienceLevel')) {
-      filter.experienceLevel = [url.searchParams.get('experienceLevel') as string];
-    }
+    // Fetch total count (for UI pagination display)
+    const totalCount = (await getAllJobs(undefined, undefined, freelancerId, filters)).length;
 
-    // Add location preference filter if provided
-    if (url.searchParams.has('locationPreference') && url.searchParams.get('locationPreference')) {
-      filter.locationPreference = [url.searchParams.get('locationPreference') as string];
-    }
-
-    // Add employer ID filter if provided
-    if (url.searchParams.has('employerId')) {
-      filter.employerId = parseInt(url.searchParams.get('employerId') || '0', 10);
-    }
-
-    // Get filtered jobs with pagination
-    jobs = await getJobsFiltered(filter);
-
-    // Get total count for pagination - this is a simplification that works for small datasets
-    // For large datasets, we'd need to add a count query to getJobsFiltered
-    const allFilteredJobs = await getJobsFiltered({ ...filter, page: 1, pageSize: 1000 });
-    totalCount = allFilteredJobs.length;
-  } else {
-    // Use the simpler getAllJobs function with pagination
-    jobs = await getAllJobs(limit, offset);
-
-    // Get total count
-    const allJobs = await getAllJobs();
-    totalCount = allJobs.length;
+    // Return jobs and count as JSON
+    return Response.json({ jobs, totalCount });
+  } catch (error) {
+    // Handle unexpected errors (return HTTP 500)
+    console.error('Error fetching jobs:', error);
+    return Response.json({ error: 'Failed to fetch jobs' }, { status: 500 });
   }
-
-  return Response.json({
-    jobs,
-    totalCount,
-  });
 }
