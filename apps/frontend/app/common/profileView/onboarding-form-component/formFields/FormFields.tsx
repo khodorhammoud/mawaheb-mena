@@ -11,7 +11,7 @@ import { getWordCount } from '~/lib/utils';
 import { useEffect, useState } from 'react';
 import { toast } from '~/components/hooks/use-toast';
 import { isValidYouTubeUrl } from '~/utils/video';
-import { FileField } from './fileFields';
+import { FileField } from './FileFields';
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
