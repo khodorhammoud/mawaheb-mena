@@ -31,15 +31,18 @@ import {
   // generatePresignedUrl,
   // uploadFileToBucket,sd
   saveAttachments,
+  uploadFileToS3,
 } from './cloudStorage.server';
 import { FreelancerSkill } from '~/routes/_templatedashboard.onboarding/types';
 import { deleteAttachmentById } from '~/servers/attachment.server';
+import { isValidVideoUrl } from '~/utils/video';
 
 /***************************************************
  ************Insert/update freelancer info************
  *************************************************** */
 
 export async function handleFreelancerOnboardingAction(formData: FormData, freelancer: Freelancer) {
+  console.log('🔥🔥🔥 HIT MAIN ACTION with target:', formData.get('target-updated'));
   const target = formData.get('target-updated') as string;
   const userId = freelancer.account.user.id;
 
@@ -90,7 +93,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         updateFreelancerEducation(freelancer, parsedData.education),
       ]);
 
-      return Response.json({ success: true });
+      return Response.json({ success: { message: 'CV parsed and profile updated!' } });
     } catch (error) {
       console.error('Error processing CV:', error);
       return Response.json({
@@ -118,32 +121,68 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       userId: userId,
     };
     const bioStatus = await updateAccountBio(bio, freelancer.account);
-    return Response.json({ success: bioStatus.success });
+    return Response.json({
+      success: bioStatus.success ? { message: 'Bio updated successfully!' } : false,
+    });
   }
 
   async function handleFreelancerHourlyRate(formData: FormData, freelancer: Freelancer) {
     // use formName from GeneralizableFormCard
     const hourlyRate = parseInt(formData.get('hourlyRate') as string, 10); // use fieldName from GeneralizableFormCard
     const hourlyRateStatus = await updateFreelancerHourlyRate(freelancer, hourlyRate);
-    return Response.json({ success: hourlyRateStatus.success });
+    return Response.json({ success: { message: 'Hourly rate updated!' } });
   }
 
   async function handleFreelancerYearsOfExperience(formData: FormData, freelancer: Freelancer) {
     const yearsExperience = parseInt(formData.get('yearsOfExperience') as string) || 0;
     const yearsStatus = await updateFreelancerYearsOfExperience(freelancer, yearsExperience);
-    return Response.json({ success: yearsStatus.success });
+    return Response.json({
+      success: yearsStatus.success ? { message: 'Experience updated!' } : false,
+    });
   }
 
   async function handleFreelancerVideo(formData: FormData, freelancer: Freelancer) {
-    const videoLink = formData.get('videoLink') as string;
-    const videoStatus = await updateFreelancerVideoLink(freelancer.id, videoLink);
-    return Response.json({ success: videoStatus.success });
+    const rawVideoEntry = formData.get('videoLink');
+    console.log('[DEBUG] rawVideoEntry:', rawVideoEntry, '| Type:', typeof rawVideoEntry);
+
+    // Handle File Upload
+    if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
+      console.log('[DEBUG] Detected File upload:', rawVideoEntry.name, rawVideoEntry.size);
+      // TODO: Replace the line below with your real upload logic
+      const uploadedUrl = `/uploads/${rawVideoEntry.name}`;
+      await updateFreelancerVideoLink(freelancer.id, uploadedUrl);
+      return Response.json({ success: { message: 'Video file uploaded and saved!' } });
+    }
+
+    // Handle YouTube/URL
+    if (typeof rawVideoEntry === 'string') {
+      const url = rawVideoEntry.trim();
+      console.log('[DEBUG] Detected string videoLink:', url);
+      if (!url) {
+        return Response.json({ error: { message: 'Video URL is empty!' } }, { status: 400 });
+      }
+      // Only check if it’s a valid YouTube or video URL when it's a string
+      if (!isValidVideoUrl(url)) {
+        return Response.json(
+          { error: { message: 'Invalid video URL. Please provide a valid YouTube link.' } },
+          { status: 400 }
+        );
+      }
+      await updateFreelancerVideoLink(freelancer.id, url);
+      return Response.json({ success: { message: 'YouTube video saved!' } });
+    }
+
+    // Fallback: Neither file nor string
+    return Response.json(
+      { error: { message: 'No valid video input provided (neither URL nor file).' } },
+      { status: 400 }
+    );
   }
 
   async function handleFreelancerAbout(formData: FormData, freelancer: Freelancer) {
     const aboutContent = formData.get('about') as string;
     const aboutStatus = await updateFreelancerAbout(freelancer, aboutContent);
-    return Response.json({ success: aboutStatus.success });
+    return Response.json({ success: { message: 'About section saved!' } });
   }
 
   async function handleFreelancerPortfolio(formData: FormData, freelancer: Freelancer) {
@@ -154,30 +193,42 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         throw new Error('Portfolio data is missing or invalid.');
       }
 
-      // Parse the portfolio JSON from the form
       const portfolioParsed = JSON.parse(portfolio) as PortfolioFormFieldType[];
+      const portfolioImages: (File | null)[] = [];
 
-      const portfolioImages: File[] = [];
-
-      // Iterate over the portfolio entries to gather files from the form data
+      // Loop and update each portfolio item
       for (let index = 0; index < portfolioParsed.length; index++) {
-        const portfolioImage = formData.get(`portfolio-attachment[${index}]`) as unknown as File;
+        const file = formData.get(`portfolio-attachment[${index}]`) as File | null;
 
-        if (portfolioImage && portfolioImage.size > 0) {
-          portfolioImages.push(portfolioImage);
-        } else {
-          portfolioImages.push(null); // No image for this portfolio entry
+        // If a file exists, upload it and set the public URL
+        if (file && file.size > 0) {
+          const s3Result = await uploadFile('portfolio', file); // { key, bucket, url }
+          // Set the S3 URL in the portfolio entry
+          portfolioParsed[index].projectImageUrl = s3Result.url; // <- THIS is the url you show in UI
+          portfolioParsed[index].projectImageName = s3Result.key; // optional, save S3 key for future
+          // You can store the attachmentId here too if you save it in DB
         }
+        // If image URL is a blob, clear it so only valid images remain
+        else if (
+          portfolioParsed[index].projectImageUrl &&
+          portfolioParsed[index].projectImageUrl.startsWith('blob:')
+        ) {
+          portfolioParsed[index].projectImageUrl = '';
+          portfolioParsed[index].projectImageName = '';
+        }
+        // If no file and no blob, just leave whatever's there (old S3 URL)
       }
 
-      // Update freelancer portfolio and process attachments
+      // Now save to DB (no blobs, only S3 URLs or empty string)
       const portfolioStatus = await updateFreelancerPortfolio(
         freelancer,
         portfolioParsed,
         portfolioImages
       );
 
-      return Response.json({ success: portfolioStatus.success });
+      return Response.json({
+        success: portfolioStatus.success ? { message: 'Portfolio saved!' } : false,
+      });
     } catch (error) {
       console.error('Error processing freelancer portfolio:', error);
 
@@ -193,7 +244,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const workHistory = formData.get('workHistory') as string;
     let workHistoryParsed: WorkHistoryFormFieldType[];
     try {
-      workHistoryParsed = JSON.parse(workHistory) as WorkHistoryFormFieldType[];
+      workHistoryParsed = JSON.parse(workHistory);
     } catch (error) {
       return Response.json({
         success: false,
@@ -202,13 +253,19 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       });
     }
     const workHistoryStatus = await updateFreelancerWorkHistory(freelancer, workHistoryParsed);
-    return Response.json({ success: workHistoryStatus.success });
+    return Response.json({
+      success: workHistoryStatus.success ? { message: 'Work history updated!' } : false,
+    });
   }
 
   async function handleFreelancerCertificates(formData: FormData, freelancer: Freelancer) {
     const certificates = formData.get('certificates') as string;
 
     try {
+      if (!certificates) {
+        throw new Error('Certificates data is missing or invalid.');
+      }
+
       const certificatesParsed = JSON.parse(certificates) as CertificateFormFieldType[];
       const certificatesImages: File[] = [];
       for (let index = 0; index < certificatesParsed.length; index++) {
@@ -222,7 +279,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         certificatesParsed,
         certificatesImages
       );
-      return Response.json({ success: certificatesStatus.success });
+      return Response.json({
+        success: certificatesStatus.success ? { message: 'Certificates saved!' } : false,
+      });
     } catch (error) {
       return Response.json({
         success: false,
@@ -237,7 +296,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     try {
       const educationParsed = JSON.parse(education) as EducationFormFieldType[];
       const educationStatus = await updateFreelancerEducation(freelancer, educationParsed);
-      return Response.json({ success: educationStatus.success });
+      return Response.json({
+        success: educationStatus.success ? { message: 'Education saved!' } : false,
+      });
     } catch (error) {
       return Response.json({
         success: false,
@@ -268,7 +329,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       );
     }
 
-    const availableFrom = availableFromInput ? new Date(availableFromInput) : new Date(); // Default to today's date if no input is provided
+    const availableFrom = availableFromInput ? new Date(availableFromInput) : new Date();
 
     const result = await updateFreelancerAvailability({
       accountId: freelancer.accountId,
@@ -280,7 +341,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     });
 
     return result
-      ? Response.json({ success: true })
+      ? Response.json({ success: { message: 'Availability updated successfully!' } })
       : Response.json(
           {
             success: false,
@@ -297,7 +358,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     const result = await updateFreelancerAvailabilityStatus(freelancer.accountId, availableForWork);
 
     return result
-      ? Response.json({ success: true })
+      ? Response.json({ success: { message: 'Availability status updated successfully!' } })
       : Response.json(
           {
             success: false,
@@ -316,7 +377,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
         freelancer.id,
         languagesParsed.map(language => language.id)
       );
-      return Response.json({ success: languagesStatus.success });
+      return Response.json({
+        success: languagesStatus.success ? { message: 'Languages updated!' } : false,
+      });
     } catch (error) {
       console.error('Error parsing languages', error);
       return Response.json(
@@ -333,7 +396,9 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
       const skillsStatus = await updateFreelancerSkills(freelancer.id, skillsParsed);
 
-      return Response.json({ success: skillsStatus.success });
+      return Response.json({
+        success: skillsStatus.success ? { message: 'Skills updated!' } : false,
+      });
     } catch (error) {
       console.error('🔥 FREELANCER SERVER: Error updating skills', error);
       return Response.json(
@@ -358,7 +423,6 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       : Response.json({
           success: false,
           error: { message: 'Failed to update onboarding status' },
-
           status: 500,
         });
   }
@@ -374,6 +438,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     case 'freelancer-years-of-experience':
       return handleFreelancerYearsOfExperience(formData, freelancer);
     case 'freelancer-video':
+      console.log('🔥 HIT freelancer-video case!');
       return handleFreelancerVideo(formData, freelancer);
     case 'freelancer-about':
       return handleFreelancerAbout(formData, freelancer);
@@ -396,6 +461,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     case 'freelancer-onboard':
       return handleFreelancerOnboard(userId);
     default:
+      console.log('❌ DEFAULT CASE. target was:', target);
       throw new Error('Unknown target update');
   }
 }
@@ -737,17 +803,14 @@ export async function updateFreelancerAbout(
   }
 }
 
-export async function updateFreelancerVideoLink(
-  freelancerId: number,
-  videoLink: string
-): Promise<{ success: boolean }> {
+// for the video upload in freelancers onboarding view
+export async function updateFreelancerVideoLink(freelancerId: number, videoLink: string | null) {
+  // console.log('la nshoof iza l function inside freelancer.server is working');
   return db
     .update(freelancersTable)
-    .set({ videoLink: videoLink })
-    .where(eq(freelancersTable.accountId, freelancerId))
-    .then(() => {
-      return { success: true };
-    })
+    .set({ videoLink })
+    .where(eq(freelancersTable.id, freelancerId))
+    .then(() => ({ success: true }))
     .catch(error => {
       console.error('Error updating freelancer video link', error);
       return { success: false };

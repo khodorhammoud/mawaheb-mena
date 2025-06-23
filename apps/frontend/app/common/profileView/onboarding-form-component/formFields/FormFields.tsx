@@ -6,9 +6,12 @@ import type { FormFieldProps } from '../types';
 import VideoUpload from '~/common/upload/videoUpload';
 import Or from '~/common/or/Or';
 import RichTextEditor from '~/components/ui/richTextEditor';
-import DOMPurify from 'dompurify';
 import FileUpload from '~/common/upload/fileUpload';
 import { getWordCount } from '~/lib/utils';
+import { useEffect, useState } from 'react';
+import { toast } from '~/components/hooks/use-toast';
+import { isValidYouTubeUrl } from '~/utils/video';
+import { FileField } from './fileFields';
 
 export const FormFields = {
   text: ({ value, onChange, name }: FormFieldProps) => (
@@ -36,7 +39,7 @@ export const FormFields = {
   ),
 
   range: ({ value, onChange, name, props }: FormFieldProps) => (
-    <div className="flex flex-col">
+    <div className="flex flex-col ml-1">
       <div className="w-[50%] mb-6 relative">
         <AppFormField
           type="number"
@@ -48,7 +51,7 @@ export const FormFields = {
           className="no-spinner"
           defaultValue={value as string}
         />
-        <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+        {/* <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" /> */}
       </div>
       <p className="mb-14 text-base">The median {props.popupTitle} for a designer is:</p>
       <RangeComponent minVal={props.minVal} maxVal={props.maxVal} />
@@ -57,11 +60,10 @@ export const FormFields = {
 
   textArea: ({ value, onChange, name, props }: FormFieldProps) => (
     <div className="flex flex-col gap-2">
-      {/* Check if Rich Text is enabled */}
       {props?.useRichText ? (
         <RichTextEditor
-          name={name} // Ensure the name attribute is included
-          value={(value as string) || ''} // Ensure value is a string
+          name={name}
+          value={(value as string) || ''}
           onChange={content => {
             const event = {
               target: {
@@ -85,7 +87,7 @@ export const FormFields = {
           name={name}
           label="Add content to describe yourself"
           placeholder="Add content to describe yourself"
-          col={6} // Represents rows as height (in rem units)
+          col={6}
           onChange={onChange}
         />
       )}
@@ -103,7 +105,7 @@ export const FormFields = {
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
-          style={{ borderRight: 'none' }} // Remove the right border of the - button
+          style={{ borderRight: 'none' }}
           onClick={() => handleIncrement(-1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
@@ -118,7 +120,7 @@ export const FormFields = {
         <button
           type="button"
           className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
-          style={{ borderLeft: 'none' }} // Remove the left border of the + button
+          style={{ borderLeft: 'none' }}
           onClick={() => handleIncrement(1)}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">+</div>
@@ -128,43 +130,157 @@ export const FormFields = {
   ),
 
   video: ({ value, onChange, name, props }: FormFieldProps) => {
-    const handleVideoUpload = (file: File) => {
-      const fileUrl = URL.createObjectURL(file);
+    // Local state for controlled input
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [youtubeUrl, setYoutubeUrl] = useState<string>('');
 
-      const event = {
+    // When value changes from parent, sync local state
+    useEffect(() => {
+      if (typeof value === 'string') {
+        setYoutubeUrl(value);
+        setVideoFile(null);
+      } else if (value instanceof File) {
+        setVideoFile(value);
+        setYoutubeUrl('');
+      } else {
+        setYoutubeUrl('');
+        setVideoFile(null);
+      }
+    }, [value]);
+
+    // User typing: Only update local state, DO NOT call parent
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setYoutubeUrl(e.target.value);
+    };
+
+    // Validate on blur (or when you hit "Save")
+    const handleInputBlur = () => {
+      if (!youtubeUrl) return;
+
+      if (!isValidYouTubeUrl(youtubeUrl)) {
+        // Show error toast, don't update parent
+        toast({
+          variant: 'destructive',
+          title: 'Invalid video URL',
+          description: 'Please provide a valid YouTube link (not a random string, bro).',
+        });
+        setYoutubeUrl(''); // Optionally clear the input
+        return;
+      }
+      // If valid: call parent, show success toast
+      onChange?.({
         target: {
-          value: fileUrl,
+          value: youtubeUrl,
           name,
         },
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      } as React.ChangeEvent<HTMLInputElement>);
+      toast({
+        variant: 'default',
+        title: 'YouTube link accepted',
+        description: 'Your video link is valid and ready to be saved!',
+      });
+    };
 
-      onChange(event);
+    // File upload: update parent immediately
+    const handleVideoUpload = (file: File) => {
+      setVideoFile(file);
+      setYoutubeUrl('');
+      toast({
+        variant: 'default',
+        title: 'Video uploaded',
+        description: 'Your video file was uploaded successfully!',
+      });
     };
 
     return (
-      <div className="">
-        {/* UPLOAD */}
-        <VideoUpload onFileChange={fileUrl => handleVideoUpload(fileUrl)} />
+      <div className="space-y-4 ml-1 mr-1">
+        {/* File upload */}
+        {!youtubeUrl && (
+          <VideoUpload
+            name={name}
+            file={videoFile} // ✅ you need this line
+            onFileChange={handleVideoUpload}
+            onClear={() => {
+              setVideoFile(null);
+              onChange?.({ target: { value: '', name } } as any);
+            }}
+          />
+        )}
+        {!youtubeUrl && !videoFile && <Or />}
 
-        {/* OR */}
-        <Or />
-
-        {/* FORM */}
-        <div className="">
+        {/* YouTube URL input */}
+        {!videoFile && (
           <div className="relative">
             <AppFormField
               type="text"
               id="youtube-url"
-              name={name} // Ensure name matches "videoLink"
+              name={name}
               label="Paste YouTube URL or upload video"
               placeholder="Paste YouTube URL or upload video"
-              defaultValue={typeof value === 'string' ? value : ''}
-              onChange={onChange}
+              value={youtubeUrl}
+              onChange={handleInputChange} // Only local update!
+              onBlur={handleInputBlur} // Only update parent on blur!
               className=""
             />
             <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
           </div>
-        </div>
+        )}
+
+        {/* Show URL if filled */}
+        {youtubeUrl && (
+          <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
+            <span className="truncate">{youtubeUrl}</span>
+            <button
+              onClick={() => {
+                setYoutubeUrl('');
+                setVideoFile(null);
+                onChange?.({ target: { value: '', name } } as any);
+              }}
+              className="ml-2 text-red-500"
+              title="Remove"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Show file if uploaded */}
+        {videoFile && (
+          <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
+            <span className="truncate">{videoFile.name}</span>
+            <button
+              onClick={() => {
+                setVideoFile(null);
+                setYoutubeUrl('');
+                onChange?.({ target: { value: '', name } } as any);
+              }}
+              className="ml-2 text-red-500"
+              title="Remove"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* If a YouTube URL is used, send it */}
+        {youtubeUrl && <input type="hidden" name={name} value={youtubeUrl} />}
+
+        {/* If a video file is used, send it via a real file input */}
+        {videoFile && (
+          <input
+            type="file"
+            name={name}
+            style={{ display: 'none' }}
+            accept="video/*"
+            ref={ref => {
+              if (ref && videoFile) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(videoFile);
+                ref.files = dataTransfer.files;
+              }
+            }}
+          />
+        )}
       </div>
     );
   },
@@ -178,72 +294,4 @@ export const FormFields = {
       handleIncrement={handleIncrement}
     />
   ),
-};
-
-export const FileField = ({ value, onChange, name, props, handleIncrement }: FormFieldProps) => {
-  // Get file info for display
-  const getFileInfo = (fileValue: any) => {
-    if (fileValue instanceof File) {
-      return {
-        name: fileValue.name,
-        size: Math.round(fileValue.size / 1024),
-      };
-    }
-    return null;
-  };
-
-  const fileInfo = getFileInfo(value);
-
-  return (
-    <div className="w-full">
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
-        <svg
-          className="w-10 h-10 text-gray-400 mb-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          ></path>
-        </svg>
-        <p className="mb-2 text-sm text-gray-500">
-          <span className="font-semibold">Click to upload</span> or drag and drop
-        </p>
-        <p className="text-xs text-gray-500">
-          {props?.acceptedFileTypes
-            ? `Supported formats: ${props.acceptedFileTypes}`
-            : 'PDF, JPG, PNG, etc.'}
-        </p>
-
-        <Input
-          id={name}
-          name={name}
-          type="file"
-          className="hidden"
-          accept={props?.acceptedFileTypes}
-          onChange={onChange}
-          multiple={props?.multiple}
-        />
-
-        <label
-          htmlFor={name}
-          className="mt-4 px-4 py-2 bg-primaryColor text-white rounded-md cursor-pointer hover:bg-primaryColor/90 transition-colors"
-        >
-          Select Files
-        </label>
-      </div>
-
-      {fileInfo && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-md">
-          <p className="text-sm font-medium">{fileInfo.name}</p>
-          {fileInfo.size && <p className="text-xs text-gray-500">{fileInfo.size} KB</p>}
-        </div>
-      )}
-    </div>
-  );
 };

@@ -30,12 +30,19 @@ import type {
   GeneralizableFormCardProps,
   FormType,
 } from './types';
+import { toast } from '~/components/hooks/use-toast';
+import { SplinePointerIcon } from 'lucide-react';
 
 /* =====================================================================
  *  1) The forwardRef-based component for "file" formType ONLY
  * =====================================================================
  */
 const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) => {
+  type FetcherData = {
+    success?: { message: string };
+    error?: { message: string };
+  };
+
   const {
     cardTitle,
     cardSubtitle,
@@ -48,20 +55,17 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     acceptedFileTypes,
     multiple,
     editable = true,
-    showStatusMessage = true,
-    showLoadingOnSubmit = false,
     formRef,
   } = props;
 
-  const [inputValue, setInputValue] = useState<any>(value || null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filesToDelete, setFilesToDelete] = useState<number[]>([]);
   const [showParseButton, setShowParseButton] = useState(false);
   const [parsing, setParsing] = useState(false);
 
-  const formContentRef = useRef<any>(null);
-  const fetcher = useFetcher<{ success?: boolean; error?: { message: string } }>();
+  // const formContentRef = useRef<any>(null);
+  const fetcher = useFetcher<FetcherData>();
 
   // Check if the file is a CV (based on fieldName)
   const isCVField = fieldName === 'cvFile';
@@ -119,20 +123,9 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
 
         if (fileObjects.length > 0) {
           setSelectedFiles(fileObjects);
-          if (formContentRef.current) {
-            formContentRef.current.setFilesSelected(fileObjects);
-          }
-
-          // Show parse button if this is a CV file and is likely a PDF or Word doc
-          if (isCVField) {
-            const hasValidCVFile = fileObjects.some(
-              file =>
-                file.type === 'application/pdf' ||
-                file.type ===
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            );
-            setShowParseButton(hasValidCVFile);
-          }
+          // if (formContentRef.current) {
+          //   formContentRef.current.setFilesSelected(fileObjects);
+          // }
         }
       }
     }
@@ -186,14 +179,14 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => {
     return {
-      getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
+      // getFormData: (form: HTMLFormElement) => getFormData(formContentRef.current, form),
       filesSelected: selectedFiles,
       filesToDelete: filesToDelete,
       setFilesSelected: (files: File[]) => {
         setSelectedFiles(files);
-        if (formContentRef.current) {
-          formContentRef.current.setFilesSelected(files);
-        }
+        // if (formContentRef.current) {
+        //   formContentRef.current.setFilesSelected(files);
+        // }
       },
       clearFiles: () => {
         setSelectedFiles([]);
@@ -203,41 +196,34 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
         } catch (error) {
           console.error('Error clearing filesToDelete from localStorage:', error);
         }
-        if (formContentRef.current) {
-          formContentRef.current.setFilesSelected([]);
-        }
+        // if (formContentRef.current) {
+        //   formContentRef.current.setFilesSelected([]);
+        // }
       },
     };
   });
 
-  // Handle file selection
+  //Handle file selection //For uploading more that one file, this used to be different
   const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      setSelectedFiles(prevFiles => {
-        const updatedFiles = [...prevFiles];
-        newFiles.forEach(file => {
-          const existingIndex = updatedFiles.findIndex(f => f.name === file.name);
-          if (existingIndex >= 0) {
-            updatedFiles[existingIndex] = file;
-          } else {
-            updatedFiles.push(file);
-          }
+      if (selectedFiles.length > 0) {
+        toast({
+          variant: 'destructive',
+          title: 'Only one file allowed',
+          description: 'Please remove the current CV before uploading a new one.',
         });
+        return;
+      }
 
-        // Show parse button if this is a CV field and there's a valid file
-        if (isCVField) {
-          const hasValidCVFile = newFiles.some(
-            file =>
-              file.type === 'application/pdf' ||
-              file.type ===
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          );
-          setShowParseButton(hasValidCVFile);
-        }
+      const file = e.target.files[0]; // ✅ Only one file allowed
+      setSelectedFiles([file]);
 
-        return updatedFiles;
-      });
+      if (isCVField) {
+        const isValidCV =
+          file.type === 'application/pdf' ||
+          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        setShowParseButton(isValidCV);
+      }
     }
   };
 
@@ -281,41 +267,31 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     });
 
     // Close dialog after submission
-    setDialogOpen(false);
+    // setDialogOpen(false);
   };
 
   // Reset parsing state when fetcher completes
   useEffect(() => {
     if (fetcher.state === 'idle' && parsing) {
       setParsing(false);
-    }
-  }, [fetcher.state, parsing]);
 
-  // Show success message after CV parsing
-  const renderParseStatusMessage = () => {
-    if (!parsing && fetcher.state === 'idle' && fetcher.data) {
-      const data = fetcher.data as { success?: boolean; error?: { message: string } };
+      const data = fetcher.data as { success?: { message: string }; error?: { message: string } };
 
-      if (data.success) {
-        return (
-          <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-            <span className="block sm:inline">
-              CV parsed successfully! Your profile has been updated.
-            </span>
-          </div>
-        );
-      } else if (data.error) {
-        return (
-          <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            <span className="block sm:inline">
-              {data.error.message || 'An error occurred while parsing your CV.'}
-            </span>
-          </div>
-        );
+      if (data?.success) {
+        toast({
+          title: 'CV Parsed',
+          description: data.success.message,
+        });
+        setDialogOpen(false); // ✅ close dialog here
+      } else if (data?.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error Parsing CV',
+          description: data.error.message || 'Something went wrong while parsing your CV.',
+        });
       }
     }
-    return null;
-  };
+  }, [fetcher.state, parsing]);
 
   // Render selected files
   const renderSelectedFiles = () => {
@@ -359,23 +335,28 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
         {/* Parse CV Button */}
         {showParseButton && (
           <div className="mt-4">
-            <Button
-              type="button"
-              onClick={handleParseCV}
-              disabled={parsing}
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <FaFileAlt className="h-4 w-4" />
-              {parsing ? 'Parsing CV...' : 'Parse CV to fill profile'}
-            </Button>
-            <p className="text-xs text-gray-500 mt-1 text-center">
+            <div className="">
+              <Button
+                type="button"
+                onClick={handleParseCV}
+                disabled={parsing}
+                className="flex items-center justify-center w-full gap-2 bg-primaryColor text-white not-active-gradient rounded-xl"
+              >
+                <FaFileAlt className="h-4 w-4" />
+                {parsing ? (
+                  <>
+                    <SplinePointerIcon className="animate-spin h-4 w-4" /> Parsing CV...
+                  </>
+                ) : (
+                  'Parse CV to fill profile'
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 text-right mt-2">
               This will extract information from your CV to fill your profile automatically.
             </p>
           </div>
         )}
-
-        {/* Status Message */}
-        {renderParseStatusMessage()}
       </div>
     );
   };
@@ -404,15 +385,16 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               <div className="space-y-4">
                 <input
                   type="file"
+                  // multiple={multiple} // ❌ I REMOVED THIS
                   accept={acceptedFileTypes}
-                  multiple={multiple}
                   onChange={handleFileSelection}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-primaryColor
-                    hover:file:bg-blue-100"
+                  className={`block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-primaryColor
+                  hover:file:bg-blue-100
+                  ${selectedFiles.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`} // i added this line to make the ui look like i can not upload more that one file
                 />
                 {renderSelectedFiles()}
               </div>
@@ -473,6 +455,28 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
 
   // Use the provided fetcher or the local one
   const fetcher = props.fetcher || localFetcher;
+
+  // Toast for fetcher field updates
+  useEffect(() => {
+    if (!fetcher || !fetcher.data) return;
+
+    // Show error toast if any
+    if (fetcher.data.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Update failed',
+        description: fetcher.data.error.message || 'There was a problem saving your changes.',
+      });
+    } else if (fetcher.data.success) {
+      toast({
+        variant: 'default',
+        title: 'Saved!',
+        description: fetcher.data.success.message || 'Your changes were saved successfully.',
+      });
+    }
+    // Optionally: reset fetcher state after toast (if you want)
+    // fetcher.data = null; // Do this ONLY if you control fetcher state (remix fetcher doesn't allow this directly)
+  }, [fetcher?.data]);
 
   // Custom submit that closes the dialog after submission
   const handleSubmit = (e: React.FormEvent, formData: FormData) => {

@@ -1,4 +1,4 @@
-import IndustriesServed from './industries-served';
+import Industries from './industries-served';
 import Languages from './languages';
 import BioInfo from './bio-info';
 import { useLoaderData } from '@remix-run/react';
@@ -25,20 +25,23 @@ export default function Heading({
   // ✅ Use freelancer data if provided, otherwise default to employer
   // const profileData = freelancer || useLoaderData<{ bioInfo: any }>().bioInfo;
 
-  const { accountType, bioInfo } = useLoaderData<{
+  const { accountType, bioInfo, employerIndustries } = useLoaderData<{
     accountType: AccountType;
     bioInfo: any;
+    employerIndustries?: { id: number; name: string }[];
   }>();
 
-  // console.log("Freelancer Prop Passed:", freelancer);
+  // console.log('EMPPPPPPPPPPP:', employerIndustries);
 
-  // ✅ Ensure freelancer has languages
-  const profileData = profile
-    ? {
-        ...profile,
-        accountType: profile.accountType ?? accountType ?? AccountType.Freelancer,
-      }
-    : { ...bioInfo, accountType };
+  // ✅ Ensure freelancer has languages, and employer has industries!
+  const baseProfile = profile ? { ...profile } : { ...bioInfo };
+  const isEmployer = (profile?.accountType ?? accountType) === AccountType.Employer;
+
+  const profileData = {
+    ...baseProfile,
+    accountType: profile?.accountType ?? accountType ?? AccountType.Freelancer,
+    ...(isEmployer && employerIndustries ? { industries: employerIndustries } : {}),
+  };
 
   // console.log("🔥 USERPROFILE: Received Profile:", profile);
   // console.log(
@@ -62,7 +65,7 @@ export default function Heading({
       ) : (
         <>
           {/* Industries Served ✏️ */}
-          {!isViewing && <IndustriesServed profile={profileData} canEdit={canEdit} />}
+          {!isViewing && <Industries profile={profileData} canEdit={canEdit} />}
         </>
       )}
     </div>

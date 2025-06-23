@@ -5,19 +5,43 @@ import { SlBadge } from 'react-icons/sl';
 import { FaDollarSign, FaFileUpload } from 'react-icons/fa';
 import { AiFillStar } from 'react-icons/ai';
 import { FreelancerOnboardingData } from '../types';
+import { useEffect } from 'react';
+import { toast } from '~/components/hooks/use-toast';
+
+type ActionData = {
+  error?: { message: string };
+};
+type MyFetcherData = {
+  error?: { message: string };
+  success?: { message: string };
+};
 
 export default function FreelancerOnboardingScreen() {
-  type ActionData = {
-    error?: { message: string };
-  };
   const actionData = useActionData<ActionData>();
-  const { accountOnboarded, currentProfile, freelancerSkills, freelancerLanguages } =
+  const { accountOnboarded, currentProfile, freelancerSkills, videoUrl, freelancerLanguages } =
     useLoaderData<FreelancerOnboardingData>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<MyFetcherData>();
+
+  // Add this helper
+  const safeParseArray = (data: any): any[] => {
+    try {
+      return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
+    } catch {
+      return [];
+    }
+  };
+
+  const normalizedProfile = {
+    ...currentProfile,
+    portfolio: safeParseArray(currentProfile.portfolio),
+    workHistory: safeParseArray(currentProfile.workHistory),
+    certificates: safeParseArray(currentProfile.certificates),
+    educations: safeParseArray(currentProfile.educations),
+  };
 
   // Create a profile object that matches what the Heading component expects
   const profileWithSkillsAndLanguages = {
-    ...currentProfile,
+    ...normalizedProfile,
     skills:
       freelancerSkills?.map(skill => ({
         skillId: skill.skillId,
@@ -27,6 +51,26 @@ export default function FreelancerOnboardingScreen() {
       })) || [],
     languages: freelancerLanguages || [],
   };
+
+  useEffect(() => {
+    if (fetcher.data?.error) {
+      toast({ variant: 'destructive', title: 'Error', description: fetcher.data.error.message });
+    } else if (fetcher.data?.success) {
+      toast({ variant: 'default', title: 'Success', description: fetcher.data.success.message });
+    }
+  }, [fetcher.data]);
+
+  useEffect(() => {
+    if (actionData?.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: actionData.error.message,
+      });
+    }
+  }, [actionData]);
+
+  // console.log('🔥 Portfolio Data in GeneralizableFormCard:', normalizedProfile.portfolio);
 
   return (
     <div className="container mx-auto px-4">
@@ -76,7 +120,6 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 lg:grid-cols-2 xl:w-[70%] lg:w-[76%] md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Hourly Rate */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="range"
             cardTitle="Hourly Rate"
             popupTitle="Hourly Rate"
@@ -91,7 +134,6 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Years of Experience */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="increment"
             cardTitle="Experience"
             popupTitle="Years of experience"
@@ -103,9 +145,8 @@ export default function FreelancerOnboardingScreen() {
           />
         </div>
         <div className="grid mb-4 grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 md:ml-20 md:mr-20 ml-10 mr-10">
-          {/* Years of Experience */}
+          {/* Upload a Video */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="video"
             cardTitle="Don't miss out on this opportunity to make a great first impression."
             cardSubtitle="Upload a video to introduce yourself and your business."
@@ -114,11 +155,11 @@ export default function FreelancerOnboardingScreen() {
             formName="freelancer-video"
             fieldName="videoLink"
             editable={true}
+            value={videoUrl}
           />
 
           {/* About */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="textArea"
             cardTitle="About"
             cardSubtitle="Add your headline and bio
@@ -135,7 +176,6 @@ export default function FreelancerOnboardingScreen() {
         <div className="grid mb-4 grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 md:ml-20 md:mr-20 ml-10 mr-10">
           {/* Portfolio */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Projects"
             popupTitle="Add a Project"
@@ -149,7 +189,6 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Work History */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Work History"
             popupTitle="Work History"
@@ -161,7 +200,6 @@ export default function FreelancerOnboardingScreen() {
           />
           {/* Certificates */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Certificates"
             cardSubtitle="Add your certifications."
@@ -175,7 +213,6 @@ export default function FreelancerOnboardingScreen() {
 
           {/* Education */}
           <GeneralizableFormCard
-            fetcher={fetcher}
             formType="repeatable"
             cardTitle="Education"
             cardSubtitle="Add your education and degrees."

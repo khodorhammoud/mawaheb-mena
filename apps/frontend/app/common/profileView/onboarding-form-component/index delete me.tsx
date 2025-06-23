@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription } from '~/common/header/card';
-import VideoUpload from '~/common/upload/videoUpload';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -29,13 +28,10 @@ import PortfolioComponent from './formFields/repeatables/PortfolioComponent';
 import EducationComponent from './formFields/repeatables/EducationComponent';
 import CertificateComponent from './formFields/repeatables/CertificateComponent';
 import WorkHistoryComponent from './formFields/repeatables/WorkHistory';
+import { Files } from 'lucide-react';
 
 function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const initialData = useLoaderData<OnboardingEmployerFields | OnboardingFreelancerFields>();
-
-  const handleVideoUpload = (file: File | null) => {
-    console.log('Video uploaded:', file);
-  };
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -166,7 +162,10 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
     });
   };
 
-  const handleFileChange = (index: number, file: File) => {
+  const handleFileChange = (index: number, files: File[] | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0]; // Always use the first file
+
     const updatedInputFiles = [...repeatableInputFiles];
     updatedInputFiles[index] = file;
     setRepeatableInputFiles(updatedInputFiles);
@@ -256,6 +255,17 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(formRef.current!);
+
+    // LOG THE FORM DATA
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(
+          `FormData - ${key}: [File] name=${value.name}, type=${value.type}, size=${value.size}`
+        );
+      } else {
+        console.log(`FormData - ${key}: ${value}`);
+      }
+    }
 
     if (props.formType === 'repeatable') {
       formData.append(props.repeatableFieldName, JSON.stringify(repeatableInputValues));
@@ -388,31 +398,41 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
         );
       case 'video':
         return (
-          <div className="">
-            {/* UPLOAD */}
-            <VideoUpload onFileChange={handleVideoUpload} />
-
-            {/* OR */}
-            <Or />
-
-            {/* FORM */}
-            <div className="">
+          <div>
+            {!inputValue || inputValue instanceof File ? (
+              <>
+                {/* Video file upload */}
+                <Input
+                  type="file"
+                  name={props.fieldName}
+                  accept="video/mp4,video/webm,video/ogg,video/mov,video/mkv"
+                  onChange={e => setInputValue(e.target.files ? e.target.files[0] : '')}
+                  className="mb-3"
+                />
+                <Or />
+                <Button type="button" onClick={() => setInputValue('')} className="mb-3">
+                  Or paste YouTube URL
+                </Button>
+              </>
+            ) : null}
+            {(!inputValue || typeof inputValue === 'string') && (
               <div className="relative">
                 <AppFormField
                   type="text"
                   id="youtube-url"
                   name={props.fieldName}
-                  label="Paste YouTube URL or upload video"
-                  placeholder="Paste YouTube URL or upload video"
-                  defaultValue={inputValue as string}
+                  label="Paste YouTube URL"
+                  placeholder="Paste YouTube URL"
+                  value={typeof inputValue === 'string' ? inputValue : ''}
                   onChange={e => setInputValue(e.target.value)}
                   className=""
                 />
-                <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
+                <FaLink className="absolute top-1/2 right-2 ..." />
               </div>
-            </div>
+            )}
           </div>
         );
+
       case 'file':
         return (
           <Input
@@ -482,7 +502,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                             <PortfolioComponent
                               data={dataItem}
                               onTextChange={updatedData => handleDataChange(index, updatedData)}
-                              onFileChange={file => handleFileChange(index, file)}
+                              onFileChange={files => handleFileChange(index, files)}
                             />
                           ) : // WORK HISTORYSECTION
                           props.repeatableFieldName === 'workHistory' ? (
@@ -495,7 +515,7 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                             <CertificateComponent
                               data={dataItem}
                               onTextChange={updatedData => handleDataChange(index, updatedData)}
-                              onFileChange={file => handleFileChange(index, file)}
+                              onFileChange={files => handleFileChange(index, files)}
                             />
                           ) : // EDUCATION
                           props.repeatableFieldName === 'educations' ? (

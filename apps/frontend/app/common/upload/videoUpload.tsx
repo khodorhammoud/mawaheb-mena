@@ -1,19 +1,29 @@
-import { useState } from "react";
-import { FaUpload } from "react-icons/fa";
+import { useEffect, useState } from 'react';
+import { FaUpload } from 'react-icons/fa';
 
 interface VideoUploadProps {
   onFileChange: (file: File | null) => void;
+  file?: File | null;
   acceptedFileTypes?: string; // e.g., "video/*"
   maxFileSize?: number; // Size in MB
+  onClear?: () => void; // 👈 add this!
+  name: string; // 👈 ✅ required for proper <input> binding
 }
 
 export default function VideoUpload({
   onFileChange,
-  acceptedFileTypes = "video/*",
+  file: externalFile = null,
+  acceptedFileTypes = 'video/*',
   maxFileSize = 50,
+  onClear,
+  name, // ✅ destructure it
 }: VideoUploadProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(externalFile);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  useEffect(() => {
+    setFile(externalFile);
+  }, [externalFile]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -41,6 +51,8 @@ export default function VideoUpload({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
+    console.log('📹 Selected file:', selectedFile);
+
     if (selectedFile) {
       if (selectedFile.size > maxFileSize * 1024 * 1024) {
         alert(`Video size exceeds ${maxFileSize} MB`);
@@ -56,12 +68,12 @@ export default function VideoUpload({
     onFileChange(null);
   };
 
+  console.log(name);
+
   return (
     <div
       className={`w-full border-dashed border-2 rounded-xl p-4 flex flex-col justify-center items-center cursor-pointer transition ${
-        isDragOver
-          ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 bg-gray-100"
+        isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-100'
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -70,13 +82,14 @@ export default function VideoUpload({
       {file ? (
         <div className="flex items-center space-x-4">
           <span className="text-gray-700">
-            {file.name.length > 20
-              ? `${file.name.substring(0, 20)}...`
-              : file.name}
+            {file.name.length > 40 ? `${file.name.substring(0, 40)}...` : file.name}
           </span>
           <button
             type="button"
-            onClick={clearFile}
+            onClick={() => {
+              clearFile();
+              onClear?.(); // ✅ still here bro
+            }}
             className="text-red-500 hover:text-red-700"
           >
             Clear
@@ -87,21 +100,20 @@ export default function VideoUpload({
           <label className="flex flex-col items-center cursor-pointer">
             <div className="flex flex-col items-center">
               <FaUpload className="text-white bg-primaryColor h-8 w-8 p-[7px] rounded-xl" />
-              <div className="inline text-sm mt-2">
-                <span className="text-primaryColor mb">Click to Upload </span>
+              <div className="inline text-sm mt-2 text-center">
+                <span className="text-primaryColor">Click to Upload </span>
                 <span className="text-gray-500">or drag and drop</span>
               </div>
             </div>
             <input
               type="file"
-              className="hidden"
+              name={name}
               accept={acceptedFileTypes}
               onChange={handleFileChange}
+              className="hidden"
             />
           </label>
-          <span className="text-gray-500 text-xs">
-            (Max. File size: {maxFileSize} MB)
-          </span>
+          <span className="text-gray-500 text-xs mt-2">(Max. File size: {maxFileSize} MB)</span>
         </>
       )}
     </div>

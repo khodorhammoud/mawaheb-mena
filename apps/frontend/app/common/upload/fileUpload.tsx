@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaUpload } from "react-icons/fa";
+import React, { useState } from 'react';
+import { FaUpload } from 'react-icons/fa';
 
 interface FileUploadProps {
   onFileChange: (files: File[] | null) => void; // Support multiple files
@@ -9,13 +9,13 @@ interface FileUploadProps {
 
 export default function FileUpload({
   onFileChange,
-  acceptedFileTypes = "image/*,application/pdf,video/*", // Allow images, PDFs, and videos
+  acceptedFileTypes = 'image/*,application/pdf,video/*',
   maxFileSize = 25,
 }: FileUploadProps) {
-  const [files, setFiles] = useState<File[]>([]); // Store multiple files
+  const [files, setFiles] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [progress, setProgress] = useState<number>(0); // Track upload progress
-  const [previews, setPreviews] = useState<string[]>([]); // Store file previews
+  const [progress, setProgress] = useState<number>(0);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   // Handle drag-and-drop events
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -23,9 +23,7 @@ export default function FileUpload({
     setIsDragOver(true);
   };
 
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
+  const handleDragLeave = () => setIsDragOver(false);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -37,16 +35,12 @@ export default function FileUpload({
 
   // Validate and process files
   const handleFiles = (selectedFiles: File[]) => {
-    const validFiles = selectedFiles.filter((file) => {
-      const validTypes = acceptedFileTypes.split(",");
-      const isValidType = validTypes.some((type) => {
-        if (type === "video/*") {
-          return file.type.startsWith("video/");
-        }
-        if (type === "image/*") {
-          return file.type.startsWith("image/");
-        }
-        return file.type === type; // For specific MIME types like application/pdf
+    const validFiles = selectedFiles.filter(file => {
+      const validTypes = acceptedFileTypes.split(',');
+      const isValidType = validTypes.some(type => {
+        if (type === 'video/*') return file.type.startsWith('video/');
+        if (type === 'image/*') return file.type.startsWith('image/');
+        return file.type === type;
       });
 
       if (!isValidType) {
@@ -61,21 +55,20 @@ export default function FileUpload({
     });
 
     if (validFiles.length > 0) {
-      setFiles((prev) => [...prev, ...validFiles]); // Add valid files
-      onFileChange(validFiles);
+      setFiles(prev => [...prev, ...validFiles]);
+      onFileChange([...files, ...validFiles]);
 
       // Generate previews for image or video files
-      const newPreviews = validFiles.map((file) =>
-        file.type.startsWith("image/") || file.type.startsWith("video/")
+      const newPreviews = validFiles.map(file =>
+        file.type.startsWith('image/') || file.type.startsWith('video/')
           ? URL.createObjectURL(file)
-          : ""
+          : ''
       );
-      setPreviews((prev) => [...prev, ...newPreviews]);
+      setPreviews(prev => [...prev, ...newPreviews]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Prevent form submission
     e.preventDefault();
     e.stopPropagation();
 
@@ -95,34 +88,30 @@ export default function FileUpload({
     onFileChange(null);
   };
 
-  // Simulate upload progress
+  // Simulate upload progress (optional, for UX)
   const simulateUpload = () => {
     setProgress(0);
     const interval = setInterval(() => {
-      setProgress((prev) => {
+      setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-        return prev + 5; // Increment progress
+        return prev + 5;
       });
-    }, 100); // Simulate upload every 100ms
+    }, 100);
   };
 
   return (
     <div>
-      {/* Drag-and-drop area */}
       <div
         className={`w-full border-dashed border-2 rounded-xl p-4 flex flex-col justify-center items-center cursor-pointer transition ${
-          isDragOver
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-200 bg-gray-100"
+          isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-100'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={(e) => {
-          // Prevent form submission when clicking on the upload area
+        onClick={e => {
           e.preventDefault();
           e.stopPropagation();
         }}
@@ -133,17 +122,17 @@ export default function FileUpload({
               {files.map((file, index) => (
                 <li key={index} className="flex items-center justify-between">
                   <span className="text-gray-700">
-                    {file.name.length > 20
-                      ? `${file.name.substring(0, 20)}...`
-                      : file.name}
+                    {file.name.length > 20 ? `${file.name.substring(0, 20)}...` : file.name}
                   </span>
                   <button
-                    type="button" // Explicitly set button type to prevent form submission
-                    onClick={(e) => {
-                      e.preventDefault(); // Prevent form submission
-                      e.stopPropagation(); // Stop event propagation
+                    type="button"
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setFiles(files.filter((_, i) => i !== index));
                       setPreviews(previews.filter((_, i) => i !== index));
+                      if (files.length === 1) clearFiles();
+                      else onFileChange(files.filter((_, i) => i !== index));
                     }}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -153,7 +142,21 @@ export default function FileUpload({
               ))}
             </ul>
 
-            {/* Progress Bar */}
+            {/* Preview (for first file) */}
+            {previews[0] && (
+              <>
+                {files[0].type.startsWith('image/') ? (
+                  <img
+                    src={previews[0]}
+                    alt="Preview"
+                    className="mt-2 h-28 rounded-xl object-cover"
+                  />
+                ) : files[0].type.startsWith('video/') ? (
+                  <video src={previews[0]} controls className="mt-2 h-28 rounded-xl object-cover" />
+                ) : null}
+              </>
+            )}
+
             {progress > 0 && (
               <div className="w-full bg-gray-200 rounded-full mt-4">
                 <div
@@ -169,7 +172,7 @@ export default function FileUpload({
           <>
             <label
               className="flex flex-col items-center cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex flex-col items-center">
                 <FaUpload className="text-white bg-primaryColor h-8 w-8 p-[7px] rounded-xl" />
@@ -183,8 +186,8 @@ export default function FileUpload({
                 className="hidden"
                 accept={acceptedFileTypes}
                 onChange={handleFileChange}
-                multiple // Allow multiple files
-                onClick={(e) => e.stopPropagation()} // Prevent form submission
+                multiple
+                onClick={e => e.stopPropagation()}
               />
             </label>
             <span className="text-gray-500 text-xs">
