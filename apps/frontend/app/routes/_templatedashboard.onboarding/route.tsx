@@ -33,13 +33,35 @@ import { getAttachmentSignedURL, uploadFile } from '~/servers/cloudStorage.serve
 import { fetchSkills } from '~/servers/general.server';
 import { isValidYouTubeUrl } from '~/utils/video';
 
+// Util to safely parse array data
+function safeParseArray(data: any): any[] {
+  try {
+    return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
+  } catch {
+    return [];
+  }
+}
+
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserVerified(request);
   const formData = await request.formData();
-  console.log('🟢 [DEBUG] FormData:', Object.fromEntries(formData.entries()));
+  // console.log('🟢 [DEBUG] FormData:', Object.fromEntries(formData.entries()));
+  // for (const [key, value] of formData.entries()) {
+  //   // If it's a file, show some details
+  //   if (value instanceof File) {
+  //     console.log(`📦 [ACTION] FILE key: ${key}`, {
+  //       name: value.name,
+  //       size: value.size,
+  //       type: value.type,
+  //     });
+  //   } else {
+  //     console.log(`📝 [ACTION] FIELD key: ${key} value:`, value);
+  //   }
+  // }
 
   // Get the full user account info to determine account type
   const userAccount = await getCurrentUserAccountInfo(request);
+  // console.log('🔍 [ACTION] userAccount:', userAccount);
   if (!userAccount) {
     return Response.json({
       success: false,
@@ -50,6 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (userAccount.accountType === 'freelancer') {
     const profile = (await getCurrentProfileInfo(request)) as Freelancer;
+    // console.log('👤 [ACTION] Freelancer profile:', profile);
     if (!profile) {
       return Response.json({
         success: false,
@@ -148,6 +171,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const response = await handleFreelancerOnboardingAction(formData, profile);
+    // console.log('✅ [ACTION] Response from handleFreelancerOnboardingAction:', response);
 
     // ✅ If there's no success.message, we inject a generic one
     if (
@@ -169,6 +193,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return response;
   } else if (userAccount.accountType === 'employer') {
     const profile = (await getCurrentProfileInfo(request)) as Employer;
+    // console.log('👤 [ACTION] Employer profile:', profile);
     if (!profile) {
       return Response.json({
         success: false,
@@ -190,9 +215,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Get the account type and profile info
   const accountType = await getCurrentUserAccountType(request);
+  // console.log('🚀 Loader: Account Type', accountType);
+
   let profile = await getCurrentProfileInfo(request);
 
   if (!profile) {
+    // console.log('❌ [DEBUG] No profile found!');
     return Response.json({
       success: false,
       error: { message: 'Profile information not found.' },
@@ -205,10 +233,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // console.log('profile.account?.accountStatus', profile.account?.accountStatus);
     // If account status is published, redirect to dashboard
     if (profile.account?.accountStatus === 'published') {
+      // console.log('🔀 [DEBUG] Redirect: Already onboarded, published → /dashboard');
       return redirect('/dashboard');
     }
     // If account is onboarded but not published, redirect to identifying route
     else {
+      // console.log('🔀 [DEBUG] Redirect: Already onboarded, not published → /identification');
       return redirect('/identification');
     }
   }
@@ -217,7 +247,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     profile = profile as Employer;
 
     const bioInfo = await getAccountBio(profile.account);
-    const employerIndustries = await getEmployerIndustries(profile);
+    const employerIndustriesRaw = await getEmployerIndustries(profile);
+
+    const employerIndustries = employerIndustriesRaw.map(i => ({
+      id: i.id,
+      name: i.label, // 💥 MAP label TO name!
+    }));
+
+    // 🟢 PATCH: inject mapped industries into the profile object
+    profile.industries = employerIndustries;
+
     const allIndustries = await getAllIndustries();
     const yearsInBusiness = await getEmployerYearsInBusiness(profile);
     const employerBudget = await getEmployerBudget(profile);
@@ -226,11 +265,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       await getEmployerDashboardData(request);
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount;
 
+    // console.log('🟡 LOADER: employerIndustriesRaw:', employerIndustriesRaw);
+    // console.log('🟢 LOADER: employerIndustries (mapped):', employerIndustries);
+    // console.log('🔵 LOADER: currentProfile:', profile);
+
     return Response.json({
       accountType,
       bioInfo,
-      employerIndustries,
-      allIndustries,
+      employerIndustries, // ← SELECTED industries for this employer (can be empty)
+      allIndustries, // ← ALL possible industries (for the multi-select/search)
       currentProfile: profile,
       yearsInBusiness,
       employerBudget,
@@ -300,6 +343,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     );
 
+    // Focused image/cert log
+    // Safely parse portfolio and other arrays
+    // const processedProfile = {
+    //   profile,
+    //   portfolio: safeParseArray(profile.portfolio),
+    //   workHistory: safeParseArray(profile.workHistory),
+    //   certificates: safeParseArray(profile.certificates),
+    //   educations: safeParseArray(profile.educations),
+    // };
+
     const educations = profile.educations;
     const workHistory = profile.workHistory;
 
@@ -323,6 +376,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const initialSkills = await fetchSkills(true, 10);
     const freelancerSkills = await fetchFreelancerSkills(profile.id);
 
+    // Show summary
+    // console.log('🟩 [DEBUG] Loader response keys:', {
+    //   portfolioCount: processedPortfolio.length,
+    //   certificatesCount: processedCertificates.length,
+    //   portfolioSample: processedPortfolio.slice(0, 1),
+    // });
+
     return Response.json({
       accountType,
       bioInfo,
@@ -345,6 +405,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
+  // console.log('❌ [DEBUG] Account type not found!');
   return Response.json({
     success: false,
     error: { message: 'Account type not found.' },

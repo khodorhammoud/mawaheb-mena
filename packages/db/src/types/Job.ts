@@ -27,6 +27,9 @@ export type JobFilter = {
   pageSize?: number;
   jobIdsToExclude?: number[]; // add this to exclude job applied to
   query?: string;
+  budget?: number;
+  workingHoursFrom?: number;
+  workingHoursTo?: number;
 };
 
 export type JobApplication = {
