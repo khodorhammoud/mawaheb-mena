@@ -6,6 +6,7 @@ import {
   getCurrentProfileInfo,
   getCurrentUserAccountType,
   getCurrentUserAccountInfo,
+  getCurrentUser,
 } from '~/servers/user.server';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Employer, Freelancer } from '@mawaheb/db/types';
@@ -43,7 +44,8 @@ function safeParseArray(data: any): any[] {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const userId = await requireUserVerified(request);
+  // const userId = await requireUserVerified(request);
+
   const formData = await request.formData();
   // console.log('🟢 [DEBUG] FormData:', Object.fromEntries(formData.entries()));
   // for (const [key, value] of formData.entries()) {
@@ -187,8 +189,7 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
     }
-
-    console.log('✅ Final response before return:', await response.clone().json());
+    // console.log('✅ Final response before return:', await response.clone().json());
 
     return response;
   } else if (userAccount.accountType === 'employer') {
@@ -218,7 +219,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // console.log('🚀 Loader: Account Type', accountType);
 
   let profile = await getCurrentProfileInfo(request);
-
   if (!profile) {
     // console.log('❌ [DEBUG] No profile found!');
     return Response.json({
@@ -226,6 +226,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: { message: 'Profile information not found.' },
       status: 404,
     });
+  }
+
+  const currentUser = await getCurrentUser(request);
+
+  if (!currentUser || !profile) {
+    // Return safe object for loader (don't break frontend)
+    return Response.json(
+      {
+        success: false,
+        error: { message: 'User/profile not found.' },
+        accountType: null,
+        currentProfile: null,
+      },
+      { status: 404 }
+    );
   }
 
   // Redirect to identifying route or dashboard based on onboarding status and account status
@@ -243,10 +258,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
+  const isOwner = profile.account.user.id === currentUser.id;
+  const accountOnboarded = profile.account.user.isOnboarded;
+  const bioInfo = await getAccountBio(profile.account);
+
   if (accountType === AccountType.Employer) {
     profile = profile as Employer;
 
-    const bioInfo = await getAccountBio(profile.account);
     const employerIndustriesRaw = await getEmployerIndustries(profile);
 
     const employerIndustries = employerIndustriesRaw.map(i => ({
@@ -278,16 +296,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       yearsInBusiness,
       employerBudget,
       about,
-      accountOnboarded: profile.account.user.isOnboarded,
+      accountOnboarded,
       activeJobCount,
       draftedJobCount,
       closedJobCount,
       totalJobCount,
+      isOwner,
     });
   } else if (accountType === AccountType.Freelancer) {
     profile = profile as Freelancer;
 
-    const bioInfo = await getAccountBio(profile.account);
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
     let videoUrl = null;
@@ -315,43 +333,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       videoUrl = null;
     }
 
-    // Process portfolio
-    const portfolio = Array.isArray(profile.portfolio)
-      ? profile.portfolio
-      : JSON.parse(profile.portfolio || '[]');
-
-    const processedPortfolio = await Promise.all(
-      portfolio.map(async item => {
-        if (item.projectImageName) {
-          item.projectImageUrl = await getAttachmentSignedURL(item.projectImageName);
-        }
-        return item;
-      })
-    );
-
-    // Process certificates
-    const certificates = Array.isArray(profile.certificates)
-      ? profile.certificates
-      : JSON.parse(profile.certificates || '[]');
-
-    const processedCertificates = await Promise.all(
-      certificates.map(async item => {
-        if (item.attachmentName) {
-          item.attachmentUrl = await getAttachmentSignedURL(item.attachmentName);
-        }
-        return item;
-      })
-    );
-
     // Focused image/cert log
     // Safely parse portfolio and other arrays
-    // const processedProfile = {
-    //   profile,
-    //   portfolio: safeParseArray(profile.portfolio),
-    //   workHistory: safeParseArray(profile.workHistory),
-    //   certificates: safeParseArray(profile.certificates),
-    //   educations: safeParseArray(profile.educations),
-    // };
+    const processedProfile = {
+      profile,
+      portfolio: safeParseArray(profile.portfolio),
+      workHistory: safeParseArray(profile.workHistory),
+      certificates: safeParseArray(profile.certificates),
+      educations: safeParseArray(profile.educations),
+    };
 
     const educations = profile.educations;
     const workHistory = profile.workHistory;
@@ -393,8 +383,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      portfolio: JSON.stringify(processedPortfolio),
-      certificates: JSON.stringify(processedCertificates),
+      portfolio: profile.portfolio,
+      certificates: profile.certificates,
       educations,
       workHistory,
       freelancerAvailability: availabilityData,
