@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -6,40 +6,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { IoPencilSharp } from "react-icons/io5";
-import { useFetcher } from "@remix-run/react";
-import SearcheableTagSelector from "~/common/SearcheableTagSelector";
-import { Badge } from "~/components/ui/badge";
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { IoPencilSharp } from 'react-icons/io5';
+import { useFetcher } from '@remix-run/react';
+import SearcheableTagSelector from '~/common/SearcheableTagSelector';
+import { Badge } from '~/components/ui/badge';
 
 interface IndustriesProps {
   profile: { industries?: { id: number; name: string }[] };
   canEdit?: boolean;
 }
 
-export default function Industries({
-  profile,
-  canEdit = true,
-}: IndustriesProps) {
+export default function Industries({ profile, canEdit = true }: IndustriesProps) {
   const [industriesOpen, setIndustriesOpen] = useState(false);
   const [showIndustryMessage, setShowIndustryMessage] = useState(false);
   const [showAll, setShowAll] = useState(false);
+
   const industryFetcher = useFetcher<{
     success?: boolean;
     error?: { message: string };
   }>();
 
-  const [selectedIndustries, setSelectedIndustries] = useState<
-    { id: number; name: string }[]
-  >(profile.industries || []);
+  const [selectedIndustries, setSelectedIndustries] = useState<{ id: number; name: string }[]>(
+    profile.industries || []
+  );
 
   useEffect(() => {
     setSelectedIndustries(profile.industries || []);
   }, [profile.industries]);
 
   useEffect(() => {
-    if (industryFetcher.data?.success || industryFetcher.data?.error) {
+    if (industryFetcher.data?.success) {
+      setIndustriesOpen(false);
+      setShowIndustryMessage(false);
+    } else if (industryFetcher.data?.error) {
       setShowIndustryMessage(true);
     }
   }, [industryFetcher.data]);
@@ -51,40 +52,38 @@ export default function Industries({
     }
   };
 
-  const handleSubmit = () => {
-    const industriesWithIds = selectedIndustries.map((industry) => ({
-      id: industry.id,
-    }));
+  // console.log('🤖 INDUSTRIES SERVED PROFILE:', profile);
+  // console.log('🤖 INDUSTRIES:', profile.industries);
 
+  const handleSubmit = () => {
+    const industriesPayload = selectedIndustries.map(industry => ({ id: industry.id }));
     industryFetcher.submit(
       {
-        industries: JSON.stringify(industriesWithIds),
-        "target-updated": "freelancer-industries",
+        'employer-industries': JSON.stringify(industriesPayload),
+        'target-updated': 'employer-industries',
       },
-      { method: "post" }
+      { method: 'post' }
     );
   };
 
-  const maxVisibleIndustries = 3;
-  const extraIndustries = selectedIndustries.length - maxVisibleIndustries;
-  const visibleIndustries = selectedIndustries.slice(0, maxVisibleIndustries);
-  const hiddenIndustries = selectedIndustries.slice(maxVisibleIndustries);
+  const maxVisible = 2;
+  const visible = selectedIndustries.slice(0, maxVisible);
+  const extraCount = selectedIndustries.length - maxVisible;
 
   return (
     <div className="ml-auto flex flex-col xl:mr-20 md:mr-10 mr-0 gap-2">
       <div className="flex items-center justify-between w-full">
-        <span className="lg:text-lg sm:text-base text-sm font-medium">
-          Industries
-        </span>
+        <span className="relative 2xl:text-lg lg:text-base text-sm font-medium">Industries</span>
 
         {canEdit && (
           <Dialog open={industriesOpen} onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>
               <Button variant="link">
-                <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
+                <IoPencilSharp className="lg:relative absolute lg:left-0 left-20 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white w-[500px] max-h-[80vh] overflow-y-auto">
+
+            <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="mt-3">Industries</DialogTitle>
               </DialogHeader>
@@ -92,29 +91,28 @@ export default function Industries({
               {showIndustryMessage && industryFetcher.data?.error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                   <strong className="font-bold">Error: </strong>
-                  <span className="block sm:inline">
-                    {industryFetcher.data.error.message}
-                  </span>
+                  <span className="block sm:inline">{industryFetcher.data.error.message}</span>
                 </div>
               )}
 
-              <SearcheableTagSelector<{ id: number; name: string }>
-                dataType="industry"
-                setSelectedItems={setSelectedIndustries}
-                selectedItems={selectedIndustries}
-                itemLabel={(item) => item.name}
-                itemKey={(item) => item.id}
-                formName="freelancer-industries"
-                fieldName="freelancer-industries"
-                searchPlaceholder="Search or type industry"
-              />
+              <div className="mt-6 ml-1">
+                <SearcheableTagSelector<{ id: number; name: string }>
+                  dataType="industry"
+                  setSelectedItems={setSelectedIndustries}
+                  selectedItems={selectedIndustries}
+                  itemLabel={item => item.name}
+                  itemKey={item => item.id}
+                  formName="employer-industries"
+                  fieldName="employer-industries"
+                  searchPlaceholder="Search or type industry"
+                />
+              </div>
 
               <DialogFooter className="mt-6">
                 <Button
                   className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
-                  type="submit"
                   onClick={handleSubmit}
-                  disabled={industryFetcher.state === "submitting"}
+                  disabled={industryFetcher.state === 'submitting'}
                 >
                   Save
                 </Button>
@@ -124,42 +122,40 @@ export default function Industries({
         )}
       </div>
 
+      {/* Shown industries */}
       <div className="flex flex-wrap items-start gap-2 w-full">
         {selectedIndustries.length > 0 ? (
           <>
-            {visibleIndustries.map((industry) => (
+            {visible.map(ind => (
               <Badge
-                key={industry.id}
-                className="px-4 py-1 text-sm bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
+                key={ind.id}
+                className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm"
               >
-                {industry.name}
+                {ind.name}
               </Badge>
             ))}
-
-            {extraIndustries > 0 && (
+            {extraCount > 0 && (
               <Dialog open={showAll} onOpenChange={setShowAll}>
                 <DialogTrigger asChild>
                   <Badge
                     variant="outline"
-                    className="px-4 py-1 text-sm bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
+                    className="xl:px-4 px-3 py-1 xl:text-sm text-xs bg-gray-200 text-gray-700 rounded-2xl shadow-sm hover:bg-gray-300"
                   >
-                    +{extraIndustries} more
+                    +{extraCount} more
                   </Badge>
                 </DialogTrigger>
                 <DialogContent className="bg-white max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="text-lg">
-                      All Industries
-                    </DialogTitle>
+                    <DialogTitle className="xl:text-lg text-base">All Industries</DialogTitle>
                   </DialogHeader>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-                    {hiddenIndustries.map((industry) => (
+                  <div className="flex flex-wrap items-start gap-2 mt-4">
+                    {selectedIndustries.map(ind => (
                       <Badge
-                        key={industry.id}
-                        className="px-3 py-1 text-sm bg-blue-100 text-gray-900 rounded-xl shadow-sm flex items-center justify-center"
+                        key={ind.id}
+                        className="px-3 py-1 xl:text-sm text-xs bg-blue-100 text-gray-900 rounded-2xl shadow-sm flex items-center justify-center"
                       >
-                        {industry.name}
+                        {ind.name}
                       </Badge>
                     ))}
                   </div>
@@ -168,9 +164,7 @@ export default function Industries({
             )}
           </>
         ) : (
-          <span className="text-gray-500 text-sm italic">
-            No industries added
-          </span>
+          <span className="text-gray-500 text-sm italic">No industries added</span>
         )}
       </div>
     </div>

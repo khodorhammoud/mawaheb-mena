@@ -3,13 +3,22 @@ import { RepeatableInputType } from '../types';
 import type { FieldTemplateState, FormStateType } from '../types';
 import { IoBriefcaseSharp } from 'react-icons/io5';
 import { RiAwardFill } from 'react-icons/ri';
-import { FaTimes, FaGraduationCap } from 'react-icons/fa';
+import { FaTimes, FaGraduationCap, FaArrowRight } from 'react-icons/fa';
 import { parseHtmlContent } from '~/utils/api-helpers';
 
 interface FieldTemplateProps {
   value: FormStateType | RepeatableInputType[];
   cardTitle: string;
 }
+
+const getFileType = (fileName = '') => {
+  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+  if (['pdf'].includes(ext)) return 'pdf';
+  if (['doc', 'docx'].includes(ext)) return 'word';
+  if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'video';
+  return 'unknown';
+};
 
 export const TextFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
@@ -32,10 +41,6 @@ export const TextFieldTemplate: FieldTemplateState = {
     // });
 
     const { isHtml, content: sanitizedContent } = parseHtmlContent(value);
-
-    const parsed = parseHtmlContent(value as string);
-    // console.log("✅ [FieldTemplates] Parsed Content:", parsed);
-
     // console.log("✅ Parsed Content:", sanitizedContent); // Debugging line
 
     return (
@@ -121,25 +126,113 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
         {portfolio.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex w-full rounded-xl mt-4 bg-white">
-              <img
-                className="w-1/4 object-cover rounded-l-xl"
-                src={
-                  item.projectImageUrl ||
-                  'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg'
-                }
-                alt={item.projectName || 'Portfolio Image'}
-              />
+              <div className="w-1/4 flex items-center justify-center bg-blue-50 rounded-l-xl min-h-[112px]">
+                {(() => {
+                  const fileType = getFileType(item.projectImageName || item.projectImageUrl);
+
+                  if (fileType === 'image' && item.projectImageUrl) {
+                    return (
+                      <div className="relative">
+                        <img
+                          className="object-cover w-full h-full rounded-l-xl"
+                          src={item.projectImageUrl}
+                          alt={item.projectName || 'Portfolio Image'}
+                        />
+                        <a
+                          href={item.projectImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
+                        >
+                          Open Image
+                        </a>
+                      </div>
+                    );
+                  }
+                  if (fileType === 'pdf' && item.projectImageUrl) {
+                    return (
+                      <div className="relative">
+                        <embed
+                          src={item.projectImageUrl}
+                          type="application/pdf"
+                          className="object-cover w-full rounded-l-xl"
+                          title={item.projectImageName}
+                        />
+                        <a
+                          href={item.projectImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
+                        >
+                          Open PDF
+                        </a>
+                      </div>
+                    );
+                  }
+                  if (fileType === 'word' && item.projectImageUrl) {
+                    return (
+                      <div className="relative">
+                        <div className="relative w-full h-64 overflow-hidden rounded-l-xl">
+                          <iframe
+                            src={`https://docs.google.com/gview?url=${encodeURIComponent(item.projectImageUrl)}&embedded=true`}
+                            className="w-full"
+                            style={{
+                              height: '400px', // Make iframe tall
+                              marginTop: '-50px', // Move it up to hide the bottom toolbar
+                            }}
+                            title={item.projectImageName}
+                          />
+                        </div>
+
+                        <a
+                          href={item.projectImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
+                        >
+                          Open in Docs
+                        </a>
+                      </div>
+                    );
+                  }
+                  if (fileType === 'video' && item.projectImageUrl) {
+                    return (
+                      <video
+                        className="w-full h-24 rounded-l-xl"
+                        src={item.projectImageUrl}
+                        controls
+                      />
+                    );
+                  }
+                  // Unknown or missing file, fallback
+                  return (
+                    <div className="flex flex-col items-center justify-center w-full h-full py-4">
+                      <svg
+                        className="w-10 h-10 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6z" />
+                      </svg>
+                      <span className="text-xs mt-2 text-gray-400 text-center break-all px-2">
+                        No preview
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                <h1 className="xl:text-xl lg:text-lg text-base mb-4">
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex">
                   {item.projectName || 'Unnamed Project'}
                   {item.projectLink && (
                     <a
                       href={item.projectLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 underline"
+                      className="inline-flex items-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition"
                     >
                       View Project
+                      <FaArrowRight className="w-2 h-3 mt-[1px] group-hover:translate-x-1 transition-transform" />
                     </a>
                   )}
                 </h1>
@@ -340,17 +433,15 @@ export const IncrementFieldTemplate: FieldTemplateState = {
   ),
 };
 
-// function extractYouTubeId(url: string) {
-//   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-//   const match = url.match(regExp);
-//   return match && match[2].length === 11 ? match[2] : null;
-// }
-
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
     const videoUrl = value as string;
-    // Generate thumbnail on mount for non-YouTube videos
-    const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+    console.log('VideoFieldTemplate value:', value);
+
+    // Avoid crash: Only call includes if videoUrl is string
+    const isYouTube =
+      typeof videoUrl === 'string' &&
+      (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
 
     // States
     const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -375,18 +466,15 @@ export const VideoFieldTemplate: FieldTemplateState = {
     };
 
     React.useEffect(() => {
-      if (!isYouTube) {
+      if (!isYouTube && typeof videoUrl === 'string') {
         captureThumbnail(videoUrl);
       }
     }, [videoUrl, isYouTube]);
 
-    // Check if the URL is a YouTube video
-
     // Validate if the URL is a valid video file
-    const isValidVideoUrl = (url: string) => {
-      const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
-      return videoExtensions.some(ext => url.endsWith(ext));
-    };
+    const isValidVideoUrl = (url: string) =>
+      typeof url === 'string' &&
+      ['.mp4', '.webm', '.ogg', '.mov', '.mkv'].some(ext => url.endsWith(ext));
 
     if (!isYouTube && !isValidVideoUrl(videoUrl)) {
       return (

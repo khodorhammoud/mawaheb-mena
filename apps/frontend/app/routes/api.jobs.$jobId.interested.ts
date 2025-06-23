@@ -10,6 +10,7 @@ import { JobStatus } from '@mawaheb/db/enums';
 import { getProfileInfo } from '~/servers/user.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  console.log('Interested vutton loader activated 🎁');
   // user must be a published freelancer
   const userId = await requireUserIsFreelancerPublished(request);
   if (!userId) {
@@ -34,6 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
+  // console.log('Interested vutton action activated 🎁');
   // user must be a published freelancer
   const userId = await requireUserIsFreelancerPublished(request);
   const { jobId } = params; // Extract the jobId

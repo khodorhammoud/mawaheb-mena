@@ -1,35 +1,37 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
-import { getJobsFiltered } from '../servers/job.server';
-import { requireUserIsFreelancerPublished } from '~/auth/auth.server';
-import { JobFilter } from '@mawaheb/db/types';
+// // this endpoint calls a function that filteres jobs that will appear in SingleJobView, according to matching skills, if any, and according to job level (senior/mid_level) + excluding jobs that the freelancer had applied to of course :)
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  // user must be a published freelancer
-  const userId = await requireUserIsFreelancerPublished(request);
-  if (!userId) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  // check if user is active
-  /* if (user.account.accountStatus !== AccountStatus.Published) {
-        return Response.json({ error: "User is not active" }, { status: 401 });
-    } */
-  const filter: JobFilter = {};
+// import { LoaderFunctionArgs } from '@remix-run/node';
+// import { getSuggestedJobsForJob, getJobById } from '../servers/job.server';
+// import { requireUserIsFreelancerPublished } from '~/auth/auth.server';
+// import { getFreelancerIdByUserId } from '~/servers/freelancer.server';
 
-  //  get query params for related job type
-  const url = new URL(request.url);
-  const jobType = url.searchParams.get('jobType');
-  if (jobType == 'by-employer') {
-    // get employer id from query params
-    const employerId = parseInt(url.searchParams.get('employerId') || '0');
-    if (employerId > 0) {
-      filter.employerId = employerId;
-      filter.pageSize = 2;
-    }
-  }
+// export async function loader({ request }: LoaderFunctionArgs) {
+//   console.log('🔥 LOADER CALLED');
+//   // Make sure user is a published freelancer
+//   const userId = await requireUserIsFreelancerPublished(request);
+//   if (!userId) {
+//     return Response.json({ error: 'Unauthorized' }, { status: 401 });
+//   }
 
-  // some very complex fingerprint matching happens here
+//   const freelancerId = await getFreelancerIdByUserId(userId);
+//   if (!freelancerId) {
+//     // No freelancer found for this userId
+//     return Response.json({ jobs: [] }, { status: 200 });
+//   }
+//   console.log('freelancerId: ', freelancerId);
 
-  const jobs = await getJobsFiltered(filter);
+//   const url = new URL(request.url);
+//   const jobId = url.searchParams.get('jobId');
+//   let suggestedJobs = [];
 
-  return Response.json({ jobs });
-}
+//   if (jobId) {
+//     // Get the current job by id
+//     const currentJob = await getJobById(Number(jobId));
+//     if (currentJob) {
+//       // Fetch suggested jobs for this job
+//       suggestedJobs = await getSuggestedJobsForJob(currentJob, freelancerId, 4); // 4 is the default, change if needed
+//     }
+//   }
+
+//   return Response.json({ jobs: suggestedJobs });
+// }

@@ -31,6 +31,7 @@ export type FreelancerOnboardingData = {
   currentProfile: Freelancer;
   about: string;
   videoLink: string;
+  videoUrl: string;
   hourlyRate: number;
   accountOnboarded: boolean;
   yearsOfExperience: number;
