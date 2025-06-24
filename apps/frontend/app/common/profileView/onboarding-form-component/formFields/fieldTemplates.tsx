@@ -126,6 +126,7 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
         {portfolio.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex w-full rounded-xl mt-4 bg-white">
+              {/* Portfolios Photo */}
               <div className="w-1/4 flex items-center justify-center bg-blue-50 rounded-l-xl min-h-[112px]">
                 {(() => {
                   const fileType = getFileType(item.projectImageName || item.projectImageUrl);
@@ -221,29 +222,41 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                   );
                 })()}
               </div>
+
+              {/* Portfolios Main Content: (Title - Description - View Project Button) */}
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex">
-                  {item.projectName || 'Unnamed Project'}
-                  {item.projectLink && (
-                    <a
-                      href={item.projectLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition"
-                    >
-                      View Project
-                      <FaArrowRight className="w-2 h-3 mt-[1px] group-hover:translate-x-1 transition-transform" />
-                    </a>
+                {/* TITLE + VIEW PROJECT */}
+                <div className="flex justify-between items-center w-full">
+                  {/* TIILE */}
+                  <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex break-all">
+                    {item.projectName || 'Unnamed Project'}
+                  </h1>
+                  {/* VIEW PROJECT */}
+                  <h1 className="xl:text-xl lg:text-lg text-base self-start mt-1">
+                    {item.projectLink && (
+                      <a
+                        href={item.projectLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition whitespace-nowrap"
+                      >
+                        View Project
+                        <FaArrowRight className="w-2 h-3 group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    )}
+                  </h1>
+                </div>
+                {/* DESCRIPTION */}
+                <div className="">
+                  {item.projectDescription && (
+                    <div
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html: item.projectDescription,
+                      }}
+                    />
                   )}
-                </h1>
-                {item.projectDescription && (
-                  <div
-                    className="text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: item.projectDescription,
-                    }}
-                  />
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -278,10 +291,15 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
         {workHistory.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex flex-col w-full rounded-xl md:mt-4 mt-2 bg-white lg:p-6 p-4 md:gap-3 gap-1">
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 md:gap-2 gap-1">
-                <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
-                {item.title || 'Job Title'}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {item.title || 'Job Title'}
+                </h1>
+              </div>
+
               <div className="flex gap-3 items-center">
                 <p>{item.company || 'Company Name'}</p>
                 <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
@@ -341,10 +359,15 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
               key={index}
               className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-1"
             >
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
-                <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {item.certificateName || 'Certificate Name'}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 mt-[2px] text-primaryColor" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {item.certificateName || 'Certificate Name'}
+                </h1>
+              </div>
+
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{item.issuedBy || 'Issuer Name'}</p>
                 <span className="xl:text-2xl lg:text-xl text-lg text-gray-200 font-extralight">
@@ -388,11 +411,16 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
               key={index}
               className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-2"
             >
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
-                <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {degree ?? 'Degree Name'}
-                {institution && `, ${institution}`}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 mt-[2px] lg:w-5 w-4 text-primaryColor" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {degree ?? 'Degree Name'}
+                  {institution && `, ${institution}`}
+                </h1>
+              </div>
+
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{institution ?? 'Institution Name'}</p>
                 <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
