@@ -394,6 +394,18 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     // console.log('🔥 FREELANCER SERVER: Received Skills Form Data:', skills);
     try {
       const skillsParsed = JSON.parse(skills as string) as FreelancerSkill[];
+      for (const skill of skillsParsed) {
+        if (!skill.yearsOfExperience || skill.yearsOfExperience < 1) {
+          return Response.json(
+            {
+              success: false,
+              error: { message: 'Each skill must have at least 1 year of experience.' },
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       const skillsStatus = await updateFreelancerSkills(freelancer.id, skillsParsed);
 
       return Response.json({
@@ -758,7 +770,8 @@ export async function updateFreelancerSkills(
       freelancerId,
       skillId: skill.skillId,
       label: skill.label || '',
-      yearsOfExperience: skill.yearsOfExperience,
+      // 🚩 Force yearsOfExperience to be at least 1
+      yearsOfExperience: Math.max(1, Number(skill.yearsOfExperience) || 1),
       isStarred: skill.isStarred || false,
     }));
 
