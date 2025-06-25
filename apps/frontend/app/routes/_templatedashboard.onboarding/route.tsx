@@ -30,9 +30,10 @@ import {
   fetchFreelancerSkills,
   updateFreelancerVideoLink,
 } from '~/servers/freelancer.server';
-import { getAttachmentSignedURL, uploadFile } from '~/servers/cloudStorage.server';
+import { extractS3Key, getAttachmentSignedURL, uploadFile } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
 import { isValidYouTubeUrl } from '~/utils/video';
+import { getFileType } from '~/common/profileView/onboarding-form-component/formFields/fieldTemplates';
 
 // Util to safely parse array data
 function safeParseArray(data: any): any[] {
@@ -99,22 +100,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 🚩 2. File Upload (user uploaded a video file)
     if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
-      console.log('[ACTION] Got a video file to upload:', {
-        name: rawVideoEntry.name,
-        size: rawVideoEntry.size,
-        type: rawVideoEntry.type,
-      });
+      // console.log('[ACTION] Got a video file to upload:', {
+      //   name: rawVideoEntry.name,
+      //   size: rawVideoEntry.size,
+      //   type: rawVideoEntry.type,
+      // });
 
       // Upload to S3 and get URL
       const uploadResult = await uploadFile('freelancer-video', rawVideoEntry); // uses S3!
-      console.log('[ACTION] S3 Upload Result:', uploadResult);
+      // console.log('[ACTION] S3 Upload Result:', uploadResult);
 
       const s3Url = uploadResult.url;
-      console.log('[ACTION] S3 URL to be saved in DB:', s3Url);
+      // console.log('[ACTION] S3 URL to be saved in DB:', s3Url);
 
       // Save to DB
       const dbResult = await updateFreelancerVideoLink(profile.id, s3Url);
-      console.log('[ACTION] DB Update Result:', dbResult);
+      // console.log('[ACTION] DB Update Result:', dbResult);
 
       return Response.json({ success: { message: 'Video file uploaded to S3 and saved!' } });
     }
@@ -208,6 +209,93 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   return null;
+}
+
+function normalizePortfolioFiles(portfolio) {
+  return portfolio.map(item => {
+    const fileType = getFileType(
+      item.projectImageName || item.attachmentName || item.projectImageUrl || item.attachmentUrl
+    );
+    if (fileType === 'pdf' || fileType === 'word' || fileType === 'video') {
+      return {
+        ...item,
+        projectImageUrl: item.attachmentUrl,
+        projectImageName: item.attachmentName,
+      };
+    }
+    return item;
+  });
+}
+
+// Signs any S3 (non-public) URLs in your portfolio so the frontend can use them safely
+async function signPortfolioFiles(portfolio: any[]): Promise<any[]> {
+  if (!Array.isArray(portfolio)) return [];
+
+  return await Promise.all(
+    portfolio.map(async item => {
+      // Helper: Extract S3 key from any URL or key
+      const getS3Key = (urlOrKey?: string) => {
+        if (!urlOrKey) return '';
+        if (urlOrKey.startsWith('http') && urlOrKey.includes('.amazonaws.com/')) {
+          // https://bucket.s3.region.amazonaws.com/key?X-Amz-Signature=...
+          return urlOrKey.split('.amazonaws.com/')[1].split('?')[0];
+        }
+        return urlOrKey;
+      };
+
+      let signedProjectImageUrl = item.projectImageUrl;
+      let signedAttachmentUrl = item.attachmentUrl;
+
+      // --- Always re-sign, never trust what’s in DB ---
+      if (
+        signedProjectImageUrl &&
+        typeof signedProjectImageUrl === 'string' &&
+        !signedProjectImageUrl.startsWith('blob:')
+      ) {
+        try {
+          const key = getS3Key(signedProjectImageUrl);
+          signedProjectImageUrl = key ? await getAttachmentSignedURL(key) : '';
+        } catch (err) {
+          console.error(
+            '[signPortfolioFiles] Could not sign projectImageUrl',
+            signedProjectImageUrl,
+            err
+          );
+        }
+      }
+
+      if (
+        signedAttachmentUrl &&
+        typeof signedAttachmentUrl === 'string' &&
+        !signedAttachmentUrl.startsWith('blob:')
+      ) {
+        try {
+          const key = extractS3Key(signedAttachmentUrl);
+          signedAttachmentUrl = key ? await getAttachmentSignedURL(key) : '';
+        } catch (err) {
+          console.error(
+            '[signPortfolioFiles] Could not sign attachmentUrl',
+            signedAttachmentUrl,
+            err
+          );
+        }
+      }
+
+      // console.log('portfolio item after sign:', {
+      //   projectImageUrl: signedProjectImageUrl,
+      //   attachmentUrl: signedAttachmentUrl,
+      //   fileType: getFileType(
+      //     item.projectImageName || item.attachmentName || item.projectImageUrl || item.attachmentUrl
+      //   ),
+      // });
+
+      return {
+        ...item,
+        projectImageUrl: signedProjectImageUrl,
+        attachmentUrl: signedAttachmentUrl,
+      };
+    })
+  );
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -305,6 +393,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   } else if (accountType === AccountType.Freelancer) {
     profile = profile as Freelancer;
+    // console.log('[LOADER] Profile.portfolio BEFORE:', profile.portfolio);
 
     const about = await getFreelancerAbout(profile);
     const { videoLink } = profile;
@@ -333,11 +422,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       videoUrl = null;
     }
 
-    // Focused image/cert log
-    // Safely parse portfolio and other arrays
+    // 1. Parse and normalize
+    const normalizedPortfolio = normalizePortfolioFiles(safeParseArray(profile.portfolio));
+
+    // 2. Sign all file URLs (images, PDFs, docs, etc)
+    const processedPortfolio = await signPortfolioFiles(normalizedPortfolio);
+
     const processedProfile = {
       profile,
-      portfolio: safeParseArray(profile.portfolio),
+      portfolio: processedPortfolio,
       workHistory: safeParseArray(profile.workHistory),
       certificates: safeParseArray(profile.certificates),
       educations: safeParseArray(profile.educations),
@@ -373,6 +466,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     //   portfolioSample: processedPortfolio.slice(0, 1),
     // });
 
+    // console.log('FINAL portfolio sent to frontend:', processedPortfolio);
+
     return Response.json({
       accountType,
       bioInfo,
@@ -383,7 +478,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,
-      portfolio: profile.portfolio,
+      // 👇 Use processedProfile.portfolio to ensure signed URLs!
+      portfolio: processedProfile.portfolio,
+      // portfolio: profile.portfolio,
       certificates: profile.certificates,
       educations,
       workHistory,

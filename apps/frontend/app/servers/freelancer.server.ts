@@ -196,34 +196,73 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
       const portfolioParsed = JSON.parse(portfolio) as PortfolioFormFieldType[];
       const portfolioImages: (File | null)[] = [];
 
-      // Loop and update each portfolio item
       for (let index = 0; index < portfolioParsed.length; index++) {
-        const file = formData.get(`portfolio-attachment[${index}]`) as File | null;
+        const portfolioItem = portfolioParsed[index];
 
-        // If a file exists, upload it and set the public URL
+        // --- Handle File Uploads for Portfolio Item (image or non-image) ---
+        // If your frontend only supports a *single* file per project, and you want to decide type here:
+        const file = formData.get(`portfolio-attachment[${index}]`) as File | null;
         if (file && file.size > 0) {
-          const s3Result = await uploadFile('portfolio', file); // { key, bucket, url }
-          // Set the S3 URL in the portfolio entry
-          portfolioParsed[index].projectImageUrl = s3Result.url; // <- THIS is the url you show in UI
-          portfolioParsed[index].projectImageName = s3Result.key; // optional, save S3 key for future
-          // You can store the attachmentId here too if you save it in DB
-        }
-        // If image URL is a blob, clear it so only valid images remain
-        else if (
-          portfolioParsed[index].projectImageUrl &&
-          portfolioParsed[index].projectImageUrl.startsWith('blob:')
+          const s3Result = await uploadFile('portfolio', file); // { key, url, ... }
+
+          if (file.type.startsWith('image/')) {
+            // Image files: use projectImageUrl/projectImageName
+            portfolioItem.projectImageUrl = s3Result.url;
+            portfolioItem.projectImageName = file.name;
+            // Clean out doc fields if any
+            portfolioItem.attachmentUrl = '';
+            portfolioItem.attachmentName = '';
+            portfolioImages[index] = file;
+          } else {
+            // PDFs, DOCXs, ...: use attachmentUrl/attachmentName
+            portfolioItem.attachmentUrl = s3Result.url;
+            portfolioItem.attachmentName = file.name;
+            // Clean out image fields if any
+            portfolioItem.projectImageUrl = '';
+            portfolioItem.projectImageName = '';
+          }
+        } else if (
+          portfolioItem.projectImageUrl &&
+          typeof portfolioItem.projectImageUrl === 'string' &&
+          portfolioItem.projectImageUrl.startsWith('blob:')
         ) {
-          portfolioParsed[index].projectImageUrl = '';
-          portfolioParsed[index].projectImageName = '';
+          // Remove stale image blobs
+          portfolioItem.projectImageUrl = '';
+          portfolioItem.projectImageName = '';
+        } else if (
+          portfolioItem.attachmentUrl &&
+          typeof portfolioItem.attachmentUrl === 'string' &&
+          portfolioItem.attachmentUrl.startsWith('blob:')
+        ) {
+          // Remove stale doc blobs
+          portfolioItem.attachmentUrl = '';
+          portfolioItem.attachmentName = '';
         }
-        // If no file and no blob, just leave whatever's there (old S3 URL)
+
+        // --- If you have a *separate* field for attachment (pdf/docx) files, keep this (it won’t hurt) ---
+        const attachmentFile = formData.get(`portfolio-attachment-file[${index}]`) as File | null;
+        if (attachmentFile && attachmentFile.size > 0) {
+          const s3Result = await uploadFile('portfolio', attachmentFile);
+          portfolioItem.attachmentUrl = s3Result.url;
+          portfolioItem.attachmentName = attachmentFile.name;
+          // (optional) If you want to clean image fields:
+          // portfolioItem.projectImageUrl = '';
+          // portfolioItem.projectImageName = '';
+        } else if (
+          portfolioItem.attachmentUrl &&
+          typeof portfolioItem.attachmentUrl === 'string' &&
+          portfolioItem.attachmentUrl.startsWith('blob:')
+        ) {
+          portfolioItem.attachmentUrl = '';
+          portfolioItem.attachmentName = '';
+        }
       }
 
-      // Now save to DB (no blobs, only S3 URLs or empty string)
+      // --- Save to DB ---
       const portfolioStatus = await updateFreelancerPortfolio(
         freelancer,
         portfolioParsed,
-        portfolioImages
+        portfolioImages // Keep passing this in case you need it for old logic
       );
 
       return Response.json({

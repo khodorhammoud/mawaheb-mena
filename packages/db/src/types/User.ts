@@ -192,8 +192,14 @@ export type PortfolioFormFieldType = {
   projectLink: string;
   projectDescription: string;
   attachmentId?: number; // This will be set in the function
-  projectImageName?: string; // Name of the uploaded image
-  projectImageUrl?: string; // Pre-signed URL for accessing the image
+
+  // Existing image fields:
+  projectImageName?: string;
+  projectImageUrl?: string;
+
+  // Add these for PDFs, docs, etc:
+  attachmentUrl?: string; // S3 signed URL or Google Drive link
+  attachmentName?: string; // Name of the attached file (pdf/doc)
 };
 
 export type AttachmentsType = {
