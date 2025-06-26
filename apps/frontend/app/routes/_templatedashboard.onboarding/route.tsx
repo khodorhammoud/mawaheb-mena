@@ -30,9 +30,10 @@ import {
   fetchFreelancerSkills,
   updateFreelancerVideoLink,
 } from '~/servers/freelancer.server';
-import { getAttachmentSignedURL, uploadFile } from '~/servers/cloudStorage.server';
+import { getAttachmentSignedURL, uploadFile, saveAttachment } from '~/servers/cloudStorage.server';
 import { fetchSkills } from '~/servers/general.server';
 import { isValidYouTubeUrl } from '~/utils/video';
+import { FreelancerVideoAttachmentType } from '@mawaheb/db/types/enums';
 
 // Util to safely parse array data
 function safeParseArray(data: any): any[] {
@@ -91,7 +92,18 @@ export async function action({ request }: ActionFunctionArgs) {
       (typeof rawVideoEntry === 'string' && rawVideoEntry.trim() === '') ||
       (rawVideoEntry instanceof File && rawVideoEntry.size === 0)
     ) {
-      await updateFreelancerVideoLink(profile.id, null);
+      // Clear all video-related fields
+      const dbResult = await updateFreelancerVideoLink(
+        profile.id,
+        FreelancerVideoAttachmentType.Link, // Use Link as default when clearing
+        undefined, // Clear video_link
+        undefined // Clear video_attachment_id
+      );
+
+      if (!dbResult.success) {
+        return Response.json({ error: { message: 'Failed to remove video.' } }, { status: 500 });
+      }
+
       return Response.json({
         success: { message: 'Video removed from your profile!' },
       });
@@ -105,18 +117,34 @@ export async function action({ request }: ActionFunctionArgs) {
         type: rawVideoEntry.type,
       });
 
-      // Upload to S3 and get URL
-      const uploadResult = await uploadFile('freelancer-video', rawVideoEntry); // uses S3!
-      console.log('[ACTION] S3 Upload Result:', uploadResult);
+      // Upload file and save as attachment
+      const attachmentResult = await saveAttachment(rawVideoEntry, 'freelancer-introductory-video');
+      if (!attachmentResult.success) {
+        return Response.json(
+          { error: { message: 'Failed to upload video file.' } },
+          { status: 500 }
+        );
+      }
 
-      const s3Url = uploadResult.url;
-      console.log('[ACTION] S3 URL to be saved in DB:', s3Url);
+      console.log('[ACTION] Attachment Upload Result:', attachmentResult);
 
-      // Save to DB
-      const dbResult = await updateFreelancerVideoLink(profile.id, s3Url);
+      // Save to DB with attachment type (clears video_link, sets video_attachment_id and video_type)
+      const dbResult = await updateFreelancerVideoLink(
+        profile.id,
+        FreelancerVideoAttachmentType.Attachment,
+        undefined, // Clear video_link
+        attachmentResult.data.id // Set video_attachment_id
+      );
       console.log('[ACTION] DB Update Result:', dbResult);
 
-      return Response.json({ success: { message: 'Video file uploaded to S3 and saved!' } });
+      if (!dbResult.success) {
+        return Response.json(
+          { error: { message: 'Failed to save video attachment.' } },
+          { status: 500 }
+        );
+      }
+
+      return Response.json({ success: { message: 'Video file uploaded and saved!' } });
     }
 
     // 🚩 3. YouTube URL (user pasted a link)
@@ -131,7 +159,19 @@ export async function action({ request }: ActionFunctionArgs) {
           { status: 400 }
         );
       }
-      await updateFreelancerVideoLink(profile.id, url);
+
+      // Save to DB with link type (clears video_attachment_id, sets video_link and video_type)
+      const dbResult = await updateFreelancerVideoLink(
+        profile.id,
+        FreelancerVideoAttachmentType.Link,
+        url, // Set video_link
+        undefined // Clear video_attachment_id
+      );
+
+      if (!dbResult.success) {
+        return Response.json({ error: { message: 'Failed to save video link.' } }, { status: 500 });
+      }
+
       return Response.json({ success: { message: 'YouTube video saved!' } });
     }
 
@@ -307,8 +347,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     profile = profile as Freelancer;
 
     const about = await getFreelancerAbout(profile);
-    const { videoLink } = profile;
+    const { videoLink, videoAttachmentId, videoType } = profile as any;
     let videoUrl = null;
+    let videoFileName = null;
 
     if (videoLink && typeof videoLink === 'string') {
       if (
@@ -328,9 +369,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
           if (urlParts.length === 2) s3Key = urlParts[1].split('?')[0];
         }
         videoUrl = await getAttachmentSignedURL(s3Key);
+        console.log('signed video URL:', videoUrl);
       }
     } else {
       videoUrl = null;
+    }
+
+    // Fetch video attachment file name if it exists
+    if (videoType === 'attachment' && videoAttachmentId) {
+      try {
+        const { getAttachmentMetadataById } = await import('~/servers/cloudStorage.server');
+        const attachmentResult = await getAttachmentMetadataById(videoAttachmentId);
+        if (attachmentResult.success && attachmentResult.data) {
+          const metadata = attachmentResult.data as any;
+          // Extract filename from metadata
+          videoFileName =
+            metadata?.name ||
+            metadata?.metadata?.name ||
+            metadata?.storage?.name ||
+            `Video Attachment ${videoAttachmentId}`;
+        }
+      } catch (error) {
+        console.error('Error fetching video attachment metadata:', error);
+      }
     }
 
     // Focused image/cert log
@@ -380,6 +441,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       about,
       videoLink,
       videoUrl,
+      videoType,
+      videoAttachmentId,
+      videoFileName,
       hourlyRate: profile.hourlyRate,
       accountOnboarded: profile.account.user.isOnboarded,
       yearsOfExperience: profile.yearsOfExperience,

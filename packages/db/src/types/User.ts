@@ -4,6 +4,7 @@ import {
   CompensationType,
   DayOfWeek,
   EmployerAccountType,
+  FreelancerVideoAttachmentType,
   Language,
   ProjectType,
   Provider,
@@ -99,6 +100,8 @@ export type Freelancer = {
   portfolioDescription?: string;
   cvLink?: string;
   videoLink?: string;
+  videoAttachmentId?: number;
+  videoAttachmentType?: FreelancerVideoAttachmentType;
   certificates?: CertificateFormFieldType[];
   educations?: EducationFormFieldType[];
   yearsOfExperience?: number;

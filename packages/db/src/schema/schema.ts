@@ -53,6 +53,7 @@ import {
   JobsOpenTo,
   Provider,
   AttachmentBelongsTo,
+  FreelancerVideoAttachmentType,
 } from '../types/enums';
 
 export const providerEnum = pgEnum('provider', Object.values(Provider) as [string, ...string[]]);
@@ -69,6 +70,11 @@ export const employerAccountTypeEnum = pgEnum(
 export const accountTypeEnum = pgEnum(
   'account_type',
   Object.values(AccountType) as [string, ...string[]]
+);
+
+export const videoAttachmentTypeEnum = pgEnum(
+  'video_attachment_type',
+  Object.values(FreelancerVideoAttachmentType) as [string, ...string[]]
 );
 
 export const timesheetStatusEnum = pgEnum(
@@ -255,6 +261,8 @@ export const preferredWorkingTimesTable = pgTable('preferred_working_times', {
  * @property fields_of_expertise - text array with default ''
  * @property portfolio - text array with default ''
  * @property cv_link - text
+ * @property video_attachment_id - integer referencing the attachmentsTable id
+ * @property video_type - videoAttachmentTypeEnum
  * @property video_link - text
  * @property certificates_links - text array with default ''
  * @property years_of_experience - varchar with length 80
@@ -274,6 +282,8 @@ export const freelancersTable = pgTable('freelancers', {
   workHistory: jsonb('work_history').default(sql`'[]'::jsonb`),
   cvLink: text('cv_link'),
   videoLink: text('video_link'),
+  videoAttachmentId: integer('video_attachment_id').references(() => attachmentsTable.id),
+  videoType: videoAttachmentTypeEnum('video_type'),
   certificates: jsonb('certificates').default(sql`'[]'::jsonb`),
   educations: jsonb('educations').default(sql`'[]'::jsonb`),
   yearsOfExperience: integer('years_of_experience'),

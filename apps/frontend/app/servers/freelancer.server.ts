@@ -32,10 +32,12 @@ import {
   // uploadFileToBucket,sd
   saveAttachments,
   uploadFileToS3,
+  saveAttachment,
 } from './cloudStorage.server';
 import { FreelancerSkill } from '~/routes/_templatedashboard.onboarding/types';
 import { deleteAttachmentById } from '~/servers/attachment.server';
 import { isValidVideoUrl } from '~/utils/video';
+import { FreelancerVideoAttachmentType } from '@mawaheb/db/types/enums';
 
 /***************************************************
  ************Insert/update freelancer info************
@@ -148,9 +150,22 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
     // Handle File Upload
     if (rawVideoEntry instanceof File && rawVideoEntry.size > 0) {
       console.log('[DEBUG] Detected File upload:', rawVideoEntry.name, rawVideoEntry.size);
-      // TODO: Replace the line below with your real upload logic
-      const uploadedUrl = `/uploads/${rawVideoEntry.name}`;
-      await updateFreelancerVideoLink(freelancer.id, uploadedUrl);
+      const s3Result = await saveAttachment(rawVideoEntry, 'freelancer-introductory-video');
+      if (!s3Result.success) {
+        return Response.json(
+          { error: { message: 'Failed to upload video file.' } },
+          { status: 500 }
+        );
+      }
+      const uploadedUrl = s3Result.data.url;
+      console.log('[DEBUG] uploadedUrl:', uploadedUrl);
+      console.log('[DEBUG] s3Result:', s3Result);
+      await updateFreelancerVideoLink(
+        freelancer.id,
+        FreelancerVideoAttachmentType.Attachment,
+        undefined,
+        s3Result.data.id
+      );
       return Response.json({ success: { message: 'Video file uploaded and saved!' } });
     }
 
@@ -168,7 +183,7 @@ export async function handleFreelancerOnboardingAction(formData: FormData, freel
           { status: 400 }
         );
       }
-      await updateFreelancerVideoLink(freelancer.id, url);
+      await updateFreelancerVideoLink(freelancer.id, FreelancerVideoAttachmentType.Link, url);
       return Response.json({ success: { message: 'YouTube video saved!' } });
     }
 
@@ -804,9 +819,40 @@ export async function updateFreelancerAbout(
 }
 
 // for the video upload in freelancers onboarding view
-export async function updateFreelancerVideoLink(freelancerId: number, videoLink: string | null) {
-  // console.log('la nshoof iza l function inside freelancer.server is working');
-  return db
+export async function updateFreelancerVideoLink(
+  freelancerId: number,
+  attachmentType: FreelancerVideoAttachmentType,
+  videoLink?: string,
+  videoAttachmentId?: number
+) {
+  if (attachmentType === FreelancerVideoAttachmentType.Attachment) {
+    return db
+      .update(freelancersTable)
+      .set({
+        videoAttachmentId: videoAttachmentId,
+        videoType: attachmentType,
+        videoLink: undefined,
+      })
+      .where(eq(freelancersTable.id, freelancerId))
+      .then(() => ({ success: true }))
+      .catch(error => {
+        console.error('Error updating freelancer video link', error);
+        return { success: false };
+      });
+  }
+  if (attachmentType === FreelancerVideoAttachmentType.Link) {
+    return db
+      .update(freelancersTable)
+      .set({ videoLink, videoAttachmentId: undefined, videoType: attachmentType })
+      .where(eq(freelancersTable.id, freelancerId))
+      .then(() => ({ success: true }))
+      .catch(error => {
+        console.error('Error updating freelancer video link', error);
+        return { success: false };
+      });
+  }
+  return { success: false };
+  /* return db
     .update(freelancersTable)
     .set({ videoLink })
     .where(eq(freelancersTable.id, freelancerId))
@@ -814,7 +860,7 @@ export async function updateFreelancerVideoLink(freelancerId: number, videoLink:
     .catch(error => {
       console.error('Error updating freelancer video link', error);
       return { success: false };
-    });
+    }); */
 }
 
 export async function updateFreelancerYearsOfExperience(

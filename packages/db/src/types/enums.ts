@@ -19,6 +19,11 @@ export enum AccountType {
   Admin = 'admin',
 }
 
+export enum FreelancerVideoAttachmentType {
+  Link = 'link',
+  Attachment = 'attachment',
+}
+
 export enum EmployerAccountType {
   Personal = 'personal',
   Company = 'company',
