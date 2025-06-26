@@ -133,18 +133,45 @@ export const FormFields = {
     // Local state for controlled input
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [youtubeUrl, setYoutubeUrl] = useState<string>('');
+    const [existingAttachment, setExistingAttachment] = useState<{
+      videoType: string;
+      videoAttachmentId: number;
+      fileName?: string;
+    } | null>(null);
 
     // When value changes from parent, sync local state
     useEffect(() => {
-      if (typeof value === 'string') {
+      if (typeof value === 'string' && value.trim()) {
+        // Legacy format - YouTube URL
         setYoutubeUrl(value);
         setVideoFile(null);
+        setExistingAttachment(null);
       } else if (value instanceof File) {
+        // New file selected
         setVideoFile(value);
         setYoutubeUrl('');
+        setExistingAttachment(null);
+      } else if (typeof value === 'object' && value !== null) {
+        // New object format with videoType, videoLink, videoAttachmentId
+        const videoData = value as any;
+        if (videoData.videoType === 'link' && videoData.videoLink) {
+          setYoutubeUrl(videoData.videoLink);
+          setVideoFile(null);
+          setExistingAttachment(null);
+        } else if (videoData.videoType === 'attachment' && videoData.videoAttachmentId) {
+          setExistingAttachment({
+            videoType: videoData.videoType,
+            videoAttachmentId: videoData.videoAttachmentId,
+            fileName: videoData.fileName || `Video Attachment ${videoData.videoAttachmentId}`,
+          });
+          setYoutubeUrl('');
+          setVideoFile(null);
+        }
       } else {
+        // Empty/null value
         setYoutubeUrl('');
         setVideoFile(null);
+        setExistingAttachment(null);
       }
     }, [value]);
 
@@ -181,24 +208,56 @@ export const FormFields = {
       });
     };
 
-    // File upload: update parent immediately
+    // File upload: update parent immediately but don't show success toast yet
     const handleVideoUpload = (file: File) => {
       setVideoFile(file);
       setYoutubeUrl('');
-      toast({
-        variant: 'default',
-        title: 'Video uploaded',
-        description: 'Your video file was uploaded successfully!',
-      });
+      setExistingAttachment(null);
+      // Update parent with the file - toast will be shown after successful save
+      onChange?.({
+        target: {
+          value: file,
+          name,
+        },
+      } as any);
     };
 
     return (
       <div className="space-y-4 ml-1 mr-1">
+        {/* Show existing attachment if present */}
+        {existingAttachment && !videoFile && !youtubeUrl && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              <div className="flex-1">
+                <span className="text-blue-800 font-medium">Current Video Attachment</span>
+                <p className="text-blue-600 text-sm">{existingAttachment.fileName}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setExistingAttachment(null);
+                  onChange?.({ target: { value: '', name } } as any);
+                }}
+                className="text-red-500 hover:text-red-700 text-sm"
+                title="Remove video"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="text-center">
+              <span className="text-sm text-gray-500">Replace with:</span>
+            </div>
+          </div>
+        )}
+
         {/* File upload */}
         {!youtubeUrl && (
           <VideoUpload
             name={name}
-            file={videoFile} // ✅ you need this line
+            file={videoFile}
             onFileChange={handleVideoUpload}
             onClear={() => {
               setVideoFile(null);
@@ -206,10 +265,10 @@ export const FormFields = {
             }}
           />
         )}
-        {!youtubeUrl && !videoFile && <Or />}
+        {!youtubeUrl && !videoFile && !existingAttachment && <Or />}
 
         {/* YouTube URL input */}
-        {!videoFile && (
+        {!videoFile && !existingAttachment && (
           <div className="relative">
             <AppFormField
               type="text"

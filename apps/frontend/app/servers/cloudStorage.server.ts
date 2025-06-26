@@ -116,6 +116,8 @@ export async function uploadFileToS3(prefix: string, file: File) {
     throw new Error('S3_PRIVATE_BUCKET_NAME is not defined in the environment variables.');
   }
 
+  console.log('uploading file to s3', prefix, file);
+
   const fileKey = `${prefix}-${Date.now()}-${file.name}`; // Generate a unique key
   const fileBuffer = Buffer.from(await file.arrayBuffer()); // Use Buffer instead of stream
 

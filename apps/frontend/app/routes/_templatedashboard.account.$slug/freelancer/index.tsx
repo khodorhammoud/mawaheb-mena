@@ -1,10 +1,10 @@
-import Heading from "~/common/profileView/heading/Heading";
-import { Form, useActionData } from "@remix-run/react";
-import GeneralizableFormCard from "~/common/profileView/onboarding-form-component";
-import { SlBadge } from "react-icons/sl";
-import { FaDollarSign } from "react-icons/fa";
-import { useLoaderData } from "@remix-run/react";
-import { LoaderData } from "~/routes/_templatedashboard.jobs.$jobId/route";
+import Heading from '~/common/profileView/heading/Heading';
+import { Form, useActionData } from '@remix-run/react';
+import GeneralizableFormCard from '~/common/profileView/onboarding-form-component';
+import { SlBadge } from 'react-icons/sl';
+import { FaDollarSign } from 'react-icons/fa';
+import { useLoaderData } from '@remix-run/react';
+import { LoaderData } from '~/routes/_templatedashboard.jobs.$jobId/route';
 
 export default function FreelancerPage() {
   type ActionData = {
@@ -17,7 +17,7 @@ export default function FreelancerPage() {
       <div
         className="bg-gradient-to-r from-primaryColor to-white md:h-40 sm:h-36 h-32 w-auto sm:m-4 m-2 rounded-xl border-2"
         style={{
-          background: "linear-gradient(to right, primaryColor, white)",
+          background: 'linear-gradient(to right, primaryColor, white)',
         }}
       ></div>
       <Heading />
@@ -125,11 +125,7 @@ export default function FreelancerPage() {
         <div className="mt-6 flex justify-end mr-24">
           {/* Form to update the user's onboard status */}
           <Form method="post">
-            <input
-              type="hidden"
-              name="target-updated"
-              value="freelancer-onboard"
-            />
+            <input type="hidden" name="target-updated" value="freelancer-onboard" />
             {/* in the switch case, use value employer-onboard */}
             <button
               type="submit"
@@ -140,9 +136,7 @@ export default function FreelancerPage() {
           </Form>
 
           {/* ERROR MESSAGE */}
-          {actionData?.error && (
-            <p className="text-red-500 mt-2">{actionData.error.message}</p>
-          )}
+          {actionData?.error && <p className="text-red-500 mt-2">{actionData.error.message}</p>}
         </div>
       </div>
     </div>

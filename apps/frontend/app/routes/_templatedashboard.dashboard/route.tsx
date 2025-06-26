@@ -122,7 +122,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
     currentProfile = currentProfile as Freelancer;
 
     const about = await getFreelancerAbout(currentProfile);
-    const { videoLink } = currentProfile;
+    const { videoLink, videoAttachmentId, videoType } = currentProfile as any;
+
+    // Fetch video attachment file name if it exists
+    let videoFileName = null;
+    if (videoType === 'attachment' && videoAttachmentId) {
+      try {
+        const { getAttachmentMetadataById } = await import('~/servers/cloudStorage.server');
+        const attachmentResult = await getAttachmentMetadataById(videoAttachmentId);
+        if (attachmentResult.success && attachmentResult.data) {
+          const metadata = attachmentResult.data as any;
+          // Extract filename from metadata
+          videoFileName =
+            metadata?.name ||
+            metadata?.metadata?.name ||
+            metadata?.storage?.name ||
+            `Video Attachment ${videoAttachmentId}`;
+        }
+      } catch (error) {
+        console.error('Error fetching video attachment metadata:', error);
+      }
+    }
+
     const skills = await getFreelancerSkills(currentProfile.id);
     const languages = await getFreelancerLanguages(currentProfile.id);
 
@@ -152,6 +173,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProfile: processedProfile,
       about,
       videoLink,
+      videoType,
+      videoAttachmentId,
+      videoFileName,
       hourlyRate: currentProfile.hourlyRate,
       accountOnboarded: currentProfile.account.user.isOnboarded,
       yearsOfExperience: currentProfile.yearsOfExperience,

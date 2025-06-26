@@ -435,20 +435,87 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
-    const videoUrl = value as string;
+    // Parse the video value - it can be a string (legacy) or an object with videoType, videoLink, videoAttachmentId
     console.log('VideoFieldTemplate value:', value);
 
-    // Avoid crash: Only call includes if videoUrl is string
-    const isYouTube =
-      typeof videoUrl === 'string' &&
-      (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
-
-    // States
+    // States - ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
+    const [videoUrl, setVideoUrl] = React.useState<string>('');
+    const [isLoadingVideo, setIsLoadingVideo] = React.useState(false);
+    const [videoError, setVideoError] = React.useState<string | null>(null);
+
+    const videoData = React.useMemo(() => {
+      if (typeof value === 'string' && value.trim()) {
+        // Legacy format - assume it's a YouTube link
+        return {
+          videoType: 'link' as const,
+          videoLink: value,
+          videoAttachmentId: null,
+        };
+      } else if (typeof value === 'object' && value !== null) {
+        // New format - object with videoType, videoLink, videoAttachmentId
+        const videoType = (value as any).videoType || 'link';
+        const videoLink = (value as any).videoLink || '';
+        const videoAttachmentId = (value as any).videoAttachmentId || null;
+
+        // Return the data if we have either a link or an attachment
+        if (
+          (videoType === 'link' && videoLink.trim()) ||
+          (videoType === 'attachment' && videoAttachmentId)
+        ) {
+          return {
+            videoType,
+            videoLink,
+            videoAttachmentId,
+          };
+        }
+      }
+      return null;
+    }, [value]);
+
+    console.log('VideoFieldTemplate videoData:', videoData);
+
+    // Check if it's a YouTube video
+    const isYouTube = React.useMemo(() => {
+      if (videoData?.videoType === 'link' && videoData.videoLink) {
+        return (
+          videoData.videoLink.includes('youtube.com') || videoData.videoLink.includes('youtu.be')
+        );
+      }
+      return false;
+    }, [videoData]);
+
+    // Fetch presigned URL for attachment videos
+    const fetchPresignedUrl = React.useCallback(async (attachmentId: number) => {
+      try {
+        setIsLoadingVideo(true);
+        setVideoError(null);
+
+        const response = await fetch(`/api/attachments/${attachmentId}/presigned-url`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch presigned URL');
+        }
+
+        const data = await response.json();
+        return data.url;
+      } catch (error) {
+        console.error('Error fetching presigned URL:', error);
+        setVideoError('Failed to load video');
+        throw error;
+      } finally {
+        setIsLoadingVideo(false);
+      }
+    }, []);
 
     // Generate a thumbnail for non-YouTube videos
-    const captureThumbnail = (url: string) => {
+    const captureThumbnail = React.useCallback((url: string) => {
       const video = document.createElement('video');
       video.src = url;
       video.crossOrigin = 'anonymous';
@@ -463,20 +530,72 @@ export const VideoFieldTemplate: FieldTemplateState = {
         const thumbnailUrl = canvas.toDataURL('image/png');
         setThumbnail(thumbnailUrl);
       });
-    };
+    }, []);
+
+    // Set up video URL based on video type
+    React.useEffect(() => {
+      if (!videoData) return;
+
+      if (videoData.videoType === 'link') {
+        // For link type, use the videoLink directly
+        setVideoUrl(videoData.videoLink);
+      } else if (videoData.videoType === 'attachment' && videoData.videoAttachmentId) {
+        // For attachment type, fetch presigned URL
+        fetchPresignedUrl(videoData.videoAttachmentId)
+          .then(url => setVideoUrl(url))
+          .catch(() => setVideoUrl(''));
+      }
+    }, [videoData, fetchPresignedUrl]);
 
     React.useEffect(() => {
-      if (!isYouTube && typeof videoUrl === 'string') {
+      if (!isYouTube && videoUrl && typeof videoUrl === 'string') {
         captureThumbnail(videoUrl);
       }
-    }, [videoUrl, isYouTube]);
+    }, [videoUrl, isYouTube, captureThumbnail]);
 
-    // Validate if the URL is a valid video file
+    // If no valid video data, show empty state (AFTER all hooks)
+    if (!videoData) {
+      return (
+        <div className="flex flex-col pb-4">
+          <span className="text-xl font-medium">Video</span>
+          <span className="text-base text-gray-400 italic">No video added</span>
+        </div>
+      );
+    }
+
+    // Validate if the URL is a valid video file for non-YouTube videos
     const isValidVideoUrl = (url: string) =>
       typeof url === 'string' &&
-      ['.mp4', '.webm', '.ogg', '.mov', '.mkv'].some(ext => url.endsWith(ext));
+      ['.mp4', '.webm', '.ogg', '.mov', '.mkv'].some(ext => url.toLowerCase().endsWith(ext));
 
-    if (!isYouTube && !isValidVideoUrl(videoUrl)) {
+    // Handle loading state
+    if (isLoadingVideo) {
+      return (
+        <div className="flex items-center justify-center w-full h-56 rounded-xl bg-gray-100">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryColor"></div>
+            <span className="text-sm text-gray-600">Loading video...</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Handle error state
+    if (videoError) {
+      return (
+        <div className="flex items-center justify-center w-full h-56 rounded-xl bg-red-100 text-red-500">
+          <div className="flex flex-col items-center gap-2">
+            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+            </svg>
+            <span className="text-sm">{videoError}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Handle invalid video URL for non-YouTube, non-attachment videos
+    if (!isYouTube && videoData?.videoType === 'link' && !isValidVideoUrl(videoUrl)) {
       return (
         <div className="flex items-center justify-center w-full h-56 rounded-xl bg-red-100 text-red-500">
           Invalid video URL. Please provide a valid video link.
@@ -522,22 +641,33 @@ export const VideoFieldTemplate: FieldTemplateState = {
               </div>
             </button>
           ) : (
-            // Non-YouTube Video Stylings
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-              <button
-                className="w-12 h-12 rounded-full flex items-center justify-center bg-primaryColor cursor-pointer"
-                onClick={openModal}
-                aria-label="Open video"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6 text-white"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
+            // Non-YouTube Video Stylings (including attachment videos)
+            <div className="relative w-full h-full">
+              {thumbnail ? (
+                <img className="w-full h-full object-cover" src={thumbnail} alt="Video Thumbnail" />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <button
+                  className="w-12 h-12 rounded-full flex items-center justify-center bg-primaryColor cursor-pointer hover:bg-opacity-90 transition-all"
+                  onClick={openModal}
+                  aria-label="Open video"
                 >
-                  <path d="M9.5 7.5v9l7-4.5-7-4.5z" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9.5 7.5v9l7-4.5-7-4.5z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </div>
