@@ -10,6 +10,9 @@ services:
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - FRONTEND_URL=http://frontend:5173
+      - BACKEND_URL=http://backend:3002
+      - CMS_BASE_URL=http://cms:3001
     restart: unless-stopped
     networks:
       - app-network
@@ -35,10 +38,10 @@ services:
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
-      # - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - FRONTEND_URL=http://localhost:5173
-      - PORT=3002
       - REDIS_PORT=6379
+      - FRONTEND_URL=http://frontend:5173
+      - PORT=3002
+      - HOST_URL=http://localhost:3002
     restart: unless-stopped
     networks:
       - app-network
@@ -62,6 +65,8 @@ services:
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - FRONTEND_URL=http://frontend:5173
+      - PORT=3001
     restart: unless-stopped
     networks:
       - app-network
