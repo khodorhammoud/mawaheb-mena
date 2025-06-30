@@ -3,6 +3,7 @@
 
 import { createRequestHandler } from '@remix-run/express';
 import express from 'express';
+import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -51,6 +52,16 @@ async function startServer() {
   });
 
   const app = express();
+
+  // Enable CORS for all routes and origins
+  app.use(
+    cors({
+      origin: true, // Allow all origins
+      credentials: true, // Allow credentials to be sent
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    })
+  );
 
   // Add health check endpoint that doesn't depend on Remix
   app.get('/api/health', (req, res) => {

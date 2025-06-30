@@ -1,0 +1,378 @@
+// Enum definitions
+Enum provider {
+  credentials
+  social_account
+}
+
+Enum user_role {
+  admin
+  user
+}
+
+Enum account_type {
+  freelancer
+  employer
+  admin
+}
+
+Enum account_status {
+  draft
+  pending
+  published
+  closed
+  suspended
+  deleted
+  deactivated
+}
+
+Enum day_of_week {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
+Enum project_type {
+  "short-term"
+  "long-term"
+  "per-project-basis"
+}
+
+Enum compensation_type {
+  "project-based-rate"
+  "hourly-rate"
+}
+
+Enum jobs_open_to {
+  "full-time-roles"
+  "part-time-roles"
+  "employee-roles"
+}
+
+Enum employer_account_type {
+  personal
+  company
+}
+
+Enum timesheet_status {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+Enum job_application_status {
+  pending
+  shortlisted
+  approved
+  rejected
+}
+
+Enum experience_level {
+  entry_level
+  mid_level
+  senior_level
+}
+
+Enum country {
+  Albania
+  Algeria
+  Bahrain
+  Egypt
+  Iran
+  Iraq
+  Jordan
+  Kuwait
+  Lebanon
+  Libya
+  Morocco
+  Oman
+  Palestine
+  Qatar
+  Saudi_Arabia
+  Syria
+  Tunisia
+  Turkey
+  United_Arab_Emirates
+  Yemen
+}
+
+// Table definitions
+
+Table users {
+  id int [pk, increment]
+  first_name varchar(80)
+  last_name varchar(80)
+  email varchar(150) [unique, not null]
+  password_hash varchar
+  is_verified boolean [default: false]
+  is_onboarded boolean [default: false]
+  provider provider
+  role user_role [default: 'user']
+  deletion_requested_at timestamp
+  final_deletion_at timestamp
+}
+
+Table user_identifications {
+  id int [pk, increment]
+  user_id int [unique, ref: > users.id]
+  attachments jsonb [default: '{}']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table social_accounts {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  provider varchar(50)
+  provider_account_id varchar(255)
+  profile_url varchar(255)
+  access_token varchar(500)
+  refresh_token varchar(500)
+  expires_at timestamp
+}
+
+Table accounts {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  slug varchar(60) [unique]
+  account_type account_type
+  country varchar(100)
+  address varchar(150)
+  region varchar(100)
+  account_status account_status
+  phone varchar(30)
+  website_url text
+  social_media_links jsonb [default: '{}']
+  is_creation_complete boolean [default: false]
+}
+
+Table preferred_working_times {
+  id int [pk, increment]
+  account_id int [ref: > accounts.id]
+  day day_of_week
+  start_time time
+  end_time time
+}
+
+Table freelancers {
+  id int [pk, increment]
+  account_id int [ref: > accounts.id]
+  about text
+  fields_of_expertise text[] [default: '{}']
+  portfolio jsonb [default: '[]']
+  work_history jsonb [default: '[]']
+  cv_link text
+  video_link text
+  video_attachment_id int
+  video_type video_attachment_type
+  certificates jsonb [default: '[]']
+  educations jsonb [default: '[]']
+  years_of_experience int
+  preferred_project_types project_type[] [default: '[]']
+  hourly_rate int
+  compensation_type compensation_type
+  available_for_work boolean [default: false]
+  available_from date
+  jobs_open_to jobs_open_to[] [default: '[]']
+  hours_available_from time
+  hours_available_to time
+}
+
+Table freelancer_languages {
+  id int [pk, increment]
+  freelancer_id int [ref: > freelancers.id]
+  language_id int [ref: > languages.id]
+  timestamp timestamp [default: `now()`]
+}
+
+Table employers {
+  id int [pk, increment]
+  account_id int [ref: > accounts.id]
+  budget int
+  employerAccountType employer_account_type
+  company_name varchar(100)
+  employer_name varchar(100)
+  company_email varchar(150)
+  about text
+  industry_sector text
+  years_in_business int
+  company_rep_name varchar(100)
+  company_rep_email varchar(150)
+  company_rep_position varchar(60)
+  company_rep_phone varchar(30)
+  tax_id_number varchar
+  tax_id_document_link text
+  business_license_link text
+  certification_of_incorporation_link text
+}
+
+Table languages {
+  id int [pk, increment]
+  language varchar(25)
+}
+
+Table account_languages {
+  id int [pk, increment]
+  account_id int [ref: > accounts.id]
+  language_id int [ref: > languages.id]
+}
+
+Table user_verifications {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  token varchar(256)
+  expiry timestamp
+  is_used boolean [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+Table industries {
+  id int [pk, increment]
+  label text [unique]
+  metadata text[]
+}
+
+Table employer_industries {
+  id int [pk, increment]
+  employer_id int [ref: > employers.id]
+  industry_id int [ref: > industries.id]
+  timestamp timestamp [default: `now()`]
+}
+
+Table job_categories {
+  id int [pk, increment]
+  label text
+  timestamp timestamp [default: `now()`]
+}
+
+Table jobs {
+  id int [pk, increment]
+  employer_id int [ref: > employers.id]
+  title text
+  description text
+  job_category_id int [ref: > job_categories.id]
+  working_hours_per_week int
+  location_preference text
+  project_type project_type
+  budget int
+  expected_hourly_rate int
+  experience_level experience_level
+  status text
+  created_at timestamp [default: `now()`]
+  fulfilled_at timestamp
+}
+
+Table skills {
+  id int [pk, increment]
+  label text
+  meta_data text [default: '[]']
+  is_hot boolean [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+Table job_skills {
+  id int [pk, increment]
+  job_id int [ref: > jobs.id]
+  skill_id int [ref: > skills.id]
+  is_starred boolean [default: false]
+}
+
+Table freelancer_skills {
+  id int [pk, increment]
+  freelancer_id int [ref: > freelancers.id]
+  skill_id int [ref: > skills.id]
+  years_of_experience int
+  is_starred boolean [default: false]
+}
+
+Table job_applications {
+  id int [pk, increment]
+  job_id int [ref: > jobs.id]
+  freelancer_id int [ref: > freelancers.id]
+  status job_application_status
+  created_at timestamp [default: `now()`]
+}
+
+Table reviews {
+  id int [pk, increment]
+  employer_id int [ref: > employers.id]
+  freelancer_id int [ref: > freelancers.id]
+  rating real [not null]
+  comment text [default: null]
+  created_at timestamp [default: `now()`]
+  review_type text [not null]
+}
+
+Table timesheet_entries {
+  id int [pk, increment]
+  freelancer_id int [ref: > freelancers.id]
+  job_application_id int [ref: > job_applications.id]
+  date date
+  start_time timestamp
+  end_time timestamp
+  description text
+  created_at timestamp [default: `now()`]
+}
+
+Table timesheet_submission_entries {
+  id int [pk, increment]
+  timesheet_submission_id int [ref: > timesheet_submissions.id]
+  timesheet_entry_id int [ref: > timesheet_entries.id]
+}
+
+Table timesheet_submissions {
+  id int [pk, increment]
+  freelancer_id int [ref: > freelancers.id]
+  job_application_id int [ref: > job_applications.id]
+  submission_date date [not null]
+  total_hours numeric [not null]
+  status timesheet_status [not null, default: 'submitted']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table attachments {
+  id int [pk, increment]
+  key varchar [not null]
+  metadata jsonb [default: '{}']
+  created_at timestamp [default: `now()`]
+}
+
+Table exit_feedback {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  feedback text
+  created_at timestamp [default: `now()`]
+}
+
+Table notifications {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  type varchar(50)
+  title text
+  message text
+  payload jsonb [default: `{}`]
+  is_read boolean [default: false]
+  created_at timestamp [default: `now()`]
+  read_at timestamp
+}
+
+Table skillfolios {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  domain text
+  field text
+  category text
+  subfield text
+  readiness_score int
+  strengths text[]
+  weaknesses text[]
+  gaps text[]
+  profile jsonb [default: `{}`]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
