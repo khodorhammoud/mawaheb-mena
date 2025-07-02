@@ -11,15 +11,15 @@ import { useLoaderData } from '@remix-run/react';
 import Testimonials from './Testimonials';
 
 // --- TYPES ---
-interface PostHowItWorksItem {
+interface HowItWorksItem {
   content: string;
 }
 interface PreWhatTheySayAboutUs {
   content: string;
 }
 interface LoaderData {
-  postHowItWorks: PostHowItWorksItem;
-  preWhatTheySayAboutUs: PreWhatTheySayAboutUs;
+  postHowItWorks: { content: string };
+  preWhatTheySayAboutUs: { content: string };
 }
 
 // --- ZOOMING TEXT COMPONENT (as child) ---
@@ -162,7 +162,9 @@ export default function SegmentsLanguagesZoomingText() {
     if (!segmentsInView) segmentsHasScrolled.current = false;
   }, [segmentsInView]);
 
-  const segmentLines = postHowItWorks.content.split('\n');
+  const segmentLines = (postHowItWorks?.content ?? '')
+    .split('\n')
+    .filter(line => line.trim() !== '');
 
   // --- Languages logic ---
   const languagesRef = useRef<HTMLDivElement>(null);
@@ -318,7 +320,7 @@ export default function SegmentsLanguagesZoomingText() {
     };
   }, []);
 
-  const languageLines = preWhatTheySayAboutUs.content.split('\n');
+  const languageLines = (preWhatTheySayAboutUs?.content ?? '').split('\n');
 
   // --- RENDER ---
   return (
