@@ -51,3 +51,25 @@ export async function getSkillsByQuery(query: string): Promise<Skill[]> {
     .limit(10);
   return skills;
 }
+
+export async function addSkillIfNotExists(skillName: string): Promise<Skill> {
+  if (!skillName.trim()) throw new Error('Skill name is empty');
+
+  // Check if skill already exists (case-insensitive)
+  const [existing] = await db
+    .select({ id: skillsTable.id, name: skillsTable.label })
+    .from(skillsTable)
+    .where(sql`LOWER(${skillsTable.label}) = LOWER(${skillName})`)
+    .limit(1);
+
+  if (existing) return existing;
+
+  // Insert new skill
+  const [created] = await db
+    .insert(skillsTable)
+    .values({ label: skillName })
+    .returning({ id: skillsTable.id, name: skillsTable.label });
+
+  if (!created) throw new Error('Failed to create skill');
+  return created;
+}

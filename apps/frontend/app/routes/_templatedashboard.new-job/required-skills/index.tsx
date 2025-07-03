@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLoaderData } from '@remix-run/react';
+import { data, useLoaderData } from '@remix-run/react';
 import { Badge } from '../../../components/ui/badge';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../components/ui/popover';
 import { FaStar, FaRegStar } from 'react-icons/fa';
@@ -21,7 +21,8 @@ interface RequiredSkillsProps {
 export default function RequiredSkills({ selectedSkills, onChange }: RequiredSkillsProps) {
   const triggerRef = useRef(null);
   const [popoverWidth, setPopoverWidth] = useState(350);
-  const { skills = [] } = useLoaderData<{ skills?: Skill[] }>();
+  const { skills: loadedSkills = [] } = useLoaderData<{ skills?: Skill[] }>();
+  const [skills, setSkills] = useState<Skill[]>(loadedSkills);
 
   // --- Added for async search ---
   const [open, setOpen] = useState(false);
@@ -51,7 +52,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     }
     setSearchLoading(true);
     const timeout = setTimeout(() => {
-      fetch(`/api/skills/search?q=${encodeURIComponent(searchTerm)}`)
+      fetch(`/api/skills-search?q=${encodeURIComponent(searchTerm)}`)
         .then(res => res.json())
         .then(data => {
           setSearchResults(Array.isArray(data.skills) ? data.skills : []);
@@ -85,6 +86,13 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     setSearchResults([]);
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (!open) {
+      setSearchTerm('');
+      setSearchResults([]);
+    }
+  }, [open]);
 
   const renderSelectedSkillsInInput = () => {
     const maxVisibleBadges = 3;
@@ -159,32 +167,38 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
           {/* selected skills */}
           <div className="flex flex-col flex-wrap gap-y-3 gap-x-2 mt-4">
             <div className="flex gap-2 ml-1">
-              <div className="mt-3 text-sm text-gray-600">Choosed Skills:</div>
+              <div className="mt-3 text-sm text-gray-600">
+                Choosed Skills: ( if you wana remove a skill, click on it )
+              </div>
             </div>
-            <div className="flex gap-2">
-              {selectedSkills.map(skill => (
-                <div
-                  key={skill.name}
-                  className="flex items-center font-medium cursor-pointer rounded-xl"
-                >
-                  <Badge
-                    className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${
-                      skill.isStarred
-                        ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none'
-                        : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'
-                    }`}
+            <div className="flex flex-wrap gap-y-3 gap-x-2">
+              {selectedSkills.length === 0 ? (
+                <div className="text-sm text-gray-600 ml-1 italic">No skills yet</div>
+              ) : (
+                selectedSkills.map(skill => (
+                  <div
+                    key={skill.name}
+                    className="flex items-center font-medium cursor-pointer rounded-xl"
                   >
-                    <div onClick={() => toggleStarredSkill(skill)}>
-                      {skill.isStarred ? (
-                        <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
-                      ) : (
-                        <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
-                      )}
-                    </div>
-                    <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
-                  </Badge>
-                </div>
-              ))}
+                    <Badge
+                      className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${
+                        skill.isStarred
+                          ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none'
+                          : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      <div onClick={() => toggleStarredSkill(skill)}>
+                        {skill.isStarred ? (
+                          <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
+                        ) : (
+                          <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
+                        )}
+                      </div>
+                      <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
+                    </Badge>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -218,7 +232,34 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
                     ))
                 ) : (
                   <CommandEmpty>
-                    <div className="px-4 py-2 text-sm text-gray-400">No skills found.</div>
+                    <button
+                      className="px-4 py-2 bg-primary text-white rounded-md mt-2 hover:bg-primary/80 transition"
+                      onMouseDown={async e => {
+                        e.preventDefault();
+                        if (!searchTerm.trim()) return;
+                        setSearchLoading(true);
+                        const res = await fetch('/api/skills-add', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name: searchTerm.trim() }),
+                        });
+                        const data = await res.json();
+                        setSearchLoading(false);
+
+                        if (data.skill) {
+                          onChange([...selectedSkills, data.skill]);
+                          setSearchTerm('');
+                          setSearchResults([]);
+                          setOpen(false);
+
+                          setSkills(prev => [...prev, data.skill]); // ✅ This is what keeps your skills list in sync!
+                        } else {
+                          alert(data.error || 'Failed to add skill');
+                        }
+                      }}
+                    >
+                      + Add “{searchTerm.trim()}” as a new skill
+                    </button>
                   </CommandEmpty>
                 )
               ) : null}
