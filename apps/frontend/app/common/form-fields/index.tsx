@@ -149,7 +149,7 @@ const AppFormField = forwardRef<
             ) : type === 'number' || id === 'number' ? (
               currency ? (
                 <div className="relative w-full">
-                  <span className="absolute left-4 top-[24px] -translate-y-1/2 text-gray-400 text-base pointer-events-none z-10">
+                  <span className="absolute left-6 top-[24px] -translate-y-1/2 text-gray-400 text-base pointer-events-none z-10">
                     {currency}
                   </span>
                   <input
