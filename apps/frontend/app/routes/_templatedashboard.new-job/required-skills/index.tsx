@@ -5,6 +5,13 @@ import { Popover, PopoverTrigger, PopoverContent } from '../../../components/ui/
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { Input } from '../../../components/ui/input';
 import { Skill } from '@mawaheb/db/types';
+import {
+  Command,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandEmpty,
+} from '../../../components/ui/command';
 
 interface RequiredSkillsProps {
   selectedSkills: Skill[];
@@ -15,6 +22,12 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
   const triggerRef = useRef(null);
   const [popoverWidth, setPopoverWidth] = useState(350);
   const { skills = [] } = useLoaderData<{ skills?: Skill[] }>();
+
+  // --- Added for async search ---
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Skill[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     const updatePopoverWidth = () => {
@@ -29,6 +42,27 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     };
   }, []);
 
+  // ---- async search effect ----
+  useEffect(() => {
+    if (!open) return;
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    const timeout = setTimeout(() => {
+      fetch(`/api/skills/search?q=${encodeURIComponent(searchTerm)}`)
+        .then(res => res.json())
+        .then(data => {
+          setSearchResults(Array.isArray(data.skills) ? data.skills : []);
+          setSearchLoading(false);
+        })
+        .catch(() => setSearchLoading(false));
+    }, 250);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line
+  }, [searchTerm, open]);
+
   const toggleSkill = (skill: Skill) => {
     const updatedSkills = selectedSkills.some(s => s.name === skill.name)
       ? selectedSkills.filter(s => s.name !== skill.name)
@@ -41,6 +75,15 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
       s.name === skill.name ? { ...s, isStarred: !s.isStarred } : s
     );
     onChange(updatedSkills);
+  };
+
+  const handleSelectSkill = (skill: Skill) => {
+    if (!selectedSkills.some(s => s.name === skill.name)) {
+      onChange([...selectedSkills, skill]);
+    }
+    setSearchTerm('');
+    setSearchResults([]);
+    setOpen(false);
   };
 
   const renderSelectedSkillsInInput = () => {
@@ -57,7 +100,12 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
         />
         {visibleSkills.map(skill => (
           <Badge
-            className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none' : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'}`}
+            key={skill.name}
+            className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${
+              skill.isStarred
+                ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none'
+                : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'
+            }`}
           >
             <div onClick={() => toggleStarredSkill(skill)}>
               {skill.isStarred ? (
@@ -79,17 +127,20 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div ref={triggerRef} className="cursor-pointer border border-slate-300 rounded-xl p-1">
+        <div
+          ref={triggerRef}
+          className="cursor-pointer border border-slate-300 rounded-xl p-1"
+          onClick={() => setOpen(true)}
+        >
           {selectedSkills.length > 0 ? (
             renderSelectedSkillsInInput()
           ) : (
-            <Input
-              placeholder="Required Skills"
-              className="cursor-pointer border-none text-slate-500 text-base"
-              readOnly
-            />
+            // --- Replace Input with nothing; typing is in combobox now
+            <div className="w-full min-h-[38px] px-2 flex items-center text-slate-500 text-base">
+              Required Skills
+            </div>
           )}
         </div>
       </PopoverTrigger>
@@ -97,60 +148,121 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
         style={{
           width: `${popoverWidth}px`,
           zIndex: 1000,
-          maxHeight: '400px', // 👈 control height here
-          overflowY: 'auto', // 👈 make it scrollable vertically
+          maxHeight: '500px',
+          overflowY: 'auto',
         }}
-        className="p-8 bg-white shadow-xl rounded-xl"
+        className="p-0 bg-white shadow-xl rounded-xl"
       >
-        <p className="text-lg mb-6 font-semibold">Popular skills for Design</p>
+        <div className="p-8 pt-6 pb-4">
+          <p className="text-lg mb-6 font-semibold">Popular skills for Design</p>
 
-        {/* skills to choose */}
-        <div className="flex flex-wrap gap-y-3 gap-x-2 mb-6">
-          {skills
-            .filter(skill => !selectedSkills.some(s => s.name === skill.name))
-            .map(skill => (
-              <Badge
-                key={skill.name}
-                onClick={() => toggleSkill(skill)}
-                className="cursor-pointer tracking-wide text-sm px-4 py-2 rounded-full border bg-white text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-gray-400"
-              >
-                {skill.name}
-              </Badge>
-            ))}
-        </div>
-
-        {/* separator line -------------- */}
-        <div className="border-t mb-6"></div>
-
-        {/* selected skills */}
-        <div className="flex flex-wrap gap-y-3 gap-x-2">
-          {selectedSkills.map(skill => (
-            <div
-              key={skill.name}
-              className="flex items-center font-medium cursor-pointer rounded-xl"
-            >
-              <Badge
-                className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${skill.isStarred ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none' : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'}`}
-              >
-                <div onClick={() => toggleStarredSkill(skill)}>
-                  {skill.isStarred ? (
-                    <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
-                  ) : (
-                    <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
-                  )}
-                </div>
-                <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
-              </Badge>
+          {/* selected skills */}
+          <div className="flex flex-col flex-wrap gap-y-3 gap-x-2 mt-4">
+            <div className="flex gap-2 ml-1">
+              <div className="mt-3 text-sm text-gray-600">Choosed Skills:</div>
             </div>
-          ))}
+            <div className="flex gap-2">
+              {selectedSkills.map(skill => (
+                <div
+                  key={skill.name}
+                  className="flex items-center font-medium cursor-pointer rounded-xl"
+                >
+                  <Badge
+                    className={`cursor-pointer text-sm tracking-wide pl-3 pr-5 py-2 text-gray-700  ${
+                      skill.isStarred
+                        ? 'bg-[rgb(202,230,255)] hover:bg-[hsl(208,95%,85%)] border-none'
+                        : 'border bg-white text-gray-700 hover:bg-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <div onClick={() => toggleStarredSkill(skill)}>
+                      {skill.isStarred ? (
+                        <FaStar className="h-4 w-4 mr-2 text-primaryColor cursor-pointer hover:scale-110 transition-transform" />
+                      ) : (
+                        <FaRegStar className="h-4 w-4 mr-2 text-gray-400 cursor-pointer hover:scale-110 transition-transform" />
+                      )}
+                    </div>
+                    <div onClick={() => toggleSkill(skill)}>{skill.name}</div>
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* separator line -------------- */}
+          <div className="border-t mt-4"></div>
+
+          {/* ---- ComboBox Search ---- */}
+          <Command className="border mt-6">
+            <CommandInput
+              placeholder="Search skills…"
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+              autoFocus
+              className=""
+            />
+            <CommandList>
+              {searchLoading && <div className="px-4 py-2 text-sm text-gray-400">Searching…</div>}
+              {/* Show async search results */}
+              {searchTerm && !searchLoading ? (
+                searchResults.length > 0 ? (
+                  searchResults
+                    .filter(skill => !selectedSkills.some(s => s.name === skill.name))
+                    .map(skill => (
+                      <CommandItem
+                        key={skill.name}
+                        onSelect={() => handleSelectSkill(skill)}
+                        className="cursor-pointer"
+                      >
+                        {skill.name}
+                      </CommandItem>
+                    ))
+                ) : (
+                  <CommandEmpty>
+                    <div className="px-4 py-2 text-sm text-gray-400">No skills found.</div>
+                  </CommandEmpty>
+                )
+              ) : null}
+            </CommandList>
+          </Command>
+          {/* ---- End ComboBox Search ---- */}
+
+          {/* separator line -------------- */}
+          {searchTerm && <div className="border-t my-6"></div>}
+
+          {/* skills to choose (from loader, only when not searching) */}
+          {!searchTerm && (
+            <div className="">
+              <div className="flex gap-2 mt-2">
+                <div className="mt-3 text-sm text-gray-600 underline">OR,</div>
+                <div className="mt-3 text-sm text-gray-600">Choose your needed skills:</div>
+              </div>
+              <div className="flex flex-wrap gap-y-3 gap-x-2 mb-6 mt-5">
+                {skills
+                  .filter(skill => !selectedSkills.some(s => s.name === skill.name))
+                  .map(skill => (
+                    <Badge
+                      key={skill.name}
+                      onClick={() => toggleSkill(skill)}
+                      className="cursor-pointer tracking-wide text-sm px-4 py-2 rounded-full border bg-white text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-gray-400"
+                    >
+                      {skill.name}
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {!searchTerm && <div className="border-t my-6"></div>}
+
+          <p className="mt-4 text-sm text-gray-600">
+            Add at least 5 skills, then star 3-4 of them you consider your top skill.
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            You need to select at least {Math.max(0, 5 - selectedSkills.length)} more skills and
+            star {Math.max(0, 3 - selectedSkills.filter(skill => skill.isStarred).length)} more
+            skills.
+          </p>
         </div>
-        <p className="mt-4 text-sm text-gray-600">
-          Add at least 5 skills, then star 3-4 of them you consider your top skill.
-        </p>
-        <p className="mt-2 text-sm text-gray-600">
-          You need to select at least {Math.max(0, 5 - selectedSkills.length)} more skills and star{' '}
-          {Math.max(0, 3 - selectedSkills.filter(skill => skill.isStarred).length)} more skills.
-        </p>
       </PopoverContent>
     </Popover>
   );
