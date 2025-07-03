@@ -21,6 +21,7 @@ interface AppFormFieldProps {
   min?: number;
   error?: string; // ✅ Added error support
   maxLength?: number;
+  currency?: string;
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -46,6 +47,7 @@ const AppFormField = forwardRef<
       min,
       error,
       maxLength,
+      currency,
     },
     ref
   ) => {
@@ -145,20 +147,70 @@ const AppFormField = forwardRef<
                 ))}
               </select>
             ) : type === 'number' || id === 'number' ? (
-              <input
-                type="number"
-                id={id}
-                name={name}
-                placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6`}
-                autoComplete="on"
-                spellCheck="false"
-                defaultValue={defaultValue}
-                onChange={handleNumberChange}
-                min={min}
-                ref={ref as React.Ref<HTMLInputElement>}
-                onBlur={onBlur}
-              />
+              currency ? (
+                <div className="relative w-full">
+                  <span className="absolute left-4 top-[24px] -translate-y-1/2 text-gray-400 text-base pointer-events-none z-10">
+                    {currency}
+                  </span>
+                  <input
+                    type="number"
+                    id={id}
+                    name={name}
+                    placeholder=" " // <---- this is CRUCIAL
+                    className="peer mt-0 block w-full pl-10 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6"
+                    autoComplete="on"
+                    spellCheck="false"
+                    value={value !== undefined ? value : selectedValue}
+                    defaultValue={defaultValue}
+                    onChange={handleNumberChange}
+                    min={min}
+                    ref={ref as React.Ref<HTMLInputElement>}
+                    onBlur={onBlur}
+                  />
+                  {/* Label with adjusted left */}
+                  <label
+                    htmlFor={id}
+                    className="absolute left-10 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                      -translate-y-2/3 md:-translate-y-1/2
+                      peer-placeholder-shown:top-6 peer-placeholder-shown:left-10 peer-placeholder-shown:text-gray-500
+                      sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                      peer-focus:top-0 peer-focus:left-10 peer-focus:text-primaryColor peer-focus:px-1
+                      peer-not:placeholder-shown:top-0 peer-not:placeholder-shown:left-10 peer-not:placeholder-shown:text-primaryColor peer-not:placeholder-shown:bg-white peer-not:placeholder-shown:px-1"
+                  >
+                    {label}
+                  </label>
+                </div>
+              ) : (
+                <div className="relative w-full">
+                  <input
+                    type="number"
+                    id={id}
+                    name={name}
+                    placeholder=" " // <--- this is CRUCIAL
+                    className="peer mt-0 block w-full pl-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6"
+                    autoComplete="on"
+                    spellCheck="false"
+                    value={value !== undefined ? value : selectedValue}
+                    defaultValue={defaultValue}
+                    onChange={handleNumberChange}
+                    min={min}
+                    ref={ref as React.Ref<HTMLInputElement>}
+                    onBlur={onBlur}
+                  />
+                  {/* Label with normal left */}
+                  <label
+                    htmlFor={id}
+                    className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                      -translate-y-2/3 md:-translate-y-1/2
+                      peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+                      sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                      peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
+                      peer-not:placeholder-shown:top-0 peer-not:placeholder-shown:left-4 peer-not:placeholder-shown:text-primaryColor peer-not:placeholder-shown:bg-white peer-not:placeholder-shown:px-1"
+                  >
+                    {label}
+                  </label>
+                </div>
+              )
             ) : type === 'increment' ? (
               <div className="flex flex-col items-center space-y-4 w-full">
                 <div className="flex items-center border border-gray-300 rounded-xl w-full">
@@ -248,14 +300,16 @@ const AppFormField = forwardRef<
           >
             {label}
           </label>
+        ) : type === 'number' ? (
+          <label></label>
         ) : (
           <label
             htmlFor={id}
             className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
-                  peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
-                  sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
-                  peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-                  peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+                    peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+                    sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                    peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
+                    peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
           >
             {label}
           </label>
