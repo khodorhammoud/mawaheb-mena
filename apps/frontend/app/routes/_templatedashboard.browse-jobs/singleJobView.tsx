@@ -108,7 +108,7 @@ export default function SingleJobView({
 
       <div className="grid grid-cols-[60%,40%] mb-8">
         <div className="px-6 py-4 border-r border-gray-200">
-          <ReadMore className="mb-12 text-base" html={job.description} wordsPerChunk={40} />
+          <ReadMore className="mb-12 text-base" html={job.description} charPerChunk={300} />
 
           <div className="flex justify-between items-center mb-12">
             <div className="flex flex-col items-start gap-1">

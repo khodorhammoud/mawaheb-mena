@@ -62,7 +62,7 @@ export default function JobCard({ job, onSelect, isSuggested = false, scrollShee
           <ReadMore
             className="lg:mt-6 mt-4 xl:text-lg lg:text-base text-sm"
             html={job.description}
-            wordsPerChunk={40}
+            charPerChunk={300}
           />
         </div>
 
