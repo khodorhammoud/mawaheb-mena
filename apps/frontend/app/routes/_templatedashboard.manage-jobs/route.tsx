@@ -4,6 +4,7 @@ import {
   updateJobStatus,
   fetchJobsWithApplications,
   fetchJobApplications,
+  getAllJobCategories,
 } from '~/servers/job.server';
 import { requireUserAccountStatusPublishedOrDeactivated } from '~/auth/auth.server';
 import { getProfileInfo } from '~/servers/user.server';
@@ -32,6 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const employerId = profile.id;
 
   const { jobs } = await fetchJobsWithApplications(employerId);
+  const categories = await getAllJobCategories(); // <-- Fetch all categories
 
   // Now jobs[i] already has applications and applicationCount
   const jobsWithApplications: JobCardData[] = jobs.map(job => ({
@@ -46,6 +48,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   return Response.json({
     jobs: jobsWithApplications,
+    categories, // <-- Pass to client
     userAccountStatus: profile.account?.accountStatus || 'active',
   });
 };
