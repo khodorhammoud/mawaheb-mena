@@ -624,7 +624,7 @@ function calculateMatchScore(
  * In summary: Returns a list of 'best fit' jobs for a freelancer,
  *             only jobs they haven't applied to, scored by skill/profile match.
  */
-// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess )
+// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess + the jobs that the freelancer match them more than 50% )
 export async function getJobRecommendations(
   freelancerId: number,
   limit: number = 10
