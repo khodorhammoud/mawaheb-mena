@@ -4,7 +4,7 @@ import SkillBadgeList from '~/common/skill/SkillBadge';
 import JobStateButton from '../../../common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
 import { Link } from '@remix-run/react/dist/components';
-import { parseDate } from '~/lib/utils';
+import { cn, parseDate } from '~/lib/utils';
 import { JobStatus } from '@mawaheb/db/enums';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
@@ -16,11 +16,13 @@ export default function JobDesignTwo({
   status,
   onStatusChange,
   userAccountStatus,
+  className,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
+  className?: string;
 }) {
   // console.log('JobDesignTwo: User account status:', userAccountStatus);
 
@@ -39,51 +41,42 @@ export default function JobDesignTwo({
     <p>Job details are not available.</p>
   ) : (
     <div
-      className={`xl:p-8 p-6 bg-white border rounded-xl shadow-xl ${
-        status === JobStatus.Draft ? 'mb-10 gap-20 grid grid-cols-3' : 'mb-10'
-      }`}
+      className={cn(
+        `xl:p-8 p-6 bg-white border rounded-xl shadow-xl ${
+          status === JobStatus.Draft ? 'mb-6 flex' : 'mb-6'
+        }`,
+        className
+      )}
     >
-      <div className="col-span-2">
-        {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-        <div className={`${status === JobStatus.Draft ? 'hidden' : 'flex items-center mb-7'}`}>
-          {status && (
-            <JobStateButton
-              status={status}
-              onStatusChange={onStatusChange}
-              jobId={job.id}
-              userAccountStatus={userAccountStatus}
-            />
-          )}
-          {status === JobStatus.Draft && (
-            <Link
-              to={`/edit-job/${job.id}`}
-              className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Edit
-            </Link>
-          )}
-        </div>
-
+      <div className="">
         {/* JOB INFO */}
         <div>
-          <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
+          <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300">
             <Link to={`/jobs/${job.id}`}>{job.title}</Link>
           </h3>
           <p
-            className={`xl:text-sm text-xs text-gray-400 mb-4 ${status === JobStatus.Draft ? 'hidden' : ''}`}
+            className={`xl:text-sm text-xs text-gray-400 mt-1 ${status === JobStatus.Draft ? 'hidden' : ''}`}
           >
             Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
           </p>
-          <div className="flex xl:gap-10 lg:gap-8 gap-6">
+          <div className="flex xl:gap-10 lg:gap-8 gap-6 items-center mt-6">
             <div>
-              <p className="text-lg mt-4">${job.budget}</p>
+              <p className="text-lg lg:text-base">${job.budget}</p>
               <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
             </div>
             <div>
-              <p className="xl:text-xl lg:text-lg text-base mt-4">
+              <p className="text-lg lg:text-base">
                 {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
               </p>
               <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
+            </div>
+            <div className={`${status === JobStatus.Draft ? 'hidden' : ''}`}>
+              <p className="text-lg lg:text-base">{job.projectType || 'N/A'}</p>
+              <p className="text-gray-400 xl:text-sm text-xs">Project Type</p>
+            </div>
+            <div className={`${status === JobStatus.Draft ? 'hidden' : ''}`}>
+              <p className="text-lg lg:text-base">Job Category</p>
+              <p className="text-gray-400 xl:text-sm text-xs">{job.jobCategoryName || 'N/A'}</p>
             </div>
           </div>
           <p
@@ -97,7 +90,7 @@ export default function JobDesignTwo({
           </p>
 
           {/* SKILLS */}
-          <div className="mt-4 xl:text-base text-sm">
+          <div className="mb-10 mt-4 xl:text-base text-sm">
             <p className={`${status === JobStatus.Draft ? 'text-sm mb-2 mt-6' : 'hidden'}`}>
               Skills
             </p>
@@ -109,58 +102,145 @@ export default function JobDesignTwo({
               <p>No skills provided.</p>
             )}
           </div>
+          <div className={`${status === JobStatus.Draft ? 'grid grid-cols-3 gap-y-4' : 'hidden'}`}>
+            <div>
+              <p className="text-lg lg:text-base">{job.projectType || 'N/A'}</p>
+              <p className="text-gray-400 xl:text-sm text-xs">Project Type</p>
+            </div>
+            <div>
+              <p className="text-lg lg:text-base">Job Category</p>
+              <p className="text-gray-400 xl:text-sm text-xs">{job.jobCategoryName || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-left">{job.workingHoursPerWeek || 'N/A'}</p>
+              <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                Working Hours per week
+              </p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-left">{job.locationPreference || 'N/A'}</p>
+              <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                Location Preferences
+              </p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-left">${job.expectedHourlyRate || 'N/A'}</p>
+              <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                Expected Hourly Rate
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-[1fr_2fr] gap-4 mt-8">
+        <div
+          className={`${status === JobStatus.Closed || status === JobStatus.Paused ? '' : 'grid grid-cols-[1fr_2fr] gap-4 mt-8'}`}
+        >
           {/* APPLICANTS */}
           <div
-            className={`flex flex-col gap-4 ${
+            className={`${
               status === JobStatus.Draft ? 'hidden' : ''
-            } ${status === JobStatus.Closed || status === JobStatus.Paused ? 'grid grid-cols-3 !gap-16' : ''}`}
+            } ${status === JobStatus.Closed || status === JobStatus.Paused ? '' : ''}`}
           >
             {/* For PAUSED and CLOSED jobs */}
             {status === JobStatus.Closed || status === JobStatus.Paused ? (
-              <div className="flex gap-6">
-                <ProfilePhotosSection
-                  label="Applicants"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                />
+              <div className="">
+                <div className="flex gap-6">
+                  <ProfilePhotosSection
+                    label="Applicants"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                  />
 
-                <ProfilePhotosSection
-                  label="Interviewed"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                />
+                  <ProfilePhotosSection
+                    label="Interviewed"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                  />
 
-                <ProfilePhotosSection
-                  label="Hired"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                  className={`${status === JobStatus.Paused ? 'hidden' : ''}`}
-                />
+                  <ProfilePhotosSection
+                    label="Hired"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                    className={`${status === JobStatus.Paused ? 'hidden' : ''}`}
+                  />
+                </div>
+                <div className="flex gap-6 mb-4 w-full items-start mt-6">
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Working Hours per week
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      {job.workingHoursPerWeek || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Location Preferences
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      {job.locationPreference || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Expected Hourly Rate
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      ${job.expectedHourlyRate || 'N/A'}
+                    </p>
+                  </div>
+                </div>
               </div>
             ) : (
               // All jobs except PAUSED and CLOSED
               <>
-                <ProfilePhotosSection
-                  label="Applicants"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                />
+                <div className="flex flex-col gap-6">
+                  <ProfilePhotosSection
+                    label="Applicants"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                  />
 
-                <ProfilePhotosSection
-                  label="Interviewed"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                />
+                  <ProfilePhotosSection
+                    label="Interviewed"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                  />
 
-                <ProfilePhotosSection
-                  label="Hired"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                  className={status === JobStatus.Active ? 'hidden' : ''}
-                />
+                  <ProfilePhotosSection
+                    label="Hired"
+                    images={applicantsPhotos}
+                    profiles={data.applications}
+                    className={status === JobStatus.Active ? 'hidden' : ''}
+                  />
+                </div>
+                {/* Job Info - Bottom section */}
+                <div className="grid grid-cols gap-6 mb-4 w-full items-start mt-6">
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Working Hours per week
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      {job.workingHoursPerWeek || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Location Preferences
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      {job.locationPreference || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                      Expected Hourly Rate
+                    </p>
+                    <p className="text-base font-medium text-left">
+                      ${job.expectedHourlyRate || 'N/A'}
+                    </p>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -187,7 +267,7 @@ export default function JobDesignTwo({
       {/* Buttons */}
       <div
         className={`${
-          status === JobStatus.Draft ? 'flex flex-col gap-4 items-center mb-6 mt-5' : 'hidden'
+          status === JobStatus.Draft ? 'flex flex-col gap-4 mb-6 mt-5 justify-items-end' : 'hidden'
         }`}
       >
         {status === JobStatus.Draft && (

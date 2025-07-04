@@ -4,7 +4,7 @@ import JobStateButton from '~/common/job-state-button/JobStateButton';
 import ProfilePhotosSection from '~/common/profile-photos-list/ProfilePhotosSection';
 import { Link } from '@remix-run/react';
 import { JobStatus } from '@mawaheb/db/enums';
-import { parseDate } from '~/lib/utils';
+import { cn, parseDate } from '~/lib/utils';
 import { formatTimeAgo } from '~/utils/formatTimeAgo';
 import { IoPencilSharp } from 'react-icons/io5';
 import { EXPERIENCE_LEVEL_LABELS } from '~/common/labels';
@@ -25,11 +25,13 @@ export default function JobDesignThree({
   status,
   onStatusChange,
   userAccountStatus,
+  className,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -44,7 +46,12 @@ export default function JobDesignThree({
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
 
   return (
-    <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
+    <div
+      className={cn(
+        'lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10',
+        className
+      )}
+    >
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       <div className="flex items-center space-x-2 mb-4">
         {/* Show Edit button only when the job status is "draft" */}
@@ -88,13 +95,17 @@ export default function JobDesignThree({
                   <Link to={`/jobs/${job.id}`}>{job.title}</Link>
                 </h3>
               </DialogTitle>
-              <DialogDescription className="text-black grid grid-cols-[60%_40%] gap-20 mr-20 items-center">
+              <DialogDescription
+                className="text-black sm:grid lg:grid-cols-[58%_44%] md:grid-cols-[50%_50%] sm:grid-cols-[55%_45%] flex flex-col xl:mr-20 lg:mr-10 md:mr-6 mr-2
+               lg:gap-0 gap-2"
+              >
                 <DialogDescription className="text-black">
                   <p className="xl:text-sm text-xs text-gray-400 mb-5">
                     {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
                   </p>
                   <div className="flex flex-col gap-2 text-sm">
-                    <div className="flex xl:gap-10 lg:gap-8 gap-6 items-center justify-between">
+                    {/* BUDGET - ENTRY LEVEL - APPLICANTS - HIRED */}
+                    <div className="grid lg:grid-cols-[50%_50%]  xl:gap-10 lg:gap-8 gap-6 items-center">
                       <div className="flex gap-10">
                         <div>
                           <p className="xl:text-xl lg:text-lg text-base">${job.budget}</p>
@@ -109,14 +120,14 @@ export default function JobDesignThree({
                         </div>
                       </div>
                       <div className="flex gap-10">
-                        <div className="flex self-end">
+                        <div className="flex">
                           <ProfilePhotosSection
                             label="Applicants"
                             images={applicantsPhotos}
                             profiles={data.applications}
                           />
                         </div>
-                        <div className="flex self-end">
+                        <div className="flex">
                           <ProfilePhotosSection
                             label="Hired"
                             images={applicantsPhotos}
@@ -125,14 +136,19 @@ export default function JobDesignThree({
                         </div>
                       </div>
                     </div>
-                    <div className="xl:text-lg lg:text-base text-sm mt-2">
+
+                    {/* DESCRIPTION */}
+                    <div className="mt-2 mb-2">
+                      <h1 className="text-lg font-normal mb-2">Description:</h1>
                       <ReadMore
-                        className="mt-4 xl:text-lg lg:text-base text-sm"
+                        className="lg:text-base text-sm"
                         html={job.description}
-                        wordsPerChunk={40}
+                        charPerChunk={300}
                       />
                     </div>
-                    <div className="mt-8 xl:text-base text-sm">
+
+                    {/* SKILLS */}
+                    <div className="xl:text-base text-sm">
                       {job.requiredSkills &&
                       Array.isArray(job.requiredSkills) &&
                       job.requiredSkills.length > 0 ? (
@@ -143,13 +159,40 @@ export default function JobDesignThree({
                     </div>
                   </div>
                 </DialogDescription>
-                <DialogDescription className="text-black">
+
+                {/* Working hours - Location - Project type - Expected hourly rate - job category */}
+                <DialogDescription className="text-black ">
+                  <div className="grid grid-cols-2 gap-6 mb-4">
+                    <div>
+                      <p className="text-gray-400 xl:text-sm text-xs mb-1">
+                        Working Hours per week
+                      </p>
+                      <p className="text-base font-medium">{job.workingHoursPerWeek || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 xl:text-sm text-xs mb-1">Location Preferences</p>
+                      <p className="text-base font-medium">{job.locationPreference || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 xl:text-sm text-xs mb-1">Project Type</p>
+                      <p className="text-base font-medium">{job.projectType || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 xl:text-sm text-xs mb-1">Expected Hourly Rate</p>
+                      <p className="text-base font-medium">${job.expectedHourlyRate || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 xl:text-sm text-xs mb-1">Job Category</p>
+                      <p className="text-base font-medium">{job.jobCategoryName || 'N/A'}</p>
+                    </div>
+                  </div>
                   <Calendar highlightedDates={interviewDates} />
                 </DialogDescription>
               </DialogDescription>
             </DialogHeader>
           </DialogContent>
         </Dialog>
+
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
         </p>

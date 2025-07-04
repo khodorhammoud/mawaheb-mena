@@ -1624,14 +1624,14 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
       ? eq(jobsTable.employerId, employerId)
       : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
 
-  // Fetch all jobs for this employer (filtered)\
+  // Fetch all jobs for this employer (filtered)
   const jobs = await db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
       description: jobsTable.description,
       budget: jobsTable.budget,
-      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- ADD THIS LINE!
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -1640,9 +1640,11 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
       status: jobsTable.status,
       employerId: jobsTable.employerId,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label, // <-- Add category name here
       fulfilledAt: jobsTable.fulfilledAt,
     })
     .from(jobsTable)
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id)) // <-- JOIN!
     .where(whereClause)
     .orderBy(desc(jobsTable.createdAt));
 

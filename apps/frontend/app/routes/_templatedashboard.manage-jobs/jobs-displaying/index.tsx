@@ -93,7 +93,7 @@ export default function JobManagement({
       case 'three':
         return 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4';
       default:
-        return 'flex flex-col';
+        return 'flex flex-col gap-8';
     }
   }
 
@@ -123,7 +123,7 @@ export default function JobManagement({
           sortedStatuses.length > 0 ? (
             sortedStatuses.map(status => (
               <div key={status} className="lg:mt-10 md:mt-12 mt-16">
-                <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl ml-1">
+                <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl md:ml-1 ml-11">
                   {capitalize(status)} Jobs
                 </h2>
                 <div className={getGridClass(viewMode)}>

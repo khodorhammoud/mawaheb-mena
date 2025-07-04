@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import '~swiper/swiper-bundle.min.css';
 
 @layer base {
   :root {
@@ -74,4 +73,42 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.prose,
+.prose-sm {
+  /* Force max width to none so it doesn't shrink in modals/cards */
+  max-width: 100% !important;
+}
+
+.prose p,
+.prose-sm p,
+.prose ul,
+.prose-sm ul,
+.prose ol,
+.prose-sm ol,
+.prose li,
+.prose-sm li {
+  margin-top: 0.1em !important;
+  margin-bottom: 0.1em !important;
+}
+
+.prose ul,
+.prose-sm ul,
+.prose ol,
+.prose-sm ol {
+  padding-left: 1.1em !important;
+}
+
+.prose li,
+.prose-sm li {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+.prose a,
+.prose-sm a {
+  color: #27638a !important;
+  text-decoration: underline !important;
+  word-break: break-all;
 }
