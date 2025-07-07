@@ -40,6 +40,9 @@ interface ApplicationsTableProps {
   showEmployerStatus?: boolean;
   showMatchScore?: boolean;
   emptyMessage?: string;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+  onSortChange?: () => void;
 }
 
 function getStatusColor(status: JobApplicationStatus) {
@@ -105,6 +108,9 @@ export function ApplicationsTable({
   showEmployerStatus = true,
   showMatchScore = true,
   emptyMessage = 'No applications found',
+  sortBy,
+  sortDirection,
+  onSortChange,
 }: ApplicationsTableProps) {
   const columns = [
     ...(showJob
@@ -211,7 +217,16 @@ export function ApplicationsTable({
         ]
       : []),
     {
-      header: 'Applied Date',
+      header: (
+        <button
+          type="button"
+          onClick={onSortChange}
+          className="flex items-center gap-1 group text-left"
+        >
+          Applied Date
+          {sortBy === 'appliedDate' && <span>{sortDirection === 'asc' ? '▲' : '▼'}</span>}
+        </button>
+      ),
       accessor: (app: Application) => formatDate(app.application.createdAt),
     },
     {
