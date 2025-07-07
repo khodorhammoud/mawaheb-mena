@@ -38,11 +38,12 @@ export default function JobStateButton({
 
   const statusStyles: Record<JobStatus, string> = {
     active: 'bg-green-800 text-white hover:!bg-green-900',
+    running: 'bg-orange-500 text-white hover:!bg-orange-600', // <<< NEW!
     draft: 'bg-gray-400 text-white hover:!bg-gray-500 focus:!bg-gray-500',
     paused: 'bg-yellow-600 text-white hover:!bg-yellow-700',
     closed: 'bg-red-900 text-white hover:!bg-red-800',
     deleted: 'bg-red-800 text-white hover:!bg-red-900',
-    completed: 'bg-blue-700 text-white hover:!bg-blue-800', // Added completed style to fix linter error
+    completed: 'bg-blue-700 text-white hover:!bg-blue-800',
   };
 
   const handleStatusChange = (newStatus: JobStatus) => {
