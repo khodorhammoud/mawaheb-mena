@@ -28,10 +28,18 @@ export default function JobDesignOne({
 
   const formattedDate = parseDate(job.createdAt);
 
-  const applicantsPhotos = [
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-  ];
+  // applications and there nb
+  const Applications = data.applications || [];
+  const numberOfApplications = data.applications?.length || 0;
+
+  // Hired applicants and there nb
+  const hiredApplications = data.applications?.filter(app => app.status === 'approved') || [];
+  const numberOfHired = hiredApplications.length;
+
+  // shortlisted applicants and there nb
+  const shortlistedApplications =
+    data.applications?.filter(app => app.status === 'shortlisted') || [];
+  const numberOfShortlisted = shortlistedApplications.length;
 
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
 
@@ -162,25 +170,18 @@ export default function JobDesignOne({
       >
         {/* Applicants Section */}
         <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          label={`Applicants (${numberOfApplications})`}
+          profiles={Applications}
         />
 
         {/* Interviewed Section */}
         <ProfilePhotosSection
-          label="Interviewed"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          label={`Interviewed (${numberOfShortlisted})`}
+          profiles={shortlistedApplications}
         />
 
         {/* Hired Section */}
-        <ProfilePhotosSection
-          label="Hired"
-          images={applicantsPhotos}
-          profiles={data.applications}
-          className={`${status === JobStatus.Active || status === JobStatus.Paused ? 'hidden' : ''}`}
-        />
+        <ProfilePhotosSection label={`Hired (${numberOfHired})`} profiles={hiredApplications} />
       </div>
 
       {/* Right Section */}

@@ -28,10 +28,18 @@ export default function JobDesignTwo({
 
   const formattedDate = parseDate(job.createdAt);
 
-  const applicantsPhotos = [
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-  ];
+  // applications and there nb
+  const Applications = data.applications || [];
+  const numberOfApplications = data.applications?.length || 0;
+
+  // Hired applicants and there nb
+  const hiredApplications = data.applications?.filter(app => app.status === 'approved') || [];
+  const numberOfHired = hiredApplications.length;
+
+  // shortlisted applicants and there nb
+  const shortlistedApplications =
+    data.applications?.filter(app => app.status === 'shortlisted') || [];
+  const numberOfShortlisted = shortlistedApplications.length;
 
   const interviewDates = ['2024-11-11', '2024-11-17', '2024-11-24'];
 
@@ -122,44 +130,36 @@ export default function JobDesignTwo({
             {status === JobStatus.Closed || status === JobStatus.Paused ? (
               <div className="flex gap-6">
                 <ProfilePhotosSection
-                  label="Applicants"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
+                  label={`Applicants (${numberOfApplications})`}
+                  profiles={Applications}
                 />
 
                 <ProfilePhotosSection
-                  label="Interviewed"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
+                  label={`Interviewed (${numberOfShortlisted})`}
+                  profiles={shortlistedApplications}
                 />
 
                 <ProfilePhotosSection
-                  label="Hired"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                  className={`${status === JobStatus.Paused ? 'hidden' : ''}`}
+                  label={`Hired (${numberOfHired})`}
+                  profiles={hiredApplications}
                 />
               </div>
             ) : (
-              // All jobs except PAUSED and CLOSED
+              // All jobs except PAUSED and CLOSED and DRAFT
               <>
                 <ProfilePhotosSection
-                  label="Applicants"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
+                  label={`Applicants (${numberOfApplications})`}
+                  profiles={Applications}
                 />
 
                 <ProfilePhotosSection
-                  label="Interviewed"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
+                  label={`Interviewed (${numberOfShortlisted})`}
+                  profiles={shortlistedApplications}
                 />
 
                 <ProfilePhotosSection
-                  label="Hired"
-                  images={applicantsPhotos}
-                  profiles={data.applications}
-                  className={status === JobStatus.Active ? 'hidden' : ''}
+                  label={`Hired (${numberOfHired})`}
+                  profiles={hiredApplications}
                 />
               </>
             )}
