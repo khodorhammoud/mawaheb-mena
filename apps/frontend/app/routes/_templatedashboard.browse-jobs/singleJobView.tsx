@@ -110,7 +110,7 @@ export default function SingleJobView({
         <div className="px-6 py-4 border-r border-gray-200">
           <ReadMore className="mb-12 text-base" html={job.description} charPerChunk={300} />
 
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-8">
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">${job.budget}</span>
               <span className="text-sm text-gray-500">Fixed price</span>
@@ -122,6 +122,26 @@ export default function SingleJobView({
             <div className="flex flex-col items-start gap-1">
               <span className="text-base">{job.projectType}</span>
               <span className="text-sm text-gray-500">Project type</span>
+            </div>
+          </div>
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <p className="text-base font-medium text-left">{job.workingHoursPerWeek || 'N/A'}</p>
+              <p className="text-sm text-gray-500">Working Hours per week</p>
+            </div>
+            <div>
+              <p className="text-base font-medium text-left">{job.locationPreference || 'N/A'}</p>
+              <p className="text-sm text-gray-500">Location Preferences</p>
+            </div>
+          </div>
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <p className="text-base">{job.jobCategoryName || 'N/A'}</p>
+              <p className="text-sm text-gray-500">Job Category</p>
+            </div>
+            <div>
+              <p className="text-base">${job.expectedHourlyRate || 'N/A'}</p>
+              <p className="text-sm text-gray-500">Expected Hourly Rate</p>
             </div>
           </div>
 
