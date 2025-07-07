@@ -45,18 +45,37 @@ export default function JobCard({ job, onSelect, isSuggested = false, scrollShee
         <p className="xl:text-sm text-xs text-gray-400 mb-4">
           Fixed price - {formatTimeAgo(job.createdAt)}
         </p>
-        <div className="flex xl:gap-10 lg:gap-8 gap-6 mb-6">
-          <div>
-            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">${job.budget}</p>
-            <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
+        <div className="grid xl:grid-cols-3 grid-cols-2 gap-y-6 gap-x-4 items-center my-6">
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-base">${job.budget}</p>
+            <p className="text-sm text-gray-500">Fixed price</p>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-base">{job.experienceLevel}</p>
+            <p className="text-sm text-gray-500">Experience level</p>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-base">{job.projectType}</span>
+            <span className="text-sm text-gray-500">Project type</span>
           </div>
           <div>
-            <p className="xl:text-xl lg:text-lg mt-4 text-base leading-tight mb-1">
-              {job.experienceLevel}
-            </p>
-            <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
+            <p className="text-base">{job.jobCategoryName || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Job Category</p>
+          </div>
+          <div>
+            <p className="text-base font-medium text-left">{job.workingHoursPerWeek || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Working Hours per week</p>
+          </div>
+          <div>
+            <p className="text-base">${job.expectedHourlyRate || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Expected Hourly Rate</p>
+          </div>
+          <div>
+            <p className="text-base font-medium text-left">{job.locationPreference || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Location Preferences</p>
           </div>
         </div>
+
         <div className="xl:text-lg lg:text-base text-sm mt-4">
           <div>Description:</div>
           <ReadMore

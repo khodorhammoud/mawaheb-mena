@@ -854,6 +854,8 @@ export async function getAllJobs(
       budget: jobsTable.budget,
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label,
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -867,6 +869,7 @@ export async function getAllJobs(
         freelancerId !== undefined ? eq(jobApplicationsTable.freelancerId, freelancerId) : undefined
       )
     )
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id)) // <--- NEW JOIN
     .where(inArray(jobsTable.id, jobIds))
     .orderBy(desc(jobsTable.createdAt));
 
@@ -899,6 +902,8 @@ export async function getMyJobs(freelancerId: number, limit?: number) {
       budget: jobsTable.budget,
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label,
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -911,6 +916,7 @@ export async function getMyJobs(freelancerId: number, limit?: number) {
         eq(jobApplicationsTable.freelancerId, freelancerId)
       )
     )
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id))
     .orderBy(desc(jobsTable.createdAt));
 
   // Apply limit if provided
