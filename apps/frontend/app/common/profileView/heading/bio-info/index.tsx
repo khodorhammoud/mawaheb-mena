@@ -198,7 +198,19 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
               <Dialog open={open} onOpenChange={handleBioDialogChange}>
                 {/* ✏️ */}
                 <DialogTrigger asChild>
-                  <Button variant="link">
+                  <Button
+                    className="
+                    ml-1
+                    focus-visible:outline-none
+                    focus:border-none
+                    focus-visible:border-none
+                    focus-visible:ring-offset-0
+                    focus-visible:!ring-0
+                    focus:!ring-0
+                    focus:!outline-none
+                  "
+                    variant="link"
+                  >
                     <IoPencilSharp className="2xl:h-8 xl:h-7 h-6 2xl:w-8 xl:w-7 w-6 text-sm text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 xl:-ml-1 lg:-ml-2 -ml-3" />{' '}
                   </Button>
                 </DialogTrigger>
@@ -265,7 +277,6 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                           id="address"
                           name="address"
                           label="Address"
-                          className=""
                           defaultValue={profileData?.address || profileData?.account?.address || ''}
                           ref={addressInputRef} // ✅ also this
                         />
@@ -370,7 +381,13 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                     <DialogFooter>
                       <Button
                         disabled={bioFetcher.state === 'submitting'}
-                        className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6"
+                        className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient mt-6 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                         type="submit"
                       >
                         Save
@@ -427,7 +444,14 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                 canEdit && (
                   <Button
                     onClick={() => handleTriggerClick('website')}
-                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white ml-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient"
+                    className="2xl:text-sm text-xs rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 px-2 py-1 font-semibold tracking-wide hover:text-white ml-1 sm:mb-0 mb-2 w-fit bg-white not-active-gradient focus:outline-none
+    focus-visible:ring-0
+   
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   >
                     <FaGlobe className="xl:h-4 h-3 xl:w-4 w-3 mr-2" />
                     Add Website

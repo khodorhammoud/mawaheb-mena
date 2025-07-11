@@ -1,3 +1,5 @@
+// maybe, this file is not used, and we replaced it with the index.tsx file beside it in the folder. This one is old and much hard to handles, and it has the whole component into it, while the other has different components called inside it which make it more readable and modern
+
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription } from '~/common/header/card';
 import { Button } from '~/components/ui/button';
@@ -407,8 +409,15 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
                   name={props.fieldName}
                   accept="video/mp4,video/webm,video/ogg,video/mov,video/mkv"
                   onChange={e => setInputValue(e.target.files ? e.target.files[0] : '')}
-                  className="mb-3"
+                  className="mb-3 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                 />
+
                 <Or />
                 <Button type="button" onClick={() => setInputValue('')} className="mb-3">
                   Or paste YouTube URL
@@ -439,7 +448,13 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             type="file"
             name={props.fieldName}
             onChange={e => setInputValue(e.target.files ? e.target.files[0] : null)}
-            className="w-full p-3 border border-gray-300 rounded-md"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           />
         );
       case 'repeatable':
@@ -611,7 +626,13 @@ function GeneralizableFormCard(props: GeneralizableFormCardProps) {
             {/* SAVE BUTTON */}
             <DialogFooter>
               <Button
-                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+                className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                 type="submit"
               >
                 Save
