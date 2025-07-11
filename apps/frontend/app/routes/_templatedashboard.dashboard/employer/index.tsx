@@ -40,6 +40,12 @@ export default function Dashboard() {
 
   const loaderData = useLoaderData<any>();
 
+  const {
+    totalApplicantsCount = 0,
+    shortlistedApplicantsCount = 0,
+    interviewedApplicantsCount = 0,
+  } = loaderData;
+
   // Extract all possible relevant data
   const currentProfile = loaderData?.currentProfile;
   const activeJobCount = loaderData?.activeJobCount || 0;
@@ -120,9 +126,9 @@ export default function Dashboard() {
 
   // Applicants summary data
   const applicantData: ApplicantData[] = [
-    { title: 'Interviewed', count: 5 },
-    { title: 'Total Applicants', count: 7 },
-    { title: 'Shortlisted', count: 2 },
+    { title: 'Interviewed', count: interviewedApplicantsCount },
+    { title: 'Total Applicants', count: totalApplicantsCount },
+    { title: 'Shortlisted', count: shortlistedApplicantsCount },
   ];
 
   return (
