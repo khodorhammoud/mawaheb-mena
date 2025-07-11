@@ -9,6 +9,7 @@ import { Skill } from '@mawaheb/db/types';
 import RichTextEditor from '~/components/ui/richTextEditor';
 import { getWordCount } from '~/lib/utils';
 import { ExperienceLevel } from '@mawaheb/db/enums';
+import { toast } from '~/components/hooks/use-toast';
 
 interface JobFormProps {
   job?: {
@@ -54,6 +55,113 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
 
   const handleDescriptionChange = (content: string) => setJobDescription(content);
 
+  const [touched, setTouched] = useState(false);
+
+  // Submission validations
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const title = form.jobTitle.value?.trim();
+    const description = jobDescription?.trim();
+    const wordCount = description.split(/\s+/).filter(word => word).length;
+
+    if (!title || title.length < 10) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job title must be minimum 10 characters',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (title.length > 100) {
+      toast({
+        title: 'Title too long',
+        description: 'Job title must be less than 100 characters.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (wordCount < 20) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job description shall be minimum of 20 words',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Ensure other fields are filled in
+    const requiredFields = [
+      'jobTitle',
+      'workingHours',
+      'location',
+      'projectType',
+      'budget',
+      'expectedHourlyRate',
+    ];
+
+    for (const fieldName of requiredFields) {
+      const value = form[fieldName]?.value?.trim();
+      if (!value) {
+        toast({
+          title: 'Missing Field',
+          description: `Please fill in all required fields.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    if (!selectedCategory) {
+      toast({
+        title: 'Missing Category',
+        description: 'Please select a job category.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!selectedExperience) {
+      toast({
+        title: 'Missing Experience Level',
+        description: 'Please select an experience level.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (requiredSkills.length === 0) {
+      toast({
+        title: 'Missing Skills',
+        description: 'Please select at least one required skill.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const hours = Number(form.workingHours.value);
+    const budget = Number(form.budget.value);
+    const rate = Number(form.expectedHourlyRate.value);
+
+    if (hours <= 0 || budget <= 0 || rate <= 0) {
+      toast({
+        title: 'Invalid Values',
+        description: 'Working hours, budget, and expected rate must be greater than 0.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setTouched(true); // ✅ triggers visual validation
+
+    // If all good, submit the form
+    form.submit();
+  }
+
   return (
     <div className="font-['Switzer-Regular'] w-full">
       <div className="p-6 bg-white">
@@ -64,6 +172,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
 
           <Form
             method="post"
+            onSubmit={handleSubmit}
             className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
             {/* Hidden Inputs */}
@@ -80,6 +189,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
               label="Job Title"
               defaultValue={job?.title || ''}
               className="w-full"
+              required
             />
 
             {/* Working Hours */}
@@ -90,6 +200,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
               label="Working Hours per week"
               defaultValue={String(job?.workingHoursPerWeek || '')}
               className="col-span-1 w-full"
+              required
             />
 
             {/* Job Description */}
@@ -120,10 +231,20 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 label="Location Preferences"
                 defaultValue={job?.locationPreference || ''}
                 className="col-span-1 w-full"
+                required
               />
 
               {/* Skills */}
-              <RequiredSkills selectedSkills={requiredSkills} onChange={setRequiredSkills} />
+              <div
+                className={`p-2 rounded-xl ${touched && requiredSkills.length === 0 ? 'border border-red-500' : ''}`}
+              >
+                <RequiredSkills selectedSkills={requiredSkills} onChange={setRequiredSkills} />
+              </div>
+              {touched && requiredSkills.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Please select at least one required skill.
+                </p>
+              )}
 
               {/* Project Type */}
               <AppFormField
@@ -138,6 +259,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 ]}
                 defaultValue={job?.projectType || ''}
                 className="col-span-1 w-full"
+                required
               />
 
               {/* Budget */}
@@ -148,6 +270,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 label="Budget"
                 defaultValue={String(job?.budget || '')}
                 className="col-span-1 w-full"
+                required
               />
 
               {/* === NEW FIELD: Expected Hourly Rate === */}
@@ -160,6 +283,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 min={0}
                 defaultValue={job?.expectedHourlyRate ?? ''}
                 className="col-span-1 w-full"
+                required
               />
               {/* ====================================== */}
             </div>
@@ -170,7 +294,9 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 Job Category
               </label>
               <div
-                className="flex flex-wrap gap-3"
+                className={`flex flex-wrap gap-3 p-2 rounded-xl ${
+                  touched && !selectedCategory ? 'border border-red-500' : ''
+                }`}
                 id="jobCategory"
                 role="radiogroup"
                 aria-label="Job Category"
@@ -190,11 +316,18 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 ))}
               </div>
             </div>
+            {touched && !selectedCategory && (
+              <p className="text-red-500 text-sm mt-1">Please select a job category.</p>
+            )}
 
             {/* Experience Level */}
             <div className="col-span-2 mt-6">
               <h3 className="block md:text-2xl text-xl font-semibold mb-4">Experience Level</h3>
-              <div className="flex flex-wrap gap-2">
+              <div
+                className={`flex flex-wrap gap-2 p-2 rounded-xl ${
+                  touched && !selectedExperience ? 'border border-red-500' : ''
+                }`}
+              >
                 {Object.values(ExperienceLevel).map(level => (
                   <Badge
                     key={level}
@@ -210,6 +343,9 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 ))}
               </div>
             </div>
+            {touched && !selectedExperience && (
+              <p className="text-red-500 text-sm mt-1">Please select an experience level.</p>
+            )}
 
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
               <Button
