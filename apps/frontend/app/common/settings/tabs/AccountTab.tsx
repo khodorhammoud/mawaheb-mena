@@ -172,7 +172,13 @@ export default function AccountTab() {
 
             <button
               type="submit"
-              className="bg-primaryColor text-white xl:py-3 lg:py-1 sm:py-3 sm:px-2 py-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl w-2/3 md:w-1/2 lg:w-full text-sm"
+              className="bg-primaryColor text-white xl:py-3 lg:py-1 sm:py-3 sm:px-2 py-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl w-2/3 md:w-1/2 lg:w-full text-sm focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               Save Changes
             </button>

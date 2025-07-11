@@ -106,9 +106,14 @@ export default function JobStateButton({
           <DropdownMenuItem
             key={option}
             onSelect={() => handleStatusChange(option)}
-            className={`cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 outline-none focus:ring-0 focus:outline-none ${
-              option === selectedStatus ? 'font-semibold text-primaryColor' : ''
-            }`}
+            className={`cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 outline-none focus:ring-0 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 ${
+      option === selectedStatus ? 'font-semibold text-primaryColor' : ''
+    }`}
           >
             {option.charAt(0).toUpperCase() + option.slice(1)}
           </DropdownMenuItem>
