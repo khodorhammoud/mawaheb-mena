@@ -41,7 +41,8 @@ export default function Dashboard() {
   const loaderData = useLoaderData<any>();
 
   // Extract all possible relevant data
-  const currentProfile = loaderData?.currentProfile;
+  const currentProfile = loaderData?.currentUser;
+
   const activeJobCount = loaderData?.activeJobCount || 0;
   const draftedJobCount = loaderData?.draftedJobCount || 0;
   const closedJobCount = loaderData?.closedJobCount || 0;
