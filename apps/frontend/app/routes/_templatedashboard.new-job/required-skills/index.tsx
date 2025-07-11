@@ -84,7 +84,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     }
     setSearchTerm('');
     setSearchResults([]);
-    setOpen(false);
+    // setOpen(false);
   };
 
   useEffect(() => {
@@ -250,7 +250,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
                           onChange([...selectedSkills, data.skill]);
                           setSearchTerm('');
                           setSearchResults([]);
-                          setOpen(false);
+                          // setOpen(false);
 
                           setSkills(prev => [...prev, data.skill]); // ✅ This is what keeps your skills list in sync!
                         } else {
