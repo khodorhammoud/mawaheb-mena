@@ -1,6 +1,7 @@
 // ~/types.ts
 
 import { AccountStatus, CompensationType, JobApplicationStatus } from '@mawaheb/db/enums';
+import { KycDocument } from '@mawaheb/db/types/User';
 
 /** For arrays in the freelancer object */
 export interface Portfolio {
@@ -93,11 +94,11 @@ export interface JobApplication {
   employerAccountStatus?: string;
 }
 
-/** The loader data structure */
 export interface LoaderData {
   freelancer: FreelancerData;
   applications: JobApplication[];
   applicationCount: number;
+  kycDocuments: Record<string, KycDocument[]>;
 }
 
 /** Action response shape */
