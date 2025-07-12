@@ -11,6 +11,7 @@ export interface Account {
       email: string;
     };
     accountStatus: AccountStatus;
+    kycSubmitted: boolean;
   };
 }
 
@@ -36,7 +37,7 @@ export function AccountsTable({
       accessor: (acc: Account) => acc.account.user.email,
     },
     {
-      header: 'Status',
+      header: 'Status', // moved up
       accessor: (acc: Account) => (
         <span
           className={`inline-flex rounded-full px-2 text-xs font-semibold ${
@@ -46,6 +47,14 @@ export function AccountsTable({
           }`}
         >
           {acc.account.accountStatus}
+        </span>
+      ),
+    },
+    {
+      header: 'KYC Submitted', // new column
+      accessor: (acc: Account) => (
+        <span className="text-sm font-medium">
+          {acc.account?.kycSubmitted ? '✅ Yes' : '❌ No'}
         </span>
       ),
     },
