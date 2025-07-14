@@ -56,6 +56,7 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
     multiple,
     editable = true,
     formRef,
+    maxFileSizeMB,
   } = props;
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -206,16 +207,27 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
   //Handle file selection //For uploading more that one file, this used to be different
   const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (selectedFiles.length > 0) {
+      const file = e.target.files[0]; // ✅ Only one file allowed
+
+      // ✅ 10MB limit
+      if (maxFileSizeMB && file.size > maxFileSizeMB * 1024 * 1024) {
         toast({
           variant: 'destructive',
-          title: 'Only one file allowed',
-          description: 'Please remove the current CV before uploading a new one.',
+          title: 'File too large',
+          description: `File size must be less than ${maxFileSizeMB} MB.`,
         });
         return;
       }
 
-      const file = e.target.files[0]; // ✅ Only one file allowed
+      if (selectedFiles.length > 0) {
+        toast({
+          variant: 'destructive',
+          title: 'Only one file allowed',
+          description: 'Please remove the current file before uploading a new one.',
+        });
+        return;
+      }
+
       setSelectedFiles([file]);
 
       if (isCVField) {
