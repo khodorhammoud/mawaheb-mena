@@ -45,6 +45,35 @@ export default function JobDesignThree({
 
   return (
     <div className="lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10">
+      {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
+      <div className="flex items-center space-x-2 mb-4">
+        {/* Show Edit button only when the job status is "draft" */}
+        {status === JobStatus.Draft && (
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+          >
+            <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
+            Edit
+          </Link>
+        )}
+
+        {status && (
+          <JobStateButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+            userAccountStatus={userAccountStatus}
+            className="w-[106px] h-[36px]"
+          />
+        )}
+      </div>
       {/* JOB INFORMATION */}
       <div>
         {/* Dialog wrap for the title */}

@@ -132,7 +132,13 @@ export default function Header() {
             <Link
               to="/new-job"
               onClick={handlePostJobClick}
-              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
+              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               Post Job
             </Link>

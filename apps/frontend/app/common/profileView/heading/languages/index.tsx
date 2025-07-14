@@ -86,7 +86,16 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
           <Dialog open={languagesServedOpen} onOpenChange={handleLanguageDialogChange}>
             {/* ✏️ */}
             <DialogTrigger asChild>
-              <Button variant="link">
+              <Button
+                className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                variant="link"
+              >
                 <IoPencilSharp className="lg:relative absolute lg:left-0 left-20 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
               </Button>
             </DialogTrigger>
@@ -138,7 +147,13 @@ export default function Languages({ profile, canEdit = true }: LanguagesProps) {
 
               <DialogFooter className="mt-6">
                 <Button
-                  className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
+                  className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   type="submit"
                   form="freelancer-languages-form"
                   onClick={handleSubmit}

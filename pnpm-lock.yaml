@@ -77,7 +77,7 @@ importers:
         version: 0.42.0(@neondatabase/serverless@1.0.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/pg@8.11.14)(gel@2.1.0)(pg@8.15.6)(postgres@3.4.5)(prisma@5.22.0)(sqlite3@5.1.7)
       eslint-import-resolver-alias:
         specifier: ^1.1.2
-        version: 1.1.2(eslint-plugin-import@2.31.0)
+        version: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-plugin-react-hooks:
         specifier: ^5.1.0-rc-8971381549-20240625
         version: 5.2.0(eslint@8.57.1)
@@ -256,16 +256,15 @@ importers:
       minimist-options:
         specifier: ^4.1.0
         version: 4.1.0
+      prisma:
+        specifier: 5.22.0
+        version: 5.22.0
       quick-lru:
         specifier: ^4.0.1
         version: 4.0.1
       typescript:
         specifier: ^5.5.0
         version: 5.8.3
-    devDependencies:
-      prisma:
-        specifier: 5.22.0
-        version: 5.22.0
 
   apps/frontend:
     dependencies:
@@ -452,6 +451,9 @@ importers:
       react-icons:
         specifier: ^5.3.0
         version: 5.5.0(react@18.3.1)
+      react-places-autocomplete:
+        specifier: ^7.3.0
+        version: 7.3.0(react@18.3.1)
       react-quill:
         specifier: ^2.0.0
         version: 2.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -533,7 +535,7 @@ importers:
         version: 8.57.1
       eslint-import-resolver-alias:
         specifier: ^1.1.2
-        version: 1.1.2(eslint-plugin-import@2.31.0)
+        version: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-import-resolver-typescript:
         specifier: ^3.6.3
         version: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.1)
@@ -11505,6 +11507,11 @@ packages:
       react: '>= 16.8.0'
       react-dom: '>= 16.8.0'
 
+  react-places-autocomplete@7.3.0:
+    resolution: {integrity: sha512-86wcHC69JATvWBnIS/yCsBHLtwzOGcnx3Ye94u74yTrz1jLRC/txkVDkf6rvC+Jq3zNe/tAg/W53x0EaH1ZPPw==}
+    peerDependencies:
+      react: '>=0.14.7'
+
   react-popper@2.3.0:
     resolution: {integrity: sha512-e1hj8lL3uM+sgSR4Lxzn5h1GxBlpa4CQz0XLF8kx4MDrDRWY0Ena4c97PUeSX9i5W3UAfDP0z0FXCTQkoXUl3Q==}
     peerDependencies:
@@ -19046,7 +19053,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.8.3)
       eslint-config-prettier: 9.1.0(eslint@8.57.1)
-      eslint-import-resolver-alias: 1.1.2(eslint-plugin-import@2.31.0)
+      eslint-import-resolver-alias: 1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1))
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.1)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.1)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
@@ -21657,7 +21664,7 @@ snapshots:
       eslint-plugin-turbo: 2.5.2(eslint@8.57.1)(turbo@2.5.2)
       turbo: 2.5.2
 
-  eslint-import-resolver-alias@1.1.2(eslint-plugin-import@2.31.0):
+  eslint-import-resolver-alias@1.1.2(eslint-plugin-import@2.31.0(eslint@8.57.1)):
     dependencies:
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1)
 
@@ -27010,6 +27017,12 @@ snapshots:
       odometer: 0.4.8
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  react-places-autocomplete@7.3.0(react@18.3.1):
+    dependencies:
+      lodash.debounce: 4.0.8
+      prop-types: 15.8.1
+      react: 18.3.1
 
   react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:

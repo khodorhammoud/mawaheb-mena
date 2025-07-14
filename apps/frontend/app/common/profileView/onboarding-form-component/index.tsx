@@ -1,3 +1,7 @@
+// this code is the cards from the inside, and it is responsible for the for submissions i guess
+
+// This file defines a generic, reusable card component (GeneralizableFormCard) that handles form input and submission logic for many different field types (e.g., text, number, file, video, etc.) across your app — including opening modals (dialogs), rendering input forms, submitting data via Remix fetcher, and showing toast messages.
+
 import { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
 import { useFetcher } from '@remix-run/react';
 
@@ -324,7 +328,13 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               <button
                 type="button"
                 onClick={() => handleFileRemove(index)}
-                className="text-red-400 hover:text-red-500 transition-all duration-300 transform hover:scale-110 flex items-center justify-center"
+                className="text-red-400 hover:text-red-500 transition-all duration-300 transform hover:scale-110 flex items-center justify-center focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
               >
                 <span className="mr-1">Remove</span>
                 <svg
@@ -383,10 +393,20 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-offset-0 outline-none ring-0"
+              >
                 {triggerLabel}
               </Button>
             </DialogTrigger>
+
             <DialogContent>
               {/* this is where i leave space betweeen the title and the content in the dialogs */}
               <DialogHeader className="mb-6">
@@ -406,6 +426,13 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
                   file:text-sm file:font-semibold
                   file:bg-blue-50 file:text-primaryColor
                   hover:file:bg-blue-100
+                  focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0
                   ${selectedFiles.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`} // i added this line to make the ui look like i can not upload more that one file
                 />
                 {renderSelectedFiles()}
@@ -415,10 +442,16 @@ const FileFormCard = forwardRef<any, GeneralizableFormCardProps>((props, ref) =>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button
-                    className="not-active-gradient hover:text-white border bg-white mt-4"
                     type="button"
                     variant="secondary"
                     onClick={handleDialogClose}
+                    className="not-active-gradient hover:text-white border bg-white mt-4 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus-visible:ring-transparent focus:ring-offset-0"
                   >
                     Close
                   </Button>
@@ -579,17 +612,37 @@ function DefaultFormCard(props: GeneralizableFormCardProps) {
         {props.editable && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             {isFilled ? (
-              <button type="button" className="absolute top-3 right-3" onClick={handleButtonClick}>
+              <button
+                type="button"
+                className="absolute top-3 right-3 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                onClick={handleButtonClick}
+              >
                 <IoPencilSharp className="h-7 w-7 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
               </button>
             ) : (
+              // Here is the button of the GeneralizableFormField
               <Button
                 type="button"
                 variant="outline"
-                className="text-primaryColor border-gray-300 bg-gray-100 w-max-fit"
+                className="text-primaryColor border-gray-300 bg-gray-100 w-max-fit focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                 onClick={handleButtonClick}
               >
-                {props.triggerIcon} {props.triggerLabel}
+                <span className="flex items-center gap-2">
+                  {props.triggerIcon}
+                  {props.triggerLabel}
+                </span>
               </Button>
             )}
             <DialogContent>
