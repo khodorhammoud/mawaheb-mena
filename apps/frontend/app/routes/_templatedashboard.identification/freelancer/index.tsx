@@ -278,6 +278,7 @@ export default function FreelancerIdentifyingScreen() {
     editable: true,
     showLoadingOnSubmit: true,
     formRef: identificationFormRef,
+    maxFileSizeMB: 10,
   };
 
   return (
