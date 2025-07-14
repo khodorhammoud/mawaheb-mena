@@ -477,7 +477,13 @@ export default function EmployerIdentificationScreen() {
           {/* Back to account button */}
           <Button
             type="button"
-            className="flex items-center text-lg bg-primaryColor hover:bg-primaryColor hover:underline text-white group"
+            className="flex items-center text-lg bg-primaryColor hover:bg-primaryColor hover:underline text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             onClick={() => {
               const formData = new FormData();
               formData.append('target-updated', 'back-to-account-info');
@@ -504,11 +510,17 @@ export default function EmployerIdentificationScreen() {
             type="button"
             onClick={handleSubmitDocuments}
             disabled={isSubmitting || documentsSubmitted}
-            className={`flex items-center justify-center text-lg bg-primaryColor py-3 px-5 hover:bg-primaryColor hover:underline text-white group gap-2 ${
-              isSubmitting || documentsSubmitted
-                ? 'bg-primaryColor hover:bg-primaryColor text-white'
-                : 'bg-primaryColor hover:bg-primaryColor text-white hover:underline'
-            }`}
+            className={`flex items-center justify-center text-lg bg-primaryColor py-3 px-5 hover:bg-primaryColor hover:underline text-white group gap-2 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 ${
+      isSubmitting || documentsSubmitted
+        ? 'bg-primaryColor hover:bg-primaryColor text-white'
+        : 'bg-primaryColor hover:bg-primaryColor text-white hover:underline'
+    }`}
           >
             {isSubmitting ? (
               <>

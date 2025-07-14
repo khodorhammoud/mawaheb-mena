@@ -188,7 +188,13 @@ export default function JobDesignTwo({
         {status === JobStatus.Draft && (
           <Link
             to={`/edit-job/${job.id}`}
-            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           >
             <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
             Edit
