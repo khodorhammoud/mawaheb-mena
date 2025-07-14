@@ -353,6 +353,7 @@ export default function EmployerIdentificationScreen() {
     editable: true,
     showLoadingOnSubmit: true,
     formRef: identificationFormRef,
+    maxFileSizeMB: 10,
   };
 
   // Form props for trade license
@@ -369,6 +370,7 @@ export default function EmployerIdentificationScreen() {
     editable: true,
     showLoadingOnSubmit: true,
     formRef: tradeLicenseFormRef,
+    maxFileSizeMB: 10,
   };
 
   // Form props for board resolution (only for companies)
@@ -386,6 +388,7 @@ export default function EmployerIdentificationScreen() {
     editable: true,
     showLoadingOnSubmit: true,
     formRef: boardResolutionFormRef,
+    maxFileSizeMB: 10,
   };
 
   const isCompany = employerAccountType === EmployerAccountType.Company;
