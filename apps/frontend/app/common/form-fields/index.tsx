@@ -172,7 +172,7 @@ const AppFormField = forwardRef<
     focus:border-none
     focus-visible:border-none
     focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix pr-6`}
-                autoComplete="on"
+                autoComplete="off"
                 spellCheck="false"
                 defaultValue={defaultValue}
                 onChange={handleNumberChange}
@@ -238,7 +238,7 @@ const AppFormField = forwardRef<
     focus:border-none
     focus-visible:border-none
     focus-visible:ring-offset-0 text-l bg-white text-gray-900 pr-12 autofill-fix`}
-                autoComplete="on"
+                autoComplete="off"
                 spellCheck="false"
                 {...(value !== undefined
                   ? { value: selectedValue }
