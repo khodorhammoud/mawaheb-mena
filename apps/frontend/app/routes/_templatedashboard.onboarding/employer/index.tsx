@@ -101,7 +101,13 @@ export default function EmployerOnboardingScreen() {
           {/* in the switch case, use value employer-onboard */}
           <button
             type="submit"
-            className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient"
+            className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           >
             Proceed
           </button>

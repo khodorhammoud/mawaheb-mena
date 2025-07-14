@@ -84,11 +84,13 @@ export default function SearcheableTagSelector<T>({
         {/* Search Bar */}
         <div className="relative">
           <AppFormField
-            id={searchTerm}
-            name={searchTerm}
+            id="search"
+            name="search"
             label={searchPlaceholder}
+            value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
+
           <FaSearch className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
         </div>
 

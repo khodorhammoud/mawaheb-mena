@@ -58,7 +58,13 @@ export const FileField = ({ value, onChange, name, props }: FormFieldProps) => {
           id={name}
           name={name}
           type="file"
-          className="hidden"
+          className="hidden focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           accept={props?.acceptedFileTypes}
           onChange={onChange}
           multiple={props?.multiple}
@@ -66,7 +72,13 @@ export const FileField = ({ value, onChange, name, props }: FormFieldProps) => {
 
         <label
           htmlFor={name}
-          className="mt-4 px-4 py-2 bg-primaryColor text-white rounded-md cursor-pointer hover:bg-primaryColor/90 transition-colors"
+          className="mt-4 px-4 py-2 bg-primaryColor text-white rounded-md cursor-pointer hover:bg-primaryColor/90 transition-colors focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         >
           Select Files
         </label>

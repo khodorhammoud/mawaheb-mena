@@ -34,6 +34,7 @@ export interface GeneralizableFormCardProps {
   value?: string | number | string[] | null; // ✅ Ensure value prop exists
   showLoadingOnSubmit?: boolean; // Add showLoadingOnSubmit property
   showStatusMessage?: boolean; // Add showStatusMessage property
+  maxFileSizeMB?: number;
 }
 
 export interface FilledGeneralizableFormCardProps {
