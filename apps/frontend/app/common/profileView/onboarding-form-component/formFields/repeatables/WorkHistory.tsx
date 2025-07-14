@@ -37,7 +37,13 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
           placeholder="Title"
           defaultValue={data.title}
           label="Title"
-          className="w-1/2 border-gray-300 rounded-md"
+          className="w-1/2 border-gray-300 rounded-md focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           onChange={e => onTextChange({ ...data, title: e.target.value })}
           maxLength={100}
         />
@@ -48,7 +54,13 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
           placeholder="Company"
           defaultValue={data.company}
           label="Company"
-          className="w-1/2 border-gray-300 rounded-md"
+          className="w-1/2 border-gray-300 rounded-md focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           onChange={e => onTextChange({ ...data, company: e.target.value })}
         />
       </div>
@@ -97,7 +109,13 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
               variant="outline"
               className={`w-1/2 border-gray-300 rounded-md text-left font-normal ${
                 !data.endDate ? 'text-muted-foreground' : ''
-              } ${data.currentlyWorkingThere ? 'opacity-50 cursor-not-allowed' : ''}`} // ⚠️ visual feedback
+              } focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 ${data.currentlyWorkingThere ? 'opacity-50 cursor-not-allowed' : ''}`} // ⚠️ visual feedback
             >
               {data.endDate ? format(data.endDate, 'PPP') : <span>End Date</span>}
             </Button>
@@ -123,7 +141,13 @@ function WorkHistoryComponent({ data, onTextChange }: WorkHistoryComponentProps)
           value={data.jobDescription}
           onChange={handleDescriptionChange}
           placeholder="Job Description"
-          className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
+          className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           style={{
             wordBreak: 'break-word',
             hyphens: 'auto',

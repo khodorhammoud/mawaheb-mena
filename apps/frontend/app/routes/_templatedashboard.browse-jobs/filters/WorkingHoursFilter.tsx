@@ -156,14 +156,26 @@ export default function WorkingHoursFilter({ filters, setFilters }: WorkingHours
           <div className="flex justify-between">
             <Button
               variant="ghost"
-              className="text-primaryColor hover:bg-gray-300 hover:text-white transition rounded-xl px-4 py-2 border border-gray-300 mt-1"
+              className="text-primaryColor hover:bg-gray-300 hover:text-white transition rounded-xl px-4 py-2 border border-gray-300 mt-1 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
               onClick={clearWorkingHours}
             >
               Clear
             </Button>
             <Button
               onClick={saveWorkingHours}
-              className="bg-primaryColor text-white px-4 py-2 rounded-xl not-active-gradient hover:bg-primaryColor mt-1"
+              className="bg-primaryColor text-white px-4 py-2 rounded-xl not-active-gradient hover:bg-primaryColor mt-1 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               Save
             </Button>
