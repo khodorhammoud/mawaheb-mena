@@ -46,7 +46,9 @@ export default function JobDesignOne({
         status === JobStatus.Draft
           ? 'grid-cols-[2fr_2fr_2fr_1fr] gap-6 p-10'
           : `${
-              status === JobStatus.Paused || status === JobStatus.Active
+              status === JobStatus.Paused ||
+              status === JobStatus.Active ||
+              status === JobStatus.Running
                 ? 'grid-cols-[3fr_1fr_2fr_1fr]'
                 : 'md:grid-cols-[3fr_1fr_1fr]'
             } lg:p-8 p-4 gap-3`

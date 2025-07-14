@@ -1,8 +1,7 @@
-import { Link } from "@remix-run/react";
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 export interface Column<T> {
-  header: string;
+  header: React.ReactNode;
   accessor: keyof T | ((item: T) => ReactNode);
   className?: string;
 }
@@ -21,10 +20,10 @@ export function DataTable<T>({
   columns,
   data,
   keyExtractor,
-  className = "min-w-full divide-y divide-gray-300",
-  headerClassName = "py-3.5 px-3 text-left text-sm font-semibold text-gray-900",
-  rowClassName = "hover:bg-gray-50",
-  emptyMessage = "No data available",
+  className = 'min-w-full divide-y divide-gray-300',
+  headerClassName = 'py-3.5 px-3 text-left text-sm font-semibold text-gray-900',
+  rowClassName = 'hover:bg-gray-50',
+  emptyMessage = 'No data available',
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return <p className="text-sm text-gray-500 py-4">{emptyMessage}</p>;
@@ -45,14 +44,14 @@ export function DataTable<T>({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {data.map((item) => (
+              {data.map(item => (
                 <tr key={keyExtractor(item)} className={rowClassName}>
                   {columns.map((column, index) => (
                     <td
                       key={index}
-                      className={`whitespace-nowrap py-4 px-3 text-sm ${column.className || "text-gray-500"}`}
+                      className={`whitespace-nowrap py-4 px-3 text-sm ${column.className || 'text-gray-500'}`}
                     >
-                      {typeof column.accessor === "function"
+                      {typeof column.accessor === 'function'
                         ? column.accessor(item)
                         : (item[column.accessor] as ReactNode)}
                     </td>
