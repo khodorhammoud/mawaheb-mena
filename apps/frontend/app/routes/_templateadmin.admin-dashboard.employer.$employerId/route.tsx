@@ -54,6 +54,12 @@ function getStatusColor(status: JobStatus) {
   }
 }
 
+const readableDocName = {
+  identification: 'Identification Documents',
+  trade_license: 'Trade License',
+  // Add more if needed // here there is no need, but in the page of the freelancer, we shall remove the trade_license, and in the case of the compny, i need to add board_resolution
+};
+
 /** Subcomponent: Back button */
 function BackButton() {
   const handleGoBack = (e: React.MouseEvent) => {
@@ -81,7 +87,7 @@ function BackButton() {
 }
 
 export default function EmployerDetails() {
-  const { employer, jobs, jobCount } = useLoaderData<typeof loader>();
+  const { employer, jobs, jobCount, kycDocuments } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
@@ -298,6 +304,56 @@ export default function EmployerDetails() {
           {/* Company Documents */}
           <div className="col-span-2">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Company Documents</h3>
+
+            {Object.entries(kycDocuments)
+              .filter(([docType]) => docType !== 'board_resolution')
+              .every(([, files]) => files.length === 0) ? (
+              <div className="flex items-center text-sm text-red-600 -mt-2 mb-2">
+                <svg
+                  className="h-4 w-4 mr-1.5 text-red-600 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8-4a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 6a1 1 0 100 2 1 1 0 000-2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                KYC docs aren't submitted yet
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(kycDocuments)
+                  .filter(([docType]) => docType !== 'board_resolution')
+                  .map(([docType, files]) => (
+                    <div key={docType}>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">
+                        {readableDocName[docType] || docType}
+                      </h4>
+                      {files.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-primaryColor space-y-1">
+                          {files.map(file => (
+                            <li className="text-xs" key={file.id}>
+                              <a
+                                href={`/view/attachment/${file.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                View {file.name || 'Document'}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-700">No documents uploaded</p>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           <div>

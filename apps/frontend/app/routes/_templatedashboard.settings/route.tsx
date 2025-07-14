@@ -20,6 +20,7 @@ import {
 import { AccountType, AccountStatus } from '@mawaheb/db/enums';
 import { hash, compare } from 'bcrypt-ts';
 import { logout } from '~/auth/auth.server';
+import { redirect } from '@remix-run/node';
 
 export const action = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
@@ -231,8 +232,12 @@ export const loader = async ({ request }) => {
 
   // Get the user's account type and account info
   const accountType = await getCurrentUserAccountType(request);
-
   const userAccount = await getCurrentUserAccountInfo(request);
+
+  // ⭐️ PROTECTION: Only allow if published
+  if (userAccount?.accountStatus !== AccountStatus.Published) {
+    throw redirect('/dashboard');
+  }
 
   const responseData = {
     settingsInfo: userSettings,

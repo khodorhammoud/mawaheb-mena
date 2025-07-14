@@ -21,6 +21,7 @@ interface AppFormFieldProps {
   min?: number;
   error?: string; // ✅ Added error support
   maxLength?: number;
+  required?: boolean; // ✅ ADD THIS LINE
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -46,6 +47,7 @@ const AppFormField = forwardRef<
       min,
       error,
       maxLength,
+      required,
     },
     ref
   ) => {
@@ -136,6 +138,7 @@ const AppFormField = forwardRef<
                   if (onChange) onChange(e);
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
+                required={required}
               >
                 <option value="" disabled hidden></option>
                 {options.map((option, index) => (
@@ -158,6 +161,7 @@ const AppFormField = forwardRef<
                 min={min}
                 ref={ref as React.Ref<HTMLInputElement>}
                 onBlur={onBlur}
+                required={required}
               />
             ) : type === 'increment' ? (
               <div className="flex flex-col items-center space-y-4 w-full">
@@ -195,6 +199,7 @@ const AppFormField = forwardRef<
                 onChange={onChange}
                 maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
+                required={required}
               ></textarea>
             ) : (
               <input
@@ -220,6 +225,7 @@ const AppFormField = forwardRef<
                 defaultValue={defaultValue ?? ''}
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
+                required={required}
               />
             )}
           </>
