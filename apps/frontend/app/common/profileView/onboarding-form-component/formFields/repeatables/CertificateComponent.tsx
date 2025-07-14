@@ -91,9 +91,23 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
               <button
                 type="button"
                 onClick={handleEditFile}
-                className="absolute top-2 right-2 p-2 text-white rounded-full focus:outline-none"
+                className="absolute top-2 right-2 p-2 text-white rounded-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
               >
-                <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
+                <IoPencilSharp
+                  className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                />
               </button>
             </div>
           ) : (
@@ -126,6 +140,13 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           defaultValue={data.certificateName}
           onChange={e => onTextChange({ ...data, certificateName: e.target.value })}
           maxLength={100}
+          className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         />
 
         <AppFormField
@@ -136,6 +157,13 @@ const CertificateComponent: React.FC<CertificateComponentProps> = ({
           name="issuedBy[]"
           defaultValue={data.issuedBy}
           onChange={e => onTextChange({ ...data, issuedBy: e.target.value })}
+          className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         />
 
         <YearPickerField

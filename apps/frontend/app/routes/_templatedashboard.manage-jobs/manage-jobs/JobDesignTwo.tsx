@@ -44,31 +44,26 @@ export default function JobDesignTwo({
       }`}
     >
       <div className="col-span-2">
-        {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-        <div className={`${status === JobStatus.Draft ? 'hidden' : 'flex items-center mb-7'}`}>
-          {status && (
-            <JobStateButton
-              status={status}
-              onStatusChange={onStatusChange}
-              jobId={job.id}
-              userAccountStatus={userAccountStatus}
-            />
-          )}
-          {status === JobStatus.Draft && (
-            <Link
-              to={`/edit-job/${job.id}`}
-              className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Edit
-            </Link>
-          )}
-        </div>
-
         {/* JOB INFO */}
         <div>
-          <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
-            <Link to={`/jobs/${job.id}`}>{job.title}</Link>
-          </h3>
+          <div className=" flex justify-between">
+            <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
+              <Link to={`/jobs/${job.id}`}>{job.title}</Link>
+            </h3>
+            <div
+              className={`${
+                status === JobStatus.Active || status === JobStatus.Completed ? 'mt-1' : 'hidden'
+              }`}
+            >
+              <JobStateButton
+                status={status}
+                onStatusChange={onStatusChange}
+                jobId={job.id}
+                className="w-[106px] h-[36px]"
+                userAccountStatus={userAccountStatus}
+              />
+            </div>
+          </div>
           <p
             className={`xl:text-sm text-xs text-gray-400 mb-4 ${status === JobStatus.Draft ? 'hidden' : ''}`}
           >
@@ -114,7 +109,7 @@ export default function JobDesignTwo({
         <div className="grid grid-cols-[1fr_2fr] gap-4 mt-8">
           {/* APPLICANTS */}
           <div
-            className={`flex flex-col gap-4 ${
+            className={`flex flex-col gap-4 justify-between ${
               status === JobStatus.Draft ? 'hidden' : ''
             } ${status === JobStatus.Closed || status === JobStatus.Paused ? 'grid grid-cols-3 !gap-16' : ''}`}
           >
@@ -142,7 +137,7 @@ export default function JobDesignTwo({
               </div>
             ) : (
               // All jobs except PAUSED and CLOSED
-              <>
+              <div className="flex flex-col gap-10">
                 <ProfilePhotosSection
                   label="Applicants"
                   images={applicantsPhotos}
@@ -161,7 +156,7 @@ export default function JobDesignTwo({
                   profiles={data.applications}
                   className={status === JobStatus.Active ? 'hidden' : ''}
                 />
-              </>
+              </div>
             )}
           </div>
 
@@ -187,13 +182,19 @@ export default function JobDesignTwo({
       {/* Buttons */}
       <div
         className={`${
-          status === JobStatus.Draft ? 'flex flex-col gap-4 items-center mb-6 mt-5' : 'hidden'
+          status === JobStatus.Draft ? 'flex flex-col gap-4 items-center mt-2' : 'hidden'
         }`}
       >
         {status === JobStatus.Draft && (
           <Link
             to={`/edit-job/${job.id}`}
-            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+            className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           >
             <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
             Edit
@@ -208,6 +209,27 @@ export default function JobDesignTwo({
             className="w-[106px] h-[36px]"
             userAccountStatus={userAccountStatus}
           />
+        )}
+      </div>
+      {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
+      <div
+        className={`${status === JobStatus.Draft || status === JobStatus.Active || status === JobStatus.Completed ? 'hidden' : 'flex items-center mt-7'}`}
+      >
+        {status && (
+          <JobStateButton
+            status={status}
+            onStatusChange={onStatusChange}
+            jobId={job.id}
+            userAccountStatus={userAccountStatus}
+          />
+        )}
+        {status === JobStatus.Draft && (
+          <Link
+            to={`/edit-job/${job.id}`}
+            className="ml-4 bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Edit
+          </Link>
         )}
       </div>
     </div>

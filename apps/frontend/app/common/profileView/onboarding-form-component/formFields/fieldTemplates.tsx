@@ -621,7 +621,16 @@ export const VideoFieldTemplate: FieldTemplateState = {
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
           {/* YouTube Video Stylings */}
           {isYouTube && videoId ? (
-            <button onClick={openModal} className="block w-full h-full focus:outline-none">
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+            >
               <img
                 className="w-full h-full object-cover"
                 src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
@@ -684,7 +693,13 @@ export const VideoFieldTemplate: FieldTemplateState = {
               {/* Close Button */}
               <button
                 onClick={closeModal}
-                className="absolute -top-1 -right-1 rounded-full focus:outline-none hover:scale-105 transition-transform bg-transparent"
+                className="absolute -top-1 -right-1 rounded-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 hover:scale-105 transition-transform bg-transparent"
                 style={{
                   padding: '8px',
                 }}

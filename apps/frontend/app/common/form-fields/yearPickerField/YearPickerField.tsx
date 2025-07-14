@@ -52,7 +52,13 @@ export default function YearDropdownField({
         }}
       >
         <SelectTrigger
-          className="md:w-[50%] peer mt-0 w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix flex items-center justify-between"
+          className="md:w-[50%] peer mt-0 w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix flex items-center justify-between"
           id={id}
         >
           <SelectValue placeholder="Select Year" />
