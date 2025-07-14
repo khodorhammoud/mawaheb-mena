@@ -25,6 +25,8 @@ import { AccountBio } from '@mawaheb/db/types';
 import AppFormField from '~/common/form-fields';
 import { AccountType, Country } from '@mawaheb/db/enums';
 import { toast } from '~/components/hooks/use-toast';
+import { useGoogleMapsScript } from '~/components/hooks/use-google-maps-script';
+import AddressAutocomplete from '~/components/AddressAutocomplete';
 
 interface BioInfoProps {
   profile: any;
@@ -59,6 +61,9 @@ function validateSocialLinks(data: Record<string, string>) {
 
 export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
   // const { accountType } = useLoaderData<{ accountType: AccountType }>();
+
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const googleLoaded = useGoogleMapsScript(apiKey);
 
   const { accountType, bioInfo } = useLoaderData<{
     accountType: AccountType;
@@ -261,14 +266,36 @@ export default function BioInfo({ profile, canEdit = true }: BioInfoProps) {
                       </div>
                       {/* Address Input */}
                       <div className="relative">
-                        <AppFormField
-                          id="address"
-                          name="address"
-                          label="Address"
-                          className=""
-                          defaultValue={profileData?.address || profileData?.account?.address || ''}
-                          ref={addressInputRef} // ✅ also this
-                        />
+                        {googleLoaded ? (
+                          <>
+                            <AddressAutocomplete
+                              value={profileData?.address || profileData?.account?.address || ''}
+                              onChange={val => {
+                                // update the ref value so it reflects in the hidden input
+                                if (addressInputRef.current) {
+                                  addressInputRef.current.value = val;
+                                }
+                              }}
+                            />
+                            <input
+                              type="hidden"
+                              name="address"
+                              value={profileData?.address || profileData?.account?.address || ''}
+                              ref={addressInputRef}
+                            />
+                          </>
+                        ) : (
+                          <AppFormField
+                            id="address"
+                            name="address"
+                            label="Address"
+                            defaultValue={
+                              profileData?.address || profileData?.account?.address || ''
+                            }
+                            ref={addressInputRef}
+                          />
+                        )}
+
                         <FaMapMarkerAlt className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
                       </div>
                     </div>
