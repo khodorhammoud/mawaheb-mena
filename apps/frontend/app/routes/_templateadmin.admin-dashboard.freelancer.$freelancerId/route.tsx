@@ -24,6 +24,7 @@ import type {
 } from '~/common/admin-pages/types';
 
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
+import { KycDocument } from '@mawaheb/db/types/User';
 
 const { accountsTable, UsersTable, employersTable, jobsTable } = schema;
 /* function getStatusColor(status: JobApplicationStatus) {
@@ -40,6 +41,11 @@ const { accountsTable, UsersTable, employersTable, jobsTable } = schema;
       return "bg-gray-100 text-gray-800";
   }
 } */
+
+const readableDocName: Record<string, string> = {
+  identification: 'Identification Document',
+  // Add more if needed // here there is no need, but in the page of the freelancer, we shall remove the trade_license, and in the case of the compny, i need to add board_resolution
+};
 
 // Add type definitions for the arrays (now in ~/types.ts, but you can keep the comment)
 
@@ -132,6 +138,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     })
   );
 
+  // console.log('KYC Docs:', detailRow.kycDocuments);
+
   return json<LoaderData>({
     freelancer: {
       ...detailRow,
@@ -139,6 +147,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     } as unknown as FreelancerData,
     applications: jobApplications as JobApplication[],
     applicationCount: jobApplications.length,
+    kycDocuments: detailRow.kycDocuments, // ✔ only if you don't spread it
   });
 }
 
@@ -160,7 +169,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function FreelancerDetails() {
-  const { freelancer, applications, applicationCount } = useLoaderData<typeof loader>();
+  const { freelancer, applications, applicationCount, kycDocuments } =
+    useLoaderData<typeof loader>();
+
   const actionData = useActionData<typeof action>();
   const accountStatusValues = Object.values(AccountStatus);
 
@@ -173,7 +184,7 @@ export default function FreelancerDetails() {
       <HeaderSection applicationCount={applicationCount} />
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <UserAccountSection freelancer={freelancer} />
+        <UserAccountSection freelancer={freelancer} kycDocuments={kycDocuments} />
 
         {/* Update Account Status */}
         <UpdateAccountStatus
@@ -202,7 +213,13 @@ function HeaderSection({ applicationCount }: { applicationCount: number }) {
 }
 
 /** Subcomponent: Renders user + account info + professional info + portfolio, etc. */
-function UserAccountSection({ freelancer }: { freelancer: FreelancerData }) {
+function UserAccountSection({
+  freelancer,
+  kycDocuments,
+}: {
+  freelancer: FreelancerData;
+  kycDocuments: Record<string, KycDocument[]>;
+}) {
   return (
     <>
       <div className="px-6 py-5 border-b border-gray-200">
@@ -211,10 +228,10 @@ function UserAccountSection({ freelancer }: { freelancer: FreelancerData }) {
 
       <div className="px-6 py-5 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Basic Personal Info */}
-        <PersonalInfo freelancer={freelancer} />
+        <PersonalInfo freelancer={freelancer} kycDocuments={kycDocuments} />
 
         {/* Account Info */}
-        <AccountInfo freelancer={freelancer} />
+        <AccountInfo freelancer={freelancer} kycDocuments={kycDocuments} />
 
         {/* Professional Info */}
         <ProfessionalInfo freelancer={freelancer} />
@@ -236,7 +253,13 @@ function UserAccountSection({ freelancer }: { freelancer: FreelancerData }) {
 }
 
 /** Subcomponent: Basic personal info (Name, Email) */
-function PersonalInfo({ freelancer }: { freelancer: FreelancerData }) {
+function PersonalInfo({
+  freelancer,
+  kycDocuments,
+}: {
+  freelancer: FreelancerData;
+  kycDocuments: Record<string, KycDocument[]>;
+}) {
   return (
     <>
       <div>
@@ -251,14 +274,20 @@ function PersonalInfo({ freelancer }: { freelancer: FreelancerData }) {
       </div>
 
       <div className="col-span-2">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+        <h3 className="text-lg font-medium text-gray-900">Account Information</h3>
       </div>
     </>
   );
 }
 
 /** Subcomponent: Address, region, phone, website, social links */
-function AccountInfo({ freelancer }: { freelancer: FreelancerData }) {
+function AccountInfo({
+  freelancer,
+  kycDocuments,
+}: {
+  freelancer: FreelancerData;
+  kycDocuments: Record<string, KycDocument[]>;
+}) {
   return (
     <>
       <div>
@@ -280,6 +309,63 @@ function AccountInfo({ freelancer }: { freelancer: FreelancerData }) {
 
       <OnlinePresence freelancer={freelancer} />
       <AccountStatusBadge status={freelancer.account.accountStatus} />
+
+      {/* Company Documents */}
+      <div className="col-span-2 mt-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Submitted Identification Documents
+        </h3>
+
+        {Object.entries(kycDocuments)
+          .filter(([docType]) => docType !== 'trade_license')
+          .every(([, files]) => files.length === 0) ? (
+          <div className="flex items-center text-sm text-red-600 -mt-2 mb-2">
+            <svg
+              className="h-4 w-4 mr-1.5 text-red-600 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8-4a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 6a1 1 0 100 2 1 1 0 000-2z"
+                clipRule="evenodd"
+              />
+            </svg>
+            KYC docs aren't submitted yet
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Object.entries(kycDocuments)
+              .filter(([docType]) => docType !== 'trade_license')
+              .map(([docType, files]) => (
+                <div key={docType}>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">
+                    {readableDocName[docType] || docType}
+                  </h4>
+                  {files.length > 0 ? (
+                    <ul className="list-disc list-inside text-sm text-primaryColor space-y-1">
+                      {files.map(file => (
+                        <li className="text-xs" key={file.id}>
+                          <a
+                            href={`/view/attachment/${file.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            View {file.name || 'Document'}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-700">No documents uploaded</p>
+                  )}
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
     </>
   );
 }
@@ -760,7 +846,13 @@ function UpdateAccountStatus({
           </select>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primaryColor hover:bg-primaryColor/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primaryColor"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primaryColor hover:bg-primaryColor/90 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-2 focus:ring-offset-2 focus:ring-primaryColor"
           >
             Update Status
           </button>

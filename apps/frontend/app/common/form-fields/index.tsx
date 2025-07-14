@@ -21,6 +21,7 @@ interface AppFormFieldProps {
   min?: number;
   error?: string; // ✅ Added error support
   maxLength?: number;
+  required?: boolean; // ✅ ADD THIS LINE
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -46,6 +47,7 @@ const AppFormField = forwardRef<
       min,
       error,
       maxLength,
+      required,
     },
     ref
   ) => {
@@ -106,7 +108,13 @@ const AppFormField = forwardRef<
             name={name}
             defaultValue={defaultValue.toString()}
             onChange={onChange}
-            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLInputElement>} // ✅ Pass the ref!
           />
         ) : id === 'countryDropdown' ? (
@@ -118,7 +126,7 @@ const AppFormField = forwardRef<
               setSelectedValue(e.target.value);
               if (onChange) onChange(e);
             }}
-            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLButtonElement>} // 👈 This matches <CountrySelectField />
           />
         ) : (
@@ -127,7 +135,13 @@ const AppFormField = forwardRef<
               <select
                 id={id}
                 name={name}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none bg-white text-gray-900 autofill-fix`}
+                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparentfocus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 bg-white text-gray-900 autofill-fix`}
                 spellCheck="false"
                 defaultValue={selectedValue}
                 onChange={e => {
@@ -136,6 +150,7 @@ const AppFormField = forwardRef<
                   if (onChange) onChange(e);
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
+                required={required}
               >
                 <option value="" disabled hidden></option>
                 {options.map((option, index) => (
@@ -150,7 +165,13 @@ const AppFormField = forwardRef<
                 id={id}
                 name={name}
                 placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6`}
+                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix pr-6`}
                 autoComplete="off"
                 spellCheck="false"
                 defaultValue={defaultValue}
@@ -158,6 +179,7 @@ const AppFormField = forwardRef<
                 min={min}
                 ref={ref as React.Ref<HTMLInputElement>}
                 onBlur={onBlur}
+                required={required}
               />
             ) : type === 'increment' ? (
               <div className="flex flex-col items-center space-y-4 w-full">
@@ -189,12 +211,19 @@ const AppFormField = forwardRef<
                 name={name}
                 placeholder={placeholder}
                 style={{ height: textareaHeight }}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix resize-none`}
+                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix resize-none`}
                 spellCheck="false"
                 defaultValue={defaultValue}
                 onChange={onChange}
                 maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
+                required={required}
               ></textarea>
             ) : (
               <input
@@ -202,7 +231,13 @@ const AppFormField = forwardRef<
                 id={id}
                 name={name}
                 placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+                className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 pr-12 autofill-fix`}
                 autoComplete="off"
                 spellCheck="false"
                 {...(value !== undefined
@@ -220,6 +255,7 @@ const AppFormField = forwardRef<
                 defaultValue={defaultValue ?? ''}
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
+                required={required}
               />
             )}
           </>

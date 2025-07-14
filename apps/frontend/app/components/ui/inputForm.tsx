@@ -1,4 +1,4 @@
-function InputForm({ name, label, className = "", ...props }) {
+function InputForm({ name, label, className = '', ...props }) {
   return (
     <div className={`relative ${className}`}>
       <input
@@ -7,7 +7,13 @@ function InputForm({ name, label, className = "", ...props }) {
         name={name}
         placeholder=" "
         {...props}
-        className={`peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor text-lg ${className}`}
+        className={`peer mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-primaryColor focus:border-primaryColor text-lg ${className}`}
       />
       <label
         htmlFor={name}
