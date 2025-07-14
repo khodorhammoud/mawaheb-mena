@@ -119,7 +119,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     if (!selectedCategory) {
       toast({
         title: 'Missing Category',
-        description: 'Please select a job category.',
+        description: 'Please select at least one job category.',
         variant: 'destructive',
       });
       return;
@@ -128,7 +128,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     if (!selectedExperience) {
       toast({
         title: 'Missing Experience Level',
-        description: 'Please select an experience level.',
+        description: "Please select a the job's experience level.",
         variant: 'destructive',
       });
       return;
