@@ -35,6 +35,91 @@ import {
   requireUserAccountStatusPublishedOrDeactivated,
   requireUserVerified,
 } from '~/auth/auth.server';
+import { getFileType } from '~/common/profileView/onboarding-form-component/formFields/fieldTemplates';
+import { extractS3Key, getAttachmentSignedURL } from '~/servers/cloudStorage.server';
+
+// Util to safely parse array data
+function safeParseArray(data: any): any[] {
+  try {
+    return Array.isArray(data) ? data : JSON.parse(data ?? '[]');
+  } catch {
+    return [];
+  }
+}
+
+function normalizePortfolioFiles(portfolio) {
+  return portfolio.map(item => {
+    const fileType = getFileType(
+      item.projectImageName || item.attachmentName || item.projectImageUrl || item.attachmentUrl
+    );
+    if (fileType === 'pdf' || fileType === 'word' || fileType === 'video') {
+      return {
+        ...item,
+        projectImageUrl: item.attachmentUrl,
+        projectImageName: item.attachmentName,
+      };
+    }
+    return item;
+  });
+}
+
+// Signs any S3 (non-public) URLs in your portfolio so the frontend can use them safely
+async function signPortfolioFiles(portfolio: any[]): Promise<any[]> {
+  if (!Array.isArray(portfolio)) return [];
+
+  return await Promise.all(
+    portfolio.map(async item => {
+      let signedProjectImageUrl = item.projectImageUrl;
+      let signedAttachmentUrl = item.attachmentUrl;
+
+      // Always re-sign with extracted, decoded key
+      if (
+        signedProjectImageUrl &&
+        typeof signedProjectImageUrl === 'string' &&
+        !signedProjectImageUrl.startsWith('blob:')
+      ) {
+        try {
+          const key = extractS3Key(signedProjectImageUrl);
+          signedProjectImageUrl = key ? await getAttachmentSignedURL(key) : '';
+        } catch (err) {
+          console.error(
+            '[signPortfolioFiles] Could not sign projectImageUrl',
+            signedProjectImageUrl,
+            err
+          );
+        }
+      }
+
+      if (
+        signedAttachmentUrl &&
+        typeof signedAttachmentUrl === 'string' &&
+        !signedAttachmentUrl.startsWith('blob:')
+      ) {
+        try {
+          const key = extractS3Key(signedAttachmentUrl);
+          signedAttachmentUrl = key ? await getAttachmentSignedURL(key) : '';
+        } catch (err) {
+          console.error(
+            '[signPortfolioFiles] Could not sign attachmentUrl',
+            signedAttachmentUrl,
+            err
+          );
+        }
+      }
+
+      // console.log('portfolio item after sign:', {
+      //   projectImageUrl: signedProjectImageUrl,
+      //   attachmentUrl: signedAttachmentUrl,
+      // });
+
+      return {
+        ...item,
+        projectImageUrl: signedProjectImageUrl,
+        attachmentUrl: signedAttachmentUrl,
+      };
+    })
+  );
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   await requireUserVerified(request);
@@ -164,9 +249,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     };
 
+    // 1. Normalize fields for preview
+    const normalizedPortfolio = normalizePortfolioFiles(safeParseArray(currentProfile.portfolio));
+    // 2. Sign all S3 links
+    const signedPortfolio = await signPortfolioFiles(normalizedPortfolio);
+
     const processedProfile = {
       ...currentProfile,
-      portfolio: safeParseArray(currentProfile.portfolio),
+      portfolio: signedPortfolio,
       workHistory: safeParseArray(currentProfile.workHistory),
       certificates: safeParseArray(currentProfile.certificates),
       educations: safeParseArray(currentProfile.educations),

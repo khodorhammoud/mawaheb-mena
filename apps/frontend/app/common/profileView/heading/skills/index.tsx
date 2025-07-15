@@ -54,7 +54,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
       const mappedSkills = profile.skills.map(skill => ({
         skillId: skill.skillId,
         label: skill.label,
-        yearsOfExperience: skill.yearsOfExperience || 0,
+        yearsOfExperience: skill.yearsOfExperience || 1,
         isStarred: skill.isStarred || false,
       }));
 
@@ -83,7 +83,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
       return {
         skillId: skill.id,
         label: skill.label,
-        yearsOfExperience: existingSkill?.yearsOfExperience || 0,
+        yearsOfExperience: existingSkill?.yearsOfExperience || 1,
         isStarred: existingSkill?.isStarred || false,
       };
     });
@@ -105,7 +105,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
   };
 
   const handleYearsChange = (skillId: number, years: number) => {
-    if (years < 0 || years > 50) return;
+    if (years < 1 || years > 50) return;
     setFreelancerSkills(prev =>
       prev.map(skill =>
         skill.skillId === skillId ? { ...skill, yearsOfExperience: years } : skill
@@ -242,7 +242,9 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 </div>
 
                 <div className="border-t border-gray-300 my-6 ml-2 mr-6"></div>
-                <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">Choosed Skills:</p>
+                <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">
+                  Start and Set years of experience:
+                </p>
 
                 <div className="flex flex-wrap gap-y-4 gap-x-4">
                   {freelancerSkills.map(skill => (
@@ -270,7 +272,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
-                                Math.max(0, (skill.yearsOfExperience || 0) - 1)
+                                Math.max(0, (skill.yearsOfExperience || 1) - 1)
                               )
                             }
                           >
@@ -283,7 +285,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
-                                Math.min(50, (skill.yearsOfExperience || 0) + 1)
+                                Math.min(50, (skill.yearsOfExperience || 1) + 1)
                               )
                             }
                           >
