@@ -73,6 +73,7 @@ export default function JobManagement({
 
   const categoryOrder = [
     JobStatus.Active,
+    JobStatus.Running,
     JobStatus.Closed,
     JobStatus.Draft,
     JobStatus.Paused,

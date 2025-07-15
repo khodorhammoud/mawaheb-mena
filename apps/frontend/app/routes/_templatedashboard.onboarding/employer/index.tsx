@@ -31,7 +31,15 @@ export default function EmployerOnboardingScreen() {
         }}
       >
         <div className="absolute top-4 right-4">
-          <button className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit">
+          <button
+            className="underline-none text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold tracking-wide not-active-gradient hover:text-white w-fit focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus-visible:ring-0 focus-visible:outline-none"
+          >
             Add Title
           </button>
           <div className="xl:right-40 lg:right-32 md:right-24 sm:right-16 right-10">
@@ -101,7 +109,13 @@ export default function EmployerOnboardingScreen() {
           {/* in the switch case, use value employer-onboard */}
           <button
             type="submit"
-            className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient"
+            className="text-white sm:py-3 sm:px-6 py-2 px-4 rounded-xl bg-primaryColor font-medium not-active-gradient focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           >
             Proceed
           </button>
