@@ -57,7 +57,7 @@ export const ComboBox = React.forwardRef<HTMLButtonElement, ComboBoxProps>(
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'w-full justify-between px-4 md:py-1 border border-gray-300 rounded-xl focus:outline-none text-l bg-white text-gray-900',
+              'w-full justify-between px-4 md:py-1 border border-gray-300 rounded-xl focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus:ring-0 focus:border-none focus-visible:border-none focus-visible:ring-offset-0 text-l bg-white text-gray-900',
               className
             )}
           >

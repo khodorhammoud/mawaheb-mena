@@ -161,7 +161,13 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
             placeholder="Project Link"
             defaultValue={data.projectLink}
             onChange={e => onTextChange({ ...data, projectLink: e.target.value })}
-            className="w-1/2 border-gray-300 rounded-md"
+            className="w-1/2 border-gray-300 rounded-md focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           />
           <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-9 w-9 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" />
         </div>
@@ -177,7 +183,13 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
               <button
                 type="button"
                 onClick={handleEditFile}
-                className="absolute top-0 right-0 p-2 text-white rounded-full focus:outline-none"
+                className="absolute top-0 right-0 p-2 text-white rounded-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
               >
                 <IoPencilSharp className="h-7 w-7 absolute top-4 right-4 text-primaryColor hover:bg-[#E4E3E6] transition-all rounded-full p-1" />
               </button>
@@ -212,7 +224,13 @@ const PortfolioComponent: React.FC<PortfolioComponentProps> = ({
             })
           }
           placeholder="Project Description"
-          className="border-gray-300 rounded-md resize-none mt-6 mb-1 ml-1 text-left break-words whitespace-normal overflow-hidden"
+          className="border-gray-300 rounded-md resize-none mt-6 mb-1 ml-1 text-left break-words whitespace-normal overflow-hidden focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         />
 
         {/* CHARACTER COUNT */}
