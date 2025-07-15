@@ -155,24 +155,34 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     );
   });
 
-  // ✅ Group jobs based on Job Application Status
+  // ✅ Group jobs based on Job Application Status (Completed Jobs - Applied Jobs - Active Jobs - Opportunity Closed)
   const groupedJobs = filteredJobs.reduce(
     (acc, job) => {
-      let category = 'Applied'; // Default
+      // Default: "Applied" (in case no specific status is found)
+      let category = 'Applied';
 
+      // If the job has an application status, determine the right group
       if (job.applicationStatus) {
+        // Case 1: Application was approved (user was hired)
         if (job.applicationStatus.toLowerCase() === 'approved') {
+          // Was the job closed? If yes: completed; otherwise: active.
           category = job.status === 'closed' ? 'Completed Jobs' : 'Active Jobs';
-        } else if (job.applicationStatus.toLowerCase() === 'rejected') {
+        }
+        // Case 2: Application was rejected by employer
+        else if (job.applicationStatus.toLowerCase() === 'rejected') {
           category = 'Opportunity Closed';
-        } else if (
+        }
+        // Case 3: Still in process (pending, shortlisted, etc.)
+        else if (
           job.applicationStatus.toLowerCase() === 'shortlisted' ||
           job.applicationStatus.toLowerCase() === 'pending'
         ) {
           category = 'Applied';
         }
+        // Add more conditions here for new statuses if needed
       }
 
+      // Add job to the appropriate category array
       if (!acc[category]) acc[category] = [];
       acc[category].push(job);
       return acc;
@@ -180,10 +190,10 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     {} as Record<string, Job[]>
   );
 
-  // ✅ Ensure "Active Jobs" is always first
-  const categoryOrder = ['Completed Jobs', 'Active Jobs', 'Applied', 'Opportunity Closed'];
   const sortedCategories = Object.keys(groupedJobs).sort((a, b) => {
-    return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
+    if (a === 'Active Jobs') return -1; // Always put 'Active Jobs' first
+    if (b === 'Active Jobs') return 1; // Always put 'Active Jobs' first
+    return 0; // Keep other categories in original order
   });
 
   // For the dummy mode, create 4 additional blurred jobs
@@ -260,7 +270,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       )}
 
       {verified ? (
-        // Real Jobs UI
+        // Real Jobs UI - Not the Dummy Jobs That Appear if The User Isn't Verified
         <section className="">
           {sortedCategories.length > 0 ? (
             sortedCategories.map(status => (
