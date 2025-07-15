@@ -35,13 +35,21 @@ export default function JobDesignThree({
 }) {
   const [open, setOpen] = useState(false);
 
-  const applicantsPhotos = [
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-  ];
-
   const { job } = data;
   const formattedDate = parseDate(job.createdAt);
+
+  // applications and there nb
+  const Applications = data.applications || [];
+  const numberOfApplications = data.applications?.length || 0;
+
+  // Hired applicants and there nb
+  const hiredApplications = data.applications?.filter(app => app.status === 'approved') || [];
+  const numberOfHired = hiredApplications.length;
+
+  // shortlisted applicants and there nb
+  const shortlistedApplications =
+    data.applications?.filter(app => app.status === 'shortlisted') || [];
+  const numberOfShortlisted = shortlistedApplications.length;
 
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
 
@@ -127,16 +135,14 @@ export default function JobDesignThree({
                       <div className="flex gap-10">
                         <div className="flex">
                           <ProfilePhotosSection
-                            label="Applicants"
-                            images={applicantsPhotos}
-                            profiles={data.applications}
+                            label={`Applicants (${numberOfApplications})`}
+                            profiles={Applications}
                           />
                         </div>
                         <div className="flex">
                           <ProfilePhotosSection
-                            label="Hired"
-                            images={applicantsPhotos}
-                            profiles={data.applications}
+                            label={`Hired (${numberOfHired})`}
+                            profiles={hiredApplications}
                           />
                         </div>
                       </div>
@@ -219,17 +225,12 @@ export default function JobDesignThree({
       {/* Applicants ProfilePhotosSection */}
       <div className={`${status === JobStatus.Draft ? 'hidden' : 'flex lg:gap-8 gap-4'}`}>
         <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          label={`Applicants (${numberOfApplications})`}
+          profiles={Applications}
         />
 
         <div className={`${status === JobStatus.Active ? 'hidden' : ''}`}>
-          <ProfilePhotosSection
-            label="Hired"
-            images={applicantsPhotos}
-            profiles={data.applications}
-          />
+          <ProfilePhotosSection label={`Hired (${numberOfHired})`} profiles={hiredApplications} />
         </div>
       </div>
 
