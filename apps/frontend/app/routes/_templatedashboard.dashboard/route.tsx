@@ -92,6 +92,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       pausedJobCount,
       deletedJobCount,
       completedJobCount,
+      totalApplicantsCount,
+      shortlistedApplicantsCount,
+      interviewedApplicantsCount,
     } = await getEmployerDashboardData(request);
 
     const totalJobCount = activeJobCount + draftedJobCount + closedJobCount + pausedJobCount;
@@ -115,6 +118,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       completedJobCount,
       isOwner,
       canEdit: false,
+
+      // 👇 Add these
+      totalApplicantsCount,
+      shortlistedApplicantsCount,
+      interviewedApplicantsCount,
     });
   }
 

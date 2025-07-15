@@ -19,8 +19,10 @@ interface AppFormFieldProps {
   onChange?: any;
   onBlur?: () => void;
   min?: number;
-  error?: string; // ✅ Added error support
+  error?: string; 
   maxLength?: number;
+  currency?: string;
+  required?: boolean;
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -46,6 +48,8 @@ const AppFormField = forwardRef<
       min,
       error,
       maxLength,
+      currency,
+      required,
     },
     ref
   ) => {
@@ -106,7 +110,13 @@ const AppFormField = forwardRef<
             name={name}
             defaultValue={defaultValue.toString()}
             onChange={onChange}
-            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLInputElement>} // ✅ Pass the ref!
           />
         ) : id === 'countryDropdown' ? (
@@ -118,7 +128,7 @@ const AppFormField = forwardRef<
               setSelectedValue(e.target.value);
               if (onChange) onChange(e);
             }}
-            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix"
+            className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLButtonElement>} // 👈 This matches <CountrySelectField />
           />
         ) : (
@@ -127,7 +137,13 @@ const AppFormField = forwardRef<
               <select
                 id={id}
                 name={name}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none bg-white text-gray-900 autofill-fix`}
+                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparentfocus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 bg-white text-gray-900 autofill-fix`}
                 spellCheck="false"
                 defaultValue={selectedValue}
                 onChange={e => {
@@ -136,6 +152,7 @@ const AppFormField = forwardRef<
                   if (onChange) onChange(e);
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
+                required={required}
               >
                 <option value="" disabled hidden></option>
                 {options.map((option, index) => (
@@ -145,20 +162,84 @@ const AppFormField = forwardRef<
                 ))}
               </select>
             ) : type === 'number' || id === 'number' ? (
-              <input
-                type="number"
-                id={id}
-                name={name}
-                placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6`}
-                autoComplete="on"
-                spellCheck="false"
-                defaultValue={defaultValue}
-                onChange={handleNumberChange}
-                min={min}
-                ref={ref as React.Ref<HTMLInputElement>}
-                onBlur={onBlur}
-              />
+currency ? (
+                <div className="relative w-full">
+                  <span className="absolute left-6 top-[24px] -translate-y-1/2 text-gray-400 text-base pointer-events-none z-10">
+                    {currency}
+                  </span>
+                  <input
+                    type="number"
+                    id={id}
+                    name={name}
+                    placeholder=" " // <---- this is CRUCIAL
+                    className={`peer mt-0 block w-full pl-10 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6
+                    focus-visible:ring-0
+                    focus-visible:outline-none
+                    focus:ring-0
+                    focus:border-none
+                    focus-visible:border-none
+                    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix pr-6
+                    `}
+                    autoComplete="on"
+                    spellCheck="false"
+                    value={value !== undefined ? value : selectedValue}
+                    defaultValue={defaultValue}
+                    onChange={handleNumberChange}
+                    min={min}
+                    ref={ref as React.Ref<HTMLInputElement>}
+                    onBlur={onBlur}
+                  />
+                  {/* Label with adjusted left */}
+                  <label
+                    htmlFor={id}
+                    className="absolute left-10 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                      -translate-y-2/3 md:-translate-y-1/2
+                      peer-placeholder-shown:top-6 peer-placeholder-shown:left-10 peer-placeholder-shown:text-gray-500
+                      sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                      peer-focus:top-0 peer-focus:left-10 peer-focus:text-primaryColor peer-focus:px-1
+                      peer-not:placeholder-shown:top-0 peer-not:placeholder-shown:left-10 peer-not:placeholder-shown:text-primaryColor peer-not:placeholder-shown:bg-white peer-not:placeholder-shown:px-1"
+                  >
+                    {label}
+                  </label>
+                </div>
+              ) : (
+                <div className="relative w-full">
+                  <input
+                    type="number"
+                    id={id}
+                    name={name}
+                    placeholder=" "
+                    className={`peer mt-0 block w-full pl-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6
+                    focus-visible:ring-0
+                    focus-visible:outline-none
+                    focus:ring-0
+                    focus:border-none
+                    focus-visible:border-none
+                    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix pr-6
+                    `}
+                    autoComplete="on"
+                    spellCheck="false"
+                    value={value !== undefined ? value : selectedValue}
+                    defaultValue={defaultValue}
+                    onChange={handleNumberChange}
+                    min={min}
+                    ref={ref as React.Ref<HTMLInputElement>}
+                    onBlur={onBlur}
+                  />
+                  {/* Label with normal left */}
+                  <label
+                    htmlFor={id}
+                    className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                      -translate-y-2/3 md:-translate-y-1/2
+                      peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+                      sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                      peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
+                      peer-not:placeholder-shown:top-0 peer-not:placeholder-shown:left-4 peer-not:placeholder-shown:text-primaryColor peer-not:placeholder-shown:bg-white peer-not:placeholder-shown:px-1"
+                  >
+                    {label}
+                  </label>
+                </div>
+              )
             ) : type === 'increment' ? (
               <div className="flex flex-col items-center space-y-4 w-full">
                 <div className="flex items-center border border-gray-300 rounded-xl w-full">
@@ -189,12 +270,19 @@ const AppFormField = forwardRef<
                 name={name}
                 placeholder={placeholder}
                 style={{ height: textareaHeight }}
-                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix resize-none`}
+                className={`peer mt-0 block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix resize-none`}
                 spellCheck="false"
                 defaultValue={defaultValue}
                 onChange={onChange}
                 maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
+                required={required}
               ></textarea>
             ) : (
               <input
@@ -202,8 +290,14 @@ const AppFormField = forwardRef<
                 id={id}
                 name={name}
                 placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
-                autoComplete="on"
+                className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 text-l bg-white text-gray-900 pr-12 autofill-fix`}
+                autoComplete="off"
                 spellCheck="false"
                 {...(value !== undefined
                   ? { value: selectedValue }
@@ -220,6 +314,7 @@ const AppFormField = forwardRef<
                 defaultValue={defaultValue ?? ''}
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
+                required={required}
               />
             )}
           </>
@@ -248,14 +343,16 @@ const AppFormField = forwardRef<
           >
             {label}
           </label>
+        ) : type === 'number' ? (
+          <label></label>
         ) : (
           <label
             htmlFor={id}
             className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
-                  peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
-                  sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
-                  peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
-                  peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
+                    peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
+                    sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+                    peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
+                    peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
           >
             {label}
           </label>

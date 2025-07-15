@@ -45,11 +45,13 @@ export default function JobDesignOne({
   ) : (
     <div
       className={cn(
-        `grid bg-white border rounded-xl shadow-xl ${
+        `grid bg-white border rounded-xl shadow-xl mb-10 ${
           status === JobStatus.Draft
             ? 'xl:grid-cols-[6fr_8fr_3fr_2fr] gap-6 p-10'
             : `${
-                status === JobStatus.Paused || status === JobStatus.Active
+                status === JobStatus.Paused ||
+                status === JobStatus.Active ||
+                status === JobStatus.Running
                   ? 'grid-cols-[3fr_1fr_2fr_1fr]'
                   : 'md:grid-cols-[3fr_1fr_1fr]'
               } lg:p-8 p-4 gap-3`
@@ -133,7 +135,13 @@ export default function JobDesignOne({
           <div className="flex flex-col gap-4 space-x-2 items-end">
             <Link
               to={`/edit-job/${job.id}`}
-              className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+              className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
               Edit
