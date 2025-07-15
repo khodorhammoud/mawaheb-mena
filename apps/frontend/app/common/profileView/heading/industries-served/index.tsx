@@ -78,7 +78,16 @@ export default function Industries({ profile, canEdit = true }: IndustriesProps)
         {canEdit && (
           <Dialog open={industriesOpen} onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>
-              <Button variant="link">
+              <Button
+                className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                variant="link"
+              >
                 <IoPencilSharp className="lg:relative absolute lg:left-0 left-20 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
               </Button>
             </DialogTrigger>
@@ -110,7 +119,13 @@ export default function Industries({ profile, canEdit = true }: IndustriesProps)
 
               <DialogFooter className="mt-6">
                 <Button
-                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
+                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   onClick={handleSubmit}
                   disabled={industryFetcher.state === 'submitting'}
                 >

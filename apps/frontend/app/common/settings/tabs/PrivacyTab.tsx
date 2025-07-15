@@ -402,9 +402,13 @@ export default function PrivacyTab() {
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`bg-primaryColor text-white sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-2 mt-4 ${
-                  isFormValid ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
-                }`}
+                className={`bg-primaryColor text-white sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-2 mt-4 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 ${isFormValid ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}
               >
                 Save Changes
               </button>

@@ -102,6 +102,7 @@ export enum JobStatus {
   Active = 'active',
   Closed = 'closed',
   Completed = 'completed',
+  Running = 'running',
   Paused = 'paused',
   Deleted = 'deleted',
 }
