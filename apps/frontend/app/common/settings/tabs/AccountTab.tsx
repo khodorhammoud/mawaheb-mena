@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import AppFormField from '~/common/form-fields';
+import AddressAutocomplete from '~/components/AddressAutocomplete';
+import { useGoogleMapsScript } from '~/components/hooks/use-google-maps-script';
+
+function ClientOnly({ children }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return null;
+  return children;
+}
 
 export default function AccountTab() {
   const { settingsInfo } = useLoaderData<{ settingsInfo: any }>();
@@ -19,6 +30,11 @@ export default function AccountTab() {
   // 🔥 Error & Success Messages
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const [address, setAddress] = useState(settingsInfo.address || '');
+
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const googleLoaded = useGoogleMapsScript(apiKey);
 
   // 🔥 Listen for fetcher response and handle messages
   useEffect(() => {
@@ -107,12 +123,16 @@ export default function AccountTab() {
             </div>
 
             {/* Address */}
-            <AppFormField
-              id="address"
-              name="address"
-              label="Address"
-              defaultValue={settingsInfo.address}
-            />
+            <ClientOnly>
+              {googleLoaded ? (
+                <>
+                  <AddressAutocomplete value={address} onChange={setAddress} />
+                  <input type="hidden" name="address" value={address} />
+                </>
+              ) : (
+                <input disabled placeholder="Loading address autocomplete..." className="w-full" />
+              )}
+            </ClientOnly>
           </div>
         </section>
 
@@ -172,7 +192,13 @@ export default function AccountTab() {
 
             <button
               type="submit"
-              className="bg-primaryColor text-white xl:py-3 lg:py-1 sm:py-3 sm:px-2 py-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl w-2/3 md:w-1/2 lg:w-full text-sm"
+              className="bg-primaryColor text-white xl:py-3 lg:py-1 sm:py-3 sm:px-2 py-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl w-2/3 md:w-1/2 lg:w-full text-sm focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               Save Changes
             </button>

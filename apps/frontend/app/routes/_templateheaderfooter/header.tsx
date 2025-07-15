@@ -46,7 +46,13 @@ export default function Layout() {
         <div className="md:hidden ml-auto">
           <motion.button
             onClick={() => setIsOpen(!isOpen)}
-            className="focus:outline-none"
+            className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             animate={{ rotate: isOpen ? -90 : 0 }} // Reversed rotation
             transition={{ duration: 0.2 }} // Duration of the rotation
           >

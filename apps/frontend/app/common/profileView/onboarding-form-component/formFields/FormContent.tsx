@@ -540,7 +540,13 @@ const FormContent = forwardRef<any, FormContentProps>(
               <div className="flex justify-end gap-2">
                 <Button
                   type="submit"
-                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   disabled={isSaveButtonDisabled()}
                 >
                   {showLoadingOnSubmit && fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
@@ -560,13 +566,30 @@ const FormContent = forwardRef<any, FormContentProps>(
               <div className="flex justify-end gap-2">
                 <Button
                   type="submit"
-                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient"
+                  className="text-white py-4 px-10 rounded-xl bg-primaryColor font-medium not-active-gradient focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   disabled={isSaveButtonDisabled()}
                 >
                   {showLoadingOnSubmit && fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
                 </Button>
                 <DialogClose asChild>
-                  <Button variant="outline">Close</Button>
+                  <Button
+                    variant="outline"
+                    className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                  >
+                    Close
+                  </Button>
                 </DialogClose>
               </div>
             </DialogFooter>

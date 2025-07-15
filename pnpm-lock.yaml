@@ -451,6 +451,9 @@ importers:
       react-icons:
         specifier: ^5.3.0
         version: 5.5.0(react@18.3.1)
+      react-places-autocomplete:
+        specifier: ^7.3.0
+        version: 7.3.0(react@18.3.1)
       react-quill:
         specifier: ^2.0.0
         version: 2.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -11524,6 +11527,11 @@ packages:
     peerDependencies:
       react: '>= 16.8.0'
       react-dom: '>= 16.8.0'
+
+  react-places-autocomplete@7.3.0:
+    resolution: {integrity: sha512-86wcHC69JATvWBnIS/yCsBHLtwzOGcnx3Ye94u74yTrz1jLRC/txkVDkf6rvC+Jq3zNe/tAg/W53x0EaH1ZPPw==}
+    peerDependencies:
+      react: '>=0.14.7'
 
   react-popper@2.3.0:
     resolution: {integrity: sha512-e1hj8lL3uM+sgSR4Lxzn5h1GxBlpa4CQz0XLF8kx4MDrDRWY0Ena4c97PUeSX9i5W3UAfDP0z0FXCTQkoXUl3Q==}
@@ -27047,6 +27055,12 @@ snapshots:
       odometer: 0.4.8
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  react-places-autocomplete@7.3.0(react@18.3.1):
+    dependencies:
+      lodash.debounce: 4.0.8
+      prop-types: 15.8.1
+      react: 18.3.1
 
   react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:

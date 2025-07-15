@@ -35,7 +35,13 @@ const Form = () => {
               name="fullName"
               placeholder=" "
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor placeholder:text-slate-600 peer transition-all hover:border-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-primaryColor focus:border-primaryColor placeholder:text-slate-600 peer transition-all hover:border-black"
             />
             <label
               htmlFor="fullName"
@@ -52,7 +58,13 @@ const Form = () => {
               name="email"
               placeholder=" "
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor placeholder:text-slate-600 peer transition-all hover:border-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-primaryColor focus:border-primaryColor placeholder:text-slate-600 peer transition-all hover:border-black"
             />
             <label
               htmlFor="email"
@@ -68,7 +80,13 @@ const Form = () => {
               name="message"
               placeholder=" "
               required
-              className="w-full h-[300px] px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primaryColor focus:border-primaryColor resize-none placeholder:text-slate-600 peer transition-all hover:border-black"
+              className="w-full h-[300px] px-4 py-3 border border-gray-300 rounded-xl focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-primaryColor focus:border-primaryColor resize-none placeholder:text-slate-600 peer transition-all hover:border-black"
             ></textarea>
             <label
               htmlFor="message"

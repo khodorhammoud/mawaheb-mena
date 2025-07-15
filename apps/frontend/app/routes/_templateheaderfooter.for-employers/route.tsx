@@ -68,6 +68,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const testimonialsSection: Testimonial[] = dataResponse[7]?.data?.testimonialsSection || [];
   const blogCardSection: BlogCard[] = dataResponse[8]?.data?.blogCardSection || [];
 
+  // console.log('HOW-IT-WORKS from CMS →', JSON.stringify(dataResponse[0]?.data, null, 2));
+  // console.log('postHowItWorks:', postHowItWorks);
+
   return json<LoaderData>({
     subHeadline,
     howItWorksItems,
