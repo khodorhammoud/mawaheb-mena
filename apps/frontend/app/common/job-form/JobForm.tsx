@@ -9,6 +9,7 @@ import { Skill } from '@mawaheb/db/types';
 import RichTextEditor from '~/components/ui/richTextEditor';
 import { getWordCount } from '~/lib/utils';
 import { ExperienceLevel } from '@mawaheb/db/enums';
+import { Placeholder } from 'drizzle-orm';
 import { toast } from '~/components/hooks/use-toast';
 
 interface JobFormProps {
@@ -268,6 +269,8 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 id="budget"
                 name="budget"
                 label="Budget"
+                placeholder=""
+                currency="$"
                 defaultValue={String(job?.budget || '')}
                 className="col-span-1 w-full"
                 required
