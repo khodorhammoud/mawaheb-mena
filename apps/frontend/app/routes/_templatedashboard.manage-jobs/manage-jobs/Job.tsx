@@ -34,30 +34,33 @@ export default function Job({ data, viewMode, userAccountStatus }: JobProps) {
       return (
         <>
           {/* Show JobDesignOne on md and larger screens */}
-          <div className="hidden md:block">
+          <div className="hidden xl:block">
             <JobDesignOne
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
               userAccountStatus={userAccountStatus}
+              className="w-fit"
             />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
-          <div className="hidden sm:block md:hidden">
+          <div className="hidden md:block xl:hidden">
             <JobDesignTwo
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
               userAccountStatus={userAccountStatus}
+              className="w-fit"
             />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
-          <div className="block sm:hidden">
+          <div className="block md:hidden">
             <JobDesignThree
               data={data}
               status={jobStatus}
               onStatusChange={handleStatusChange}
               userAccountStatus={userAccountStatus}
+              className="w-fit ml-10"
             />
           </div>
         </>
@@ -67,7 +70,7 @@ export default function Job({ data, viewMode, userAccountStatus }: JobProps) {
       return (
         <>
           {/* Show JobDesignTwo on sm and larger screens */}
-          <div className="hidden sm:block">
+          <div className="hidden xl:block">
             <JobDesignTwo
               data={data}
               status={jobStatus}
@@ -76,7 +79,7 @@ export default function Job({ data, viewMode, userAccountStatus }: JobProps) {
             />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
-          <div className="block sm:hidden">
+          <div className="block xl:hidden">
             <JobDesignThree
               data={data}
               status={jobStatus}

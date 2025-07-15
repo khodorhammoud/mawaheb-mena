@@ -1,33 +1,31 @@
-import React, { Suspense } from "react";
-import "react-quill/dist/quill.snow.css";
-import DOMPurify from "dompurify";
-import "~/styles/wavy/wavy.css";
+import React, { Suspense } from 'react';
+import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
+import '~/styles/wavy/wavy.css';
 
 // Use React.lazy instead of Next.js dynamic
-const ReactQuill = React.lazy(() => import("react-quill"));
+const ReactQuill = React.lazy(() => import('react-quill'));
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  style?: React.CSSProperties; // Added `style` prop
-  name?: string; // Add the `name` prop
+  style?: React.CSSProperties;
+  name?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
-  placeholder = "Write something...",
-  className = "",
-  style = {}, // Default style object
-  name, // Accept the `name` prop
+  placeholder = 'Write something...',
+  className = '',
+  style = {},
+  name,
 }) => {
+  // DO NOT sanitize or trim here! Quill needs to keep the structure intact.
   const handleChange = (content: string) => {
-    // Sanitize content for safe usage
-    const plainText = DOMPurify.sanitize(content).trim();
-
-    onChange(plainText);
+    onChange(content);
   };
 
   return (
