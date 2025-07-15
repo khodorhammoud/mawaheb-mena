@@ -213,6 +213,18 @@ export const generatePresignedUrl = async (fileKey: string, expiration = 60): Pr
   }
 };
 
+export function extractS3Key(urlOrKey = '') {
+  if (!urlOrKey) return '';
+  let key = urlOrKey;
+  if (urlOrKey.startsWith('http') && urlOrKey.includes('.amazonaws.com/')) {
+    key = urlOrKey.split('.amazonaws.com/')[1].split('?')[0];
+  }
+  try {
+    key = decodeURIComponent(key);
+  } catch {}
+  return key;
+}
+
 export const getAttachmentSignedURL = async (fileKey: string): Promise<string> => {
   if (!fileKey) {
     throw new Error('File key is required to generate a signed URL.');
