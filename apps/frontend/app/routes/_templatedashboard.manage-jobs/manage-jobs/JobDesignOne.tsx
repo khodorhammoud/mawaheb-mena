@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { parseDate } from '~/lib/utils';
+import { cn, parseDate } from '~/lib/utils';
 import { JobCardData } from '@mawaheb/db/types';
 import Calendar from '~/common/calender/Calender';
 import SkillBadgeList from '~/common/skill/SkillBadge';
@@ -16,11 +16,13 @@ export default function JobDesignOne({
   status,
   onStatusChange,
   userAccountStatus,
+  className,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
+  className?: string;
 }) {
   const { job } = data;
 
@@ -42,17 +44,20 @@ export default function JobDesignOne({
     <p>Job details are not available.</p>
   ) : (
     <div
-      className={`grid bg-white border rounded-xl shadow-xl mb-10 ${
-        status === JobStatus.Draft
-          ? 'grid-cols-[2fr_2fr_2fr_1fr] gap-6 p-10'
-          : `${
-              status === JobStatus.Paused ||
-              status === JobStatus.Active ||
-              status === JobStatus.Running
-                ? 'grid-cols-[3fr_1fr_2fr_1fr]'
-                : 'md:grid-cols-[3fr_1fr_1fr]'
-            } lg:p-8 p-4 gap-3`
-      }`}
+      className={cn(
+        `grid bg-white border rounded-xl shadow-xl mb-10 ${
+          status === JobStatus.Draft
+            ? 'xl:grid-cols-[6fr_8fr_3fr_2fr] gap-6 p-10'
+            : `${
+                status === JobStatus.Paused ||
+                status === JobStatus.Active ||
+                status === JobStatus.Running
+                  ? 'grid-cols-[3fr_1fr_2fr_1fr]'
+                  : 'md:grid-cols-[3fr_1fr_1fr]'
+              } lg:p-8 p-4 gap-3`
+        }`,
+        className
+      )}
     >
       {/* Draft Jobs Section Only */}
       {status === JobStatus.Draft && (
@@ -62,7 +67,7 @@ export default function JobDesignOne({
             <h3 className="xl:text-2xl md:text-xl text-lg lg:mb-8 mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
               <Link to={`/jobs/${job.id}`}>{job.title}</Link>
             </h3>
-            <div className="flex xl:gap-10 lg:gap-8 gap-6 ">
+            <div className="grid grid-cols-2 xl:gap-6 gap-4">
               <div>
                 <p className="xl:text-xl lg:text-lg text-base">${job.budget}</p>
                 <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
@@ -74,6 +79,36 @@ export default function JobDesignOne({
 
                 <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
               </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Working Hours per week
+                </p>
+                <p className="text-base font-medium text-left">
+                  {job.workingHoursPerWeek || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Location Preferences
+                </p>
+                <p className="text-base font-medium text-left">{job.locationPreference || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">Project Type</p>
+                <p className="text-base font-medium text-left">{job.projectType || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Expected Hourly Rate
+                </p>
+                <p className="text-base font-medium text-left">
+                  ${job.expectedHourlyRate || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">Job Category</p>
+                <p className="text-base font-medium text-left">{job.jobCategoryName || 'N/A'}</p>
+              </div>
             </div>
           </div>
 
@@ -82,7 +117,7 @@ export default function JobDesignOne({
             <ReadMore
               className="lg:mt-6 mt-4 xl:text-lg lg:text-base text-sm"
               html={job.description}
-              wordsPerChunk={40}
+              charPerChunk={300}
             />
           </div>
 
@@ -149,7 +184,7 @@ export default function JobDesignOne({
         <ReadMore
           className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
           html={job.description}
-          wordsPerChunk={50}
+          charPerChunk={300}
         />
 
         {/* SKILLS */}
