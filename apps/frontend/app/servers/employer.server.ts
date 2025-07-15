@@ -10,7 +10,7 @@ import {
   userIdentificationsTable,
   attachmentsTable,
 } from '@mawaheb/db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import {
   Employer,
   AccountBio,
@@ -21,11 +21,12 @@ import {
 import { SuccessVerificationLoaderStatus } from '~/types/misc';
 import { checkUserExists, getCurrentProfileInfo, updateOnboardingStatus } from './user.server';
 // import { Skill } from "@mawaheb/db/src/types/Skill"; // Import Job type to ensure compatibility
-import { JobStatus } from '@mawaheb/db/enums';
+import { JobApplicationStatus, JobStatus } from '@mawaheb/db/enums';
 import DOMPurify from 'isomorphic-dompurify';
 import { redirect } from '@remix-run/react';
 import { saveAttachments } from './cloudStorage.server';
 import { saveAttachment, deleteAttachmentById } from '~/servers/attachment.server';
+import { jobApplicationsTable } from '@mawaheb/db/schema/schema';
 
 /***************************************************
  ************Insert/update employer info************
@@ -452,13 +453,12 @@ export async function getEmployerAbout(employer: Employer): Promise<string> {
 
 export async function getEmployerDashboardData(request: Request) {
   try {
-    // Fetch the current employer information based on the request
     const currentProfile = (await getCurrentProfileInfo(request)) as Employer;
     if (!currentProfile) {
       throw new Error('Current user not found.');
     }
 
-    // Fetch counts for active, drafted, closed, and paused jobs
+    // Step 1: Fetch job lists
     const [activeJobs, draftedJobs, closedJobs, pausedJobs, deletedJobs, completedJobs] =
       await Promise.all([
         db
@@ -505,26 +505,53 @@ export async function getEmployerDashboardData(request: Request) {
           ),
       ]);
 
-    // Calculate the counts based on the length of the results
-    const activeJobCount = activeJobs.length;
-    const draftedJobCount = draftedJobs.length;
-    const closedJobCount = closedJobs.length;
-    const pausedJobCount = pausedJobs.length;
-    const deletedJobCount = deletedJobs.length;
-    const completedJobCount = completedJobs.length;
+    const jobIds = [
+      ...activeJobs,
+      ...draftedJobs,
+      ...closedJobs,
+      ...pausedJobs,
+      ...deletedJobs,
+      ...completedJobs,
+    ].map(job => job.id);
 
-    // Return the job counts and JobStatus enum values
+    let totalApplicantsCount = 0;
+    let shortlistedApplicantsCount = 0;
+    let interviewedApplicantsCount = 0;
+
+    if (jobIds.length > 0) {
+      const allApplications = await db
+        .select({ status: jobApplicationsTable.status })
+        .from(jobApplicationsTable)
+        .where(inArray(jobApplicationsTable.jobId, jobIds));
+
+      // the total applicants (easy)
+      totalApplicantsCount = allApplications.length;
+
+      // the shortlisted applicants
+      shortlistedApplicantsCount = allApplications.filter(
+        a => a.status === JobApplicationStatus.Shortlisted
+      ).length;
+
+      // the approved applicants
+      interviewedApplicantsCount = allApplications.filter(
+        a => a.status === JobApplicationStatus.Approved
+      ).length;
+    }
+
     return {
-      activeJobCount,
-      draftedJobCount,
-      closedJobCount,
-      pausedJobCount,
-      deletedJobCount,
-      completedJobCount,
+      activeJobCount: activeJobs.length,
+      draftedJobCount: draftedJobs.length,
+      closedJobCount: closedJobs.length,
+      pausedJobCount: pausedJobs.length,
+      deletedJobCount: deletedJobs.length,
+      completedJobCount: completedJobs.length,
+      totalApplicantsCount,
+      shortlistedApplicantsCount,
+      interviewedApplicantsCount,
     };
   } catch (error) {
     console.error('Error fetching employer dashboard data:', error);
-    throw error; // Re-throw the error for further handling
+    throw error;
   }
 }
 

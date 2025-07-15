@@ -1,3 +1,9 @@
+// NOTE: Image previews use projectImageUrl / projectImageName
+//       PDF previews use attachmentUrl / attachmentName
+//       Word previews use projectImageUrl (assume .docx stored as image field?)
+//       Never mix the two!
+//       If you see "No preview" for a file type, check the field mappings!
+
 import React from 'react';
 import { RepeatableInputType } from '../types';
 import type { FieldTemplateState, FormStateType } from '../types';
@@ -11,7 +17,7 @@ interface FieldTemplateProps {
   cardTitle: string;
 }
 
-const getFileType = (fileName = '') => {
+export const getFileType = (fileName = '') => {
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
   if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
   if (['pdf'].includes(ext)) return 'pdf';
@@ -19,6 +25,10 @@ const getFileType = (fileName = '') => {
   if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'video';
   return 'unknown';
 };
+
+function isValidUrl(url) {
+  return typeof url === 'string' && url.startsWith('https://');
+}
 
 export const TextFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
@@ -111,6 +121,11 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
   FilledState: ({ value, cardTitle }: FieldTemplateProps) => {
     const portfolio = Array.isArray(value) ? (value as RepeatableInputType[]) : [];
 
+    const [openImageIndex, setOpenImageIndex] = React.useState<number | null>(null);
+    const [openPdfIndex, setOpenPdfIndex] = React.useState<number | null>(null);
+    const [openWordIndex, setOpenWordIndex] = React.useState<number | null>(null);
+    const [openVideoIndex, setOpenVideoIndex] = React.useState<number | null>(null);
+
     if (portfolio.length === 0) {
       return (
         <div className="flex flex-col">
@@ -126,11 +141,41 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
         {portfolio.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex w-full rounded-xl mt-4 bg-white">
+              {/* Portfolios Photo */}
               <div className="w-1/4 flex items-center justify-center bg-blue-50 rounded-l-xl min-h-[112px]">
                 {(() => {
-                  const fileType = getFileType(item.projectImageName || item.projectImageUrl);
+                  let fileType = '';
+                  let displayUrl = '';
+                  let displayName = '';
 
-                  if (fileType === 'image' && item.projectImageUrl) {
+                  if (
+                    item.projectImageUrl &&
+                    getFileType(item.projectImageName || item.projectImageUrl) === 'image'
+                  ) {
+                    fileType = 'image';
+                    displayUrl = item.projectImageUrl;
+                    displayName = item.projectImageName;
+
+                    // console.log('attachmentUrl:', item.attachmentUrl);
+                    // console.log('displayUrl:', displayUrl);
+                  } else if (
+                    item.attachmentUrl &&
+                    getFileType(item.attachmentName || item.attachmentUrl) === 'pdf'
+                  ) {
+                    fileType = 'pdf';
+                    displayUrl = item.attachmentUrl;
+                    displayName = item.attachmentName;
+                  } else if (
+                    item.projectImageUrl &&
+                    getFileType(item.projectImageName || item.projectImageUrl) === 'word'
+                  ) {
+                    fileType = 'word';
+                    displayUrl = item.projectImageUrl;
+                    displayName = item.projectImageName;
+                  }
+
+                  // FOR IMAGES
+                  if (fileType === 'image' && displayUrl) {
                     return (
                       <div className="relative">
                         <img
@@ -138,38 +183,45 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                           src={item.projectImageUrl}
                           alt={item.projectName || 'Portfolio Image'}
                         />
-                        <a
-                          href={item.projectImageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => setOpenImageIndex(index)}
                           className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
                         >
                           Open Image
-                        </a>
+                        </button>
                       </div>
                     );
                   }
-                  if (fileType === 'pdf' && item.projectImageUrl) {
+
+                  // FOR PDF's
+                  if (fileType === 'pdf' && displayUrl) {
+                    // console.log('PDF previewing:', item.attachmentUrl);
+
+                    const pdfUrl = item.attachmentUrl || item.projectImageUrl; // fallback just in case
+
                     return (
                       <div className="relative">
                         <embed
-                          src={item.projectImageUrl}
+                          src={displayUrl}
                           type="application/pdf"
                           className="object-cover w-full rounded-l-xl"
-                          title={item.projectImageName}
+                          title={displayUrl}
                         />
-                        <a
-                          href={item.projectImageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => setOpenPdfIndex(index)}
                           className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
                         >
                           Open PDF
-                        </a>
+                        </button>
                       </div>
                     );
                   }
-                  if (fileType === 'word' && item.projectImageUrl) {
+
+                  // FOR WORD DOCUMENTS
+                  if (fileType === 'word' && displayUrl && isValidUrl(displayUrl)) {
+                    // Case 1: File has a public URL, preview with Google Docs
                     return (
                       <div className="relative">
                         <div className="relative w-full h-64 overflow-hidden rounded-l-xl">
@@ -177,24 +229,55 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                             src={`https://docs.google.com/gview?url=${encodeURIComponent(item.projectImageUrl)}&embedded=true`}
                             className="w-full"
                             style={{
-                              height: '400px', // Make iframe tall
-                              marginTop: '-50px', // Move it up to hide the bottom toolbar
+                              height: '400px',
+                              marginTop: '-50px',
                             }}
                             title={item.projectImageName}
                           />
                         </div>
-
-                        <a
-                          href={item.projectImageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => setOpenWordIndex(index)}
                           className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 text-xs"
                         >
                           Open in Docs
-                        </a>
+                        </button>
+                      </div>
+                    );
+                  } else if (fileType === 'word') {
+                    // Case 2: File just uploaded, not yet saved. Show spinner or message.
+                    return (
+                      <div className="flex flex-col items-center justify-center w-full h-full py-4">
+                        <svg
+                          className="w-10 h-10 text-gray-400 animate-spin"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                          />
+                        </svg>
+                        <span className="text-xs mt-2 text-gray-400 text-center break-all px-2">
+                          Uploading Word document...
+                        </span>
+                        <span className="text-xs mt-2 text-gray-400 text-center break-all px-2">
+                          Please save to preview it from here
+                        </span>
                       </div>
                     );
                   }
+
+                  // FOR VIDEOS (not tested till now + idk if we need it)
                   if (fileType === 'video' && item.projectImageUrl) {
                     return (
                       <video
@@ -221,33 +304,116 @@ const Project_RepeatableFieldTemplate: FieldTemplateState = {
                   );
                 })()}
               </div>
+
+              {/* Portfolios Main Content: (Title - View Project Button - Description) */}
               <div className="w-3/4 flex flex-col text-base pl-6 pr-10 py-8">
-                <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex">
-                  {item.projectName || 'Unnamed Project'}
-                  {item.projectLink && (
-                    <a
-                      href={item.projectLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition"
-                    >
-                      View Project
-                      <FaArrowRight className="w-2 h-3 mt-[1px] group-hover:translate-x-1 transition-transform" />
-                    </a>
+                {/* TITLE + VIEW PROJECT */}
+                <div className="flex justify-between items-center w-full">
+                  {/* TIILE */}
+                  <h1 className="xl:text-xl lg:text-lg text-base mb-4 flex break-all">
+                    {item.projectName || 'Unnamed Project'}
+                  </h1>
+                  {/* VIEW PROJECT */}
+                  <h1 className="xl:text-xl lg:text-lg text-base self-start mt-1">
+                    {item.projectLink && (
+                      <a
+                        href={item.projectLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1 group text-primaryColor text-sm ml-4 underline hover:opacity-90 transition whitespace-nowrap"
+                      >
+                        View Project
+                        <FaArrowRight className="w-2 h-3 group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    )}
+                  </h1>
+                </div>
+                {/* DESCRIPTION */}
+                <div className="">
+                  {item.projectDescription && (
+                    <div
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html: item.projectDescription,
+                      }}
+                    />
                   )}
-                </h1>
-                {item.projectDescription && (
-                  <div
-                    className="text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: item.projectDescription,
-                    }}
-                  />
-                )}
+                </div>
               </div>
             </div>
           </div>
         ))}
+
+        {/* Project Image Popup (Modal) */}
+        {openImageIndex !== null && portfolio[openImageIndex]?.projectImageUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="relative bg-white shadow-2xl max-w-3xl w-full p-6 rounded-lg">
+              {/* Close Button */}
+              <button
+                onClick={() => setOpenImageIndex(null)}
+                className="absolute top-2 right-2 rounded-full focus:outline-none hover:scale-105 transition-transform bg-gray-200"
+                style={{ padding: '6px' }}
+              >
+                <FaTimes className="h-5 w-5 text-gray-800" />
+              </button>
+              <div className="w-full flex justify-center items-center min-h-[50vh]">
+                <img
+                  src={portfolio[openImageIndex].projectImageUrl}
+                  alt={portfolio[openImageIndex].projectName || 'Project Image'}
+                  className="max-h-[70vh] w-auto object-contain rounded-lg shadow"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Project PDF Popup (Modal) */}
+        {openPdfIndex !== null &&
+          (portfolio[openPdfIndex]?.attachmentUrl || portfolio[openPdfIndex]?.projectImageUrl) && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+              <div className="relative bg-white shadow-2xl max-w-3xl w-full p-6 rounded-lg">
+                <button
+                  onClick={() => setOpenPdfIndex(null)}
+                  className="absolute top-2 right-2 rounded-full focus:outline-none hover:scale-105 transition-transform bg-gray-200"
+                  style={{ padding: '6px' }}
+                >
+                  <FaTimes className="h-5 w-5 text-gray-800" />
+                </button>
+                <div className="w-full h-[80vh]">
+                  <embed
+                    src={
+                      portfolio[openPdfIndex].attachmentUrl ||
+                      portfolio[openPdfIndex].projectImageUrl
+                    }
+                    type="application/pdf"
+                    className="w-full h-full rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* Project Word Popup (Modal) */}
+        {openWordIndex !== null && portfolio[openWordIndex]?.projectImageUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="relative bg-white shadow-2xl max-w-3xl w-full p-6 rounded-lg">
+              <button
+                onClick={() => setOpenWordIndex(null)}
+                className="absolute top-2 right-2 rounded-full focus:outline-none hover:scale-105 transition-transform bg-gray-200"
+                style={{ padding: '6px' }}
+              >
+                <FaTimes className="h-5 w-5 text-gray-800" />
+              </button>
+              <div className="w-full h-[80vh]">
+                <iframe
+                  src={`https://docs.google.com/gview?url=${encodeURIComponent(portfolio[openWordIndex].projectImageUrl)}&embedded=true`}
+                  className="w-full h-full rounded-lg"
+                  title="Word Document"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   },
@@ -278,10 +444,15 @@ const WorkHistory_RepeatableFieldTemplate: FieldTemplateState = {
         {workHistory.map((item, index) => (
           <div key={index} className="flex flex-col text-left">
             <div className="flex flex-col w-full rounded-xl md:mt-4 mt-2 bg-white lg:p-6 p-4 md:gap-3 gap-1">
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 md:gap-2 gap-1">
-                <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
-                {item.title || 'Job Title'}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <IoBriefcaseSharp className="xl:h-7 lg:h-6 h-5 xl:w-7 lg:w-6 w-5 text-primaryColor p-1" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {item.title || 'Job Title'}
+                </h1>
+              </div>
+
               <div className="flex gap-3 items-center">
                 <p>{item.company || 'Company Name'}</p>
                 <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
@@ -341,10 +512,15 @@ const Certificate_RepeatableFieldTemplate: FieldTemplateState = {
               key={index}
               className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-1"
             >
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
-                <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {item.certificateName || 'Certificate Name'}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <RiAwardFill className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 mt-[2px] text-primaryColor" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {item.certificateName || 'Certificate Name'}
+                </h1>
+              </div>
+
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{item.issuedBy || 'Issuer Name'}</p>
                 <span className="xl:text-2xl lg:text-xl text-lg text-gray-200 font-extralight">
@@ -388,11 +564,16 @@ const Education_RepeatableFieldTemplate: FieldTemplateState = {
               key={index}
               className="flex flex-col w-full rounded-xl bg-white xl:p-8 lg:p-6 p-4 lg:gap-3 gap-2"
             >
-              <h1 className="flex items-center xl:text-xl lg:text-lg text-base mb-4 gap-1">
-                <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 lg:w-5 w-4 text-primaryColor" />
-                {degree ?? 'Degree Name'}
-                {institution && `, ${institution}`}
-              </h1>
+              <div className="flex gap-4">
+                <h1>
+                  <FaGraduationCap className="xl:h-6 lg:h-5 h-4 xl:w-6 mt-[2px] lg:w-5 w-4 text-primaryColor" />
+                </h1>
+                <h1 className="xl:text-xl lg:text-lg text-base mb-4 break-all">
+                  {degree ?? 'Degree Name'}
+                  {institution && `, ${institution}`}
+                </h1>
+              </div>
+
               <div className="flex xl:gap-3 lg:gap-2 gap-1 items-center">
                 <p>{institution ?? 'Institution Name'}</p>
                 <span className="lg:text-2xl text-xl text-gray-200 font-extralight">|</span>
@@ -435,9 +616,6 @@ export const IncrementFieldTemplate: FieldTemplateState = {
 
 export const VideoFieldTemplate: FieldTemplateState = {
   FilledState: ({ value /* cardTitle */ }: FieldTemplateProps) => {
-    // Parse the video value - it can be a string (legacy) or an object with videoType, videoLink, videoAttachmentId
-    console.log('VideoFieldTemplate value:', value);
-
     // States - ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
@@ -621,7 +799,16 @@ export const VideoFieldTemplate: FieldTemplateState = {
         <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
           {/* YouTube Video Stylings */}
           {isYouTube && videoId ? (
-            <button onClick={openModal} className="block w-full h-full focus:outline-none">
+            <button
+              onClick={openModal}
+              className="block w-full h-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+            >
               <img
                 className="w-full h-full object-cover"
                 src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
@@ -684,7 +871,13 @@ export const VideoFieldTemplate: FieldTemplateState = {
               {/* Close Button */}
               <button
                 onClick={closeModal}
-                className="absolute -top-1 -right-1 rounded-full focus:outline-none hover:scale-105 transition-transform bg-transparent"
+                className="absolute -top-1 -right-1 rounded-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 hover:scale-105 transition-transform bg-transparent"
                 style={{
                   padding: '8px',
                 }}

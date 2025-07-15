@@ -3,6 +3,7 @@ import { useLoaderData, useSearchParams, Link } from '@remix-run/react';
 import { JobApplicationStatus, AccountStatus } from '@mawaheb/db/enums';
 import { ApplicationsTable } from '~/common/admin-pages/tables/ApplicationsTable';
 import { getApplications } from '~/servers/admin.server';
+import { useState } from 'react';
 
 interface Application {
   application: {
@@ -114,6 +115,20 @@ export default function AdminApplications() {
   const { applications } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Add sort state:
+  const [sortBy, setSortBy] = useState<'appliedDate' | null>('appliedDate');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc'); // default: latest first
+
+  // Sorting logic:
+  const sortedApplications = [...applications].sort((a, b) => {
+    if (sortBy === 'appliedDate') {
+      const dateA = new Date(a.application.createdAt).getTime();
+      const dateB = new Date(b.application.createdAt).getTime();
+      return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+    }
+    return 0;
+  });
+
   return (
     <div className="space-y-6">
       {/* Back Button */}
@@ -147,13 +162,21 @@ export default function AdminApplications() {
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <ApplicationsTable
-          applications={applications}
+          applications={sortedApplications}
           showJob={true}
           showEmployer={true}
           showEmployerStatus={true}
           showFreelancer={true}
           showMatchScore={true}
           emptyMessage="No applications found. Try adjusting your filters."
+          // Add these props
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortChange={() => {
+            // Only one sortable column for now
+            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+            setSortBy('appliedDate');
+          }}
         />
       </div>
     </div>

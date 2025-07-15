@@ -624,7 +624,7 @@ function calculateMatchScore(
  * In summary: Returns a list of 'best fit' jobs for a freelancer,
  *             only jobs they haven't applied to, scored by skill/profile match.
  */
-// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess )
+// ✅ Get Jobs that the freelancer haven't apply to yet ( + only active jobs i guess + the jobs that the freelancer match them more than 50% )
 export async function getJobRecommendations(
   freelancerId: number,
   limit: number = 10
@@ -854,6 +854,8 @@ export async function getAllJobs(
       budget: jobsTable.budget,
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label,
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -867,6 +869,7 @@ export async function getAllJobs(
         freelancerId !== undefined ? eq(jobApplicationsTable.freelancerId, freelancerId) : undefined
       )
     )
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id)) // <--- NEW JOIN
     .where(inArray(jobsTable.id, jobIds))
     .orderBy(desc(jobsTable.createdAt));
 
@@ -899,6 +902,8 @@ export async function getMyJobs(freelancerId: number, limit?: number) {
       budget: jobsTable.budget,
       experienceLevel: jobsTable.experienceLevel,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label,
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -911,6 +916,7 @@ export async function getMyJobs(freelancerId: number, limit?: number) {
         eq(jobApplicationsTable.freelancerId, freelancerId)
       )
     )
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id))
     .orderBy(desc(jobsTable.createdAt));
 
   // Apply limit if provided
@@ -1624,14 +1630,14 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
       ? eq(jobsTable.employerId, employerId)
       : and(eq(jobsTable.employerId, employerId), eq(jobsTable.status, statusFilter));
 
-  // Fetch all jobs for this employer (filtered)\
+  // Fetch all jobs for this employer (filtered)
   const jobs = await db
     .select({
       id: jobsTable.id,
       title: jobsTable.title,
       description: jobsTable.description,
       budget: jobsTable.budget,
-      expectedHourlyRate: jobsTable.expectedHourlyRate, // <-- ADD THIS LINE!
+      expectedHourlyRate: jobsTable.expectedHourlyRate,
       workingHoursPerWeek: jobsTable.workingHoursPerWeek,
       locationPreference: jobsTable.locationPreference,
       projectType: jobsTable.projectType,
@@ -1640,9 +1646,11 @@ export async function fetchJobsWithApplications(employerId: number, statusFilter
       status: jobsTable.status,
       employerId: jobsTable.employerId,
       jobCategoryId: jobsTable.jobCategoryId,
+      jobCategoryName: jobCategoriesTable.label, // <-- Add category name here
       fulfilledAt: jobsTable.fulfilledAt,
     })
     .from(jobsTable)
+    .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id)) // <-- JOIN!
     .where(whereClause)
     .orderBy(desc(jobsTable.createdAt));
 

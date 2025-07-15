@@ -64,7 +64,7 @@ const CountrySelectField = forwardRef<HTMLButtonElement, CountrySelectFieldProps
           value={selected}
           onChange={handleSelect}
           placeholder="Select Country"
-          className="border-none hover:bg-transparent w-full"
+          className="border-none hover:bg-transparent w-full "
           ref={buttonRef} // ✅ this is the internal ref
         />
         <input type="hidden" id={id} name={name} value={selected || ''} readOnly />

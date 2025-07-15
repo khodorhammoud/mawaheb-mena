@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { parseDate } from '~/lib/utils';
+import { cn, parseDate } from '~/lib/utils';
 import { JobCardData } from '@mawaheb/db/types';
 import Calendar from '~/common/calender/Calender';
 import SkillBadgeList from '~/common/skill/SkillBadge';
@@ -16,11 +16,13 @@ export default function JobDesignOne({
   status,
   onStatusChange,
   userAccountStatus,
+  className,
 }: {
   data: JobCardData;
   status?: JobStatus;
   onStatusChange?: (newStatus: JobStatus) => void;
   userAccountStatus?: string;
+  className?: string;
 }) {
   const { job } = data;
 
@@ -28,10 +30,18 @@ export default function JobDesignOne({
 
   const formattedDate = parseDate(job.createdAt);
 
-  const applicantsPhotos = [
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-  ];
+  // applications and there nb
+  const Applications = data.applications || [];
+  const numberOfApplications = data.applications?.length || 0;
+
+  // Hired applicants and there nb
+  const hiredApplications = data.applications?.filter(app => app.status === 'approved') || [];
+  const numberOfHired = hiredApplications.length;
+
+  // shortlisted applicants and there nb
+  const shortlistedApplications =
+    data.applications?.filter(app => app.status === 'shortlisted') || [];
+  const numberOfShortlisted = shortlistedApplications.length;
 
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
 
@@ -42,15 +52,20 @@ export default function JobDesignOne({
     <p>Job details are not available.</p>
   ) : (
     <div
-      className={`grid bg-white border rounded-xl shadow-xl mb-10 ${
-        status === JobStatus.Draft
-          ? 'grid-cols-[2fr_2fr_2fr_1fr] gap-6 p-10'
-          : `${
-              status === JobStatus.Paused || status === JobStatus.Active
-                ? 'grid-cols-[3fr_1fr_2fr_1fr]'
-                : 'md:grid-cols-[3fr_1fr_1fr]'
-            } lg:p-8 p-4 gap-3`
-      }`}
+      className={cn(
+        `grid bg-white border rounded-xl shadow-xl mb-10 ${
+          status === JobStatus.Draft
+            ? 'xl:grid-cols-[6fr_8fr_3fr_2fr] gap-6 p-10'
+            : `${
+                status === JobStatus.Paused ||
+                status === JobStatus.Active ||
+                status === JobStatus.Running
+                  ? 'grid-cols-[3fr_1fr_2fr_1fr]'
+                  : 'md:grid-cols-[3fr_1fr_1fr]'
+              } lg:p-8 p-4 gap-3`
+        }`,
+        className
+      )}
     >
       {/* Draft Jobs Section Only */}
       {status === JobStatus.Draft && (
@@ -60,7 +75,7 @@ export default function JobDesignOne({
             <h3 className="xl:text-2xl md:text-xl text-lg lg:mb-8 mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
               <Link to={`/jobs/${job.id}`}>{job.title}</Link>
             </h3>
-            <div className="flex xl:gap-10 lg:gap-8 gap-6 ">
+            <div className="grid grid-cols-2 xl:gap-6 gap-4">
               <div>
                 <p className="xl:text-xl lg:text-lg text-base">${job.budget}</p>
                 <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
@@ -72,6 +87,36 @@ export default function JobDesignOne({
 
                 <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
               </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Working Hours per week
+                </p>
+                <p className="text-base font-medium text-left">
+                  {job.workingHoursPerWeek || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Location Preferences
+                </p>
+                <p className="text-base font-medium text-left">{job.locationPreference || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">Project Type</p>
+                <p className="text-base font-medium text-left">{job.projectType || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">
+                  Expected Hourly Rate
+                </p>
+                <p className="text-base font-medium text-left">
+                  ${job.expectedHourlyRate || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 xl:text-sm text-xs mb-1 text-left">Job Category</p>
+                <p className="text-base font-medium text-left">{job.jobCategoryName || 'N/A'}</p>
+              </div>
             </div>
           </div>
 
@@ -80,7 +125,7 @@ export default function JobDesignOne({
             <ReadMore
               className="lg:mt-6 mt-4 xl:text-lg lg:text-base text-sm"
               html={job.description}
-              wordsPerChunk={40}
+              charPerChunk={300}
             />
           </div>
 
@@ -98,7 +143,13 @@ export default function JobDesignOne({
           <div className="flex flex-col gap-4 space-x-2 items-end">
             <Link
               to={`/edit-job/${job.id}`}
-              className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+              className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
               Edit
@@ -141,7 +192,7 @@ export default function JobDesignOne({
         <ReadMore
           className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
           html={job.description}
-          wordsPerChunk={50}
+          charPerChunk={300}
         />
 
         {/* SKILLS */}
@@ -162,25 +213,18 @@ export default function JobDesignOne({
       >
         {/* Applicants Section */}
         <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          label={`Applicants (${numberOfApplications})`}
+          profiles={Applications}
         />
 
         {/* Interviewed Section */}
         <ProfilePhotosSection
-          label="Interviewed"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          label={`Interviewed (${numberOfShortlisted})`}
+          profiles={shortlistedApplications}
         />
 
         {/* Hired Section */}
-        <ProfilePhotosSection
-          label="Hired"
-          images={applicantsPhotos}
-          profiles={data.applications}
-          className={`${status === JobStatus.Active || status === JobStatus.Paused ? 'hidden' : ''}`}
-        />
+        <ProfilePhotosSection label={`Hired (${numberOfHired})`} profiles={hiredApplications} />
       </div>
 
       {/* Right Section */}
