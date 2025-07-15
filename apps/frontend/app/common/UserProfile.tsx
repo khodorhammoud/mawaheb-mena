@@ -189,13 +189,22 @@ export default function UserProfile({ canEdit, profile = {} }: UserProfileProps)
           background: 'linear-gradient(to right, #27638a 0%, white 75%)',
         }}
       >
-        {canEdit && (
+        {/* {canEdit && (
           <div className="absolute top-4 right-4">
-            <button className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold hover:bg-primaryColor hover:text-white transition-all">
+            <button
+              className="text-sm rounded-xl flex items-center justify-center text-primaryColor border border-gray-300 sm:px-5 sm:py-3 px-3 py-2 font-semibold hover:bg-primaryColor hover:text-white transition-all focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0
+    "
+            >
               Add Title
             </button>
           </div>
-        )}
+        )} */}
 
         {/* ⭐⭐⭐⭐⭐ Reviews Section */}
         <div className="absolute sm:top-20 top-14 right-4 flex flex-col sm:flex-row items-start sm:items-center cursor-pointer gap-2 sm:gap-2">

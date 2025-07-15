@@ -173,14 +173,29 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
           {canEdit && (
             <Dialog open={skillsDialogOpen} onOpenChange={handleSkillDialogChange}>
               <DialogTrigger asChild>
-                <Button variant="link">
+                <Button
+                  className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                  variant="link"
+                >
                   <IoPencilSharp className="lg:relative absolute lg:left-0 left-10 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[90vh]">
                 {/* <button
                   onClick={() => handleSkillDialogChange(false)}
-                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
                 > */}
                 {/* <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -284,7 +299,13 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                   <Button
                     onClick={handleSubmit}
                     disabled={skillsFetcher.state === 'submitting'}
-                    className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
+                    className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   >
                     Save
                   </Button>

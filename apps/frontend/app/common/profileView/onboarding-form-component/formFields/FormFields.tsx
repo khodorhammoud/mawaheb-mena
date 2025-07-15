@@ -21,25 +21,33 @@ export const FormFields = {
       value={value as string}
       onChange={onChange}
       name={name}
-      className="w-full p-3 border border-gray-300 rounded-md"
+      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
     />
   ),
 
   number: ({ value, onChange, name }: FormFieldProps) => (
-    <AppFormField
-      type="number"
-      id="number-input"
-      name={name}
-      label="Enter a number"
-      placeholder="Enter a number"
-      onChange={onChange}
-      className="no-spinner"
-      defaultValue={value ? value.toString() : ''}
-    />
+    <div className="ml-1">
+      <AppFormField
+        type="number"
+        id="number-input"
+        name={name}
+        label="Enter a number"
+        placeholder="Enter a number"
+        onChange={onChange}
+        className="no-spinner"
+        defaultValue={value ? value.toString() : ''}
+      />
+    </div>
   ),
 
   range: ({ value, onChange, name, props }: FormFieldProps) => (
-    <div className="flex flex-col ml-1">
+    <div className="flex flex-col ml-l">
       <div className="w-[50%] mb-6 relative">
         <AppFormField
           type="number"
@@ -48,7 +56,13 @@ export const FormFields = {
           label={props.cardTitle}
           placeholder={props.popupTitle}
           onChange={onChange}
-          className="no-spinner"
+          className="no-spinner focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           defaultValue={value as string}
         />
         {/* <FaLink className="absolute top-1/2 right-2 transform -translate-y-1/2 h-8 w-8 text-primaryColor hover:bg-slate-100 transition-all hover:rounded-xl p-2" /> */}
@@ -89,6 +103,13 @@ export const FormFields = {
           placeholder="Add content to describe yourself"
           col={6}
           onChange={onChange}
+          className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         />
       )}
 
@@ -99,27 +120,52 @@ export const FormFields = {
   ),
 
   increment: ({ value, handleIncrement, props }: FormFieldProps) => (
-    <div className="flex flex-col items-center space-y-4 w-full">
+    <div className="flex flex-col items-center space-y-4 w-full mb-2">
       <div className="flex items-center border border-gray-300 rounded-xl w-full">
         {/* - Button */}
         <button
           type="button"
-          className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl"
+          className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-l-xl border-r text-2xl disabled:opacity-50 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           style={{ borderRight: 'none' }}
-          onClick={() => handleIncrement(-1)}
+          onClick={() => {
+            const currentValue =
+              typeof value === 'number'
+                ? value
+                : typeof value === 'string'
+                  ? parseInt(value || '0', 10)
+                  : 0;
+            if (!isNaN(currentValue) && currentValue > 0) {
+              handleIncrement(-1);
+            }
+          }}
+          disabled={isNaN(Number(value)) || Number(value) <= 0}
         >
           <div className="hover:bg-gray-100 px-2 rounded-full">−</div>
         </button>
 
         {/* Input Display */}
-        <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg">
-          {typeof value === 'number' || typeof value === 'string' ? value : ''}
+        <div className="w-full h-12 flex justify-center items-center border-x border-gray-300 text-lg ">
+          {typeof value === 'number' || typeof value === 'string'
+            ? Math.max(0, Number(value))
+            : '0'}
         </div>
 
         {/* + Button */}
         <button
           type="button"
-          className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl"
+          className="w-16 h-12 flex justify-center items-center text-primaryColor rounded-r-xl text-2xl focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
           style={{ borderLeft: 'none' }}
           onClick={() => handleIncrement(1)}
         >
@@ -241,7 +287,13 @@ export const FormFields = {
                   setExistingAttachment(null);
                   onChange?.({ target: { value: '', name } } as any);
                 }}
-                className="text-red-500 hover:text-red-700 text-sm"
+                className="text-red-500 hover:text-red-700 text-sm focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                 title="Remove video"
               >
                 ✕
