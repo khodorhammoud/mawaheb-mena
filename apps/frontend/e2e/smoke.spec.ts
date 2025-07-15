@@ -22,7 +22,7 @@ test('basic smoke test', async ({ page }, testInfo) => {
     await page.locator('button.focus\\:outline-none').click();
 
     // ✅ COMPONENT CALLED: <Header />
-    //   → contains burger <button> with class `focus:outline-none`
+    //   → contains burger <button> with class `focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus:ring-0 focus:border-none focus-visible:border-none focus-visible:ring-offset-0`
     //   → clicking it toggles mobile <nav class="overflow-hidden md:hidden">
 
     // 📝 verify the mobile <nav> is visible after clicking burger

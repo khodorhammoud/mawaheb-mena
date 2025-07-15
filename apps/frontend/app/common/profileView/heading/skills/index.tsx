@@ -54,7 +54,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
       const mappedSkills = profile.skills.map(skill => ({
         skillId: skill.skillId,
         label: skill.label,
-        yearsOfExperience: skill.yearsOfExperience || 0,
+        yearsOfExperience: skill.yearsOfExperience || 1,
         isStarred: skill.isStarred || false,
       }));
 
@@ -83,7 +83,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
       return {
         skillId: skill.id,
         label: skill.label,
-        yearsOfExperience: existingSkill?.yearsOfExperience || 0,
+        yearsOfExperience: existingSkill?.yearsOfExperience || 1,
         isStarred: existingSkill?.isStarred || false,
       };
     });
@@ -105,7 +105,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
   };
 
   const handleYearsChange = (skillId: number, years: number) => {
-    if (years < 0 || years > 50) return;
+    if (years < 1 || years > 50) return;
     setFreelancerSkills(prev =>
       prev.map(skill =>
         skill.skillId === skillId ? { ...skill, yearsOfExperience: years } : skill
@@ -173,14 +173,29 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
           {canEdit && (
             <Dialog open={skillsDialogOpen} onOpenChange={handleSkillDialogChange}>
               <DialogTrigger asChild>
-                <Button variant="link">
+                <Button
+                  className="focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
+                  variant="link"
+                >
                   <IoPencilSharp className="lg:relative absolute lg:left-0 left-10 xl:h-7 h-6 xl:w-7 w-6 text-primaryColor hover:bg-gray-200 transition-all rounded-full p-1" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-white lg:w-[500px] w-[300px] max-h-[90vh]">
                 {/* <button
                   onClick={() => handleSkillDialogChange(false)}
-                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
                 > */}
                 {/* <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -227,7 +242,9 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                 </div>
 
                 <div className="border-t border-gray-300 my-6 ml-2 mr-6"></div>
-                <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">Choosed Skills:</p>
+                <p className="-mt-1 ml-1 mb-3 font-semibold text-sm">
+                  Start and Set years of experience:
+                </p>
 
                 <div className="flex flex-wrap gap-y-4 gap-x-4">
                   {freelancerSkills.map(skill => (
@@ -255,7 +272,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
-                                Math.max(0, (skill.yearsOfExperience || 0) - 1)
+                                Math.max(0, (skill.yearsOfExperience || 1) - 1)
                               )
                             }
                           >
@@ -268,7 +285,7 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                             onClick={() =>
                               handleYearsChange(
                                 skill.skillId,
-                                Math.min(50, (skill.yearsOfExperience || 0) + 1)
+                                Math.min(50, (skill.yearsOfExperience || 1) + 1)
                               )
                             }
                           >
@@ -284,7 +301,13 @@ export default function Skills({ profile, canEdit = true }: SkillsProps) {
                   <Button
                     onClick={handleSubmit}
                     disabled={skillsFetcher.state === 'submitting'}
-                    className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor"
+                    className="text-white lg:py-4 py-3 lg:px-10 px-6 rounded-xl bg-primaryColor font-medium hover:bg-primaryColor focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   >
                     Save
                   </Button>

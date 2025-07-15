@@ -1,4 +1,4 @@
-import { eq, aliasedTable, and, desc, sql, count } from 'drizzle-orm';
+import { eq, aliasedTable, and, desc, sql, count, inArray } from 'drizzle-orm';
 import { db } from '@mawaheb/db/server';
 import {
   accountsTable,
@@ -10,6 +10,8 @@ import {
   jobCategoriesTable,
   skillsTable,
   jobSkillsTable,
+  userIdentificationsTable,
+  attachmentsTable,
 } from '@mawaheb/db';
 import { AccountType, AccountStatus, JobApplicationStatus, JobStatus } from '@mawaheb/db/enums';
 import type { Account } from '~/common/admin-pages/tables/AccountsTable';
@@ -70,13 +72,18 @@ export async function getFreelancerAccounts(): Promise<Account[]> {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(accountsTable.accountType, AccountType.Freelancer));
 
-  return data.map(row => ({
-    id: row.id,
-    account: {
-      user: row.user,
-      accountStatus: row.account?.accountStatus as AccountStatus,
-    },
-  }));
+  return data.map(row => {
+    const status = row.account?.accountStatus as AccountStatus;
+
+    return {
+      id: row.id,
+      account: {
+        user: row.user,
+        accountStatus: status,
+        kycSubmitted: status === AccountStatus.Pending || status === AccountStatus.Published,
+      },
+    };
+  });
 }
 
 // Get all employer accounts
@@ -98,13 +105,18 @@ export async function getEmployerAccounts(): Promise<Account[]> {
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
     .where(eq(accountsTable.accountType, AccountType.Employer));
 
-  return data.map(row => ({
-    id: row.id,
-    account: {
-      user: row.user,
-      accountStatus: row.account?.accountStatus as AccountStatus,
-    },
-  }));
+  return data.map(row => {
+    const status = row.account?.accountStatus as AccountStatus;
+
+    return {
+      id: row.id,
+      account: {
+        user: row.user,
+        accountStatus: status,
+        kycSubmitted: status === AccountStatus.Pending || status === AccountStatus.Published, // ✅ logic here
+      },
+    };
+  });
 }
 
 // Get applications with filters
@@ -256,6 +268,7 @@ export async function getApplications(params: {
 
 // Get employer details with jobs and application counts
 export async function getEmployerDetails(employerId: string) {
+  // Step 1: Get base employer + account + user info
   const employerDetails = await db
     .select({
       employer: employersTable,
@@ -267,11 +280,48 @@ export async function getEmployerDetails(employerId: string) {
     .leftJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
     .leftJoin(UsersTable, eq(accountsTable.userId, UsersTable.id));
 
-  if (employerDetails.length === 0) {
-    return null;
+  if (employerDetails.length === 0) return null;
+
+  const { employer, account, user } = employerDetails[0];
+
+  // Step 2: Get user_identifications entry
+  const identRow = await db
+    .select()
+    .from(userIdentificationsTable)
+    .where(eq(userIdentificationsTable.userId, user.id))
+    .limit(1);
+
+  const attachmentsMap = identRow[0]?.attachments ?? {}; // jsonb object
+  const attachmentIds: number[] = Object.values(attachmentsMap).flat();
+
+  let fetchedAttachments: { [type: string]: any } = {};
+
+  if (attachmentIds.length > 0) {
+    const attachments = await db
+      .select()
+      .from(attachmentsTable)
+      .where(inArray(attachmentsTable.id, attachmentIds));
+
+    interface AttachmentMetadata {
+      name?: string;
+      storage?: { key?: string };
+    }
+
+    for (const [docType, ids] of Object.entries(attachmentsMap)) {
+      fetchedAttachments[docType] = attachments
+        .filter(att => ids.includes(att.id))
+        .map(att => {
+          const metadata = att.metadata as AttachmentMetadata;
+          return {
+            id: att.id,
+            key: att.key,
+            name: metadata?.name || null,
+          };
+        });
+    }
   }
 
-  // Get all jobs
+  // Step 3: Get employer jobs + counts
   const jobs = await db
     .select({
       id: jobsTable.id,
@@ -283,7 +333,6 @@ export async function getEmployerDetails(employerId: string) {
     .from(jobsTable)
     .where(eq(jobsTable.employerId, parseInt(employerId)));
 
-  // Get application counts for each job
   const applicationCounts = await Promise.all(
     jobs.map(async job => {
       const result = await db
@@ -299,9 +348,10 @@ export async function getEmployerDetails(employerId: string) {
   );
 
   return {
-    employer: employerDetails[0],
+    employer: { employer, account, user },
     jobs: applicationCounts,
     jobCount: jobs.length,
+    kycDocuments: fetchedAttachments,
   };
 }
 
@@ -510,7 +560,52 @@ export async function getFreelancerDetails(freelancerId: number) {
   if (details.length === 0) {
     return null;
   }
-  return details[0]; // Return the joined row
+
+  const { freelancer, account, user } = details[0];
+
+  // ✅ Step 2: Fetch user_identifications row
+  const identRow = await db
+    .select()
+    .from(userIdentificationsTable)
+    .where(eq(userIdentificationsTable.userId, user.id))
+    .limit(1);
+
+  const attachmentsMap =
+    identRow.length > 0 && identRow[0].attachments ? identRow[0].attachments : {};
+
+  // ✅ Step 3: Collect all attachment IDs
+  const attachmentIds: number[] = Object.values(attachmentsMap).flat();
+
+  let fetchedAttachments: { [type: string]: any } = {};
+
+  if (attachmentIds.length > 0) {
+    const attachments = await db
+      .select()
+      .from(attachmentsTable)
+      .where(inArray(attachmentsTable.id, attachmentIds));
+
+    // ✅ Step 4: Group by document type (like identification, trade_license)
+    for (const [docType, ids] of Object.entries(attachmentsMap)) {
+      fetchedAttachments[docType] = attachments
+        .filter(att => ids.includes(att.id))
+        .map(att => ({
+          id: att.id,
+          key: att.key,
+          name: (att.metadata as { name?: string })?.name || null,
+        }));
+    }
+  }
+
+  // console.log('attachmentsMap:', attachmentsMap);
+  // console.log('attachmentIds:', attachmentIds);
+  // console.log('fetchedAttachments:', fetchedAttachments);
+
+  return {
+    freelancer,
+    account,
+    user,
+    kycDocuments: fetchedAttachments, // ✅ Add this for use in admin view
+  };
 }
 
 /**

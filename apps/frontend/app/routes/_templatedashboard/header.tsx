@@ -13,6 +13,14 @@ import Availability from '~/common/profileView/availability-form/availability';
 import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
+import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+  MenubarContent,
+  MenubarItem,
+  MenubarSeparator,
+} from '~/components/ui/menubar';
 
 interface Notification {
   id: number;
@@ -119,36 +127,159 @@ export default function Header() {
         </div>
 
         <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
-          {/* Conditionally render the "Post Job" button */}
+          {/* Render "Post Job" button if the user is NOT a freelancer and not currently on the "new job" page */}
           {accountType !== AccountType.Freelancer && location.pathname !== '/new-job' && (
             <Link
               to="/new-job"
               onClick={handlePostJobClick}
-              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap"
+              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
             >
               Post Job
             </Link>
           )}
 
-          {/* Icons rendered, if NOT Onboarded */}
+          {/* Render right-side icons IF user is onboarded (has completed onboarding) */}
           {isOnboarded && (
-            <div className="flex lg:gap-6 gap-1">
-              {/* 🔔 */}
+            <div className="flex lg:gap-6 gap-1 items-center">
+              {/* Notification Bell with user's notifications */}
               <NotificationBell
                 notifications={processedNotifications}
                 onNotificationClick={handleNotificationClick}
               />
 
-              {/* Freelancer Icon :) */}
-              {accountType === AccountType.Freelancer && (
-                // 🕛
-                <BsClockHistory
-                  className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer"
-                  onClick={openDialog}
-                />
+              {/* 
+        Render Freelancer Availability icon ONLY if user is a Freelancer AND account is Published 
+      */}
+              {accountType === AccountType.Freelancer &&
+                accountStatus === AccountStatus.Published && (
+                  // Availability Icon (opens dialog)
+                  <BsClockHistory
+                    className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer"
+                    onClick={openDialog}
+                  />
+                )}
+
+              {/* 
+        Menubar (Profile + Logout) ONLY if account is Published 
+      */}
+              {accountStatus === AccountStatus.Published && (
+                <Menubar className="bg-transparent border-none shadow-none">
+                  <MenubarMenu>
+                    <MenubarTrigger asChild>
+                      <button
+                        type="button"
+                        className="
+                  inline-flex items-center justify-center
+                  p-0 m-0 border-0
+                  bg-transparent
+                  focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
+                  rounded-full -ml-4
+                "
+                      >
+                        <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
+                      </button>
+                    </MenubarTrigger>
+                    <MenubarContent align="end" className="w-48">
+                      {/* Go to Profile Settings */}
+                      <MenubarItem onClick={() => navigate('/settings')}>
+                        Profile Settings
+                      </MenubarItem>
+                      <MenubarSeparator />
+                      {/* Logout Button */}
+                      <MenubarItem
+                        onClick={async () => {
+                          await fetch('auth/logout', { method: 'POST' });
+                          window.location.href = '/';
+                        }}
+                        className="text-red-600"
+                      >
+                        Logout
+                      </MenubarItem>
+                    </MenubarContent>
+                  </MenubarMenu>
+                </Menubar>
               )}
-              {/* 🧑‍🏫 */}
-              <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2" />
+
+              {/* 
+        Menubar (Logout only) if account is Pending or Draft
+        (this prevents access to profile settings, but allows logout)
+      */}
+              {(accountStatus === AccountStatus.Pending ||
+                accountStatus === AccountStatus.Draft) && (
+                <Menubar className="bg-transparent border-none shadow-none">
+                  <MenubarMenu>
+                    <MenubarTrigger asChild>
+                      <button
+                        type="button"
+                        className="
+                  inline-flex items-center justify-center
+                  p-0 m-0 border-0
+                  bg-transparent
+                  focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
+                  rounded-full -ml-4
+                "
+                      >
+                        <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
+                      </button>
+                    </MenubarTrigger>
+                    <MenubarContent align="end" className="w-48">
+                      {/* Logout Button Only */}
+                      <MenubarItem
+                        onClick={async () => {
+                          await fetch('auth/logout', { method: 'POST' });
+                          window.location.href = '/';
+                        }}
+                        className="text-red-600"
+                      >
+                        Logout
+                      </MenubarItem>
+                    </MenubarContent>
+                  </MenubarMenu>
+                </Menubar>
+              )}
+            </div>
+          )}
+
+          {/* If user is NOT onboarded, show a minimal menubar with logout only */}
+          {!isOnboarded && (
+            <div>
+              {/* Menubar (Logout only, minimal state) */}
+              <Menubar className="bg-transparent border-none shadow-none">
+                <MenubarMenu>
+                  <MenubarTrigger asChild>
+                    <button
+                      type="button"
+                      className="
+                inline-flex items-center justify-center
+                p-0 m-0 border-0
+                bg-transparent
+                focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
+                rounded-full -ml-4
+              "
+                    >
+                      <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
+                    </button>
+                  </MenubarTrigger>
+                  <MenubarContent align="end" className="w-48">
+                    {/* Logout Button Only */}
+                    <MenubarItem
+                      onClick={async () => {
+                        await fetch('auth/logout', { method: 'POST' });
+                        window.location.href = '/';
+                      }}
+                      className="text-red-600"
+                    >
+                      Logout
+                    </MenubarItem>
+                  </MenubarContent>
+                </MenubarMenu>
+              </Menubar>
             </div>
           )}
         </div>

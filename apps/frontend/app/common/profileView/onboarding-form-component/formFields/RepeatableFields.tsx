@@ -192,11 +192,17 @@ const RepeatableFields = ({
                   onClick={() => {
                     onToggleExpand(expandedIndex === index ? null : index);
                   }}
-                  className={`border rounded-xl not-active-gradient flex-1 ${
-                    expandedIndex === index
-                      ? 'bg-primaryColor text-white'
-                      : 'text-primaryColor border-primaryColor hover:text-white'
-                  }`}
+                  className={`border rounded-xl not-active-gradient flex-1 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0 ${
+      expandedIndex === index
+        ? 'bg-primaryColor text-white'
+        : 'text-primaryColor border-primaryColor hover:text-white'
+    }`}
                 >
                   {expandedIndex === index ? 'Collapse' : 'Expand'} Form {index + 1}
                 </Button>
@@ -208,7 +214,13 @@ const RepeatableFields = ({
                   onClick={() => {
                     handleRemoveField(index);
                   }}
-                  className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white shrink-0"
+                  className="border-red-500 text-red-500 rounded-xl not-active-gradient-red hover:text-white shrink-0 focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
                   disabled={isSubmitting}
                 >
                   Remove
@@ -240,7 +252,13 @@ const RepeatableFields = ({
         onClick={() => {
           handleAddField();
         }}
-        className="not-active-gradient-black rounded-xl hover:text-white w-full"
+        className="not-active-gradient-black rounded-xl hover:text-white w-full focus:outline-none
+    focus-visible:ring-0
+    focus-visible:outline-none
+    focus:ring-0
+    focus:border-none
+    focus-visible:border-none
+    focus-visible:ring-offset-0"
         disabled={isSubmitting}
       >
         + Add Field
