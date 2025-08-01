@@ -128,21 +128,23 @@ export default function Header() {
 
         <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:ml-2 sm:mr-4 mr-2">
           {/* Render "Post Job" button if the user is NOT a freelancer and not currently on the "new job" page */}
-          {accountType !== AccountType.Freelancer && location.pathname !== '/new-job' && (
-            <Link
-              to="/new-job"
-              onClick={handlePostJobClick}
-              className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap focus:outline-none
+          {accountType !== AccountType.Freelancer &&
+            location.pathname !== '/new-job' &&
+            accountStatus === AccountStatus.Published && (
+              <Link
+                to="/new-job"
+                onClick={handlePostJobClick}
+                className="bg-primaryColor rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 gradient-box not-active-gradient w-fit whitespace-nowrap focus:outline-none
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
     focus:border-none
     focus-visible:border-none
     focus-visible:ring-offset-0"
-            >
-              Post Job
-            </Link>
-          )}
+              >
+                Post Job
+              </Link>
+            )}
 
           {/* Render right-side icons IF user is onboarded (has completed onboarding) */}
           {isOnboarded && (
