@@ -1,17 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { data, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { Badge } from '../../../components/ui/badge';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../components/ui/popover';
 import { FaStar, FaRegStar } from 'react-icons/fa';
-import { Input } from '../../../components/ui/input';
 import { Skill } from '@mawaheb/db/types';
-import {
-  Command,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandEmpty,
-} from '../../../components/ui/command';
+import { Command, CommandInput, CommandItem, CommandList } from '../../../components/ui/command';
 
 interface RequiredSkillsProps {
   selectedSkills: Skill[];
@@ -51,14 +44,14 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
       return;
     }
     setSearchLoading(true);
-    const timeout = setTimeout(() => {
-      fetch(`/api/skills-search?q=${encodeURIComponent(searchTerm)}`)
-        .then(res => res.json())
-        .then(data => {
-          setSearchResults(Array.isArray(data.skills) ? data.skills : []);
-          setSearchLoading(false);
-        })
-        .catch(() => setSearchLoading(false));
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/skills-search?q=${encodeURIComponent(searchTerm)}`);
+        const data = await res.json();
+        setSearchResults(Array.isArray(data.skills) ? data.skills : []);
+      } finally {
+        setSearchLoading(false);
+      }
     }, 250);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line
@@ -84,7 +77,6 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     }
     setSearchTerm('');
     setSearchResults([]);
-    // setOpen(false);
   };
 
   useEffect(() => {
@@ -145,7 +137,6 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
           {selectedSkills.length > 0 ? (
             renderSelectedSkillsInInput()
           ) : (
-            // --- Replace Input with nothing; typing is in combobox now
             <div className="w-full min-h-[38px] px-2 flex items-center text-slate-500 text-base">
               Required Skills
             </div>
@@ -162,7 +153,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
         className="p-0 bg-white shadow-xl rounded-xl"
       >
         <div className="p-8 pt-6 pb-4">
-          <p className="text-lg mb-6 font-semibold">Popular skills for Design</p>
+          <p className="text-lg mb-6 font-semibold">Select your skills</p>
 
           {/* selected skills */}
           <div className="flex flex-col flex-wrap gap-y-3 gap-x-2 mt-4">
@@ -215,54 +206,78 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
               className=""
             />
             <CommandList>
-              {searchLoading && <div className="px-4 py-2 text-sm text-gray-400">Searching…</div>}
-              {/* Show async search results */}
-              {searchTerm && !searchLoading ? (
-                searchResults.length > 0 ? (
-                  searchResults
-                    .filter(skill => !selectedSkills.some(s => s.name === skill.name))
-                    .map(skill => (
-                      <CommandItem
-                        key={skill.name}
-                        onSelect={() => handleSelectSkill(skill)}
-                        className="cursor-pointer"
-                      >
-                        {skill.name}
-                      </CommandItem>
-                    ))
+              {searchLoading ? (
+                searchTerm.trim() ? (
+                  <div className="px-4 py-2 text-sm text-gray-400">Searching…</div>
                 ) : (
-                  <CommandEmpty>
-                    <button
-                      className="px-4 py-2 bg-primary text-white rounded-md mt-2 hover:bg-primary/80 transition"
-                      onMouseDown={async e => {
-                        e.preventDefault();
-                        if (!searchTerm.trim()) return;
-                        setSearchLoading(true);
-                        const res = await fetch('/api/skills-add', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ name: searchTerm.trim() }),
-                        });
-                        const data = await res.json();
-                        setSearchLoading(false);
-
-                        if (data.skill) {
-                          onChange([...selectedSkills, data.skill]);
-                          setSearchTerm('');
-                          setSearchResults([]);
-                          // setOpen(false);
-
-                          setSkills(prev => [...prev, data.skill]); // ✅ This is what keeps your skills list in sync!
-                        } else {
-                          alert(data.error || 'Failed to add skill');
-                        }
-                      }}
-                    >
-                      + Add “{searchTerm.trim()}” as a new skill
-                    </button>
-                  </CommandEmpty>
+                  <div className="px-4 py-2 text-sm text-gray-400">Type to search…</div>
                 )
               ) : null}
+
+              {/* Show async search results */}
+              {searchTerm &&
+                !searchLoading &&
+                (() => {
+                  const filteredResults = searchResults.filter(
+                    skill => !selectedSkills.some(s => s.name === skill.name)
+                  );
+                  const isExactMatch = skills.some(
+                    skill => skill.name.toLowerCase() === searchTerm.trim().toLowerCase()
+                  );
+
+                  return (
+                    <>
+                      {/* 1. Render Add button **after** suggestions */}
+                      {!isExactMatch && (
+                        <div className="mx-2 mt-2">
+                          <button
+                            className="w-fit px-3 py-2 bg-primaryColor text-white rounded-lg hover:bg-primaryColor/90 transition text-sm"
+                            onMouseDown={async e => {
+                              e.preventDefault();
+                              if (!searchTerm.trim()) return;
+
+                              setSearchLoading(true);
+                              try {
+                                const res = await fetch('/api/skills-add', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ name: searchTerm.trim() }),
+                                });
+                                const data = await res.json();
+
+                                if (data.skill) {
+                                  onChange([...selectedSkills, data.skill]);
+                                  setSearchTerm('');
+                                  setSearchResults([]);
+                                  setSkills(prev => [...prev, data.skill]);
+                                } else {
+                                  alert(data.error || 'Skill already exists!');
+                                }
+                              } finally {
+                                setSearchLoading(false);
+                              }
+                            }}
+                          >
+                            + Add “{searchTerm.trim()}” as a new skill
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="border-t mt-2"></div>
+
+                      {/* 2. Render filtered results first */}
+                      {filteredResults.map(skill => (
+                        <CommandItem
+                          key={skill.name}
+                          onSelect={() => handleSelectSkill(skill)}
+                          className="cursor-pointer"
+                        >
+                          {skill.name}
+                        </CommandItem>
+                      ))}
+                    </>
+                  );
+                })()}
             </CommandList>
           </Command>
           {/* ---- End ComboBox Search ---- */}
@@ -280,6 +295,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
               <div className="flex flex-wrap gap-y-3 gap-x-2 mb-6 mt-5">
                 {skills
                   .filter(skill => !selectedSkills.some(s => s.name === skill.name))
+                  .slice(0, 15) // <-- Only show first 15
                   .map(skill => (
                     <Badge
                       key={skill.name}
@@ -290,6 +306,12 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
                     </Badge>
                   ))}
               </div>
+              {/* Optional: show a "Show more..." indicator if you want */}
+              {skills.length > 15 && !searchTerm && (
+                <div className="text-xs text-gray-500 ml-2 mb-2">
+                  Showing 15 of {skills.length} skills
+                </div>
+              )}
             </div>
           )}
 
