@@ -29,13 +29,11 @@ export default function Applicants({ freelancers, accountBio, status }: Applican
           const application = jobData.applications.find(app => app.freelancerId === freelancer.id);
 
           return (
-            <div
-              key={freelancer.id}
-              className="grid grid-rows-[2fr_1fr] bg-white border rounded-xl shadow-xl p-4 mb-8"
-            >
+            <div key={freelancer.id} className="bg-white border rounded-xl shadow-xl p-4 mb-8">
               <div className="mt-8 lg:mx-7 mx-4">
-                <div className="md:flex grid sm:grid-cols-2 grid-cols-1 xl:gap-6 sm:gap-4 gap-8 justify-between">
-                  <div className="">
+                <div className="grid xl:grid-cols-[1fr_6fr_1fr] lg:grid-cols-[2fr_6fr_1fr] grid-cols-1 justify-between gap-4">
+                  {/* Image */}
+                  <div className="flex justify-between">
                     <img
                       src={
                         freelancer.email
@@ -43,29 +41,38 @@ export default function Applicants({ freelancers, accountBio, status }: Applican
                           : 'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg'
                       }
                       alt="profile"
-                      className="h-24 w-auto rounded-xl"
+                      className="md:h-24 h-16 w-auto rounded-xl"
                     />
+                    <div className="lg:hidden block">
+                      <StatusDropdown
+                        currentStatus={application?.status ?? status}
+                        applicationId={application?.id}
+                      />
+                    </div>
                   </div>
 
-                  <div className="lg:w-[40%] md:w-[30%]">
-                    <h2 className="tracking-wide mb-4  inline-block transition-transform duration-300 p-0">
+                  {/* Freelancer + Description */}
+                  <div className="">
+                    <h2 className="tracking-wide inline-block transition-transform duration-300 p-0">
                       <button
-                        className="text-xl font-semibold hover:underline"
+                        className="xl:text-xl sm:text-lg text-base leading-tight cursor-pointer hover:underline inline-block transition-transform duration-300"
                         onClick={() => handleApplicantClick(freelancer)}
                       >
                         {freelancer.firstName ?? 'Unknown'}{' '}
                         {freelancer.lastName?.charAt(0).toUpperCase() ?? ''}.
                       </button>
                     </h2>
-                    <p className="mb-4 text-sm text-gray-400">Invitation sent</p>
+                    <p className="mb-6 lg:text-sm text-xs text-gray-400">Invitation sent</p>
                     <div
-                      className="text-sm leading-6 mb-6"
+                      className="lg:text-sm text-xs leading-6 mb-6"
                       dangerouslySetInnerHTML={{
                         __html: freelancer.about || 'No description available',
                       }}
                     ></div>
                   </div>
-                  <div>
+
+                  {/* Status Button */}
+                  <div className="lg:block hidden">
                     <StatusDropdown
                       currentStatus={application?.status ?? status}
                       applicationId={application?.id}
@@ -73,6 +80,7 @@ export default function Applicants({ freelancers, accountBio, status }: Applican
                   </div>
                 </div>
               </div>
+
               {selectedFreelancer && (
                 <ApplicantSheet
                   isOpen={isSheetOpen}
@@ -82,23 +90,23 @@ export default function Applicants({ freelancers, accountBio, status }: Applican
               )}
 
               {/* Timeline Section */}
-              <div className="mx-7">
-                <div className="lg:flex grid grid-cols-2 gap-y-4 lg:justify-between">
-                  <div className="flex flex-col items-center">
-                    <p className="mb-1 text-sm text-gray-400">Invitation sent</p>
-                    <p className="">date 1</p>
+              <div className="lg:mx-7 mx-4 mt-4">
+                <div className="md:flex md:justify-between grid grid-cols-2 gap-y-4">
+                  <div className="flex flex-col">
+                    <p className="text-gray-400 lg:text-sm text-xs">Invitation sent</p>
+                    <p className="lg:text-base text-sm">date 1</p>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <p className="mb-1 text-sm text-gray-400">Invitation accepted</p>
-                    <p className="">date 2</p>
+                  <div className="flex flex-col">
+                    <p className="text-gray-400 lg:text-sm text-xs">Invitation accepted</p>
+                    <p className="lg:text-base text-sm">date 2</p>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <p className="mb-1 text-sm text-gray-400">Interview booked</p>
-                    <p className="">date 3</p>
+                  <div className="flex flex-col">
+                    <p className="text-gray-400 lg:text-sm text-xs">Interview booked</p>
+                    <p className="lg:text-base text-sm">date 3</p>
                   </div>
-                  <div className="lg:mr-5 flex flex-col items-center">
-                    <p className="mb-1 text-sm text-gray-400">Interviewed</p>
-                    <p className="">date 4</p>
+                  <div className="lg:mr-5 flex flex-col">
+                    <p className="text-gray-400 lg:text-sm text-xs">Interviewed</p>
+                    <p className="lg:text-base text-sm">date 4</p>
                   </div>
                 </div>
               </div>

@@ -264,7 +264,7 @@ const Layout = () => {
       {/* BACKWARDS ICON */}
       <div className="mb-8 mt-4">
         <Link to="/manage-jobs">
-          <FaArrowLeft className="h-10 w-10 hover:bg-slate-100 transition-all hover:rounded-full p-2 text-primaryColor cursor-pointer" />
+          <FaArrowLeft className="lg:h-10 lg:w-10 h-8 w-8 hover:bg-slate-100 transition-all hover:rounded-full p-2 text-primaryColor cursor-pointer" />
         </Link>
       </div>
 
@@ -272,15 +272,15 @@ const Layout = () => {
       {jobData ? (
         <div>
           {/* Show JobDesignOne on md and larger screens */}
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <JobDesignOne data={jobData} status={jobData.job.status as JobStatus} />
           </div>
           {/* Show JobDesignTwo only on sm screens */}
-          <div className="hidden sm:block md:hidden">
+          <div className="hidden md:block lg:hidden">
             <JobDesignTwo data={jobData} status={jobData.job.status as JobStatus} />
           </div>
           {/* Show JobDesignThree on screens smaller than sm */}
-          <div className="block sm:hidden">
+          <div className="block md:hidden">
             <JobDesignThree data={jobData} status={jobData.job.status as JobStatus} />
           </div>
         </div>

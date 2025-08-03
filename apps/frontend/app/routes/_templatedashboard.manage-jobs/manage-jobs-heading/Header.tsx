@@ -50,20 +50,19 @@ export default function Header({
   return (
     <div className="flex items-center xl:gap-6 lg:gap-2 lg:justify-between relative">
       {/* Search */}
-      <div className="space-y-6 xl:-mt-4 -mt-2">
+      <div className="space-y-4 xl:-mt-4 -mt-2">
         <AppFormField
           id="search"
           name="search"
-          label="🔍 Hinted search text"
-          className=""
+          label="🔍 Hinted search"
           onChange={handleSearchChange}
         />
       </div>
 
       {/* Buttons - Hidden on Medium screens */}
-      <div className="lg:flex hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
+      <div className="xl:flex lg:grid lg:grid-cols-3 lg:gap-y-2 hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
         <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+          className={`rounded-xl xl:px-2 md:px-1 py-1 transition duration-300 not-active-gradient hover:text-white xl:text-sm text-xs ${
             activeFilter === JobStatus.Active
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'
@@ -73,7 +72,7 @@ export default function Header({
           Active Jobs
         </button>
         <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+          className={`rounded-xl xl:px-2 md:px-1 py-1 transition duration-300 not-active-gradient hover:text-white xl:text-sm text-xs ${
             activeFilter === JobStatus.Draft
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'
@@ -83,7 +82,7 @@ export default function Header({
           Drafted Jobs
         </button>
         <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+          className={`rounded-xl xl:px-2 md:px-1 py-1 transition duration-300 not-active-gradient hover:text-white xl:text-sm text-xs ${
             activeFilter === JobStatus.Paused
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'
@@ -93,7 +92,7 @@ export default function Header({
           Paused Jobs
         </button>
         <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+          className={`rounded-xl xl:px-2 md:px-1 py-1 transition duration-300 not-active-gradient hover:text-white xl:text-sm text-xs ${
             activeFilter === JobStatus.Closed
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'
@@ -103,7 +102,7 @@ export default function Header({
           Closed Jobs
         </button>
         <button
-          className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
+          className={`rounded-xl xl:px-2 md:px-1 py-1 transition duration-300 not-active-gradient hover:text-white xl:text-sm text-xs ${
             activeFilter === 'all'
               ? 'bg-primaryColor text-white'
               : 'bg-white text-primaryColor border border-primaryColor'

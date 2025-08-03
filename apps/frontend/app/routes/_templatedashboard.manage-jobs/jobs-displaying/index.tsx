@@ -107,7 +107,7 @@ export default function JobManagement({
         viewMode={viewMode} // <<< ADD THIS PROP!
       />
 
-      <p className="text-black text-sm mt-2 ml-1 mb-2">
+      <p className="text-black text-xs mt-2 ml-1 mb-2">
         <span>
           You have <span className="font-bold text-primaryColor text-base">{filteredTotal}</span>{' '}
           job
@@ -122,8 +122,8 @@ export default function JobManagement({
         ) : activeFilter === 'all' ? (
           sortedStatuses.length > 0 ? (
             sortedStatuses.map(status => (
-              <div key={status} className="lg:mt-10 md:mt-12 mt-16">
-                <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl ml-1">
+              <div key={status} className="xl:mt-10 lg:mt-8 mt-6">
+                <h2 className="font-semibold xl:mb-8 lg:mb-6 mb-4 xl:text-2xl lg:text-xl text-lg ml-1">
                   {capitalize(status)} Jobs
                 </h2>
                 <div className={getGridClass(viewMode)}>
@@ -139,7 +139,7 @@ export default function JobManagement({
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
+            <p className="text-center text-gray-500 py-8 xl:text-base text-sm">No jobs found.</p>
           )
         ) : (
           <div className="lg:mt-10 md:mt-12 mt-16">

@@ -44,12 +44,13 @@ export default function StatusDropdown({ currentStatus, applicationId }: StatusD
     <div className="relative inline-block" ref={dropdownRef}>
       <Button
         onClick={toggleDropdown}
-        className="border border-gray-300 rounded-xl px-4 py-2 text-sm xl:text-base bg-primaryColor hover:bg-primaryColor not-active-gradient"
+        className="!py-1 h-auto min-h-0 border border-gray-300 rounded-xl lg:text-sm text-xs bg-primaryColor hover:bg-primaryColor not-active-gradient"
       >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Button>
+
       {isOpen && (
-        <div className="absolute mt-2 bg-white border rounded shadow-lg z-10">
+        <div className="absolute mt-2 bg-white border rounded shadow-lg z-10 lg:text-sm text-xs">
           <ul>
             {Object.values(JobApplicationStatus).map(statusOption => (
               <li

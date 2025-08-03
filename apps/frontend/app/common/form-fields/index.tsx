@@ -202,7 +202,7 @@ const AppFormField = forwardRef<
                 id={id}
                 name={name}
                 placeholder={placeholder}
-                className={`peer mt-0 block w-full px-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-12 autofill-fix`}
+                className={`peer mt-0 block w-full pl-4 md:py-3 py-2 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 pr-6 autofill-fix`}
                 autoComplete="on"
                 spellCheck="false"
                 {...(value !== undefined
@@ -229,9 +229,9 @@ const AppFormField = forwardRef<
         {type === 'password' ? (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
-                peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
-                sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white transition-all transform -translate-y-1/2
+                peer-placeholder-shown:top-6 peer-placeholder-shown:left-5 peer-placeholder-shown:text-gray-500
+                md:peer-placeholder-shown:text-sm peer-placeholder-shown:text-xs
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
                 peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
           >
@@ -240,9 +240,9 @@ const AppFormField = forwardRef<
         ) : type === 'textarea' ? (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
-                peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
-                sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white transition-all transform -translate-y-1/2
+                peer-placeholder-shown:top-6 peer-placeholder-shown:left-5 peer-placeholder-shown:text-gray-500
+                md:peer-placeholder-shown:text-sm peer-placeholder-shown:text-xs
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
                 peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
           >
@@ -251,9 +251,9 @@ const AppFormField = forwardRef<
         ) : (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
-                  peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
-                  sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white transition-all transform -translate-y-2/3 md:-translate-y-1/2
+                  peer-placeholder-shown:top-6 peer-placeholder-shown:left-5 peer-placeholder-shown:text-gray-500
+                  md:peer-placeholder-shown:text-sm peer-placeholder-shown:text-xs
                   peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
                   peer:not(:placeholder-shown):top-0 peer:not(:placeholder-shown):left-4 peer:not(:placeholder-shown):text-primaryColor peer:not(:placeholder-shown):bg-white peer:not(:placeholder-shown):px-1"
           >

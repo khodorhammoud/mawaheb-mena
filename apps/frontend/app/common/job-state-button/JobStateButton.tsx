@@ -76,7 +76,7 @@ export default function JobStateButton({
     <DropdownMenu open={isDeactivated ? false : undefined}>
       <DropdownMenuTrigger asChild>
         <Button
-          className={`w-[106px] h-[36px] flex items-center justify-center rounded-xl text-sm ${
+          className={`flex items-center justify-center rounded-xl text-xs p-2 ${
             statusStyles[selectedStatus]
           } ${className} ${isDeactivated ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={e => {
@@ -92,10 +92,10 @@ export default function JobStateButton({
           }}
         >
           {/* Arrow icon */}
-          <FaChevronDown className="w-3 h-3 mr-2 text-white" />
+          <FaChevronDown className="w-2 h-2 mr-2 ml-1 text-white" />
 
           {/* Selected status */}
-          <div className="mr-1">
+          <div className="mr-1 text-xs">
             {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
           </div>
         </Button>

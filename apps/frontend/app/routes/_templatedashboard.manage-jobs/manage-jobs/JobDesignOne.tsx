@@ -28,15 +28,15 @@ export default function JobDesignOne({
 
   const formattedDate = parseDate(job.createdAt);
 
-  const applicantsPhotos = [
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-    'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg',
-  ];
-
   const interviewDates = ['2024-11-5', '2024-11-17', '2024-11-28'];
 
   // Check if the account is deactivated
   const isDeactivated = userAccountStatus === AccountStatus.Deactivated;
+
+  // You may need to adjust these status values to match your database/application logic
+  const applicantProfiles = data.applications; // All who applied
+  const interviewedProfiles = data.applications.filter(app => app.status === 'approved');
+  const hiredProfiles = data.applications.filter(app => app.status === 'approved'); // or 'hired', etc.
 
   return !data ? (
     <p>Job details are not available.</p>
@@ -44,7 +44,7 @@ export default function JobDesignOne({
     <div
       className={`grid bg-white border rounded-xl shadow-xl mb-10 ${
         status === JobStatus.Draft
-          ? 'grid-cols-[2fr_2fr_2fr_1fr] gap-6 p-10'
+          ? 'xl:grid-cols-[3fr_3fr_3fr_1fr] lg:grid-cols-[4fr_4fr_2fr_1fr] grid-cols-[2fr_6fr_2fr_1fr] lg:gap-6 gap-3 p-6'
           : `${
               status === JobStatus.Paused || status === JobStatus.Active
                 ? 'grid-cols-[3fr_1fr_2fr_1fr]'
@@ -57,28 +57,27 @@ export default function JobDesignOne({
         <>
           <div className="">
             {/* Column 1: Title, budget, experience */}
-            <h3 className="xl:text-2xl md:text-xl text-lg lg:mb-8 mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+            <h3 className="xl:text-xl lg:text-lg md:text-base text-sm leading-tight mb-1 cursor-pointer hover:underline inline-block transition-transform duration-300">
               <Link to={`/jobs/${job.id}`}>{job.title}</Link>
             </h3>
             <div className="flex xl:gap-10 lg:gap-8 gap-6 ">
               <div>
-                <p className="xl:text-xl lg:text-lg text-base">${job.budget}</p>
-                <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
+                <p className="mt-4 lg:text-lg md:text-sm text-xs leading-tight">${job.budget}</p>
+                <p className="text-gray-400 text-xs">Fixed price</p>
               </div>
               <div>
-                <p className="xl:text-xl lg:text-lg text-base">
+                <p className="mt-4 lg:text-lg md:text-sm text-xs leading-tight">
                   {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
                 </p>
-
-                <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
+                <p className="text-gray-400 text-xs">Experience level</p>
               </div>
             </div>
           </div>
 
-          <div className="xl:text-lg lg:text-base text-sm">
+          <div className="lg:text-lg md:text-base text-sm">
             <div className="">Description:</div>
             <ReadMore
-              className="lg:mt-6 mt-4 xl:text-lg lg:text-base text-sm"
+              className="xl:mt-6 mt-4 lg:text-base text-xs"
               html={job.description}
               wordsPerChunk={40}
             />
@@ -95,10 +94,10 @@ export default function JobDesignOne({
           </div>
 
           {/* Edit Button and JobStateButton */}
-          <div className="flex flex-col gap-4 space-x-2 items-end">
+          <div className="flex flex-col lg:gap-4 gap-2 items-end">
             <Link
               to={`/edit-job/${job.id}`}
-              className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+              className="px-2 h-7 bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
             >
               <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
               Edit
@@ -107,7 +106,7 @@ export default function JobDesignOne({
               status={status}
               onStatusChange={onStatusChange}
               jobId={job.id}
-              className="w-[106px] h-[36px]"
+              className="h-7"
               userAccountStatus={userAccountStatus}
             />
           </div>
@@ -117,35 +116,34 @@ export default function JobDesignOne({
       {/* All sections but without the Draft section */}
       {/* Left Section */}
       <div className={`mr-2 ${status === JobStatus.Draft ? 'hidden' : ''}`}>
-        <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+        <h3 className="xl:text-xl lg:text-lg md:text-base text-sm leading-tight mb-1 cursor-pointer hover:underline inline-block transition-transform duration-300">
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
 
-        <p className="xl:text-sm text-xs text-gray-400 lg:mb-8 mb-2">
+        <p className="text-xs text-gray-400 mb-4">
           Fixed price - {job.createdAt ? formatTimeAgo(job.createdAt) : 'N/A'}
         </p>
-        <div className="flex xl:gap-10 lg:gap-8 gap-6">
+        <div className="flex xl:gap-8 lg:gap-6 gap-4">
           <div>
-            <p className="xl:text-xl lg:text-lg text-base mt-4">${job.budget}</p>
-            <p className="text-gray-400 xl:text-sm text-xs">Fixed price</p>
+            <p className="mt-4 lg:text-lg md:text-sm text-xs leading-tight">${job.budget}</p>
+            <p className="text-gray-400 text-xs">Fixed price</p>
           </div>
           <div>
-            <p className="xl:text-xl lg:text-lg text-base mt-4">
+            <p className="mt-4 lg:text-lg md:text-sm text-xs leading-tight">
               {EXPERIENCE_LEVEL_LABELS[job.experienceLevel] || job.experienceLevel}
             </p>
-
-            <p className="text-gray-400 xl:text-sm text-xs">Experience level</p>
+            <p className="text-gray-400 text-xs">Experience level</p>
           </div>
         </div>
         {/* in that way, i remove the HTML tags */}
         <ReadMore
-          className="lg:mt-10 mt-6 xl:text-lg lg:text-base text-sm"
+          className="xl:mt-6 mt-4 xl:text-base lg:text-sm text-xs"
           html={job.description}
           wordsPerChunk={50}
         />
 
         {/* SKILLS */}
-        <div className="lg:mt-8 mt-4 xl:text-base text-sm">
+        <div className="lg:mt-8 mt-4">
           {job.requiredSkills &&
           Array.isArray(job.requiredSkills) &&
           job.requiredSkills.length > 0 ? (
@@ -161,24 +159,15 @@ export default function JobDesignOne({
         className={`flex flex-col gap-8 text-left ${status === JobStatus.Draft ? 'hidden' : ''}`}
       >
         {/* Applicants Section */}
-        <ProfilePhotosSection
-          label="Applicants"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
+        <ProfilePhotosSection label="Applicants" profiles={applicantProfiles} />
 
         {/* Interviewed Section */}
-        <ProfilePhotosSection
-          label="Interviewed"
-          images={applicantsPhotos}
-          profiles={data.applications}
-        />
+        <ProfilePhotosSection label="Interviewed" profiles={interviewedProfiles} />
 
         {/* Hired Section */}
         <ProfilePhotosSection
           label="Hired"
-          images={applicantsPhotos}
-          profiles={data.applications}
+          profiles={hiredProfiles}
           className={`${status === JobStatus.Active || status === JobStatus.Paused ? 'hidden' : ''}`}
         />
       </div>
@@ -194,7 +183,7 @@ export default function JobDesignOne({
             : 'lg:-mr-10'
         }`}
       >
-        <p className="font-semibold mb-4 xl:text-base text-sm">Pending Interviews: 3</p>
+        <p className="font-semibold mb-4 xl:text-sm text-xs">Pending Interviews: 3</p>
         <Calendar highlightedDates={interviewDates} />
       </div>
 
@@ -208,7 +197,7 @@ export default function JobDesignOne({
             status={status}
             onStatusChange={onStatusChange}
             jobId={job.id}
-            className="w-[106px] h-[36px]" // 👈 Now it matches the Edit button
+            className="h-7" // 👈 Now it matches the Edit button
             userAccountStatus={userAccountStatus}
           />
         )}
