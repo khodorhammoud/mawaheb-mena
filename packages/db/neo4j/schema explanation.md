@@ -1,0 +1,85 @@
+# 🔷 Node Categories (Hierarchy)
+1. Domain
+- Broad discipline of work
+- Examples: Technology, Healthcare, Education, Finance
+
+2. Field
+- A specific area within a domain
+- Examples: Software Engineering, Data Science, Network Administration
+
+3. Subfield / Role
+- More targeted work segment or role specialization
+- Examples: Backend Developer, DevOps Engineer, ML Engineer, Full Stack Developer
+
+4. Competency Group
+- Cluster of related skills or themes
+- Examples: API Design, Database Management, Testing, Security, Cloud Deployment
+
+5. Skill / Knowledge Unit
+- Individual skill
+- Examples: Node.js, REST API Design, PostgreSQL, Docker, OAuth2
+
+6. Tool / Technology
+- Tools used to implement a skill
+- Examples: Git, Docker, Kubernetes, Postman
+
+7. Certification / Credential
+- Validation mechanism
+- Examples: AWS Certified Developer, Docker Certified Associate
+
+8. Verification Method
+- How a skill is demonstrated
+- Examples: Project Use, Work History, Certification, Code Sample, Test Score
+
+9. Project / Experience Sample
+- Used to store real-life applied experience
+- Examples: "Inventory System for E-Commerce", "Built CI/CD pipeline"
+
+# 🔶 Edge Types (Relationships)
+
+| Edge Type             | From → To                              | Description                                 |
+|-----------------------|----------------------------------------|---------------------------------------------|
+| `PART_OF`             | Subfield → Field<br>Field → Domain      | Hierarchical containment                    |
+| `SPECIALIZATION_OF`   | Role → Subfield                         | Indicates a narrower specialization         |
+| `REQUIRES`            | Role/Subfield → Skill                   | Required skill for the subfield             |
+| `USES`                | Skill → Tool                            | Tools that support the skill                |
+| `COVERS`              | Certification → Skill                   | Cert validates one or more skills           |
+| `VERIFIES`            | Verification Method → Skill             | Method that validates skill mastery         |
+| `VALIDATED_BY`        | Skill → Verification Method             | Inverse of VERIFIES                         |
+| `BELONGS_TO_GROUP`    | Skill → Competency Group                | Skill classification                        |
+| `HAS_PROJECT`         | User → Project                          | Real-world application of skills            |
+| `PROJECT_USES`        | Project → Skill                         | Skills used in a project                    |
+| `PROJECT_VERIFIES`    | Project → Skill                         | Evidence for skill mastery                  |
+| `REQUIRES_CERT`       | Subfield → Certification                | Suggests certs for proving capability       |
+
+
+## JSON example:
+
+{
+  "nodes": [
+    { "id": "Technology", "type": "Domain" },
+    { "id": "Programming", "type": "Field" },
+    { "id": "Backend Development", "type": "Subfield" },
+    
+    { "id": "Node.js", "type": "Skill" },
+    { "id": "PostgreSQL", "type": "Skill" },
+    { "id": "System Design", "type": "Skill" },
+
+    { "id": "Docker", "type": "Tool" },
+    { "id": "Docker Certified Associate", "type": "Certification" },
+    { "id": "Project Use", "type": "Verification" }
+  ],
+  "edges": [
+    { "from": "Programming", "to": "Technology", "type": "PART_OF" },
+    { "from": "Backend Development", "to": "Programming", "type": "PART_OF" },
+
+    { "from": "Backend Development", "to": "Node.js", "type": "REQUIRES", "level": 3 },
+    { "from": "Backend Development", "to": "PostgreSQL", "type": "REQUIRES", "level": 3 },
+    { "from": "Backend Development", "to": "System Design", "type": "REQUIRES", "level": 4 },
+
+    { "from": "Backend Development", "to": "Docker", "type": "USES" },
+    { "from": "Docker", "to": "Docker Certified Associate", "type": "VERIFIED_BY" },
+
+    { "from": "Node.js", "to": "Project Use", "type": "CAN_BE_VERIFIED_BY" }
+  ]
+}

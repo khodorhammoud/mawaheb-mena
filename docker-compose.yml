@@ -77,19 +77,28 @@ services:
       retries: 3
       start_period: 10s
 
-  # neo4j:
-  #   image: neo4j:latest
-  #   volumes:
-  #     - ./apps/neo4j/db/logs:/logs
-  #     - ./apps/neo4j/db/config:/config
-  #     - ./apps/neo4j/db/data:/data
-  #     - ./apps/neo4j/db/plugins:/plugins
-  #   environment:
-  #     - NEO4J_AUTH=neo4j/password
-  #   ports:
-  #     - '7474:7474'
-  #     - '7687:7687'
-  #   restart: on-failure
+  neo4j:
+    image: neo4j:5.26.9-community
+    container_name: neo4j
+    volumes:
+      - ./apps/packages/db/neo4j/logs:/logs
+      - ./apps/packages/db/neo4j/config:/config
+      - ./apps/packages/db/neo4j/data:/data
+      - ./apps/packages/db/neo4j/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7474/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   redis:
     image: redis:latest

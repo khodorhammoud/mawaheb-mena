@@ -1,0 +1,113 @@
+services:
+  frontend-local:
+    build:
+      context: .
+      dockerfile: frontend.local.Dockerfile
+      target: dev
+    volumes:
+      - .:/app
+      - frontend_node_modules:/app/apps/frontend/node_modules
+      - db_node_modules:/app/packages/db/node_modules
+      - root_node_modules:/app/node_modules
+    ports:
+      - '5173:5173'
+    environment:
+      - NODE_ENV=development
+    networks:
+      - mawaheb-local-network
+    depends_on:
+      - cms-local
+      - backend-local
+      - redis-local
+
+  backend-local:
+    build:
+      context: .
+      dockerfile: backend.local.Dockerfile
+      target: dev
+    volumes:
+      - .:/app
+      - backend_node_modules:/app/apps/backend/node_modules
+      - db_node_modules:/app/packages/db/node_modules
+      - root_node_modules:/app/node_modules
+    command: pnpm run dev
+    ports:
+      - '3002:3002'
+    environment:
+      - NODE_ENV=development
+      - CMS_BASE_URL=http://cms-local:3000
+      - DATABASE_URL=postgresql://mawaheb_owner:cltE5b0qUgdv@ep-still-wind-a236960h.eu-central-1.aws.neon.tech/mawaheb?sslmode=require
+    networks:
+      - mawaheb-local-network
+    depends_on:
+      - redis-local
+      - neo4j-local
+
+  cms-local:
+    build:
+      context: .
+      dockerfile: cms.local.Dockerfile
+      target: dev
+    volumes:
+      - .:/app
+      - cms_node_modules:/app/apps/cms/node_modules
+      - db_node_modules:/app/packages/db/node_modules
+      - root_node_modules:/app/node_modules
+    command: pnpm run dev
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${PGUSER:-postgres}:${PGPASSWORD:-postgres}@db:5432/${PGDATABASE:-mawaheb}
+      - SESSION_SECRET=thisisthesessionsecretthatislongerthan32charactersandisveryniceee
+    networks:
+      - mawaheb-local-network
+
+  redis-local:
+    image: redis:latest
+    container_name: redis-local
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./volumes/redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - mawaheb-local-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  neo4j-local:
+    container_name: neo4j-local
+    image: neo4j:5.26.9-community
+    restart: unless-stopped
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-skillfolio}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - ./packages/db/neo4j/logs:/logs
+      - ./packages/db/neo4j/config:/config
+      - ./packages/db/neo4j/data:/data
+      - ./packages/db/neo4j/plugins:/plugins
+
+networks:
+  mawaheb-local-network:
+    driver: bridge
+
+volumes:
+  frontend_node_modules:
+  backend_node_modules:
+  cms_node_modules:
+  db_node_modules:
+  root_node_modules:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  redis_data:
