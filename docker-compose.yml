@@ -42,6 +42,7 @@ services:
       - FRONTEND_URL=http://frontend:5173
       - PORT=3002
       - HOST_URL=http://localhost:3002
+      - NEO4J_URL=bolt://neo4j:7687
     restart: unless-stopped
     networks:
       - app-network
