@@ -1,29 +1,34 @@
+# version: '3.9' # Defines the Compose file format version
+
 services:
+  # ------------------ FRONTEND SERVICE ------------------
   frontend:
+    # Optional build block (commented out because we're using a prebuilt image from Docker Hub)
     # build:
-    #   context: .
+    #   context: .               # The directory containing the Dockerfile
     #   dockerfile: frontend.Dockerfile
-    image: jasonjinkson/mawaheb-mena:frontend-latest
-    container_name: frontend
+    image: jasonjinkson/mawaheb-mena:frontend-latest # Prebuilt frontend image
+    container_name: frontend # Name of the container when running
     ports:
-      - '5173:5173'
+      - '5173:5173' # Map local port 5173 → container port 5173
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
-    restart: unless-stopped
+    restart: unless-stopped # Restart if stopped unless explicitly stopped by user
     networks:
-      - app-network
+      - app-network # Use the custom bridge network for communication with other services
     depends_on:
-      - cms
-      - backend
-      - redis
+      - cms # Wait for CMS service to start before starting frontend
+      - backend # Wait for backend
+      - redis # Wait for Redis
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health'] # Check frontend API health
+      interval: 30s # Run healthcheck every 30 seconds
+      timeout: 10s # Fail if no response within 10s
+      retries: 3 # Fail after 3 unsuccessful checks
+      start_period: 10s # Delay before starting checks
 
+  # ------------------ BACKEND SERVICE ------------------
   backend:
     # build:
     #   context: .
@@ -34,7 +39,7 @@ services:
       - '3002:3002'
     environment:
       - NODE_ENV=production
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis # Name of Redis service in Compose (Docker DNS resolves it)
       # - NODE_TLS_REJECT_UNAUTHORIZED=0
       - FRONTEND_URL=http://localhost:5173
       - PORT=3002
@@ -43,7 +48,7 @@ services:
     networks:
       - app-network
     depends_on:
-      - redis
+      - redis # Backend won't start before Redis
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3002/health/ || exit 1']
       interval: 30s
@@ -51,6 +56,7 @@ services:
       retries: 3
       start_period: 10s
 
+  # ------------------ CMS SERVICE ------------------
   cms:
     # build:
     #   context: .
@@ -86,14 +92,15 @@ services:
   #     - '7687:7687'
   #   restart: on-failure
 
+  # ------------------ REDIS SERVICE ------------------
   redis:
-    image: redis:latest
+    image: redis:latest # Official Redis image
     container_name: redis
     ports:
-      - '6379:6379'
+      - '6379:6379' # Redis default port
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - redis_data:/data # Persist Redis data
+    command: redis-server --appendonly yes # Enable persistence
     restart: unless-stopped
     networks:
       - app-network
@@ -104,11 +111,12 @@ services:
       retries: 3
       start_period: 5s
 
+# ------------------ NETWORKS ------------------
 networks:
   app-network:
-    driver: bridge
+    driver: bridge # Custom bridge network for service-to-service communication
 
+# ------------------ VOLUMES ------------------
 volumes:
   redis_data:
-    driver: local
-  # postgres-data:
+    driver: local # Store Redis data locally on host machine

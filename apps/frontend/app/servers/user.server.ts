@@ -356,6 +356,17 @@ export async function getCurrentUserAccountType(request: Request): Promise<Accou
 }
 
 /**
+ * get the current freelancer ID from the session
+ * @param request : the request object
+ * @returns number | null: the freelancer ID of the current user, or null if not a freelancer
+ */
+export async function getCurrentFreelancerId(request: Request): Promise<number | null> {
+  const currentUser = await getCurrentUser(request);
+  if (!currentUser) return null;
+  return await getFreelancerIdFromUserId(currentUser.id);
+}
+
+/**
  * Sets the user as verified in the database.
  * @param userId The user's id
  */

@@ -86,7 +86,7 @@ export const sidebarFreelancerNav = function (t: TFunction, accountStatus?: stri
   navItems.push(
     {
       label: t('dashboardFreelancerTimeSheetLable'),
-      href: '/timesheet',
+      href: '/updated-timesheets',
       icon: FaFileAlt,
     },
     {

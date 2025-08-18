@@ -155,7 +155,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     );
   });
 
-  // ✅ Group jobs based on Job Application Status (Completed Jobs - Applied Jobs - Active Jobs - Opportunity Closed)
+  // ✅ Group jobs based on Job Application Status and Job Status
   const groupedJobs = filteredJobs.reduce(
     (acc, job) => {
       // Default: "Applied" (in case no specific status is found)
@@ -165,11 +165,31 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       if (job.applicationStatus) {
         // Case 1: Application was approved (user was hired)
         if (job.applicationStatus.toLowerCase() === 'approved') {
-          // Was the job closed? If yes: completed; otherwise: active.
-          category = job.status === 'closed' ? 'Completed Jobs' : 'Active Jobs';
-        }
-        // Case 2: Application was rejected by employer
-        else if (job.applicationStatus.toLowerCase() === 'rejected') {
+          // Comprehensive categorization based on all job statuses
+          switch (job.status) {
+            case 'completed':
+              category = 'Completed Jobs';
+              break;
+            case 'closed':
+              category = 'Closed Jobs';
+              break;
+            case 'active':
+              category = 'Active Jobs';
+              break;
+            case 'paused':
+              category = 'Paused Jobs';
+              break;
+            case 'draft':
+              category = 'Draft Jobs';
+              break;
+            case 'deleted':
+              category = 'Deleted Jobs';
+              break;
+            default:
+              category = 'Unknown Status Jobs';
+              break;
+          }
+        } else if (job.applicationStatus.toLowerCase() === 'rejected') {
           category = 'Opportunity Closed';
         }
         // Case 3: Still in process (pending, shortlisted, etc.)
@@ -190,6 +210,18 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     {} as Record<string, Job[]>
   );
 
+  // ✅ Ensure proper category order - prioritizing most important categories
+  const categoryOrder = [
+    'Completed Jobs', // Most important - finished work
+    'Active Jobs', // Currently working on
+    'Paused Jobs', // Temporarily paused
+    'Applied', // Applications submitted
+    'Closed Jobs', // Jobs that were closed
+    'Draft Jobs', // Jobs in draft state
+    'Opportunity Closed', // Rejected applications
+    'Deleted Jobs', // Deleted jobs (should be rare)
+    'Unknown Status Jobs', // Fallback for any unexpected statuses
+  ];
   const sortedCategories = Object.keys(groupedJobs).sort((a, b) => {
     if (a === 'Active Jobs') return -1; // Always put 'Active Jobs' first
     if (b === 'Active Jobs') return 1; // Always put 'Active Jobs' first
@@ -253,19 +285,15 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       {/* Jobs Found */}
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          <span>
-            You have{' '}
-            <span className="font-bold text-primaryColor text-base">{filteredJobs.length}</span>
-            {' job'}
-            {filteredJobs.length === 1 ? '' : 's'} matching this filter
-            {typeof totalCount === 'number' && totalCount > 0 ? (
-              <>
-                {' out of '}
-                <span className="font-bold text-primaryColor text-base">{totalCount}</span> in total
-              </>
-            ) : null}
-            .
-          </span>
+          {totalCount > 0 && (
+            <>
+              <span className="font-bold text-primaryColor text-base">
+                {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+              </span>
+              {` out of `}
+              <span>{totalCount} total</span>
+            </>
+          )}
         </p>
       )}
 
@@ -273,18 +301,18 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
         // Real Jobs UI - Not the Dummy Jobs That Appear if The User Isn't Verified
         <section className="">
           {sortedCategories.length > 0 ? (
-            sortedCategories.map(status => (
-              <div key={status} className="mb-4">
-                <h2 className="font-semibold xl:text-3xl lg:text-2xl text-2xl ml-1 mb-6">
-                  {status}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
-                  {groupedJobs[status].map(job => (
-                    <JobCard key={job.id} onSelect={onJobSelect} job={job} />
-                  ))}
+            sortedCategories.map(status => {
+              return (
+                <div key={status} className="mb-8">
+                  <h2 className="font-semibold xl:text-3xl lg:text-2xl text-2xl mb-4">{status}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
+                    {groupedJobs[status].map(job => (
+                      <JobCard key={job.id} onSelect={onJobSelect} job={job} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
           )}
@@ -296,12 +324,15 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
             </div>
           )}
 
-          {/* No More Jobs Message */}
-          {loadedJobs.length > 0 && loadedJobs.length === totalCount && !isLoading && (
-            <div className="mt-6 text-center">
-              <p className="text-gray-500">No more jobs available.</p>
-            </div>
-          )}
+          {/* No More Jobs Message - Only show when there are jobs displayed and we've reached the end */}
+          {sortedCategories.length > 0 &&
+            loadedJobs.length > 0 &&
+            loadedJobs.length === totalCount &&
+            !isLoading && (
+              <div className="mt-6 text-center">
+                <p className="text-gray-500">No more jobs available.</p>
+              </div>
+            )}
 
           {/* Load More Button - Only show if there are more jobs to load */}
           {showLoadMoreButton && (
