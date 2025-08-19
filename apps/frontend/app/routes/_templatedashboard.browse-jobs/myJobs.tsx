@@ -84,8 +84,8 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
   useEffect(() => {
     if (verified) {
       const searchParams = new URLSearchParams();
-      // If searching/filtering, fetch a large batch (1000), else paginate
-      searchParams.set('limit', isFiltering ? '1000' : limit.toString());
+      // Always fetch ALL jobs to properly categorize them
+      searchParams.set('limit', '1000');
 
       // Pass search/filters as query params to backend
       if (searchQuery) searchParams.set('search', searchQuery);
@@ -104,7 +104,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       });
     }
     // eslint-disable-next-line
-  }, [verified, limit, searchQuery, JSON.stringify(filters)]); // Added new deps for filter/search
+  }, [verified, searchQuery, JSON.stringify(filters)]); // Removed limit dependency
 
   // Update loaded jobs when new data arrives
   useEffect(() => {
@@ -223,10 +223,47 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     'Unknown Status Jobs', // Fallback for any unexpected statuses
   ];
   const sortedCategories = Object.keys(groupedJobs).sort((a, b) => {
-    if (a === 'Active Jobs') return -1; // Always put 'Active Jobs' first
-    if (b === 'Active Jobs') return 1; // Always put 'Active Jobs' first
-    return 0; // Keep other categories in original order
+    const aIndex = categoryOrder.indexOf(a);
+    const bIndex = categoryOrder.indexOf(b);
+    if (aIndex === -1 && bIndex === -1) return 0;
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
   });
+
+  // ✅ SMART: Paginate jobs by category with flexible logic
+  const getPaginatedJobs = () => {
+    const result: Record<string, Job[]> = {};
+    let jobsShown = 0;
+    const jobsPerPage = limit;
+
+    for (const category of sortedCategories) {
+      const jobsInCategory = groupedJobs[category] || [];
+
+      if (jobsInCategory.length === 0) continue;
+
+      // Case 1: We can fit ALL jobs from this category
+      if (jobsShown + jobsInCategory.length <= jobsPerPage) {
+        result[category] = jobsInCategory;
+        jobsShown += jobsInCategory.length;
+      }
+      // Case 2: We can fit SOME jobs from this category (partial category)
+      else if (jobsShown < jobsPerPage) {
+        const remainingSlots = jobsPerPage - jobsShown;
+        result[category] = jobsInCategory.slice(0, remainingSlots);
+        jobsShown += remainingSlots;
+        break; // Stop here, don't show other categories
+      }
+      // Case 3: No more slots available
+      else {
+        break;
+      }
+    }
+
+    return result;
+  };
+
+  const paginatedJobs = getPaginatedJobs();
 
   // For the dummy mode, create 4 additional blurred jobs
   const createBlurredJobs = () => {
@@ -260,13 +297,12 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
   };
 
   // ---- ENHANCED LOAD MORE LOGIC ----
-  // Only show if not filtering, or filtering with enough jobs (10+)
+  // Check if there are more jobs to show in any category
+  const totalJobsShown = Object.values(paginatedJobs).reduce((sum, jobs) => sum + jobs.length, 0);
+  const totalJobsAvailable = Object.values(groupedJobs).reduce((sum, jobs) => sum + jobs.length, 0);
+
   const showLoadMoreButton =
-    loadedJobs.length > 0 &&
-    loadedJobs.length < totalCount &&
-    fetcher.data &&
-    fetcher.data.jobs.length === limit &&
-    (!isFiltering || filteredJobs.length >= 10); // <--- the magic
+    totalJobsShown > 0 && totalJobsShown < totalJobsAvailable && !isLoading;
 
   return (
     <div>
@@ -288,10 +324,10 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
           {totalCount > 0 && (
             <>
               <span className="font-bold text-primaryColor text-base">
-                {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+                {totalJobsShown} {totalJobsShown === 1 ? 'job' : 'jobs'}
               </span>
               {` out of `}
-              <span>{totalCount} total</span>
+              <span>{totalJobsAvailable} total</span>
             </>
           )}
         </p>
@@ -300,13 +336,13 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       {verified ? (
         // Real Jobs UI - Not the Dummy Jobs That Appear if The User Isn't Verified
         <section className="">
-          {sortedCategories.length > 0 ? (
-            sortedCategories.map(status => {
+          {Object.keys(paginatedJobs).length > 0 ? (
+            Object.keys(paginatedJobs).map(status => {
               return (
                 <div key={status} className="mb-8">
                   <h2 className="font-semibold xl:text-3xl lg:text-2xl text-2xl mb-4">{status}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
-                    {groupedJobs[status].map(job => (
+                    {paginatedJobs[status].map(job => (
                       <JobCard key={job.id} onSelect={onJobSelect} job={job} />
                     ))}
                   </div>
@@ -325,14 +361,11 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
           )}
 
           {/* No More Jobs Message - Only show when there are jobs displayed and we've reached the end */}
-          {sortedCategories.length > 0 &&
-            loadedJobs.length > 0 &&
-            loadedJobs.length === totalCount &&
-            !isLoading && (
-              <div className="mt-6 text-center">
-                <p className="text-gray-500">No more jobs available.</p>
-              </div>
-            )}
+          {totalJobsShown > 0 && totalJobsShown === totalJobsAvailable && !isLoading && (
+            <div className="mt-6 text-center">
+              <p className="text-gray-500">No more jobs available.</p>
+            </div>
+          )}
 
           {/* Load More Button - Only show if there are more jobs to load */}
           {showLoadMoreButton && (

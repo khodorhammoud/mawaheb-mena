@@ -14,6 +14,7 @@ import { useToast } from '~/components/hooks/use-toast';
 import { startOfWeek, addWeeks, format } from 'date-fns';
 import { NO_FOCUS_BTN } from '~/lib/tw';
 import { cn } from '~/lib/utils';
+import { useNotifications } from '~/context/NotificationContext';
 
 type Entry = {
   id: number;
@@ -91,6 +92,7 @@ export default function EnhancedTimesheet({
   const actionFetcher = useFetcher<ActionFetcherData>();
   const weekFetcher = useFetcher<WeekLoaderPayload>();
   const { toast } = useToast(); // ✅ always defined
+  const { refreshNotifications } = useNotifications(); // Add notification refresh capability
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -111,7 +113,7 @@ export default function EnhancedTimesheet({
       jobAppId: String(jobApplicationId),
       weekStart: ymd(weekStart),
     }).toString();
-    weekFetcher.load(`/updated-timesheets?${qs}`);
+    weekFetcher.load(`/timesheets?${qs}`);
   }, [jobApplicationId, currentWeek]);
 
   // consume loader for week
@@ -137,6 +139,10 @@ export default function EnhancedTimesheet({
         title: 'Week submitted',
         description: `Submitted ${submitted.length} day(s).`,
       });
+
+      // Refresh notifications to show the new timesheet submission notifications
+      refreshNotifications();
+
       return;
     }
 
@@ -147,7 +153,7 @@ export default function EnhancedTimesheet({
         variant: 'destructive',
       });
     }
-  }, [actionFetcher.data, toast]);
+  }, [actionFetcher.data, toast, refreshNotifications]);
 
   const handleSubmitWeek = () => {
     // Only allow when the week has ended (today >= last day of the week)
@@ -207,7 +213,7 @@ export default function EnhancedTimesheet({
       {/* Back */}
       <div className="flex items-center justify-between">
         <Button asChild variant="outline" className={cn('gap-2 h-8 text-xs', NO_FOCUS_BTN)}>
-          <Link to="/updated-timesheets">← Back to Jobs</Link>
+          <Link to="/timesheets">← Back to Jobs</Link>
         </Button>
         <div className="text-xs text-gray-500">{format(new Date(), 'EEE, MMM dd, yyyy')}</div>
       </div>

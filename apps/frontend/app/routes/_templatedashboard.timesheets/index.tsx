@@ -20,7 +20,7 @@ import { db } from '@mawaheb/db/server';
 import { jobsTable, jobApplicationsTable, employersTable } from '@mawaheb/db';
 import { eq } from 'drizzle-orm';
 import { getActiveJobsForFreelancer } from '~/servers/job.server';
-import { getCurrentFreelancerId } from '~/servers/user.server';
+import { getCurrentFreelancerId, getCurrentUser } from '~/servers/user.server';
 
 /** Types returned by the loader */
 type LoaderData =
@@ -32,7 +32,11 @@ type LoaderData =
         jobId: number;
         title: string | null;
         description: string | null;
+        companyName: string | null;
         employerName: string | null;
+        companyRepName: string | null;
+        employerFirstName: string | null;
+        employerLastName: string | null;
         status: string;
       }>;
     }
@@ -232,7 +236,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       jobId: r.jobId,
       title: r.title,
       description: r.description,
+      companyName: (r as any).companyName,
       employerName: r.employerName,
+      companyRepName: (r as any).companyRepName,
+      employerFirstName: (r as any).employerFirstName,
+      employerLastName: (r as any).employerLastName,
       status: r.status,
       budget: (r as any).budget,
       experienceLevel: (r as any).experienceLevel,
@@ -366,10 +374,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     try {
+      // Get current user ID from session
+      const currentUser = await getCurrentUser(request);
+      const currentUserId = currentUser?.id;
+
+      // console.log('🔍 [TIMESHEET SUBMISSION] Current User ID:', currentUserId);
+      // console.log('🔍 [TIMESHEET SUBMISSION] Current Freelancer ID:', currentFreelancerId);
+
       const { submittedDates } = await submitTimesheetWeek(
         currentFreelancerId,
         jobApplicationId,
-        weekStartYMD
+        weekStartYMD,
+        currentUserId // Pass the current user ID for notifications
       );
 
       return json({ ok: true, type: 'WEEK_SUBMITTED', submittedDates });
@@ -414,7 +430,17 @@ export default function UpdatedTimesheetsPage() {
             <div className="lg:grid xl:p-6 p-4 bg-white border rounded-xl shadow-xl gap-4 mb-10">
               <div className="">
                 <div className="text-xl lg:text-lg">{j.title ?? 'Untitled job'}</div>
-                <div className="text-sm lg:text-xs text-gray-500">{j.employerName}</div>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="text-sm lg:text-xs text-gray-500">{j.companyName}</div>
+                  {j.employerFirstName && j.employerLastName && (
+                    <>
+                      <span className="text-gray-300">•</span>
+                      <div className="text-sm lg:text-xs text-gray-600 font-medium">
+                        {j.employerFirstName} {j.employerLastName}
+                      </div>
+                    </>
+                  )}
+                </div>
                 <div className="flex xl:gap-10 lg:gap-8 gap-6 mt-4">
                   <div>
                     <p className="text-base lg:text-sm leading-tight">${(j as any).budget ?? 0}</p>
@@ -447,7 +473,7 @@ export default function UpdatedTimesheetsPage() {
                 <div className="mt-6">
                   <Link
                     className="text-xs border border-gray-300 text-primaryColor bg-white rounded-[10px] py-2 px-3 gradient-box not-active-gradient w-fit whitespace-nowrap hover:text-white hover:bg-primaryColor not-active-gradient mt-4"
-                    to={`/updated-timesheets?jobAppId=${j.jobAppId}`}
+                    to={`/timesheets?jobAppId=${j.jobAppId}`}
                   >
                     Open timesheet →
                   </Link>

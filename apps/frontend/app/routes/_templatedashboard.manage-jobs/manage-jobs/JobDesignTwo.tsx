@@ -58,7 +58,7 @@ export default function JobDesignTwo({
     >
       <div className="">
         {/* JOB INFO */}
-        <div>
+        <div className="flex items-center justify-between">
           <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
             <Link to={`/jobs/${job.id}`}>{job.title}</Link>
           </h3>
@@ -249,23 +249,22 @@ export default function JobDesignTwo({
               </div>
             </>
           )}
-
-          {/* CALENDAR */}
-          <div
-            className={`${
-              status === JobStatus.Draft ||
-              status === JobStatus.Paused ||
-              status === JobStatus.Closed ||
-              status === JobStatus.Deleted
-                ? 'hidden'
-                : 'col-span-1'
-            }`}
-          >
-            <p className="font-semibold mb-4 xl:text-base text-sm">
-              Pending Interviews: {interviewDates.length}
-            </p>
-            <Calendar highlightedDates={interviewDates} />
-          </div>
+        </div>
+        {/* CALENDAR */}
+        <div
+          className={`${
+            status === JobStatus.Draft ||
+            status === JobStatus.Paused ||
+            status === JobStatus.Closed ||
+            status === JobStatus.Deleted
+              ? 'hidden'
+              : 'col-span-1'
+          }`}
+        >
+          <p className="font-semibold mb-4 xl:text-base text-sm">
+            Pending Interviews: {interviewDates.length}
+          </p>
+          <Calendar highlightedDates={interviewDates} />
         </div>
       </div>
 

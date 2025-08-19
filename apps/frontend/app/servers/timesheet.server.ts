@@ -7,6 +7,8 @@ import {
   timesheetWeekDayEntriesTable,
 } from '@mawaheb/db';
 import { TimesheetStatus } from '@mawaheb/db/enums';
+import { createNotification } from './notifications.server';
+import { NotificationType } from '@mawaheb/db/enums';
 type DayInsert = typeof timesheetDayEntriesTable.$inferInsert;
 type WeekInsert = typeof timesheetWeekEntriesTable.$inferInsert;
 
@@ -35,6 +37,7 @@ function hoursBetween(start: Date, end: Date) {
 export function isFutureYMD(dateYMD: string) {
   return dateYMD > toYMD(new Date());
 }
+
 export function isFutureDate(d: Date) {
   return toYMD(d) > toYMD(new Date());
 }
@@ -389,11 +392,88 @@ export async function getTimesheetSubmissions(
   return rows;
 }
 
+/**
+ * Get employer information from a job application ID
+ */
+async function getEmployerFromJobApplication(jobApplicationId: number) {
+  // console.log(
+  //   '🔍 [EMPLOYER LOOKUP] Starting employer lookup for job application ID:',
+  //   jobApplicationId
+  // );
+
+  const { jobApplicationsTable, jobsTable, employersTable, accountsTable, UsersTable } =
+    await import('@mawaheb/db');
+  const { eq } = await import('drizzle-orm');
+
+  try {
+    const result = await db
+      .select({
+        employerId: employersTable.id,
+        employerAccountId: employersTable.accountId,
+        employerUserId: accountsTable.userId, // Get the actual user ID
+        employerCompanyName: employersTable.companyName,
+        userFirstName: UsersTable.firstName,
+        userLastName: UsersTable.lastName,
+        userEmail: UsersTable.email,
+      })
+      .from(jobApplicationsTable)
+      .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+      .innerJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
+      .innerJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
+      .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+      .where(eq(jobApplicationsTable.id, jobApplicationId))
+      .limit(1);
+
+    // console.log('🔍 [EMPLOYER LOOKUP] Query result:', result);
+    // console.log('🔍 [EMPLOYER LOOKUP] Found employer:', result[0] || 'No employer found');
+
+    return result[0] || null;
+  } catch (error) {
+    console.error('🔍 [EMPLOYER LOOKUP] Error fetching employer:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get freelancer information from freelancer ID
+ */
+async function getFreelancerInfo(freelancerId: number) {
+  // console.log('🔍 [FREELANCER LOOKUP] Starting freelancer lookup for freelancer ID:', freelancerId);
+
+  const { freelancersTable, accountsTable, UsersTable } = await import('@mawaheb/db');
+  const { eq } = await import('drizzle-orm');
+
+  try {
+    const result = await db
+      .select({
+        freelancerId: freelancersTable.id,
+        accountId: freelancersTable.accountId,
+        userFirstName: UsersTable.firstName,
+        userLastName: UsersTable.lastName,
+        userEmail: UsersTable.email,
+      })
+      .from(freelancersTable)
+      .innerJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+      .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+      .where(eq(freelancersTable.id, freelancerId))
+      .limit(1);
+
+    // console.log('🔍 [FREELANCER LOOKUP] Query result:', result);
+    // console.log('🔍 [FREELANCER LOOKUP] Found freelancer:', result[0] || 'No freelancer found');
+
+    return result[0] || null;
+  } catch (error) {
+    console.error('🔍 [FREELANCER LOOKUP] Error fetching freelancer:', error);
+    throw error;
+  }
+}
+
 // submit an entire week (idempotent per (freelancer, jobApp, weekStart))
 export async function submitTimesheetWeek(
   freelancerId: number,
   jobApplicationId: number,
-  weekStartYMD: string
+  weekStartYMD: string,
+  currentUserId?: number // Add current user ID parameter
 ) {
   const weekEndYMD = addDays(weekStartYMD, 6);
 
@@ -480,6 +560,100 @@ export async function submitTimesheetWeek(
     d = addDays(d, 1);
   }
 
+  // Send notifications to both employer and freelancer (don't let notification failure break timesheet submission)
+  // console.log('🔔 [TIMESHEET] Starting notification process...');
+  // console.log('🔔 [TIMESHEET] Job Application ID:', jobApplicationId);
+  // console.log('🔔 [TIMESHEET] Freelancer ID:', freelancerId);
+  // console.log('🔔 [TIMESHEET] Week Start:', weekStartYMD);
+  // console.log('🔔 [TIMESHEET] Week End:', weekEndYMD);
+  // console.log('🔔 [TIMESHEET] Total Hours:', totalHours);
+  // console.log('🔔 [TIMESHEET] Week ID:', week.id);
+
+  try {
+    // console.log('🔔 [TIMESHEET] Fetching employer info...');
+    const employer = await getEmployerFromJobApplication(jobApplicationId);
+    // console.log('🔔 [TIMESHEET] Employer info:', employer);
+
+    // console.log('🔔 [TIMESHEET] Fetching freelancer info...');
+    const freelancer = await getFreelancerInfo(freelancerId);
+    // console.log('🔔 [TIMESHEET] Freelancer info:', freelancer);
+
+    if (employer && freelancer) {
+      // console.log('🔔 [TIMESHEET] Both employer and freelancer found, sending notifications...');
+
+      // Send notification to employer
+      // console.log('🔔 [TIMESHEET] Sending notification to employer...');
+      // console.log('🔔 [TIMESHEET] Employer Account ID:', employer.employerAccountId);
+      // console.log('🔔 [TIMESHEET] Employer User ID:', employer.employerUserId);
+      // console.log('🔔 [TIMESHEET] Employer Company Name:', employer.employerCompanyName);
+      // console.log(
+      //   '🔔 [TIMESHEET] Employer User Name:',
+      //   `${employer.userFirstName} ${employer.userLastName}`
+      // );
+
+      const employerNotification = await createNotification({
+        userId: employer.employerUserId, // Use the actual user ID, not account ID
+        type: NotificationType.StatusUpdate,
+        title: 'Timesheet Submitted',
+        message: `${freelancer.userFirstName} ${freelancer.userLastName} has submitted their timesheet for the week of ${weekStartYMD} to ${weekEndYMD}. Please review and approve.`,
+        payload: {
+          timesheetId: week.id,
+          freelancerName: `${freelancer.userFirstName} ${freelancer.userLastName}`,
+          weekStart: weekStartYMD,
+          weekEnd: weekEndYMD,
+          totalHours: totalHours,
+        },
+      });
+      // console.log('🔔 [TIMESHEET] Employer notification created:', employerNotification);
+
+      // Send confirmation notification to freelancer
+      // console.log('🔔 [TIMESHEET] Sending notification to freelancer...');
+      // console.log('🔔 [TIMESHEET] Freelancer Account ID:', freelancer.accountId);
+      // console.log(
+      //   '🔔 [TIMESHEET] Freelancer Name:',
+      //   `${freelancer.userFirstName} ${freelancer.userLastName}`
+      // );
+
+      const freelancerNotification = await createNotification({
+        userId: currentUserId || freelancer.accountId, // Use current user ID if available, fallback to account ID
+        type: NotificationType.StatusUpdate,
+        title: 'Timesheet Submission Confirmed',
+        message: `Your timesheet for ${weekStartYMD} to ${weekEndYMD} has been submitted to ${employer.employerCompanyName || employer.userFirstName + ' ' + employer.userLastName}. They will review and approve it.`,
+        payload: {
+          timesheetId: week.id,
+          employerName:
+            employer.employerCompanyName || `${employer.userFirstName} ${employer.userLastName}`,
+          weekStart: weekStartYMD,
+          weekEnd: weekEndYMD,
+          totalHours: totalHours,
+        },
+      });
+      // console.log('🔔 [TIMESHEET] Freelancer notification created:', freelancerNotification);
+      // console.log(
+      //   '🔔 [TIMESHEET] Freelancer notification userId:',
+      //   currentUserId || freelancer.accountId
+      // );
+      // console.log(
+      //   '🔔 [TIMESHEET] Freelancer notification should be visible to user with ID:',
+      //   currentUserId || freelancer.accountId
+      // );
+
+      // console.log('🔔 [TIMESHEET] ✅ Both notifications sent successfully!');
+    } else {
+      // console.log('🔔 [TIMESHEET] ❌ Missing employer or freelancer info:');
+      // console.log('🔔 [TIMESHEET] Employer found:', !!employer);
+      // console.log('🔔 [TIMESHEET] Freelancer found:', !!freelancer);
+    }
+  } catch (error) {
+    console.error('🔔 [TIMESHEET] ❌ Failed to send notifications:', error);
+    console.error('🔔 [TIMESHEET] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown error type',
+    });
+    // Don't throw - notification failure shouldn't break timesheet submission
+  }
+
   return { week, submittedDates };
 }
 
@@ -487,9 +661,10 @@ export async function submitTimesheetWeek(
 export async function submitTimesheetDay(
   freelancerId: number,
   jobApplicationId: number,
-  date: Date
+  date: Date,
+  currentUserId?: number
 ) {
   const weekStart = startOfWeekMonday(date);
   const weekStartYMD = toYMD(weekStart);
-  return submitTimesheetWeek(freelancerId, jobApplicationId, weekStartYMD);
+  return submitTimesheetWeek(freelancerId, jobApplicationId, weekStartYMD, currentUserId);
 }
