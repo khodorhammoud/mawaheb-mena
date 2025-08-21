@@ -1,5 +1,5 @@
 {
-  "id": "75a7f8e8-f458-40aa-b517-0b9291fedbe5",
+  "id": "2e90994a-9277-437b-a3b5-2c1b020b5f11",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1737,6 +1737,12 @@
           "notNull": true,
           "default": "'draft'"
         },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -2238,7 +2244,8 @@
         "draft",
         "submitted",
         "approved",
-        "rejected"
+        "rejected",
+        "resubmitted"
       ]
     },
     "public.user_role": {

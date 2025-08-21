@@ -575,6 +575,7 @@ export const timesheetDayEntriesTable = pgTable('timesheet_day_entries', {
   endAt: timestamp('end_at', { withTimezone: true }).notNull(),
   description: text('description'),
   entryStatus: timesheetStatusEnum('entry_status').notNull().default('draft'),
+  note: text('note'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

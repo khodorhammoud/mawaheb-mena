@@ -13,7 +13,7 @@ CREATE TYPE "public"."language" AS ENUM('Spanish', 'English', 'Italian', 'Arabic
 CREATE TYPE "public"."location_preference_type" AS ENUM('remote', 'onsite', 'mixed');--> statement-breakpoint
 CREATE TYPE "public"."project_type" AS ENUM('short-term', 'long-term', 'per-project-basis');--> statement-breakpoint
 CREATE TYPE "public"."provider" AS ENUM('credentials', 'social_account');--> statement-breakpoint
-CREATE TYPE "public"."timesheet_status" AS ENUM('draft', 'submitted', 'approved', 'rejected');--> statement-breakpoint
+CREATE TYPE "public"."timesheet_status" AS ENUM('draft', 'submitted', 'approved', 'rejected', 'resubmitted');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'user');--> statement-breakpoint
 CREATE TYPE "public"."video_attachment_type" AS ENUM('link', 'attachment');--> statement-breakpoint
 CREATE TABLE "users" (
@@ -258,6 +258,7 @@ CREATE TABLE "timesheet_day_entries" (
 	"end_at" timestamp with time zone NOT NULL,
 	"description" text,
 	"entry_status" timesheet_status DEFAULT 'draft' NOT NULL,
+	"note" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
