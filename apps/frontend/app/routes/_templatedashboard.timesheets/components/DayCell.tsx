@@ -1,3 +1,42 @@
+/**
+ * DayCell Component
+ *
+ * PURPOSE:
+ * - Individual day cell component for timesheet entries
+ * - Handles entry creation, editing, and display for a single day
+ * - Used by both freelancer and employer views
+ *
+ * KEY FEATURES:
+ * - Entry creation with time input (AM/PM format)
+ * - Entry editing and validation
+ * - Status display (Approved, Rejected, Fixed, etc.)
+ * - Note display for rejected entries
+ * - Locking behavior based on week status
+ *
+ * WORKFLOW:
+ * 1. Shows existing entries for the day
+ * 2. Allows adding new entries (if not locked)
+ * 3. Allows editing existing entries (if not locked)
+ * 4. Displays entry status and notes
+ * 5. Handles time validation and overlap detection
+ *
+ * STATUS DISPLAY:
+ * - 'approved': Shows green checkmark and "Approved"
+ * - 'rejected': Shows red X and "Rejected" with note
+ * - 'resubmitted': Shows "Fixed" button
+ * - 'submitted': Shows "Edit" button
+ *
+ * LOCKING LOGIC:
+ * - Locked when week is submitted/approved
+ * - Unlocked for rejected entries when week is rejected
+ * - Unlocked for resubmitted entries
+ *
+ * USED BY:
+ * - EnhancedTimesheet component (freelancer view)
+ * - EmployerTimesheet component (employer view)
+ * - Provides consistent entry management across both views
+ */
+
 // app/routes/components/DayCell.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react'; // ✅ added React for memo
 import { useFetcher } from '@remix-run/react';
@@ -14,7 +53,7 @@ import {
 import { useToast } from '~/components/hooks/use-toast';
 import { NO_FOCUS_BTN } from '~/lib/tw';
 import { cn } from '~/lib/utils';
-import { Lock } from 'lucide-react';
+import { CalendarDays, Clock, Lock, CheckCircle, X } from 'lucide-react';
 
 type Meridiem = 'AM' | 'PM';
 
@@ -23,6 +62,8 @@ export type DayCellProps = {
   dateLabel?: string;
   jobApplicationId: number | null;
   locked?: boolean;
+  reviewerNote?: string;
+  weekRejected?: boolean;
   isFuture?: boolean;
   isToday?: boolean;
   entries?:
@@ -59,6 +100,8 @@ function DayCellComponent({
   dateLabel,
   jobApplicationId,
   locked = false,
+  reviewerNote = '',
+  weekRejected = false,
   isFuture: isFutureProp = false,
   isToday = false,
   entries = [],
@@ -80,6 +123,7 @@ function DayCellComponent({
 
   const isFuture = isFutureProp || dateISO > todayYMD();
   const canCreate = !!jobApplicationId && !locked && !isFuture;
+  const canEdit = canCreate; // employers lock logic handled by parent; here freelancer: locked=false means editable (e.g., rejected)
 
   const list = entries ?? [];
   const totalHours = list.reduce((t, e) => t + Number(e?.hours ?? 0), 0);
@@ -90,9 +134,12 @@ function DayCellComponent({
   const [endHourStr, setEndHourStr] = useState('2');
   const [endMeridiem, setEndMeridiem] = useState<Meridiem>('PM');
   const [description, setDescription] = useState('');
+  const hasInitializedNewRef = useRef(false);
 
   useEffect(() => {
     if (editingId && editingId !== 'new') {
+      // Initialize fields from selected entry once when opening edit
+      hasInitializedNewRef.current = false;
       const e = list.find(x => x.id === editingId);
       if (e) {
         setStartHourStr(String(e.startHour ?? 8));
@@ -102,35 +149,40 @@ function DayCellComponent({
         setDescription(e.description || '');
       }
     } else if (editingId === 'new') {
-      // Default: 8 AM → 2 PM, or if entries exist, start at last end and add 6h
-      const to12 = (h24: number): { hour: number; meridiem: Meridiem } => {
-        const mer: Meridiem = h24 >= 12 ? 'PM' : 'AM';
-        const hr = ((h24 + 11) % 12) + 1;
-        return { hour: hr, meridiem: mer };
-      };
+      // Only initialize defaults once per new-entry session to avoid wiping user input on re-renders
+      if (!hasInitializedNewRef.current) {
+        const to12 = (h24: number): { hour: number; meridiem: Meridiem } => {
+          const mer: Meridiem = h24 >= 12 ? 'PM' : 'AM';
+          const hr = ((h24 + 11) % 12) + 1;
+          return { hour: hr, meridiem: mer };
+        };
 
-      const endHours24 = list
-        .map(x =>
-          x.endHour != null && (x.endMeridiem === 'AM' || x.endMeridiem === 'PM')
-            ? to24(Number(x.endHour), x.endMeridiem)
-            : null
-        )
-        .filter((n): n is number => n != null);
+        const endHours24 = list
+          .map(x =>
+            x.endHour != null && (x.endMeridiem === 'AM' || x.endMeridiem === 'PM')
+              ? to24(Number(x.endHour), x.endMeridiem)
+              : null
+          )
+          .filter((n): n is number => n != null);
 
-      const defaultStart24 = endHours24.length ? Math.max(...endHours24) : 8; // 8AM
-      const start24 = Math.min(defaultStart24, 23); // cap to same day
-      const end24 = Math.min(start24 + 6, 23); // +6h, stay same day
+        const defaultStart24 = endHours24.length ? Math.max(...endHours24) : 8; // 8AM
+        const start24 = Math.min(defaultStart24, 23); // cap to same day
+        const end24 = Math.min(start24 + 6, 23); // +6h, stay same day
 
-      const s12 = to12(start24);
-      const e12 = to12(end24);
+        const s12 = to12(start24);
+        const e12 = to12(end24);
 
-      setStartHourStr(String(s12.hour));
-      setStartMeridiem(s12.meridiem);
-      setEndHourStr(String(e12.hour));
-      setEndMeridiem(e12.meridiem);
-      setDescription('');
+        setStartHourStr(String(s12.hour));
+        setStartMeridiem(s12.meridiem);
+        setEndHourStr(String(e12.hour));
+        setEndMeridiem(e12.meridiem);
+        // Do not clear description here; leave any user input intact
+        hasInitializedNewRef.current = true;
+      }
+    } else {
+      hasInitializedNewRef.current = false;
     }
-  }, [editingId, list]);
+  }, [editingId]);
 
   const startRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -172,6 +224,27 @@ function DayCellComponent({
     return e24 > s24 ? e24 - s24 : 0;
   })();
 
+  const overlapsExisting = useMemo(() => {
+    if (!HOUR_FINAL_RE.test(startHourStr) || !HOUR_FINAL_RE.test(endHourStr)) return false;
+    const s24 = to24(Number(startHourStr), startMeridiem);
+    const e24 = to24(Number(endHourStr), endMeridiem);
+    if (e24 <= s24) return false;
+    for (const existing of list) {
+      if (editingId !== 'new' && editingId !== null && existing.id === editingId) continue;
+      if (
+        existing.startHour == null ||
+        existing.endHour == null ||
+        !existing.startMeridiem ||
+        !existing.endMeridiem
+      )
+        continue;
+      const es = to24(Number(existing.startHour), existing.startMeridiem as Meridiem);
+      const ee = to24(Number(existing.endHour), existing.endMeridiem as Meridiem);
+      if (s24 < ee && es < e24) return true; // intervals intersect
+    }
+    return false;
+  }, [list, startHourStr, endHourStr, startMeridiem, endMeridiem, editingId]);
+
   const lastHandled = useRef<any>(null);
 
   // Fire toast immediately when a new response arrives
@@ -200,6 +273,22 @@ function DayCellComponent({
 
   const handleSave = () => {
     if (!canCreate) return;
+    if (!description.trim()) {
+      toast({
+        title: 'Description required',
+        description: 'Please add a brief description of the work before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (overlapsExisting) {
+      toast({
+        title: 'Overlapping time',
+        description: 'This time range overlaps with another entry for this day.',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!HOUR_FINAL_RE.test(startHourStr) || !HOUR_FINAL_RE.test(endHourStr)) {
       toast({
         title: 'Invalid hour',
@@ -246,7 +335,7 @@ function DayCellComponent({
     fetcher.submit(body, { method: 'post', action: '.' });
   };
 
-  const cardBorder = isToday ? 'border-green-500' : '';
+  const cardBorder = isToday ? 'border-primaryColor/80' : '';
 
   return (
     <div className={cn('w-full min-w-0 rounded-md border bg-white p-2 shadow-sm', cardBorder)}>
@@ -276,8 +365,11 @@ function DayCellComponent({
           return (
             <div key={e.id} className="rounded-md border bg-gray-50 p-2 flex flex-col">
               <div className="text-xs flex-1">
-                <div className="mb-1">
-                  {startLabel} – {endLabel}
+                <div className="mb-1 flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>
+                    {startLabel} – {endLabel}
+                  </span>
                 </div>
                 <span className="text-gray-500">{Number(e?.hours ?? 0).toFixed(2)}h</span>
                 {e.description && (
@@ -285,18 +377,41 @@ function DayCellComponent({
                     {e.description}
                   </div>
                 )}
-              </div>
-              <Button
-                size="sm"
-                className={cn(
-                  'bg-primaryColor hover:bg-primaryColor/90 h-6 text-[10px] mt-2 self-start',
-                  NO_FOCUS_BTN
+                {(e as any).note && (
+                  <div className="border-t mt-1 text-[11px] text-black pt-1">
+                    Note: {(e as any).note}
+                  </div>
                 )}
-                onClick={() => setEditingId(e.id)}
-                disabled={!canCreate}
-              >
-                Edit
-              </Button>
+                {/* Entry status icons */}
+                {(e as any).entryStatus === 'approved' && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <CheckCircle className="h-3 w-3 text-green-600" />
+                    <span className="text-[10px] text-green-600 font-medium">Approved</span>
+                  </div>
+                )}
+                {(e as any).entryStatus === 'rejected' && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <X className="h-3 w-3 text-red-600" />
+                    <span className="text-[10px] text-red-600 font-medium">Rejected</span>
+                  </div>
+                )}
+              </div>
+              {!locked && canEdit && (e as any).entryStatus !== 'approved' && (
+                <Button
+                  size="sm"
+                  className={cn(
+                    'bg-primaryColor hover:bg-primaryColor/90 h-6 text-[10px] mt-2 self-start',
+                    NO_FOCUS_BTN
+                  )}
+                  onClick={() => setEditingId(e.id)}
+                >
+                  {(e as any).entryStatus === 'resubmitted'
+                    ? 'Fixed'
+                    : (e as any).entryStatus === 'rejected'
+                      ? 'Fix'
+                      : 'Update'}
+                </Button>
+              )}
             </div>
           );
         })}
@@ -310,7 +425,11 @@ function DayCellComponent({
           size="sm"
           variant="outline"
           className={cn('h-7 text-[11px] flex-1', NO_FOCUS_BTN)}
-          onClick={() => setEditingId('new')}
+          onClick={() => {
+            setDescription('');
+            setEditingId('new');
+            hasInitializedNewRef.current = false;
+          }}
           disabled={!canCreate}
         >
           Add entry
@@ -359,6 +478,9 @@ function DayCellComponent({
             </span>
             <span className="text-[10px] text-gray-400">{description.length}/500</span>
           </div>
+          {overlapsExisting && (
+            <div className="text-[10px] text-red-600">Overlaps an existing entry for this day.</div>
+          )}
 
           <div className="flex gap-1.5">
             <Button
@@ -373,6 +495,8 @@ function DayCellComponent({
                 fetcher.state === 'submitting' ||
                 !HOUR_FINAL_RE.test(startHourStr) ||
                 !HOUR_FINAL_RE.test(endHourStr) ||
+                overlapsExisting ||
+                !description.trim() ||
                 diffHours === 0 ||
                 diffHours > (maxHours ?? MAX_HOURS_DEFAULT)
               }
@@ -398,10 +522,15 @@ function DayCellComponent({
 function Header({ label, compact }: { label: string; compact?: boolean }) {
   const [line1, line2, line3] = label.split('\n');
   return (
-    <div className="mb-2 leading-tight border-b pb-3 ml-1 mt-1">
-      <div className="text-[10px] font-medium text-gray-500">{line1}</div>
-      <div className={`${compact ? 'text-base' : 'text-lg'} font-bold text-gray-900`}>{line2}</div>
-      <div className="text-xs text-gray-500">{line3}</div>
+    <div className="mb-2 leading-tight border-b pb-3 ml-1 mt-1 flex items-center gap-2">
+      <CalendarDays className="h-4 w-4 text-gray-500" />
+      <div>
+        <div className="text-[10px] font-medium text-gray-500">{line1}</div>
+        <div className={`${compact ? 'text-base' : 'text-lg'} font-bold text-gray-900`}>
+          {line2}
+        </div>
+        <div className="text-xs text-gray-500">{line3}</div>
+      </div>
     </div>
   );
 }

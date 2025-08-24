@@ -1,4 +1,38 @@
-import { useState, useEffect, useMemo } from 'react';
+/**
+ * EnhancedTimesheet Component (Freelancer View)
+ *
+ * PURPOSE:
+ * - Main timesheet interface for freelancers
+ * - Allows creation, editing, and submission of timesheet entries
+ * - Handles week-based navigation and submission workflow
+ *
+ * KEY FEATURES:
+ * - Week navigation with bell notifications for new decisions
+ * - Day-by-day entry creation and editing
+ * - Week submission with validation
+ * - Resubmission workflow for rejected weeks
+ * - Real-time status updates and locking
+ *
+ * WORKFLOW:
+ * 1. Freelancer creates entries for each day
+ * 2. Entries can be edited until week is submitted
+ * 3. Week submission locks all entries
+ * 4. If week is rejected, freelancer can fix rejected entries
+ * 5. Resubmission changes status back to 'submitted'
+ *
+ * STATUS HANDLING:
+ * - 'draft': Entries can be created/edite
+ * - 'submitted': Entries are locked, waiting for employer review
+ * - 'approved': Entries are permanently locked
+ * - 'rejected': Only rejected entries can be fixed
+ * - 'resubmitted': Fixed entries ready for resubmission
+ *
+ * USED BY:
+ * - Freelancers to manage their timesheet entries
+ * - Main timesheet route for freelancer view
+ */
+
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useFetcher, Link } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
 import {
@@ -15,6 +49,7 @@ import { startOfWeek, addWeeks, format } from 'date-fns';
 import { NO_FOCUS_BTN } from '~/lib/tw';
 import { cn } from '~/lib/utils';
 import { useNotifications } from '~/context/NotificationContext';
+import { AlertTriangle, CheckCircle, Lock } from 'lucide-react';
 
 type Entry = {
   id: number;
@@ -25,6 +60,7 @@ type Entry = {
   startMeridiem?: 'AM' | 'PM';
   endHour?: number;
   endMeridiem?: 'AM' | 'PM';
+  entryStatus?: string;
 };
 
 // helpers to sort by start time (earliest first)
@@ -68,6 +104,8 @@ type WeekLoaderPayload = {
   projectId: string;
   entries: Entry[];
   submittedDates: string[];
+  weekStatus?: string | null;
+  weekId?: number | null;
 };
 
 const ymd = (d: Date) => format(d, 'yyyy-MM-dd');
@@ -91,10 +129,15 @@ export default function EnhancedTimesheet({
 
   const actionFetcher = useFetcher<ActionFetcherData>();
   const weekFetcher = useFetcher<WeekLoaderPayload>();
+  const prevWeekFetcher = useFetcher<WeekLoaderPayload>();
+  const nextWeekFetcher = useFetcher<WeekLoaderPayload>();
   const { toast } = useToast(); // ✅ always defined
   const { refreshNotifications } = useNotifications(); // Add notification refresh capability
+  const hasShownSubmitToastRef = useRef(false);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
+  const prevWeekStart = startOfWeek(addWeeks(currentWeek, -1), { weekStartsOn: 1 });
+  const nextWeekStart = startOfWeek(addWeeks(currentWeek, 1), { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + i);
@@ -102,10 +145,6 @@ export default function EnhancedTimesheet({
   });
   const todayISO = ymd(new Date());
   const weekEndISO = ymd(new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000));
-  const isWeekLocked = useMemo(
-    () => weekDays.every(d => lockedSet.has(ymd(d))),
-    [weekDays, lockedSet]
-  );
 
   // fetch week data
   useEffect(() => {
@@ -116,6 +155,20 @@ export default function EnhancedTimesheet({
     weekFetcher.load(`/timesheets?${qs}`);
   }, [jobApplicationId, currentWeek]);
 
+  // Preload previous/next week status for bell indicators
+  useEffect(() => {
+    const prevQs = new URLSearchParams({
+      jobAppId: String(jobApplicationId),
+      weekStart: ymd(prevWeekStart),
+    }).toString();
+    const nextQs = new URLSearchParams({
+      jobAppId: String(jobApplicationId),
+      weekStart: ymd(nextWeekStart),
+    }).toString();
+    prevWeekFetcher.load(`/timesheets?${prevQs}`);
+    nextWeekFetcher.load(`/timesheets?${nextQs}`);
+  }, [jobApplicationId, prevWeekStart, nextWeekStart]);
+
   // consume loader for week
   useEffect(() => {
     if (weekFetcher.data?.mode !== 'timesheet') return;
@@ -123,16 +176,47 @@ export default function EnhancedTimesheet({
     setLockedSet(new Set((weekFetcher.data.submittedDates ?? []).map(d => d)));
   }, [weekFetcher.data]);
 
+  // Banner and permissions: when week is rejected, allow edits only on rejected entries
+  const isWeekRejected = weekFetcher.data?.weekStatus === 'rejected';
+  const isWeekApproved = weekFetcher.data?.weekStatus === 'approved';
+
+  const isWeekLocked = useMemo(() => {
+    // If the week is rejected, it's only locked if there are no rejected entries left to fix
+    if (isWeekRejected) {
+      const rejectedEntries =
+        weekFetcher.data?.entries?.filter(e => e.entryStatus === 'rejected') || [];
+      return rejectedEntries.length === 0;
+    }
+    // If the week is submitted or approved, it should be locked
+    if (
+      weekFetcher.data?.weekStatus === 'submitted' ||
+      weekFetcher.data?.weekStatus === 'approved'
+    ) {
+      return true;
+    }
+    // Otherwise, use the original logic
+    return weekDays.every(d => lockedSet.has(ymd(d)));
+  }, [
+    weekDays,
+    lockedSet,
+    isWeekRejected,
+    weekFetcher.data?.entries,
+    weekFetcher.data?.weekStatus,
+  ]);
+
   // consume action responses
   useEffect(() => {
     const data = actionFetcher.data;
     if (!data) return;
 
     if (data.ok && data.type === 'WEEK_SUBMITTED') {
+      if (hasShownSubmitToastRef.current) return; // prevent duplicate toasts
       const submitted = data.submittedDates;
       setLockedSet(prev => {
         const next = new Set(prev);
-        submitted.forEach(d => next.add(d));
+        if (Array.isArray(submitted)) {
+          submitted.forEach(d => next.add(d));
+        }
         return next;
       });
       toast({
@@ -142,6 +226,8 @@ export default function EnhancedTimesheet({
 
       // Refresh notifications to show the new timesheet submission notifications
       refreshNotifications();
+
+      hasShownSubmitToastRef.current = true;
 
       return;
     }
@@ -155,6 +241,13 @@ export default function EnhancedTimesheet({
     }
   }, [actionFetcher.data, toast, refreshNotifications]);
 
+  // reset toast guard when a new submission starts
+  useEffect(() => {
+    if (actionFetcher.state === 'submitting') {
+      hasShownSubmitToastRef.current = false;
+    }
+  }, [actionFetcher.state]);
+
   const handleSubmitWeek = () => {
     // Only allow when the week has ended (today >= last day of the week)
     if (weekEndISO > todayISO) {
@@ -165,7 +258,15 @@ export default function EnhancedTimesheet({
       });
       return;
     }
-    setShowSubmitWarning(true);
+
+    // Check if it's a resubmission (when week is rejected and all rejected entries are fixed)
+    if (isWeekRejected && isWeekLocked) {
+      // This is a resubmission
+      setShowSubmitWarning(true);
+    } else {
+      // Regular submission
+      setShowSubmitWarning(true);
+    }
   };
 
   const confirmSubmitWeek = () => {
@@ -217,7 +318,6 @@ export default function EnhancedTimesheet({
         </Button>
         <div className="text-xs text-gray-500">{format(new Date(), 'EEE, MMM dd, yyyy')}</div>
       </div>
-
       {/* Job header */}
       <div className="bg-white rounded-lg border p-3">
         <div className="flex items-center justify-between">
@@ -233,34 +333,56 @@ export default function EnhancedTimesheet({
           </div>
         </div>
       </div>
-
       {/* Week nav */}
-      <div className="flex items-center justify-between bg-white rounded-lg border p-3">
-        <Button
-          variant="outline"
-          onClick={() => handleWeekNavigation('prev')}
-          className={cn('gap-2 h-8 text-xs', NO_FOCUS_BTN)}
-        >
-          ← Previous Week
-        </Button>
-        <div className="text-center">
-          <h3 className="text-base font-semibold">{getCurrentWeekLabel()}</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => handleWeekNavigation('prev')}
+            className={cn(
+              'gap-2 h-8 px-4 shadow-sm hover:shadow-md transition-all font-medium text-sm',
+              NO_FOCUS_BTN
+            )}
+          >
+            ← Previous Week
+          </Button>
+          <div className="text-center relative">
+            <h3 className="text-base font-semibold">{getCurrentWeekLabel()}</h3>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => handleWeekNavigation('next')}
+            className={cn(
+              'gap-2 h-8 px-4 shadow-sm hover:shadow-md transition-all font-medium text-sm',
+              NO_FOCUS_BTN
+            )}
+          >
+            Next Week →
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => handleWeekNavigation('next')}
-          className={cn('gap-2 h-8 text-xs', NO_FOCUS_BTN)}
-        >
-          Next Week →
-        </Button>
       </div>
-
-      {isWeekLocked && (
-        <div className="rounded-md border bg-green-50 px-3 py-2 text-xs text-green-700">
-          ✅ Week submitted to employer — entries are locked.
+      {!isWeekApproved && !isWeekRejected && isWeekLocked && (
+        <div className="flex items-center gap-2 rounded-md border bg-blue-50 px-3 py-2 text-xs text-blue-700">
+          <Lock className="h-4 w-4 text-blue-600" />
+          <span>Week submitted to {employerName} — entries are locked.</span>
         </div>
       )}
-
+      {/* Approved / Rejected banners */}
+      {isWeekApproved && (
+        <div className="flex items-center gap-2 rounded-md border bg-green-50 px-3 py-2 text-xs text-green-700">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <span>Week approved by {employerName} — entries are locked.</span>
+        </div>
+      )}
+      {isWeekRejected && (
+        <div className="flex items-center gap-2 rounded-md border bg-red-50 px-3 py-2 text-xs text-red-700">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <span>
+            Week rejected by {employerName}. Fix the rejected entries and resubmit. Approved entries
+            are locked.
+          </span>
+        </div>
+      )}
       {/* Grid */}
       <div className="bg-white">
         <div className="grid grid-cols-7 gap-2">
@@ -270,14 +392,33 @@ export default function EnhancedTimesheet({
             const isLocked = lockedSet.has(dateYMD);
             const isFuture = dateYMD > todayISO;
 
+            // When week is rejected: unlock days that have rejected OR resubmitted entries
+            const hasRejected = list.some((e: any) => e.entryStatus === 'rejected');
+            const hasResubmitted = list.some((e: any) => e.entryStatus === 'resubmitted');
+            const hasEditableEntries = hasRejected || hasResubmitted;
+            const note = (list.find((e: any) => e.entryStatus === 'rejected') as any)?.note || '';
+
+            // Debug: verify reviewer note per day
+            // try {
+            //   console.log('[EnhancedTimesheet] day note check', {
+            //     dateYMD,
+            //     isWeekRejected,
+            //     hasRejected,
+            //     note,
+            //     entries: list.map((e: any) => ({ id: e.id, status: e.entryStatus, note: e.note })),
+            //   });
+            // } catch {}
+
             return (
               <DayCell
                 key={dateYMD}
                 dateISO={dateYMD}
                 jobApplicationId={jobApplicationId}
-                locked={isLocked}
+                locked={isWeekRejected ? !hasEditableEntries : isLocked}
                 isFuture={isFuture}
                 isToday={dateYMD === todayISO}
+                reviewerNote={isWeekRejected ? note : ''}
+                weekRejected={isWeekRejected}
                 entries={list}
                 onSaved={saved =>
                   upsertEntry({
@@ -296,31 +437,43 @@ export default function EnhancedTimesheet({
           })}
         </div>
       </div>
-
       {/* Submit week */}
       <div className="flex justify-center">
         <Button
           className={cn('px-4 text-xs h-8 bg-primaryColor hover:bg-primaryColor/80', NO_FOCUS_BTN)}
-          disabled={actionFetcher.state === 'submitting' || isWeekLocked || weekEndISO > todayISO}
+          disabled={
+            actionFetcher.state === 'submitting' ||
+            weekEndISO > todayISO ||
+            (isWeekRejected && !isWeekLocked) || // Disable resubmit if there are still rejected entries
+            weekFetcher.data?.weekStatus === 'submitted' || // Disable if week is already submitted
+            weekFetcher.data?.weekStatus === 'approved' // Disable if week is already approved
+          }
           onClick={handleSubmitWeek}
         >
-          {isWeekLocked
-            ? 'Week Submitted'
-            : weekEndISO > todayISO
-              ? 'Week Not Finished'
-              : actionFetcher.state === 'submitting'
-                ? 'Submitting…'
-                : 'Submit Week'}
+          {weekEndISO > todayISO
+            ? 'Week Not Finished'
+            : actionFetcher.state === 'submitting'
+              ? 'Submitting…'
+              : isWeekRejected
+                ? isWeekLocked
+                  ? 'Resubmit Week'
+                  : 'Fix Rejected Entries'
+                : weekFetcher.data?.weekStatus === 'submitted' ||
+                    weekFetcher.data?.weekStatus === 'approved'
+                  ? 'Week Submitted'
+                  : 'Submit Week'}
         </Button>
       </div>
-
       <Dialog open={showSubmitWarning} onOpenChange={setShowSubmitWarning}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submit this week?</DialogTitle>
+            <DialogTitle>
+              {isWeekRejected && isWeekLocked ? 'Resubmit this week?' : 'Submit this week?'}
+            </DialogTitle>
             <DialogDescription>
-              Submitting will lock all entries in this week. You won’t be able to add or edit hours
-              until the employer reviews them.
+              {isWeekRejected && isWeekLocked
+                ? 'Resubmitting will change all fixed entries back to submitted status and send them for review again. Approved entries will remain approved.'
+                : "Submitting will lock all entries in this week. You won't be able to add or edit hours until the employer reviews them."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -332,7 +485,7 @@ export default function EnhancedTimesheet({
               Cancel
             </Button>
             <Button onClick={confirmSubmitWeek} className={NO_FOCUS_BTN}>
-              Confirm
+              {isWeekRejected && isWeekLocked ? 'Resubmit' : 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -5,6 +5,8 @@ import {
   timesheetDayEntriesTable,
   timesheetWeekEntriesTable,
   timesheetWeekDayEntriesTable,
+  jobsTable,
+  jobApplicationsTable,
 } from '@mawaheb/db';
 import { TimesheetStatus } from '@mawaheb/db/enums';
 import { createNotification } from './notifications.server';
@@ -105,6 +107,7 @@ export async function getTimesheetEntriesForWeek(
       id: r.id,
       date: r.workDate as string,
       description: r.description || '',
+      note: (r as any).note || '',
       // raw times (so loader can use them if it prefers)
       startAt,
       endAt,
@@ -339,8 +342,8 @@ export async function isDateSubmitted(
   jobApplicationId: number,
   dateYMD: string
 ): Promise<boolean> {
-  const rows = await db
-    .select()
+  const weekRows = await db
+    .select({ id: timesheetWeekEntriesTable.id, status: timesheetWeekEntriesTable.status })
     .from(timesheetWeekEntriesTable)
     .where(
       and(
@@ -357,7 +360,28 @@ export async function isDateSubmitted(
     )
     .limit(1);
 
-  return rows.length > 0;
+  if (weekRows.length === 0) return false;
+
+  const status = weekRows[0].status as TimesheetStatus;
+  if (status === TimesheetStatus.Submitted || status === TimesheetStatus.Approved) return true;
+
+  // Week is rejected: allow editing only for rejected day entries
+  const dayRows = await db
+    .select({ entryStatus: timesheetDayEntriesTable.entryStatus })
+    .from(timesheetDayEntriesTable)
+    .where(
+      and(
+        eq(timesheetDayEntriesTable.freelancerId, freelancerId),
+        eq(timesheetDayEntriesTable.jobApplicationId, jobApplicationId),
+        eq(timesheetDayEntriesTable.workDate, dateYMD)
+      )
+    )
+    .limit(1);
+  const dayStatus = (dayRows[0] as any)?.entryStatus as TimesheetStatus | undefined;
+  // Lock if not rejected or resubmitted? Allow editing only if explicitly Rejected (not Resubmitted)
+  if (dayStatus === TimesheetStatus.Rejected) return false; // editable
+  if (dayStatus === TimesheetStatus.Resubmitted) return false; // editable until full week resubmitted
+  return true; // lock others
 }
 
 // fetch week submissions within a window
@@ -517,6 +541,15 @@ export async function submitTimesheetWeek(
     );
 
   if (existing.length > 0) {
+    // If there's an existing week and it's rejected, allow resubmission
+    if (existing[0].status === TimesheetStatus.Rejected) {
+      return await resubmitTimesheetWeek(
+        freelancerId,
+        jobApplicationId,
+        weekStartYMD,
+        currentUserId
+      );
+    }
     throw new Error('This week has already been submitted');
   }
 
@@ -657,6 +690,144 @@ export async function submitTimesheetWeek(
   return { week, submittedDates };
 }
 
+/* ─────────────────── resubmitTimesheetWeek ─────────────────── */
+export async function resubmitTimesheetWeek(
+  freelancerId: number,
+  jobApplicationId: number,
+  weekStartYMD: string,
+  currentUserId?: number
+) {
+  const weekEndYMD = addDays(weekStartYMD, 6);
+
+  // Get the existing week entry
+  const existing = await db
+    .select()
+    .from(timesheetWeekEntriesTable)
+    .where(
+      and(
+        eq(timesheetWeekEntriesTable.freelancerId, freelancerId),
+        eq(timesheetWeekEntriesTable.jobApplicationId, jobApplicationId),
+        eq(timesheetWeekEntriesTable.weekStart, weekStartYMD)
+      )
+    )
+    .limit(1);
+
+  if (!existing[0] || existing[0].status !== TimesheetStatus.Rejected) {
+    throw new Error('No rejected week found for resubmission');
+  }
+
+  // Load all current entries within the week
+  const entries = await db
+    .select()
+    .from(timesheetDayEntriesTable)
+    .where(
+      and(
+        eq(timesheetDayEntriesTable.freelancerId, freelancerId),
+        eq(timesheetDayEntriesTable.jobApplicationId, jobApplicationId),
+        gte(timesheetDayEntriesTable.workDate, weekStartYMD),
+        lte(timesheetDayEntriesTable.workDate, weekEndYMD)
+      )
+    );
+
+  if (entries.length === 0) throw new Error('Cannot resubmit an empty week');
+
+  // Check if there are any remaining rejected entries
+  const rejectedEntries = entries.filter(e => (e as any).entryStatus === TimesheetStatus.Rejected);
+  if (rejectedEntries.length > 0) {
+    throw new Error('Cannot resubmit week while there are still rejected entries');
+  }
+
+  const totalHours = entries.reduce((acc, e) => {
+    const start = new Date(e.startAt as any);
+    const end = new Date(e.endAt as any);
+    return acc + hoursBetween(start, end);
+  }, 0);
+
+  if (totalHours <= 0) throw new Error('Cannot resubmit an empty week');
+
+  // Update the week entry status back to submitted
+  await db
+    .update(timesheetWeekEntriesTable)
+    .set({
+      status: TimesheetStatus.Submitted,
+      submissionDate: new Date(),
+      totalHours: String(totalHours),
+      updatedAt: new Date(),
+    } as any)
+    .where(eq(timesheetWeekEntriesTable.id, existing[0].id));
+
+  // Update all resubmitted day entries back to submitted (preserve approved entries)
+  await db
+    .update(timesheetDayEntriesTable)
+    .set({
+      entryStatus: TimesheetStatus.Submitted,
+      updatedAt: new Date(),
+    } as any)
+    .where(
+      and(
+        eq(timesheetDayEntriesTable.freelancerId, freelancerId),
+        eq(timesheetDayEntriesTable.jobApplicationId, jobApplicationId),
+        gte(timesheetDayEntriesTable.workDate, weekStartYMD),
+        lte(timesheetDayEntriesTable.workDate, weekEndYMD),
+        eq(timesheetDayEntriesTable.entryStatus, TimesheetStatus.Resubmitted)
+      )
+    );
+
+  // Send notifications
+  try {
+    const employer = await getEmployerFromJobApplication(jobApplicationId);
+    const freelancer = await getFreelancerInfo(freelancerId);
+
+    if (employer && freelancer) {
+      // Send notification to employer
+      const employerNotification = await createNotification({
+        userId: employer.employerUserId,
+        type: NotificationType.StatusUpdate,
+        title: 'Timesheet Resubmitted',
+        message: `${freelancer.userFirstName} ${freelancer.userLastName} has resubmitted their timesheet for the week of ${weekStartYMD} to ${weekEndYMD}. Please review.`,
+        payload: {
+          timesheetId: existing[0].id,
+          freelancerName: `${freelancer.userFirstName} ${freelancer.userLastName}`,
+          weekStart: weekStartYMD,
+          weekEnd: weekEndYMD,
+          totalHours: totalHours,
+          type: 'resubmission',
+        },
+      });
+      console.log('🔔 [TIMESHEET RESUBMIT] Employer notification created:', employerNotification);
+
+      // Send confirmation to freelancer
+      if (currentUserId) {
+        await createNotification({
+          userId: currentUserId,
+          type: NotificationType.StatusUpdate,
+          title: 'Timesheet Resubmitted',
+          message: `You have successfully resubmitted your timesheet for the week of ${weekStartYMD} to ${weekEndYMD}.`,
+          payload: {
+            timesheetId: existing[0].id,
+            weekStart: weekStartYMD,
+            weekEnd: weekEndYMD,
+            totalHours: totalHours,
+            type: 'resubmission',
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to send resubmission notifications:', error);
+    // Don't throw - notification failure shouldn't break resubmission
+  }
+
+  return {
+    submittedDates: getSubmittedDatesForWeek(
+      freelancerId,
+      jobApplicationId,
+      weekStartYMD,
+      weekEndYMD
+    ),
+  };
+}
+
 /* ─────────────────── compatibility: submitTimesheetDay ─────────────────── */
 export async function submitTimesheetDay(
   freelancerId: number,
@@ -667,4 +838,345 @@ export async function submitTimesheetDay(
   const weekStart = startOfWeekMonday(date);
   const weekStartYMD = toYMD(weekStart);
   return submitTimesheetWeek(freelancerId, jobApplicationId, weekStartYMD, currentUserId);
+}
+
+/* ─────────────────── getMostRecentSubmittedWeek ─────────────────── */
+export async function getMostRecentSubmittedWeek(
+  freelancerId: number,
+  jobApplicationId: number
+): Promise<string | null> {
+  try {
+    const mostRecentWeek = await db
+      .select({
+        weekStart: timesheetWeekEntriesTable.weekStart,
+      })
+      .from(timesheetWeekEntriesTable)
+      .where(
+        and(
+          eq(timesheetWeekEntriesTable.freelancerId, freelancerId),
+          eq(timesheetWeekEntriesTable.jobApplicationId, jobApplicationId),
+          inArray(timesheetWeekEntriesTable.status, [
+            TimesheetStatus.Submitted,
+            TimesheetStatus.Approved,
+            TimesheetStatus.Rejected,
+          ])
+        )
+      )
+      .orderBy(timesheetWeekEntriesTable.weekStart)
+      .limit(1);
+
+    return mostRecentWeek[0]?.weekStart || null;
+  } catch (error) {
+    console.error('Error fetching most recent submitted week:', error);
+    return null;
+  }
+}
+
+/* ─────────────────── checkWeekSubmissions ─────────────────── */
+export async function checkWeekSubmissions(
+  freelancerId: number,
+  jobApplicationId: number,
+  weekStart: string
+): Promise<boolean> {
+  try {
+    const weekEnd = addDays(weekStart, 6);
+
+    const submissions = await db
+      .select({
+        id: timesheetWeekEntriesTable.id,
+      })
+      .from(timesheetWeekEntriesTable)
+      .where(
+        and(
+          eq(timesheetWeekEntriesTable.freelancerId, freelancerId),
+          eq(timesheetWeekEntriesTable.jobApplicationId, jobApplicationId),
+          gte(timesheetWeekEntriesTable.weekStart, weekStart),
+          lte(timesheetWeekEntriesTable.weekStart, weekEnd),
+          inArray(timesheetWeekEntriesTable.status, [
+            TimesheetStatus.Submitted,
+            TimesheetStatus.Approved,
+            TimesheetStatus.Rejected,
+          ])
+        )
+      )
+      .limit(1);
+
+    return submissions.length > 0;
+  } catch (error) {
+    console.error('Error checking week submissions:', error);
+    return false;
+  }
+}
+
+/* ─────────────────── approveTimesheetWeek ─────────────────── */
+export async function approveTimesheetWeek(
+  weekId: number,
+  employerId: number,
+  currentUserId: number
+) {
+  try {
+    // Get the week entry to verify ownership and get details
+    const weekEntry = await db
+      .select({
+        id: timesheetWeekEntriesTable.id,
+        freelancerId: timesheetWeekEntriesTable.freelancerId,
+        jobApplicationId: timesheetWeekEntriesTable.jobApplicationId,
+        weekStart: timesheetWeekEntriesTable.weekStart,
+        status: timesheetWeekEntriesTable.status,
+      })
+      .from(timesheetWeekEntriesTable)
+      .where(eq(timesheetWeekEntriesTable.id, weekId))
+      .limit(1);
+
+    if (!weekEntry[0]) {
+      throw new Error('Week entry not found');
+    }
+
+    const week = weekEntry[0];
+
+    // Verify the employer owns this job
+    const jobOwnership = await db
+      .select({
+        employerId: jobsTable.employerId,
+      })
+      .from(jobsTable)
+      .innerJoin(jobApplicationsTable, eq(jobsTable.id, jobApplicationsTable.jobId))
+      .where(eq(jobApplicationsTable.id, week.jobApplicationId))
+      .limit(1);
+
+    if (!jobOwnership[0] || jobOwnership[0].employerId !== employerId) {
+      throw new Error('Unauthorized: You can only approve timesheets for your own jobs');
+    }
+
+    // Check if week is already approved
+    if (week.status === TimesheetStatus.Approved) {
+      throw new Error('Week is already approved');
+    }
+
+    // Update week entry status to approved
+    await db
+      .update(timesheetWeekEntriesTable)
+      .set({
+        status: TimesheetStatus.Approved,
+        updatedAt: new Date(),
+      } as any)
+      .where(eq(timesheetWeekEntriesTable.id, weekId));
+
+    // Update all day entries for this week to approved
+    const weekStart = week.weekStart;
+    const weekEnd = addDays(weekStart, 6);
+
+    await db
+      .update(timesheetDayEntriesTable)
+      .set({
+        entryStatus: TimesheetStatus.Approved,
+        updatedAt: new Date(),
+      } as any)
+      .where(
+        and(
+          eq(timesheetDayEntriesTable.freelancerId, week.freelancerId),
+          eq(timesheetDayEntriesTable.jobApplicationId, week.jobApplicationId),
+          gte(timesheetDayEntriesTable.workDate, weekStart),
+          lte(timesheetDayEntriesTable.workDate, weekEnd)
+        )
+      );
+
+    // Send notifications
+    try {
+      const employer = await getEmployerFromJobApplication(week.jobApplicationId);
+      const freelancer = await getFreelancerInfo(week.freelancerId);
+
+      if (employer && freelancer) {
+        // Send notification to freelancer
+        // Use the freelancer's actual userId (via account → user)
+        const { accountsTable, UsersTable } = await import('@mawaheb/db');
+        const { eq } = await import('drizzle-orm');
+        const acc = await db
+          .select({ userId: UsersTable.id })
+          .from(accountsTable)
+          .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+          .where(eq(accountsTable.id, (freelancer as any).accountId))
+          .limit(1);
+        const freelancerUserId = acc[0]?.userId ?? week.freelancerId;
+        console.log(
+          '[approveTimesheetWeek] notify freelancer userId=',
+          freelancerUserId,
+          'from accountId=',
+          (freelancer as any).accountId
+        );
+        await createNotification({
+          userId: freelancerUserId,
+          type: NotificationType.StatusUpdate,
+          title: 'Timesheet Approved',
+          message: `Your timesheet for the week of ${weekStart} to ${weekEnd} has been approved by ${employer.employerCompanyName || `${employer.userFirstName} ${employer.userLastName}`}.`,
+          payload: {
+            timesheetId: weekId,
+            employerName:
+              employer.employerCompanyName || `${employer.userFirstName} ${employer.userLastName}`,
+            weekStart,
+            weekEnd,
+            status: 'approved',
+          },
+        });
+
+        // Send confirmation notification to employer
+        console.log('[approveTimesheetWeek] notify employer userId=', currentUserId);
+        await createNotification({
+          userId: currentUserId,
+          type: NotificationType.StatusUpdate,
+          title: 'Timesheet Approval Confirmed',
+          message: `You have approved ${freelancer.userFirstName} ${freelancer.userLastName}'s timesheet for the week of ${weekStart} to ${weekEnd}.`,
+          payload: {
+            timesheetId: weekId,
+            freelancerName: `${freelancer.userFirstName} ${freelancer.userLastName}`,
+            weekStart,
+            weekEnd,
+            status: 'approved',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send approval notifications:', error);
+      // Don't throw - notification failure shouldn't break approval
+    }
+
+    return { success: true, weekId, status: TimesheetStatus.Approved };
+  } catch (error) {
+    console.error('Error approving timesheet week:', error);
+    throw error;
+  }
+}
+
+/* ─────────────────── reviewTimesheetWeek ─────────────────── */
+export async function reviewTimesheetWeek(args: {
+  weekId: number;
+  employerId: number;
+  jobApplicationId: number;
+  decisions: Array<{ entryId: number; status: 'accepted' | 'rejected'; note?: string }>;
+  currentUserId: number;
+}) {
+  const { weekId, employerId, jobApplicationId, decisions, currentUserId } = args;
+  const { jobsTable, timesheetWeekEntriesTable, timesheetDayEntriesTable } = await import(
+    '@mawaheb/db'
+  );
+  const { eq, and, inArray } = await import('drizzle-orm');
+  const { TimesheetStatus, NotificationType } = await import('@mawaheb/db/enums');
+
+  // verify employer owns the job
+  const jobOwnership = await db
+    .select({ employerId: jobsTable.employerId })
+    .from(jobsTable)
+    .innerJoin(
+      timesheetWeekEntriesTable,
+      eq(timesheetWeekEntriesTable.jobApplicationId, jobsTable.id)
+    )
+    .where(eq(timesheetWeekEntriesTable.id, weekId))
+    .limit(1);
+  if (!jobOwnership[0] || jobOwnership[0].employerId !== employerId) {
+    throw new Error('Unauthorized');
+  }
+
+  // set week status → Rejected
+  await db
+    .update(timesheetWeekEntriesTable)
+    .set({ status: TimesheetStatus.Rejected, updatedAt: new Date() } as any)
+    .where(eq(timesheetWeekEntriesTable.id, weekId));
+
+  // update day entries
+  const acceptedIds: number[] = [];
+  const rejectedIds: number[] = [];
+  for (const d of decisions) {
+    if (!d.entryId || !['accepted', 'rejected'].includes(d.status)) continue;
+    const entryUpdate: any = {
+      entryStatus: d.status === 'accepted' ? TimesheetStatus.Approved : TimesheetStatus.Rejected,
+      updatedAt: new Date(),
+    };
+    if (d.note != null) entryUpdate.note = d.note;
+    console.log(
+      '[reviewTimesheetWeek] updating entry',
+      d.entryId,
+      'status=',
+      d.status,
+      'note=',
+      d.note
+    );
+    await db
+      .update(timesheetDayEntriesTable)
+      .set(entryUpdate)
+      .where(eq(timesheetDayEntriesTable.id, d.entryId));
+    if (d.status === 'accepted') acceptedIds.push(d.entryId);
+    else rejectedIds.push(d.entryId);
+  }
+
+  // notify freelancer and employer (best-effort)
+  try {
+    const weekRow = await db
+      .select({
+        weekStart: timesheetWeekEntriesTable.weekStart,
+        weekEnd: timesheetWeekEntriesTable.weekEnd,
+        freelancerId: timesheetWeekEntriesTable.freelancerId,
+        jobApplicationId: timesheetWeekEntriesTable.jobApplicationId,
+      })
+      .from(timesheetWeekEntriesTable)
+      .where(eq(timesheetWeekEntriesTable.id, weekId))
+      .limit(1);
+    const week = weekRow[0];
+    if (week) {
+      // Fetch employer name and job title for richer message
+      const employer = await getEmployerFromJobApplication(week.jobApplicationId);
+      const { jobsTable, jobApplicationsTable } = await import('@mawaheb/db');
+      const jobInfo = await db
+        .select({ title: jobsTable.title })
+        .from(jobApplicationsTable)
+        .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+        .where(eq(jobApplicationsTable.id, week.jobApplicationId))
+        .limit(1);
+      const employerName =
+        employer?.employerCompanyName ||
+        `${employer?.userFirstName ?? ''} ${employer?.userLastName ?? ''}`.trim();
+      const jobTitle = jobInfo[0]?.title ?? 'your job';
+
+      const freelancerInfo = await getFreelancerInfo(week.freelancerId);
+
+      // Use the freelancer's actual userId (via account → user) - same logic as in approveTimesheetWeek
+      const { accountsTable, UsersTable } = await import('@mawaheb/db');
+      const acc = await db
+        .select({ userId: UsersTable.id })
+        .from(accountsTable)
+        .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+        .where(eq(accountsTable.id, (freelancerInfo as any).accountId))
+        .limit(1);
+      const freelancerUserId = acc[0]?.userId ?? week.freelancerId;
+
+      // Log chosen recipient id for debugging
+      console.log(
+        '[reviewTimesheetWeek] notify freelancer userId=',
+        freelancerUserId,
+        'from accountId=',
+        (freelancerInfo as any).accountId
+      );
+
+      await createNotification({
+        userId: freelancerUserId,
+        type: NotificationType.StatusUpdate,
+        title: 'Timesheet Returned for Revision',
+        message: `${employerName} reviewed your ${jobTitle} week ${week.weekStart}–${week.weekEnd}: ${acceptedIds.length} approved, ${rejectedIds.length} rejected. Please update the rejected entries and resubmit.`,
+        payload: { weekId, jobApplicationId, acceptedIds, rejectedIds },
+      });
+
+      // Notify employer (confirmation)
+      console.log('[reviewTimesheetWeek] notify employer userId=', currentUserId);
+      await createNotification({
+        userId: currentUserId,
+        type: NotificationType.StatusUpdate,
+        title: 'Review sent to freelancer',
+        message: `You returned ${jobTitle} week ${week.weekStart}–${week.weekEnd} to the freelancer: ${acceptedIds.length} approved, ${rejectedIds.length} rejected.`,
+        payload: { weekId, jobApplicationId, acceptedIds, rejectedIds },
+      });
+    }
+  } catch (e) {
+    console.error('Review notify failed', e);
+  }
+
+  return { success: true, weekId, accepted: acceptedIds.length, rejected: rejectedIds.length };
 }

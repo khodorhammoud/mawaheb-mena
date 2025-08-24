@@ -1974,3 +1974,58 @@ export async function getActiveJobsForFreelancer(freelancerId: number) {
 
   return rows.map(r => ({ ...r, skills: skillsByJobId.get(r.jobId) || [] }));
 }
+
+// Get employer jobs with approved applications (for timesheet management)
+export async function getEmployerJobsWithApprovedApplications(employerId: number) {
+  const rows = await db
+    .select({
+      jobId: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobApplicationId: jobApplicationsTable.id,
+      freelancerId: jobApplicationsTable.freelancerId,
+      freelancerFirstName: UsersTable.firstName,
+      freelancerLastName: UsersTable.lastName,
+      status: jobsTable.status,
+      createdAt: jobApplicationsTable.createdAt,
+    })
+    .from(jobsTable)
+    .innerJoin(jobApplicationsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+    .innerJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
+    .innerJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(
+      and(
+        eq(jobsTable.employerId, employerId),
+        eq(jobsTable.status, JobStatus.Active),
+        eq(jobApplicationsTable.status, JobApplicationStatus.Approved)
+      )
+    )
+    .orderBy(desc(jobApplicationsTable.createdAt));
+
+  // fetch skills for these jobs
+  const jobIds = rows.map(r => r.jobId);
+  if (jobIds.length === 0)
+    return rows.map(r => ({ ...r, skills: [] as { label: string; isStarred: boolean }[] }));
+
+  const skillRows = await db
+    .select({
+      jobId: jobSkillsTable.jobId,
+      label: skillsTable.label,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobSkillsTable)
+    .innerJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+    .where(inArray(jobSkillsTable.jobId, jobIds));
+
+  const skillsByJobId = new Map<number, { label: string; isStarred: boolean }[]>();
+  for (const { jobId, label, isStarred } of skillRows) {
+    const arr = skillsByJobId.get(jobId) || [];
+    arr.push({ label, isStarred });
+    skillsByJobId.set(jobId, arr);
+  }
+
+  return rows.map(r => ({ ...r, skills: skillsByJobId.get(r.jobId) || [] }));
+}
