@@ -450,3 +450,34 @@
 .animate-spin-slow {
   animation: spin 3s linear infinite;
 }
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
+}
+.animate-shake {
+  animation: shake 0.8s infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(-1px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-blink {
+  animation: blink 1.2s infinite;
+}

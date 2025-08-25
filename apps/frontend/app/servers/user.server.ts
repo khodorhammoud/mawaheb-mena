@@ -8,7 +8,7 @@ import {
   freelancersTable,
   jobApplicationsTable,
   skillsTable,
-  timesheetEntriesTable,
+  timesheetDayEntriesTable,
   socialAccountsTable,
   UsersTable,
   userVerificationsTable,
@@ -356,17 +356,15 @@ export async function getCurrentUserAccountType(request: Request): Promise<Accou
 }
 
 /**
- * Sets the user as verified in the database.
- * @param userId The user's id
+ * get the current freelancer ID from the session
+ * @param request : the request object
+ * @returns number | null: the freelancer ID of the current user, or null if not a freelancer
  */
-export async function setUserVerified(userId: number) {
-  // Drizzle expects camelCase as defined in the schema
-  await db
-    .update(UsersTable)
-    .set({ isVerified: true } as any)
-    .where(eq(UsersTable.id, userId));
+export async function getCurrentFreelancerId(request: Request): Promise<number | null> {
+  const currentUser = await getCurrentUser(request);
+  if (!currentUser) return null;
+  return await getFreelancerIdFromUserId(currentUser.id);
 }
-
 /****************************************************************
  *                                                              *
  *                    user/account creation                     *
@@ -977,8 +975,8 @@ export async function exportUserData(userId: number) {
     // Get freelancer's timesheet entries
     const timesheetEntries = await db
       .select()
-      .from(timesheetEntriesTable)
-      .where(eq(timesheetEntriesTable.freelancerId, freelancer.id));
+      .from(timesheetDayEntriesTable)
+      .where(eq(timesheetDayEntriesTable.freelancerId, freelancer.id));
 
     // Get freelancer's skills
     const freelancerSkills = await db
