@@ -7,7 +7,7 @@ import SignUpEmployerPage from './Signup';
 import {
   generateVerificationToken,
   getProfileInfo,
-  setUserVerified,
+  verifyUserAccount,
 } from '../../servers/user.server';
 import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
@@ -136,7 +136,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     /* 3. Set isVerified = true for this user (instead of sending verification email) */
-    await setUserVerified(userId); // ✅ No ts-expect-error, full type safety
+    await verifyUserAccount({ userId }); // ✅ No ts-expect-error, full type safety
 
     /* 4. Commented out: Finish profile & send verification mail */
     /*

@@ -3,7 +3,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/nod
 import {
   generateVerificationToken,
   getProfileInfo,
-  setUserVerified,
+  verifyUserAccount,
 } from '../../servers/user.server';
 import { RegistrationError } from '../../common/errors/UserError';
 // import { sendEmail } from '../../servers/emails/emailSender.server';
@@ -93,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const userId = await authenticator.authenticate('register', request);
 
     // 2. Set isVerified = true directly in the DB (NO email verification)
-    await setUserVerified(userId);
+    await verifyUserAccount({ userId });
 
     // 3. Commented out: fetch profile and send verification mail
     /*
