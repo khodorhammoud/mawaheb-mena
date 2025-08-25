@@ -5,6 +5,8 @@ import { PoolConfig } from './types/PoolConfig.js';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+dotenv.config({ override: true });
+
 // Configuration options for postgres connection
 let connectionConfig;
 
@@ -15,6 +17,7 @@ let databaseURL = '';
 //   databaseURL = process.env.PRODUCTION_DATABASE_URL as string;
 // } else {
 databaseURL = process.env.DATABASE_URL as string;
+//databaseURL = 'postgresql://postgres:pass@localhost:5432/mawaheb?schema=public';
 // }
 
 // Check if DATABASE_URL is available (for local development)
