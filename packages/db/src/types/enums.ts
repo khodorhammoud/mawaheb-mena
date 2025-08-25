@@ -119,6 +119,7 @@ export enum TimesheetStatus {
   Submitted = 'submitted',
   Approved = 'approved',
   Rejected = 'rejected',
+  Resubmitted = 'resubmitted',
 }
 
 export enum JobsOpenTo {

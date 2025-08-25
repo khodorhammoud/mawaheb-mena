@@ -84,8 +84,8 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
   useEffect(() => {
     if (verified) {
       const searchParams = new URLSearchParams();
-      // If searching/filtering, fetch a large batch (1000), else paginate
-      searchParams.set('limit', isFiltering ? '1000' : limit.toString());
+      // Always fetch ALL jobs to properly categorize them
+      searchParams.set('limit', '1000');
 
       // Pass search/filters as query params to backend
       if (searchQuery) searchParams.set('search', searchQuery);
@@ -104,7 +104,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       });
     }
     // eslint-disable-next-line
-  }, [verified, limit, searchQuery, JSON.stringify(filters)]); // Added new deps for filter/search
+  }, [verified, searchQuery, JSON.stringify(filters)]); // Removed limit dependency
 
   // Update loaded jobs when new data arrives
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     );
   });
 
-  // ✅ Group jobs based on Job Application Status (Completed Jobs - Applied Jobs - Active Jobs - Opportunity Closed)
+  // ✅ Group jobs based on Job Application Status and Job Status
   const groupedJobs = filteredJobs.reduce(
     (acc, job) => {
       // Default: "Applied" (in case no specific status is found)
@@ -165,11 +165,31 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       if (job.applicationStatus) {
         // Case 1: Application was approved (user was hired)
         if (job.applicationStatus.toLowerCase() === 'approved') {
-          // Was the job closed? If yes: completed; otherwise: active.
-          category = job.status === 'closed' ? 'Completed Jobs' : 'Active Jobs';
-        }
-        // Case 2: Application was rejected by employer
-        else if (job.applicationStatus.toLowerCase() === 'rejected') {
+          // Comprehensive categorization based on all job statuses
+          switch (job.status) {
+            case 'completed':
+              category = 'Completed Jobs';
+              break;
+            case 'closed':
+              category = 'Closed Jobs';
+              break;
+            case 'active':
+              category = 'Active Jobs';
+              break;
+            case 'paused':
+              category = 'Paused Jobs';
+              break;
+            case 'draft':
+              category = 'Draft Jobs';
+              break;
+            case 'deleted':
+              category = 'Deleted Jobs';
+              break;
+            default:
+              category = 'Unknown Status Jobs';
+              break;
+          }
+        } else if (job.applicationStatus.toLowerCase() === 'rejected') {
           category = 'Opportunity Closed';
         }
         // Case 3: Still in process (pending, shortlisted, etc.)
@@ -190,11 +210,60 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
     {} as Record<string, Job[]>
   );
 
+  // ✅ Ensure proper category order - prioritizing most important categories
+  const categoryOrder = [
+    'Completed Jobs', // Most important - finished work
+    'Active Jobs', // Currently working on
+    'Paused Jobs', // Temporarily paused
+    'Applied', // Applications submitted
+    'Closed Jobs', // Jobs that were closed
+    'Draft Jobs', // Jobs in draft state
+    'Opportunity Closed', // Rejected applications
+    'Deleted Jobs', // Deleted jobs (should be rare)
+    'Unknown Status Jobs', // Fallback for any unexpected statuses
+  ];
   const sortedCategories = Object.keys(groupedJobs).sort((a, b) => {
-    if (a === 'Active Jobs') return -1; // Always put 'Active Jobs' first
-    if (b === 'Active Jobs') return 1; // Always put 'Active Jobs' first
-    return 0; // Keep other categories in original order
+    const aIndex = categoryOrder.indexOf(a);
+    const bIndex = categoryOrder.indexOf(b);
+    if (aIndex === -1 && bIndex === -1) return 0;
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
   });
+
+  // ✅ SMART: Paginate jobs by category with flexible logic
+  const getPaginatedJobs = () => {
+    const result: Record<string, Job[]> = {};
+    let jobsShown = 0;
+    const jobsPerPage = limit;
+
+    for (const category of sortedCategories) {
+      const jobsInCategory = groupedJobs[category] || [];
+
+      if (jobsInCategory.length === 0) continue;
+
+      // Case 1: We can fit ALL jobs from this category
+      if (jobsShown + jobsInCategory.length <= jobsPerPage) {
+        result[category] = jobsInCategory;
+        jobsShown += jobsInCategory.length;
+      }
+      // Case 2: We can fit SOME jobs from this category (partial category)
+      else if (jobsShown < jobsPerPage) {
+        const remainingSlots = jobsPerPage - jobsShown;
+        result[category] = jobsInCategory.slice(0, remainingSlots);
+        jobsShown += remainingSlots;
+        break; // Stop here, don't show other categories
+      }
+      // Case 3: No more slots available
+      else {
+        break;
+      }
+    }
+
+    return result;
+  };
+
+  const paginatedJobs = getPaginatedJobs();
 
   // For the dummy mode, create 4 additional blurred jobs
   const createBlurredJobs = () => {
@@ -228,13 +297,12 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
   };
 
   // ---- ENHANCED LOAD MORE LOGIC ----
-  // Only show if not filtering, or filtering with enough jobs (10+)
+  // Check if there are more jobs to show in any category
+  const totalJobsShown = Object.values(paginatedJobs).reduce((sum, jobs) => sum + jobs.length, 0);
+  const totalJobsAvailable = Object.values(groupedJobs).reduce((sum, jobs) => sum + jobs.length, 0);
+
   const showLoadMoreButton =
-    loadedJobs.length > 0 &&
-    loadedJobs.length < totalCount &&
-    fetcher.data &&
-    fetcher.data.jobs.length === limit &&
-    (!isFiltering || filteredJobs.length >= 10); // <--- the magic
+    totalJobsShown > 0 && totalJobsShown < totalJobsAvailable && !isLoading;
 
   return (
     <div>
@@ -253,38 +321,34 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
       {/* Jobs Found */}
       {verified && (
         <p className="text-black text-sm mt-2 ml-4 mb-10">
-          <span>
-            You have{' '}
-            <span className="font-bold text-primaryColor text-base">{filteredJobs.length}</span>
-            {' job'}
-            {filteredJobs.length === 1 ? '' : 's'} matching this filter
-            {typeof totalCount === 'number' && totalCount > 0 ? (
-              <>
-                {' out of '}
-                <span className="font-bold text-primaryColor text-base">{totalCount}</span> in total
-              </>
-            ) : null}
-            .
-          </span>
+          {totalCount > 0 && (
+            <>
+              <span className="font-bold text-primaryColor text-base">
+                {totalJobsShown} {totalJobsShown === 1 ? 'job' : 'jobs'}
+              </span>
+              {` out of `}
+              <span>{totalJobsAvailable} total</span>
+            </>
+          )}
         </p>
       )}
 
       {verified ? (
         // Real Jobs UI - Not the Dummy Jobs That Appear if The User Isn't Verified
         <section className="">
-          {sortedCategories.length > 0 ? (
-            sortedCategories.map(status => (
-              <div key={status} className="mb-4">
-                <h2 className="font-semibold xl:text-3xl lg:text-2xl text-2xl ml-1 mb-6">
-                  {status}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
-                  {groupedJobs[status].map(job => (
-                    <JobCard key={job.id} onSelect={onJobSelect} job={job} />
-                  ))}
+          {Object.keys(paginatedJobs).length > 0 ? (
+            Object.keys(paginatedJobs).map(status => {
+              return (
+                <div key={status} className="mb-8">
+                  <h2 className="font-semibold xl:text-3xl lg:text-2xl text-2xl mb-4">{status}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl">
+                    {paginatedJobs[status].map(job => (
+                      <JobCard key={job.id} onSelect={onJobSelect} job={job} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
           )}
@@ -296,8 +360,8 @@ export default function MyJobs({ onJobSelect }: MyJobsProps) {
             </div>
           )}
 
-          {/* No More Jobs Message */}
-          {loadedJobs.length > 0 && loadedJobs.length === totalCount && !isLoading && (
+          {/* No More Jobs Message - Only show when there are jobs displayed and we've reached the end */}
+          {totalJobsShown > 0 && totalJobsShown === totalJobsAvailable && !isLoading && (
             <div className="mt-6 text-center">
               <p className="text-gray-500">No more jobs available.</p>
             </div>

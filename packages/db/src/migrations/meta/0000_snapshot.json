@@ -1,67 +1,9 @@
 {
-  "id": "71c29c50-c968-4b23-a658-be4558502ea4",
+  "id": "2e90994a-9277-437b-a3b5-2c1b020b5f11",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.timesheet_submission_entries": {
-      "name": "timesheet_submission_entries",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "timesheet_submission_id": {
-          "name": "timesheet_submission_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "timesheet_entry_id": {
-          "name": "timesheet_entry_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk": {
-          "name": "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk",
-          "tableFrom": "timesheet_submission_entries",
-          "tableTo": "timesheet_submissions",
-          "columnsFrom": [
-            "timesheet_submission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk": {
-          "name": "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk",
-          "tableFrom": "timesheet_submission_entries",
-          "tableTo": "timesheet_entries",
-          "columnsFrom": [
-            "timesheet_entry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -806,6 +748,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "video_attachment_id": {
+          "name": "video_attachment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "video_type": {
+          "name": "video_type",
+          "type": "video_attachment_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
         "certificates": {
           "name": "certificates",
           "type": "jsonb",
@@ -887,6 +842,19 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "freelancers_video_attachment_id_attachments_id_fk": {
+          "name": "freelancers_video_attachment_id_attachments_id_fk",
+          "tableFrom": "freelancers",
+          "tableTo": "attachments",
+          "columnsFrom": [
+            "video_attachment_id"
           ],
           "columnsTo": [
             "id"
@@ -1715,8 +1683,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.timesheet_entries": {
-      "name": "timesheet_entries",
+    "public.timesheet_day_entries": {
+      "name": "timesheet_day_entries",
       "schema": "",
       "columns": {
         "id": {
@@ -1729,31 +1697,31 @@
           "name": "freelancer_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "job_application_id": {
           "name": "job_application_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "date": {
-          "name": "date",
+        "work_date": {
+          "name": "work_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "start_time": {
-          "name": "start_time",
-          "type": "timestamp",
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "end_time": {
-          "name": "end_time",
-          "type": "timestamp",
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -1761,90 +1729,19 @@
           "primaryKey": false,
           "notNull": false
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "timesheet_entries_freelancer_id_freelancers_id_fk": {
-          "name": "timesheet_entries_freelancer_id_freelancers_id_fk",
-          "tableFrom": "timesheet_entries",
-          "tableTo": "freelancers",
-          "columnsFrom": [
-            "freelancer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "timesheet_entries_job_application_id_job_applications_id_fk": {
-          "name": "timesheet_entries_job_application_id_job_applications_id_fk",
-          "tableFrom": "timesheet_entries",
-          "tableTo": "job_applications",
-          "columnsFrom": [
-            "job_application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.timesheet_submissions": {
-      "name": "timesheet_submissions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "freelancer_id": {
-          "name": "freelancer_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "job_application_id": {
-          "name": "job_application_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "submission_date": {
-          "name": "submission_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "total_hours": {
-          "name": "total_hours",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
+        "entry_status": {
+          "name": "entry_status",
           "type": "timesheet_status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'submitted'"
+          "default": "'draft'"
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1863,9 +1760,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "timesheet_submissions_freelancer_id_freelancers_id_fk": {
-          "name": "timesheet_submissions_freelancer_id_freelancers_id_fk",
-          "tableFrom": "timesheet_submissions",
+        "timesheet_day_entries_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_day_entries_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_day_entries",
           "tableTo": "freelancers",
           "columnsFrom": [
             "freelancer_id"
@@ -1873,12 +1770,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "timesheet_submissions_job_application_id_job_applications_id_fk": {
-          "name": "timesheet_submissions_job_application_id_job_applications_id_fk",
-          "tableFrom": "timesheet_submissions",
+        "timesheet_day_entries_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_day_entries_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_day_entries",
           "tableTo": "job_applications",
           "columnsFrom": [
             "job_application_id"
@@ -1886,7 +1783,164 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.timesheet_week_day_entries": {
+      "name": "timesheet_week_day_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "week_id": {
+          "name": "week_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_entry_id": {
+          "name": "day_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_week_day_entries_week_id_timesheet_week_entries_id_fk": {
+          "name": "timesheet_week_day_entries_week_id_timesheet_week_entries_id_fk",
+          "tableFrom": "timesheet_week_day_entries",
+          "tableTo": "timesheet_week_entries",
+          "columnsFrom": [
+            "week_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "timesheet_week_day_entries_day_entry_id_timesheet_day_entries_id_fk": {
+          "name": "timesheet_week_day_entries_day_entry_id_timesheet_day_entries_id_fk",
+          "tableFrom": "timesheet_week_day_entries",
+          "tableTo": "timesheet_day_entries",
+          "columnsFrom": [
+            "day_entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.timesheet_week_entries": {
+      "name": "timesheet_week_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "freelancer_id": {
+          "name": "freelancer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_application_id": {
+          "name": "job_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "week_start": {
+          "name": "week_start",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "week_end": {
+          "name": "week_end",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submission_date": {
+          "name": "submission_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "total_hours": {
+          "name": "total_hours",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "status": {
+          "name": "status",
+          "type": "timesheet_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'submitted'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "timesheet_week_entries_freelancer_id_freelancers_id_fk": {
+          "name": "timesheet_week_entries_freelancer_id_freelancers_id_fk",
+          "tableFrom": "timesheet_week_entries",
+          "tableTo": "freelancers",
+          "columnsFrom": [
+            "freelancer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "timesheet_week_entries_job_application_id_job_applications_id_fk": {
+          "name": "timesheet_week_entries_job_application_id_job_applications_id_fk",
+          "tableFrom": "timesheet_week_entries",
+          "tableTo": "job_applications",
+          "columnsFrom": [
+            "job_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -2128,6 +2182,7 @@
         "active",
         "closed",
         "completed",
+        "running",
         "paused",
         "deleted"
       ]
@@ -2189,7 +2244,8 @@
         "draft",
         "submitted",
         "approved",
-        "rejected"
+        "rejected",
+        "resubmitted"
       ]
     },
     "public.user_role": {
@@ -2198,6 +2254,14 @@
       "values": [
         "admin",
         "user"
+      ]
+    },
+    "public.video_attachment_type": {
+      "name": "video_attachment_type",
+      "schema": "public",
+      "values": [
+        "link",
+        "attachment"
       ]
     }
   },

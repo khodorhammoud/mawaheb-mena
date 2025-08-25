@@ -10,6 +10,7 @@ export type Job = JobBase & {
   fulfilledAt: Date | string | null;
   expectedHourlyRate?: number | null;
   requiredSkills?: { id: number; name: string; isStarred: boolean }[];
+  jobCategoryName?: string; // Add this for joined category name
 };
 
 export type JobCardData = {

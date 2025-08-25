@@ -384,6 +384,8 @@ interface JobRecommendation {
   locationPreference: string;
   projectType: string;
   experienceLevel: ExperienceLevel;
+  jobCategoryName: string | null;
+  expectedHourlyRate: number | null;
   matchScore: number;
   skillsMatch: {
     matchingSkills: Array<{
@@ -687,11 +689,15 @@ export async function getJobRecommendations(
         locationPreference: jobsTable.locationPreference,
         projectType: jobsTable.projectType,
         experienceLevel: jobsTable.experienceLevel,
+        jobCategoryId: jobsTable.jobCategoryId,
+        jobCategoryName: jobCategoriesTable.label,
+        expectedHourlyRate: jobsTable.expectedHourlyRate,
         createdAt: jobsTable.createdAt,
       })
       .from(jobsTable)
       .leftJoin(employersTable, eq(employersTable.id, jobsTable.employerId))
       .leftJoin(accountsTable, eq(accountsTable.id, employersTable.accountId))
+      .leftJoin(jobCategoriesTable, eq(jobsTable.jobCategoryId, jobCategoriesTable.id))
       .where(
         and(
           eq(jobsTable.status, JobStatus.Active),
@@ -749,6 +755,8 @@ export async function getJobRecommendations(
           locationPreference: job.locationPreference,
           projectType: job.projectType,
           experienceLevel: job.experienceLevel as ExperienceLevel,
+          jobCategoryName: job.jobCategoryName,
+          expectedHourlyRate: job.expectedHourlyRate,
           matchScore,
           skillsMatch: {
             matchingSkills,
@@ -1908,4 +1916,116 @@ export async function getApplicationMatchScore(
     console.error(`Error calculating match score: ${error}`);
     return 0;
   }
+}
+
+// used in the timesheets (where i see the jobs, and press manage Timesheet)
+export async function getActiveJobsForFreelancer(freelancerId: number) {
+  const rows = await db
+    .select({
+      jobAppId: jobApplicationsTable.id,
+      jobId: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      companyName: employersTable.companyName,
+      employerName: employersTable.employerName,
+      companyRepName: employersTable.companyRepName,
+      employerFirstName: UsersTable.firstName,
+      employerLastName: UsersTable.lastName,
+      status: jobsTable.status, // now showing the job's status
+      createdAt: jobApplicationsTable.createdAt,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+    })
+    .from(jobApplicationsTable)
+    .innerJoin(jobsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+    .innerJoin(employersTable, eq(jobsTable.employerId, employersTable.id))
+    .innerJoin(accountsTable, eq(employersTable.accountId, accountsTable.id))
+    .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(
+      and(
+        eq(jobApplicationsTable.freelancerId, freelancerId),
+        eq(jobsTable.status, JobStatus.Active), // filter on JobStatus
+        eq(jobApplicationsTable.status, JobApplicationStatus.Approved) // Only approved applications
+      )
+    )
+    .orderBy(desc(jobApplicationsTable.createdAt));
+
+  // fetch skills for these jobs
+  const jobIds = rows.map(r => r.jobId);
+  if (jobIds.length === 0)
+    return rows.map(r => ({ ...r, skills: [] as { label: string; isStarred: boolean }[] }));
+
+  const skillRows = await db
+    .select({
+      jobId: jobSkillsTable.jobId,
+      label: skillsTable.label,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobSkillsTable)
+    .innerJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+    .where(inArray(jobSkillsTable.jobId, jobIds));
+
+  const skillsByJobId = new Map<number, { label: string; isStarred: boolean }[]>();
+  for (const { jobId, label, isStarred } of skillRows) {
+    const arr = skillsByJobId.get(jobId) || [];
+    arr.push({ label, isStarred });
+    skillsByJobId.set(jobId, arr);
+  }
+
+  return rows.map(r => ({ ...r, skills: skillsByJobId.get(r.jobId) || [] }));
+}
+
+// Get employer jobs with approved applications (for timesheet management)
+export async function getEmployerJobsWithApprovedApplications(employerId: number) {
+  const rows = await db
+    .select({
+      jobId: jobsTable.id,
+      title: jobsTable.title,
+      description: jobsTable.description,
+      budget: jobsTable.budget,
+      experienceLevel: jobsTable.experienceLevel,
+      jobApplicationId: jobApplicationsTable.id,
+      freelancerId: jobApplicationsTable.freelancerId,
+      freelancerFirstName: UsersTable.firstName,
+      freelancerLastName: UsersTable.lastName,
+      status: jobsTable.status,
+      createdAt: jobApplicationsTable.createdAt,
+    })
+    .from(jobsTable)
+    .innerJoin(jobApplicationsTable, eq(jobApplicationsTable.jobId, jobsTable.id))
+    .innerJoin(freelancersTable, eq(jobApplicationsTable.freelancerId, freelancersTable.id))
+    .innerJoin(accountsTable, eq(freelancersTable.accountId, accountsTable.id))
+    .innerJoin(UsersTable, eq(accountsTable.userId, UsersTable.id))
+    .where(
+      and(
+        eq(jobsTable.employerId, employerId),
+        eq(jobsTable.status, JobStatus.Active),
+        eq(jobApplicationsTable.status, JobApplicationStatus.Approved)
+      )
+    )
+    .orderBy(desc(jobApplicationsTable.createdAt));
+
+  // fetch skills for these jobs
+  const jobIds = rows.map(r => r.jobId);
+  if (jobIds.length === 0)
+    return rows.map(r => ({ ...r, skills: [] as { label: string; isStarred: boolean }[] }));
+
+  const skillRows = await db
+    .select({
+      jobId: jobSkillsTable.jobId,
+      label: skillsTable.label,
+      isStarred: jobSkillsTable.isStarred,
+    })
+    .from(jobSkillsTable)
+    .innerJoin(skillsTable, eq(skillsTable.id, jobSkillsTable.skillId))
+    .where(inArray(jobSkillsTable.jobId, jobIds));
+
+  const skillsByJobId = new Map<number, { label: string; isStarred: boolean }[]>();
+  for (const { jobId, label, isStarred } of skillRows) {
+    const arr = skillsByJobId.get(jobId) || [];
+    arr.push({ label, isStarred });
+    skillsByJobId.set(jobId, arr);
+  }
+
+  return rows.map(r => ({ ...r, skills: skillsByJobId.get(r.jobId) || [] }));
 }

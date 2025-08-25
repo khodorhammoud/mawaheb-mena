@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : undefined;
 
     // Exclude job IDs already applied to (array of job IDs)
-    const jobIdsToExclude = url.searchParams.getAll('jobIdsToExclude').map(Number);
+    const jobIdsToExclude = url.searchParams.getAll('jobIdsToExclude').map(Number).filter(Boolean);
 
     // Parse numeric filters (budget, working hours)
     const budgetRaw = url.searchParams.get('budget');

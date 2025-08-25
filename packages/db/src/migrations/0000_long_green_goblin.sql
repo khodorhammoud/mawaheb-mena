@@ -7,21 +7,15 @@ CREATE TYPE "public"."day_of_week" AS ENUM('Monday', 'Tuesday', 'Wednesday', 'Th
 CREATE TYPE "public"."eployer_account_type" AS ENUM('personal', 'company');--> statement-breakpoint
 CREATE TYPE "public"."experience_level" AS ENUM('entry_level', 'mid_level', 'senior_level');--> statement-breakpoint
 CREATE TYPE "public"."job_application_status" AS ENUM('pending', 'shortlisted', 'approved', 'rejected');--> statement-breakpoint
-CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'completed', 'paused', 'deleted');--> statement-breakpoint
+CREATE TYPE "public"."job_status" AS ENUM('draft', 'active', 'closed', 'completed', 'running', 'paused', 'deleted');--> statement-breakpoint
 CREATE TYPE "public"."jobs_open_to" AS ENUM('full-time-roles', 'part-time-roles', 'employee-roles');--> statement-breakpoint
 CREATE TYPE "public"."language" AS ENUM('Spanish', 'English', 'Italian', 'Arabic', 'French', 'Turkish', 'German', 'Portuguese', 'Russian');--> statement-breakpoint
 CREATE TYPE "public"."location_preference_type" AS ENUM('remote', 'onsite', 'mixed');--> statement-breakpoint
 CREATE TYPE "public"."project_type" AS ENUM('short-term', 'long-term', 'per-project-basis');--> statement-breakpoint
 CREATE TYPE "public"."provider" AS ENUM('credentials', 'social_account');--> statement-breakpoint
-CREATE TYPE "public"."timesheet_status" AS ENUM('draft', 'submitted', 'approved', 'rejected');--> statement-breakpoint
+CREATE TYPE "public"."timesheet_status" AS ENUM('draft', 'submitted', 'approved', 'rejected', 'resubmitted');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'user');--> statement-breakpoint
 CREATE TYPE "public"."video_attachment_type" AS ENUM('link', 'attachment');--> statement-breakpoint
-CREATE TABLE "timesheet_submission_entries" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"timesheet_submission_id" integer,
-	"timesheet_entry_id" integer
-);
---> statement-breakpoint
 CREATE TABLE "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"first_name" varchar(80),
@@ -255,26 +249,36 @@ CREATE TABLE "social_accounts" (
 	"expires_at" timestamp
 );
 --> statement-breakpoint
-CREATE TABLE "timesheet_entries" (
+CREATE TABLE "timesheet_day_entries" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"freelancer_id" integer,
-	"job_application_id" integer,
-	"date" date,
-	"start_time" timestamp,
-	"end_time" timestamp,
+	"freelancer_id" integer NOT NULL,
+	"job_application_id" integer NOT NULL,
+	"work_date" date NOT NULL,
+	"start_at" timestamp with time zone NOT NULL,
+	"end_at" timestamp with time zone NOT NULL,
 	"description" text,
-	"created_at" timestamp DEFAULT now()
-);
---> statement-breakpoint
-CREATE TABLE "timesheet_submissions" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"freelancer_id" integer,
-	"job_application_id" integer,
-	"submission_date" date NOT NULL,
-	"total_hours" numeric NOT NULL,
-	"status" timesheet_status DEFAULT 'submitted' NOT NULL,
+	"entry_status" timesheet_status DEFAULT 'draft' NOT NULL,
+	"note" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE "timesheet_week_day_entries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"week_id" integer NOT NULL,
+	"day_entry_id" integer NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "timesheet_week_entries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"freelancer_id" integer NOT NULL,
+	"job_application_id" integer NOT NULL,
+	"week_start" date NOT NULL,
+	"week_end" date NOT NULL,
+	"submission_date" timestamp with time zone DEFAULT now() NOT NULL,
+	"total_hours" numeric(5, 2) DEFAULT '0' NOT NULL,
+	"status" timesheet_status DEFAULT 'submitted' NOT NULL,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "user_identifications" (
@@ -293,8 +297,6 @@ CREATE TABLE "user_verifications" (
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-ALTER TABLE "timesheet_submission_entries" ADD CONSTRAINT "timesheet_submission_entries_timesheet_submission_id_timesheet_submissions_id_fk" FOREIGN KEY ("timesheet_submission_id") REFERENCES "public"."timesheet_submissions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timesheet_submission_entries" ADD CONSTRAINT "timesheet_submission_entries_timesheet_entry_id_timesheet_entries_id_fk" FOREIGN KEY ("timesheet_entry_id") REFERENCES "public"."timesheet_entries"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account_languages" ADD CONSTRAINT "account_languages_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account_languages" ADD CONSTRAINT "account_languages_language_id_languages_id_fk" FOREIGN KEY ("language_id") REFERENCES "public"."languages"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -320,9 +322,11 @@ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_employer_id_employers_id_fk" FOREI
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "skillfolios" ADD CONSTRAINT "skillfolios_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "social_accounts" ADD CONSTRAINT "social_accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timesheet_entries" ADD CONSTRAINT "timesheet_entries_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timesheet_entries" ADD CONSTRAINT "timesheet_entries_job_application_id_job_applications_id_fk" FOREIGN KEY ("job_application_id") REFERENCES "public"."job_applications"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timesheet_submissions" ADD CONSTRAINT "timesheet_submissions_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timesheet_submissions" ADD CONSTRAINT "timesheet_submissions_job_application_id_job_applications_id_fk" FOREIGN KEY ("job_application_id") REFERENCES "public"."job_applications"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_day_entries" ADD CONSTRAINT "timesheet_day_entries_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_day_entries" ADD CONSTRAINT "timesheet_day_entries_job_application_id_job_applications_id_fk" FOREIGN KEY ("job_application_id") REFERENCES "public"."job_applications"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_week_day_entries" ADD CONSTRAINT "timesheet_week_day_entries_week_id_timesheet_week_entries_id_fk" FOREIGN KEY ("week_id") REFERENCES "public"."timesheet_week_entries"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_week_day_entries" ADD CONSTRAINT "timesheet_week_day_entries_day_entry_id_timesheet_day_entries_id_fk" FOREIGN KEY ("day_entry_id") REFERENCES "public"."timesheet_day_entries"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_week_entries" ADD CONSTRAINT "timesheet_week_entries_freelancer_id_freelancers_id_fk" FOREIGN KEY ("freelancer_id") REFERENCES "public"."freelancers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timesheet_week_entries" ADD CONSTRAINT "timesheet_week_entries_job_application_id_job_applications_id_fk" FOREIGN KEY ("job_application_id") REFERENCES "public"."job_applications"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_identifications" ADD CONSTRAINT "user_identifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_verifications" ADD CONSTRAINT "user_verifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
