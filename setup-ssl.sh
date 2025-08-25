@@ -30,4 +30,7 @@ chmod 644 ./ssl/fullchain.pem
 chmod 644 ./ssl/privkey.pem
 
 # Restart containers
-docker-compose up -d 
+docker-compose up -d
+
+# reason to build
+# reason to build

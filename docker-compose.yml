@@ -14,7 +14,10 @@ services:
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
-    restart: unless-stopped # Restart if stopped unless explicitly stopped by user
+      - FRONTEND_URL=http://frontend:5173
+      - BACKEND_URL=http://backend:3002
+      - CMS_BASE_URL=http://cms:3001
+    restart: unless-stopped
     networks:
       - app-network # Use the custom bridge network for communication with other services
     depends_on:
@@ -39,11 +42,12 @@ services:
       - '3002:3002'
     environment:
       - NODE_ENV=production
-      - REDIS_HOST=redis # Name of Redis service in Compose (Docker DNS resolves it)
-      # - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - FRONTEND_URL=http://localhost:5173
-      - PORT=3002
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - FRONTEND_URL=http://frontend:5173
+      - PORT=3002
+      - HOST_URL=http://localhost:3002
+      - NEO4J_URL=bolt://neo4j:7687
     restart: unless-stopped
     networks:
       - app-network
@@ -68,6 +72,8 @@ services:
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - FRONTEND_URL=http://frontend:5173
+      - PORT=3001
     restart: unless-stopped
     networks:
       - app-network
@@ -78,19 +84,28 @@ services:
       retries: 3
       start_period: 10s
 
-  # neo4j:
-  #   image: neo4j:latest
-  #   volumes:
-  #     - ./apps/neo4j/db/logs:/logs
-  #     - ./apps/neo4j/db/config:/config
-  #     - ./apps/neo4j/db/data:/data
-  #     - ./apps/neo4j/db/plugins:/plugins
-  #   environment:
-  #     - NEO4J_AUTH=neo4j/password
-  #   ports:
-  #     - '7474:7474'
-  #     - '7687:7687'
-  #   restart: on-failure
+  neo4j:
+    image: neo4j:5.26.9-community
+    container_name: neo4j
+    volumes:
+      - ./apps/packages/db/neo4j/logs:/logs
+      - ./apps/packages/db/neo4j/config:/config
+      - ./apps/packages/db/neo4j/data:/data
+      - ./apps/packages/db/neo4j/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7474/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # ------------------ REDIS SERVICE ------------------
   redis:
