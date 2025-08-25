@@ -1,0 +1,114 @@
+services:
+  frontend:
+    # build:
+    #   context: .
+    #   dockerfile: frontend.Dockerfile
+    image: jasonjinkson/mawaheb-mena:frontend-latest
+    container_name: frontend
+    ports:
+      - '5173:5173'
+    environment:
+      - NODE_ENV=production
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - cms
+      - backend
+      - redis
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  backend:
+    # build:
+    #   context: .
+    #   dockerfile: backend.Dockerfile
+    image: jasonjinkson/mawaheb-mena:backend-latest
+    container_name: backend
+    ports:
+      - '3002:3002'
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      # - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - FRONTEND_URL=http://localhost:5173
+      - PORT=3002
+      - REDIS_PORT=6379
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3002/health/ || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  cms:
+    # build:
+    #   context: .
+    #   dockerfile: cms.Dockerfile
+    image: jasonjinkson/mawaheb-mena:cms-latest
+    container_name: cms
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/healthcheck || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # neo4j:
+  #   image: neo4j:latest
+  #   volumes:
+  #     - ./apps/neo4j/db/logs:/logs
+  #     - ./apps/neo4j/db/config:/config
+  #     - ./apps/neo4j/db/data:/data
+  #     - ./apps/neo4j/db/plugins:/plugins
+  #   environment:
+  #     - NEO4J_AUTH=neo4j/password
+  #   ports:
+  #     - '7474:7474'
+  #     - '7687:7687'
+  #   restart: on-failure
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
+  # postgres-data:

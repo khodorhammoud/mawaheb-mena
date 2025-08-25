@@ -76,6 +76,12 @@ if (!connectionConfig) {
     throw new Error('Missing db connection environment variables');
   }
 
+  console.log('PGHOST', PGHOST);
+  console.log('PGDATABASE', PGDATABASE);
+  console.log('PGUSER', PGUSER);
+  console.log('PGPASSWORD', PGPASSWORD);
+  console.log('ENDPOINT_ID', ENDPOINT_ID);
+
   connectionConfig = {
     host: PGHOST,
     database: PGDATABASE,

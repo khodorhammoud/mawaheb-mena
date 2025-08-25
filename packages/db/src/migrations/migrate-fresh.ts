@@ -38,6 +38,8 @@ const confirm = async (message: string): Promise<boolean> => {
 async function dropAllTables() {
   console.log('Connecting to database...');
 
+  console.log('DATABASE_URL', DATABASE_URL);
+
   const client = new Client({
     connectionString: DATABASE_URL,
   });
