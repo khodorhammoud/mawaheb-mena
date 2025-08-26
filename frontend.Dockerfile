@@ -34,7 +34,7 @@ COPY apps/frontend/.env.production ./apps/frontend/.env
 RUN npm install -g pnpm
 
 # Install all dependencies (monorepo-wide)
-RUN pnpm install
+RUN pnpm install --frozen-lockfile -r
 
 # Set production mode to optimize builds
 # It affects how builds run — and how your app behaves later when it starts, i don't know how this happens basically, but yeah use it 😂
