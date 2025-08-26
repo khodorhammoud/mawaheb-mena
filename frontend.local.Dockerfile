@@ -65,11 +65,15 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/eslint-config/package.json ./packages/eslint-config/
 COPY packages/typescript-config/package.json ./packages/typescript-config/
 
-# Install dependencies
+# Install dependencies first
 RUN pnpm install
 
+# Copy source code (will be overridden by bind mount but needed for initial setup)
+COPY apps/frontend ./apps/frontend/
+COPY packages ./packages/
+
 # Start command (source code will be mounted)
-CMD ["turbo", "dev", "--filter=frontend", "--host", "0.0.0.0"]
+CMD ["turbo", "dev", "--filter=frontend"]
 
 # Production stage - much smaller
 FROM node:20-alpine AS runner

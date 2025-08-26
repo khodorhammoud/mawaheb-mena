@@ -1,6 +1,6 @@
 // apps/frontend/app/routes/api.jobs-recommendationJobs.ts
 import { LoaderFunctionArgs } from '@remix-run/node';
-import { getJobRecommendations } from '../servers/job.server';
+import { getAllJobs, getJobRecommendations } from '../servers/job.server';
 import { requireUserIsFreelancerPublished } from '../auth/auth.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -27,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // Get ALL possible recommendations
-    const allRecommendations = await getJobRecommendations(freelancerId, 1000);
+    const allRecommendations = await getAllJobs(freelancerId, 1000);
     // console.log('💡 ALL recommendations found:', allRecommendations.length);
 
     // Now paginate

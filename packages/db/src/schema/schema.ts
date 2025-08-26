@@ -561,62 +561,49 @@ export const reviewsTable = pgTable('reviews', {
   reviewType: text('review_type').notNull(),
 });
 
-/**
- * Define the Timesheets table schema
- *
- * @property id - serial primary key
- * @property freelancer_id - integer referencing the freelancersTable id
- * @property jobApplicationId - integer referencing the jobApplicationsTable id
- * @property start_time - timestamp
- * @property end_time - timestamp
- * @property description - text
- * @property created_at - timestamp
- */
-export const timesheetEntriesTable = pgTable('timesheet_entries', {
+// ───────────────────────────── Timesheets ─────────────────────────────
+export const timesheetDayEntriesTable = pgTable('timesheet_day_entries', {
   id: serial('id').primaryKey(),
-  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
-  jobApplicationId: integer('job_application_id').references(() => jobApplicationsTable.id),
-  date: date('date'),
-  startTime: timestamp('start_time'),
-  endTime: timestamp('end_time'),
+  freelancerId: integer('freelancer_id')
+    .notNull()
+    .references(() => freelancersTable.id, { onDelete: 'cascade' }),
+  jobApplicationId: integer('job_application_id')
+    .notNull()
+    .references(() => jobApplicationsTable.id, { onDelete: 'cascade' }),
+  workDate: date('work_date').notNull(),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
   description: text('description'),
-  createdAt: timestamp('created_at').default(sql`now()`),
-});
-
-/**
- * Define the relation between timesheet submissions and timesheet entries where each timesheet submission can have zero to many timesheet entries
- * @property id - serial primary key
- * @property timesheet_submission_id - integer referencing the timesheetSubmissionsTable id
- * @property timesheet_entry_id - integer referencing the timesheetEntriesTable id
- */
-export const TimesheetSubmissionEntriesTable = pgTable('timesheet_submission_entries', {
-  id: serial('id').primaryKey(),
-  timesheetSubmissionId: integer('timesheet_submission_id').references(
-    () => timesheetSubmissionsTable.id
-  ),
-  timesheetEntryId: integer('timesheet_entry_id').references(() => timesheetEntriesTable.id),
-});
-
-/**
- * Define the timesheet submissions table schema
- * @property id - serial primary key
- * @property freelancer_id - integer referencing the freelancersTable id
- * @property job_application_id - integer referencing the jobApplicationsTable id
- * @property submission_date - date
- * @property total_hours - numeric
- * @property status - varchar with length 50
- * @property created_at - timestamp
- * @property updated_at - timestamp
- */
-export const timesheetSubmissionsTable = pgTable('timesheet_submissions', {
-  id: serial('id').primaryKey(),
-  freelancerId: integer('freelancer_id').references(() => freelancersTable.id),
-  jobApplicationId: integer('job_application_id').references(() => jobApplicationsTable.id),
-  submissionDate: date('submission_date').notNull(), // The date the work was performed
-  totalHours: numeric('total_hours').notNull(),
-  status: timesheetStatusEnum('status').notNull().default(TimesheetStatus.Submitted), // pending, approved, rejected
+  entryStatus: timesheetStatusEnum('entry_status').notNull().default('draft'),
+  note: text('note'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const timesheetWeekEntriesTable = pgTable('timesheet_week_entries', {
+  id: serial('id').primaryKey(),
+  freelancerId: integer('freelancer_id')
+    .notNull()
+    .references(() => freelancersTable.id, { onDelete: 'cascade' }),
+  jobApplicationId: integer('job_application_id')
+    .notNull()
+    .references(() => jobApplicationsTable.id, { onDelete: 'cascade' }),
+  weekStart: date('week_start').notNull(),
+  weekEnd: date('week_end').notNull(),
+  submissionDate: timestamp('submission_date', { withTimezone: true }).defaultNow().notNull(),
+  totalHours: numeric('total_hours', { precision: 5, scale: 2 }).notNull().default('0'),
+  status: timesheetStatusEnum('status').notNull().default('submitted'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const timesheetWeekDayEntriesTable = pgTable('timesheet_week_day_entries', {
+  id: serial('id').primaryKey(),
+  weekId: integer('week_id')
+    .notNull()
+    .references(() => timesheetWeekEntriesTable.id, { onDelete: 'cascade' }),
+  dayEntryId: integer('day_entry_id')
+    .notNull()
+    .references(() => timesheetDayEntriesTable.id, { onDelete: 'cascade' }),
 });
 
 /**

@@ -14,12 +14,18 @@ import {
 } from 'date-fns';
 
 type CalendarProps = {
-  selectedDate: Date | null;
-  onDateSelect: (date: Date) => void;
-  onClose: () => void;
+  selectedDate?: Date | null;
+  onDateSelect?: (date: Date) => void;
+  onClose?: () => void;
+  highlightedDates?: string[]; // Add this for highlighting specific dates
 };
 
-export default function Calendar({ selectedDate, onDateSelect, onClose }: CalendarProps) {
+export default function Calendar({
+  selectedDate,
+  onDateSelect,
+  onClose,
+  highlightedDates = [],
+}: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -56,16 +62,21 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
     for (let i = 0; i < 42; i++) {
       const day = addDays(startDate, i);
       const isSelected = selectedDate && isSameDay(day, selectedDate);
+      const isHighlighted = highlightedDates.includes(format(day, 'yyyy-MM-dd'));
 
       days.push(
         <div
           key={i}
           className={`p-1 text-center cursor-pointer rounded-full ${
-            isSelected ? 'bg-primaryColor text-white' : 'hover:border hover:border-primaryColor'
+            isSelected
+              ? 'bg-primaryColor text-white'
+              : isHighlighted
+                ? 'bg-yellow-200 border-2 border-yellow-400'
+                : 'hover:border hover:border-primaryColor'
           }`}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
-              onDateSelect(day); // Trigger parent function
+              onDateSelect?.(day); // Trigger parent function
             }
           }}
           tabIndex={0}
@@ -75,7 +86,7 @@ export default function Calendar({ selectedDate, onDateSelect, onClose }: Calend
             height: '2rem',
           }}
           onClick={() => {
-            onDateSelect(day); // Trigger parent function
+            onDateSelect?.(day); // Trigger parent function
           }}
         >
           {format(day, 'd')}

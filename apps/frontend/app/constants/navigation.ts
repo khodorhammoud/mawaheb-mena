@@ -53,7 +53,7 @@ export const sidebarEmployerNav = function (t: TFunction) {
     },
     {
       label: t('dashboardEmployerTimeSheetLable'),
-      href: '/timesheet',
+      href: '/timesheets',
       icon: FaFileAlt, // Time Sheet icon
     },
     {
@@ -86,7 +86,7 @@ export const sidebarFreelancerNav = function (t: TFunction, accountStatus?: stri
   navItems.push(
     {
       label: t('dashboardFreelancerTimeSheetLable'),
-      href: '/timesheet',
+      href: '/timesheets',
       icon: FaFileAlt,
     },
     {

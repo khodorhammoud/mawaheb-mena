@@ -35,6 +35,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       getNotifications(userId),
     ]);
 
+    // Debug: Log user ID and notifications count
+    // console.log('🔍 [DASHBOARD LOADER] User ID:', userId);
+    // console.log('🔍 [DASHBOARD LOADER] Notifications count:', notifications?.length || 0);
+    // console.log('🔍 [DASHBOARD LOADER] Current user ID:', currentUser?.id);
+
     // Ensure isOnboarded is a boolean
     const isOnboarded = Boolean(currentUser?.isOnboarded);
 

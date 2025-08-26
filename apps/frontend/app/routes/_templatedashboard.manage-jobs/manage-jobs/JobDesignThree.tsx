@@ -61,8 +61,7 @@ export default function JobDesignThree({
       )}
     >
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center space-x-2 mb-4">
-        {/* Show Edit button only when the job status is "draft" */}
+      {/* <div className="flex items-center space-x-2 mb-4">
         {status === JobStatus.Draft && (
           <Link
             to={`/edit-job/${job.id}`}
@@ -88,7 +87,7 @@ export default function JobDesignThree({
             className="w-[106px] h-[36px]"
           />
         )}
-      </div>
+      </div> */}
       {/* JOB INFORMATION */}
       <div>
         {/* Dialog wrap for the title */}

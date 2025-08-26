@@ -1,12 +1,16 @@
+# version: '3.9' # Defines the Compose file format version
+
 services:
+  # ------------------ FRONTEND SERVICE ------------------
   frontend:
+    # Optional build block (commented out because we're using a prebuilt image from Docker Hub)
     # build:
-    #   context: .
+    #   context: .               # The directory containing the Dockerfile
     #   dockerfile: frontend.Dockerfile
-    image: jasonjinkson/mawaheb-mena:frontend-latest
-    container_name: frontend
+    image: jasonjinkson/mawaheb-mena:frontend-latest # Prebuilt frontend image
+    container_name: frontend # Name of the container when running
     ports:
-      - '5173:5173'
+      - '5173:5173' # Map local port 5173 → container port 5173
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -15,19 +19,20 @@ services:
       - CMS_BASE_URL=http://cms:3001
     restart: unless-stopped
     networks:
-      - app-network
+      - app-network # Use the custom bridge network for communication with other services
     depends_on:
       - cms
       - backend
       - redis
       - postgres
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health'] # Check frontend API health
+      interval: 30s # Run healthcheck every 30 seconds
+      timeout: 10s # Fail if no response within 10s
+      retries: 3 # Fail after 3 unsuccessful checks
+      start_period: 10s # Delay before starting checks
 
+  # ------------------ BACKEND SERVICE ------------------
   backend:
     # build:
     #   context: .
@@ -59,6 +64,7 @@ services:
       retries: 3
       start_period: 10s
 
+  # ------------------ CMS SERVICE ------------------
   cms:
     # build:
     #   context: .
@@ -130,14 +136,15 @@ services:
       retries: 3
       start_period: 30s
 
+  # ------------------ REDIS SERVICE ------------------
   redis:
-    image: redis:latest
+    image: redis:latest # Official Redis image
     container_name: redis
     ports:
-      - '6379:6379'
+      - '6379:6379' # Redis default port
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - redis_data:/data # Persist Redis data
+    command: redis-server --appendonly yes # Enable persistence
     restart: unless-stopped
     networks:
       - app-network
@@ -148,10 +155,12 @@ services:
       retries: 3
       start_period: 5s
 
+# ------------------ NETWORKS ------------------
 networks:
   app-network:
-    driver: bridge
+    driver: bridge # Custom bridge network for service-to-service communication
 
+# ------------------ VOLUMES ------------------
 volumes:
   redis_data:
     driver: local
