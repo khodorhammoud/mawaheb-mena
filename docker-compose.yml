@@ -20,6 +20,7 @@ services:
       - cms
       - backend
       - redis
+      - postgres
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:5173/api/health']
       interval: 30s
@@ -43,11 +44,14 @@ services:
       - PORT=3002
       - HOST_URL=http://localhost:3002
       - NEO4J_URL=bolt://neo4j:7687
+      - DATABASE_URL=postgresql://mawaheb_user:mawaheb_password@postgres:5432/mawaheb
     restart: unless-stopped
     networks:
       - app-network
     depends_on:
       - redis
+      - postgres
+      - neo4j
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3002/health/ || exit 1']
       interval: 30s
@@ -68,11 +72,36 @@ services:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - FRONTEND_URL=http://frontend:5173
       - PORT=3001
+      - DATABASE_URL=postgresql://mawaheb_user:mawaheb_password@postgres:5432/mawaheb-cms
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/healthcheck || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=mawaheb_user
+      - POSTGRES_PASSWORD=mawaheb_password
+      - POSTGRES_DB=mawaheb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d
     restart: unless-stopped
     networks:
       - app-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/healthcheck || exit 1']
+      test: ['CMD-SHELL', 'pg_isready -U mawaheb_user -d mawaheb']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -126,4 +155,5 @@ networks:
 volumes:
   redis_data:
     driver: local
-  # postgres-data:
+  postgres_data:
+    driver: local
