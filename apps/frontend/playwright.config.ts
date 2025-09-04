@@ -1,5 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { config as loadEnv } from 'dotenv';
+
+// Load test env vars from .env.test
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load test env vars from .env.test
+loadEnv({ path: path.resolve(__dirname, '.env.test') });
 
 export default defineConfig({
   testDir: './e2e',
@@ -44,7 +53,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: 'postgres://testuser:testpassword@localhost:5433/mawaheb_test_db',
+      // Use the same DATABASE_URL as global setup/teardown
+      DATABASE_URL: process.env.DATABASE_URL || '',
     },
   },
 });

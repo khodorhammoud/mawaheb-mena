@@ -1,0 +1,200 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: MAWAHEB MENA
+        - navigation [ref=e6]:
+          - link "For Employers" [ref=e7] [cursor=pointer]:
+            - /url: /for-employers
+          - link "For Freelancers" [ref=e8] [cursor=pointer]:
+            - /url: /for-freelancers
+          - link "About Us" [ref=e9] [cursor=pointer]:
+            - /url: /about-us
+          - link "Contact Us" [ref=e10] [cursor=pointer]:
+            - /url: /contact-us
+        - navigation [ref=e11]:
+          - link "Hire Now" [ref=e12] [cursor=pointer]:
+            - /url: /signup-employer
+          - link "Join Our Team" [ref=e13] [cursor=pointer]:
+            - /url: /signup-freelancer
+    - generic [ref=e16]:
+      - generic [ref=e18]:
+        - heading "Log In" [level=1] [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - textbox "Email Address Enter your email" [ref=e22]
+            - generic [ref=e23]: Email Address
+          - generic [ref=e24]:
+            - textbox "Password" [ref=e25]
+            - generic [ref=e26]: Password
+            - button "👁️" [ref=e27] [cursor=pointer]
+          - link "Forgot Password?" [ref=e29] [cursor=pointer]:
+            - /url: /
+          - button "Continue" [ref=e31] [cursor=pointer]
+        - generic [ref=e34]: or
+        - generic [ref=e36]:
+          - button "Continue with Google Continue with Google" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40] [cursor=pointer]: Continue with Google
+            - img [ref=e41] [cursor=pointer]
+            - generic [ref=e46] [cursor=pointer]: Continue with Google
+          - link "Continue with LinkedIn Continue with LinkedIn" [ref=e48] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e49] [cursor=pointer]: Continue with LinkedIn
+            - img [ref=e50] [cursor=pointer]
+            - generic [ref=e52] [cursor=pointer]: Continue with LinkedIn
+          - link "Continue with Microsoft Continue with Microsoft" [ref=e54] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e55] [cursor=pointer]: Continue with Microsoft
+            - img [ref=e56] [cursor=pointer]
+            - generic [ref=e61] [cursor=pointer]: Continue with Microsoft
+        - paragraph [ref=e63]:
+          - text: Don't have an account?
+          - link "SignUp" [ref=e64] [cursor=pointer]:
+            - /url: /signup-employer
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - paragraph [ref=e71]: Working with Mawaheb MENA has been an incredible experience. The platform not only provided me with access to a wide range of exciting jobs but also supported me every step of the way.
+          - paragraph [ref=e72]: Layla Mourad
+          - paragraph [ref=e73]: Javascript Expert
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e76]
+            - img [ref=e78]
+            - img [ref=e80]
+            - img [ref=e82]
+            - img [ref=e84]
+          - generic [ref=e86]:
+            - button [ref=e87] [cursor=pointer]:
+              - img [ref=e88] [cursor=pointer]
+            - button [ref=e90] [cursor=pointer]:
+              - img [ref=e91] [cursor=pointer]
+    - contentinfo [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - heading "Join our newsletter" [level=4] [ref=e96]
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - textbox [ref=e100]
+              - generic [ref=e101]: Enter your email
+            - button "Subscribe" [ref=e102] [cursor=pointer]
+        - paragraph [ref=e104]:
+          - text: By subscribing you agree to our
+          - link "Privacy Policy" [ref=e105] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e106]:
+          - generic [ref=e107]:
+            - heading "Solutions" [level=4] [ref=e108]
+            - list [ref=e109]:
+              - listitem [ref=e110]:
+                - link "1+ Freelancers" [ref=e111] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e112]:
+                - link "Delivery Teams" [ref=e113] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e114]:
+                - link "Permanent Employees" [ref=e115] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e116]:
+                - link "AI Developers" [ref=e117] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e118]:
+                - link "Technical Scoping" [ref=e119] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e120]:
+                - link "Kodeless" [ref=e121] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e122]:
+            - heading "Ecosystem" [level=4] [ref=e123]
+            - list [ref=e124]:
+              - listitem [ref=e125]:
+                - link "Studios" [ref=e126] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e127]:
+                - link "Agencies" [ref=e128] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e129]:
+                - link "Fellows" [ref=e130] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e131]:
+            - heading "Product" [level=4] [ref=e132]
+            - list [ref=e133]:
+              - listitem [ref=e134]:
+                - link "How It Works" [ref=e135] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e136]:
+                - link "Why MAWAHEB" [ref=e137] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e138]:
+                - link "Our Vetting" [ref=e139] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e140]:
+                - link "vs. Employees" [ref=e141] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e142]:
+                - link "vs. Agencies" [ref=e143] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e144]:
+                - link "FAQ" [ref=e145] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e146]:
+            - heading "For Freelancers" [level=4] [ref=e147]
+            - list [ref=e148]:
+              - listitem [ref=e149]:
+                - link "Benefits" [ref=e150] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e151]:
+                - link "How It Works" [ref=e152] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e153]:
+                - link "How To Join" [ref=e154] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e155]:
+                - link "FAQ" [ref=e156] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e157]:
+            - heading "Company" [level=4] [ref=e158]
+            - list [ref=e159]:
+              - listitem [ref=e160]:
+                - link "About Us" [ref=e161] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e162]:
+                - link "Press" [ref=e163] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e164]:
+                - link "Why We Do This" [ref=e165] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e166]:
+                - link "Our Partners" [ref=e167] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e168]:
+                - link "Who We Are" [ref=e169] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e170]:
+                - link "Careers" [ref=e171] [cursor=pointer]:
+                  - /url: "#"
+        - generic [ref=e172]:
+          - generic [ref=e173]: © 2024 Mawaheb. All rights reserved.
+          - generic [ref=e174]:
+            - link "Privacy Policy" [ref=e175] [cursor=pointer]:
+              - /url: "#"
+            - link "Terms of Service" [ref=e176] [cursor=pointer]:
+              - /url: "#"
+            - link "Cookies Settings" [ref=e177] [cursor=pointer]:
+              - /url: "#"
+          - generic:
+            - link:
+              - /url: "#"
+            - link:
+              - /url: "#"
+            - link:
+              - /url: "#"
+            - link:
+              - /url: "#"
+            - link:
+              - /url: "#"
+  - region "Notifications (F8)":
+    - list
+```

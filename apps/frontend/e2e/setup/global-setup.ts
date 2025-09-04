@@ -2,52 +2,62 @@ import { execSync } from 'child_process';
 import * as path from 'path';
 import { FullConfig } from '@playwright/test';
 import { fileURLToPath } from 'url';
+import { config as loadEnv } from 'dotenv';
+import postgres from 'postgres';
 
 // Get current directory
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(currentDir, '../../../../');
 
 /**
- * This global setup file runs before all tests and is responsible for:
- * 1. Starting the test database Docker container
- * 2. Setting up the database schema and seed data
- * 3. Setting up the CMS database with necessary structure
- * 4. Seeding the CMS database with data from the dump file
+ * Global setup for local E2E:
+ * - Load .env.test
+ * - Ensure the test database exists (create if missing)
+ * - Run migrations and seed on the local test DB
  */
 async function globalSetup(config: FullConfig) {
   console.log('Starting global setup for tests...');
 
   try {
-    // Start the test database with Docker
-    console.log('Starting test database container...');
-    execSync('pnpm db:test:up', {
-      cwd: projectRoot,
+    // Load test env
+    loadEnv({ path: path.resolve(projectRoot, 'apps/frontend/.env.test') });
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) throw new Error('DATABASE_URL must be set in apps/frontend/.env.test');
+
+    // Ensure test DB exists by connecting to the server database and creating it if needed
+    const dbUrl = new URL(databaseUrl);
+    const targetDbName = dbUrl.pathname.replace('/', '');
+    const adminUrl = new URL(databaseUrl);
+    adminUrl.pathname = '/postgres';
+
+    console.log(`Ensuring test database exists: ${targetDbName}`);
+    const adminSql = postgres(adminUrl.toString());
+    try {
+      // terminate existing connections if create fails later
+      const dbs = await adminSql`SELECT 1 FROM pg_database WHERE datname = ${targetDbName}`;
+      if (dbs.length === 0) {
+        await adminSql.unsafe(`CREATE DATABASE ${targetDbName}`);
+        console.log(`Created database ${targetDbName}`);
+      } else {
+        console.log(`Database ${targetDbName} already exists`);
+      }
+    } finally {
+      await adminSql.end();
+    }
+
+    // Run migrations and seed against the test DB
+    console.log('Running migrations...');
+    execSync('pnpm run db:migrate', {
+      cwd: path.resolve(projectRoot, 'packages/db'),
       stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: databaseUrl },
     });
 
-    // Give the database a moment to fully initialize
-    console.log('Waiting for database to be ready...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    // Run the database setup script
-    console.log('Setting up test database...');
-    execSync('pnpm db:test:setup', {
-      cwd: projectRoot,
+    console.log('Seeding database...');
+    execSync('pnpm run db:seed', {
+      cwd: path.resolve(projectRoot, 'packages/db'),
       stdio: 'inherit',
-    });
-
-    // Setup CMS database structure
-    console.log('Setting up CMS test database...');
-    execSync('pnpm db:test:cms:setup', {
-      cwd: projectRoot,
-      stdio: 'inherit',
-    });
-
-    // Seed CMS database with data from dump file
-    console.log('Seeding CMS test database from dump file...');
-    execSync('pnpm db:test:cms:seed', {
-      cwd: projectRoot,
-      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: databaseUrl },
     });
 
     console.log('Global setup completed successfully');

@@ -147,7 +147,7 @@ export async function action({ request }: ActionFunctionArgs) {
           success: false,
           error: { message: 'Failed to register user. Please try again later.' },
         },
-        500
+        { status: 500 }
       );
 
     const token = await generateVerificationToken(userId);
