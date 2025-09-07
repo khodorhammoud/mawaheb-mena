@@ -40,146 +40,146 @@ test.describe('Employer signup flow', () => {
   });
 
   // Smoke test: signup page loads
-  // test('smoke: employer signup page loads correctly', async ({ page }) => {
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
-  //   await expect(page).toHaveURL(/\/signup-employer/);
-  //   await expect(page.locator("form[action='/signup-employer']")).toBeVisible();
-  // });
+  test('smoke: employer signup page loads correctly', async ({ page }) => {
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/signup-employer/);
+    await expect(page.locator("form[action='/signup-employer']")).toBeVisible();
+  });
 
-  // // Test form fields are present and fillable
-  // test('form fields are present and fillable', async ({ page }) => {
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+  // Test form fields are present and fillable
+  test('form fields are present and fillable', async ({ page }) => {
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
-  //   const signupForm = page.locator("form[action='/signup-employer']");
+    const signupForm = page.locator("form[action='/signup-employer']");
 
-  //   // Check all form fields are present
-  //   await expect(signupForm.getByLabel('Email Address')).toBeVisible();
-  //   await expect(signupForm.getByLabel('First Name')).toBeVisible();
-  //   await expect(signupForm.getByLabel('Last Name')).toBeVisible();
-  //   await expect(signupForm.getByLabel('Password').first()).toBeVisible();
-  //   await expect(signupForm.getByLabel('Confirm Password')).toBeVisible();
-  //   await expect(signupForm.getByText('I accept the')).toBeVisible();
-  //   await expect(signupForm.getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
+    // Check all form fields are present
+    await expect(signupForm.getByLabel('Email Address')).toBeVisible();
+    await expect(signupForm.getByLabel('First Name')).toBeVisible();
+    await expect(signupForm.getByLabel('Last Name')).toBeVisible();
+    await expect(signupForm.getByLabel('Password').first()).toBeVisible();
+    await expect(signupForm.getByLabel('Confirm Password')).toBeVisible();
+    await expect(signupForm.getByText('I accept the')).toBeVisible();
+    await expect(signupForm.getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
 
-  //   // Test that fields are fillable (without checking values due to controlled components)
-  //   await signupForm.getByLabel('Email Address').fill('test@example.com');
-  //   await signupForm.getByLabel('First Name').fill('John');
-  //   await signupForm.getByLabel('Last Name').fill('Doe');
-  //   await signupForm.getByLabel('Password').first().fill('Password123!');
-  //   await signupForm.getByLabel('Confirm Password').fill('Password123!');
+    // Test that fields are fillable (without checking values due to controlled components)
+    await signupForm.getByLabel('Email Address').fill('test@example.com');
+    await signupForm.getByLabel('First Name').fill('John');
+    await signupForm.getByLabel('Last Name').fill('Doe');
+    await signupForm.getByLabel('Password').first().fill('Password123!');
+    await signupForm.getByLabel('Confirm Password').fill('Password123!');
 
-  //   // Verify fields are still visible and interactive after filling
-  //   await expect(signupForm.getByLabel('Email Address')).toBeVisible();
-  //   await expect(signupForm.getByLabel('First Name')).toBeVisible();
-  //   await expect(signupForm.getByLabel('Last Name')).toBeVisible();
-  // });
+    // Verify fields are still visible and interactive after filling
+    await expect(signupForm.getByLabel('Email Address')).toBeVisible();
+    await expect(signupForm.getByLabel('First Name')).toBeVisible();
+    await expect(signupForm.getByLabel('Last Name')).toBeVisible();
+  });
 
-  // // Test checkbox interaction
-  // test('checkbox can be clicked and toggles state', async ({ page }) => {
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+  // Test checkbox interaction
+  test('checkbox can be clicked and toggles state', async ({ page }) => {
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
-  //   const signupForm = page.locator("form[action='/signup-employer']");
-  //   const checkbox = signupForm.locator('#termsAccepted');
-  //   const label = signupForm.getByText('I accept the');
+    const signupForm = page.locator("form[action='/signup-employer']");
+    const checkbox = signupForm.locator('#termsAccepted');
+    const label = signupForm.getByText('I accept the');
 
-  //   // The checkbox should be visible
-  //   await expect(checkbox).toBeVisible();
+    // The checkbox should be visible
+    await expect(checkbox).toBeVisible();
 
-  //   // The label should be clickable
-  //   await expect(label).toBeVisible();
-  //   await expect(label).toBeEnabled();
-  // });
+    // The label should be clickable
+    await expect(label).toBeVisible();
+    await expect(label).toBeEnabled();
+  });
 
-  // // Test complete signup flow (without triggering server errors)
-  // test('form submission button is clickable', async ({ page }) => {
-  //   const { email, password } = generateEmployer();
+  // Test complete signup flow (without triggering server errors)
+  test('form submission button is clickable', async ({ page }) => {
+    const { email, password } = generateEmployer();
 
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
-  //   const signupForm = page.locator("form[action='/signup-employer']");
-  //   const submitButton = signupForm.getByRole('button', { name: 'Continue', exact: true });
+    const signupForm = page.locator("form[action='/signup-employer']");
+    const submitButton = signupForm.getByRole('button', { name: 'Continue', exact: true });
 
-  //   // Button should be visible initially
-  //   await expect(submitButton).toBeVisible();
-  //   await expect(submitButton).toBeEnabled();
+    // Button should be visible initially
+    await expect(submitButton).toBeVisible();
+    await expect(submitButton).toBeEnabled();
 
-  //   // Fill out the complete signup form
-  //   await signupForm.getByLabel('Email Address').fill(email);
-  //   await signupForm.getByLabel('First Name').fill('John');
-  //   await signupForm.getByLabel('Last Name').fill('Doe');
-  //   await signupForm.getByLabel('Password').first().fill(password);
-  //   await signupForm.getByLabel('Confirm Password').fill(password);
+    // Fill out the complete signup form
+    await signupForm.getByLabel('Email Address').fill(email);
+    await signupForm.getByLabel('First Name').fill('John');
+    await signupForm.getByLabel('Last Name').fill('Doe');
+    await signupForm.getByLabel('Password').first().fill(password);
+    await signupForm.getByLabel('Confirm Password').fill(password);
 
-  //   // Verify all fields are filled correctly
-  //   await expect(signupForm.getByLabel('Email Address')).toHaveValue(email);
-  //   await expect(signupForm.getByLabel('First Name')).toHaveValue('John');
-  //   await expect(signupForm.getByLabel('Last Name')).toHaveValue('Doe');
-  //   await expect(signupForm.getByLabel('Password').first()).toHaveValue(password);
-  //   await expect(signupForm.getByLabel('Confirm Password')).toHaveValue(password);
+    // Verify all fields are filled correctly
+    await expect(signupForm.getByLabel('Email Address')).toHaveValue(email);
+    await expect(signupForm.getByLabel('First Name')).toHaveValue('John');
+    await expect(signupForm.getByLabel('Last Name')).toHaveValue('Doe');
+    await expect(signupForm.getByLabel('Password').first()).toHaveValue(password);
+    await expect(signupForm.getByLabel('Confirm Password')).toHaveValue(password);
 
-  //   // Button should still be visible and enabled after filling form
-  //   await expect(submitButton).toBeVisible();
-  //   await expect(submitButton).toBeEnabled();
+    // Button should still be visible and enabled after filling form
+    await expect(submitButton).toBeVisible();
+    await expect(submitButton).toBeEnabled();
 
-  //   // Test that the form is ready for submission
-  //   // (We don't actually submit to avoid server errors, but we verify the form is complete)
-  //   const formData = await signupForm.evaluate(form => {
-  //     const formData = new FormData(form as HTMLFormElement);
-  //     return {
-  //       email: formData.get('email'),
-  //       firstName: formData.get('firstName'),
-  //       lastName: formData.get('lastName'),
-  //       password: formData.get('password'),
-  //       confirmPassword: formData.get('confirmPassword'),
-  //       accountType: formData.get('accountType'),
-  //       employerAccountType: formData.get('employerAccountType'),
-  //     };
-  //   });
+    // Test that the form is ready for submission
+    // (We don't actually submit to avoid server errors, but we verify the form is complete)
+    const formData = await signupForm.evaluate(form => {
+      const formData = new FormData(form as HTMLFormElement);
+      return {
+        email: formData.get('email'),
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        password: formData.get('password'),
+        confirmPassword: formData.get('confirmPassword'),
+        accountType: formData.get('accountType'),
+        employerAccountType: formData.get('employerAccountType'),
+      };
+    });
 
-  //   // Verify form data is properly set
-  //   expect(formData.email).toBe(email);
-  //   expect(formData.firstName).toBe('John');
-  //   expect(formData.lastName).toBe('Doe');
-  //   expect(formData.password).toBe(password);
-  //   expect(formData.confirmPassword).toBe(password);
-  //   expect(formData.accountType).toBe('employer'); // Note: lowercase in the actual form
-  //   expect(formData.employerAccountType).toBeTruthy();
-  // });
+    // Verify form data is properly set
+    expect(formData.email).toBe(email);
+    expect(formData.firstName).toBe('John');
+    expect(formData.lastName).toBe('Doe');
+    expect(formData.password).toBe(password);
+    expect(formData.confirmPassword).toBe(password);
+    expect(formData.accountType).toBe('employer'); // Note: lowercase in the actual form
+    expect(formData.employerAccountType).toBeTruthy();
+  });
 
-  // // Test password field validation (client-side)
-  // test('password fields accept input and show values', async ({ page }) => {
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+  // Test password field validation (client-side)
+  test('password fields accept input and show values', async ({ page }) => {
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
-  //   const signupForm = page.locator("form[action='/signup-employer']");
-  //   const passwordField = signupForm.getByLabel('Password').first();
-  //   const confirmPasswordField = signupForm.getByLabel('Confirm Password');
+    const signupForm = page.locator("form[action='/signup-employer']");
+    const passwordField = signupForm.getByLabel('Password').first();
+    const confirmPasswordField = signupForm.getByLabel('Confirm Password');
 
-  //   // Test password input
-  //   await passwordField.fill('TestPassword123!');
-  //   await confirmPasswordField.fill('TestPassword123!');
+    // Test password input
+    await passwordField.fill('TestPassword123!');
+    await confirmPasswordField.fill('TestPassword123!');
 
-  //   // Verify values are set (they should be visible in the DOM)
-  //   await expect(passwordField).toHaveValue('TestPassword123!');
-  //   await expect(confirmPasswordField).toHaveValue('TestPassword123!');
-  // });
+    // Verify values are set (they should be visible in the DOM)
+    await expect(passwordField).toHaveValue('TestPassword123!');
+    await expect(confirmPasswordField).toHaveValue('TestPassword123!');
+  });
 
-  // // Test email field validation (client-side)
-  // test('email field accepts valid email format', async ({ page }) => {
-  //   await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
+  // Test email field validation (client-side)
+  test('email field accepts valid email format', async ({ page }) => {
+    await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
-  //   const signupForm = page.locator("form[action='/signup-employer']");
-  //   const emailField = signupForm.getByLabel('Email Address');
+    const signupForm = page.locator("form[action='/signup-employer']");
+    const emailField = signupForm.getByLabel('Email Address');
 
-  //   // Test valid email
-  //   await emailField.fill('user@example.com');
-  //   await expect(emailField).toHaveValue('user@example.com');
+    // Test valid email
+    await emailField.fill('user@example.com');
+    await expect(emailField).toHaveValue('user@example.com');
 
-  //   // Test another valid email
-  //   await emailField.fill('test.user+tag@domain.co.uk');
-  //   await expect(emailField).toHaveValue('test.user+tag@domain.co.uk');
-  // });
+    // Test another valid email
+    await emailField.fill('test.user+tag@domain.co.uk');
+    await expect(emailField).toHaveValue('test.user+tag@domain.co.uk');
+  });
 
-  // // Test form accessibility and structure
+  // Test form accessibility and structure
   test('form has proper accessibility structure', async ({ page }) => {
     await page.goto('/signup-employer', { waitUntil: 'domcontentloaded' });
 
@@ -198,6 +198,10 @@ test.describe('Employer signup flow', () => {
     // Check submit button has proper role
     await expect(signupForm.getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
   });
+
+  // PRODUCTION LEVEL TESTS
+  // PRODUCTION LEVEL TESTS
+  // PRODUCTION LEVEL TESTS
 
   // Test complete form submission with valid data
   test('complete form submission works with valid data', async ({ page }) => {
