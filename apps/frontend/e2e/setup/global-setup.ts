@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
 import * as path from 'path';
-import { FullConfig } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { config as loadEnv } from 'dotenv';
 import postgres from 'postgres';
@@ -15,7 +14,7 @@ const projectRoot = path.resolve(currentDir, '../../../../');
  * - Ensure the test database exists (create if missing)
  * - Run migrations and seed on the local test DB
  */
-async function globalSetup(config: FullConfig) {
+async function globalSetup() {
   console.log('Starting global setup for tests...');
 
   try {

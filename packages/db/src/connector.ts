@@ -3,29 +3,20 @@ import * as schema from './schema/schema.js';
 import postgres from 'postgres';
 import { PoolConfig } from './types/PoolConfig.js';
 import * as dotenv from 'dotenv';
-dotenv.config();
 
-dotenv.config({ override: true });
+// Load .env, but do NOT override values already provided (important for tests!)
+dotenv.config({ override: false });
+
+// Determine database URL
+let databaseURL = process.env.DATABASE_URL;
 
 // Configuration options for postgres connection
-let connectionConfig;
+let connectionConfig: any;
 
-const isProduction = process.env.NODE_ENV === 'production';
-let databaseURL = '';
-
-// if (isProduction) {
-//   databaseURL = process.env.PRODUCTION_DATABASE_URL as string;
-// } else {
-databaseURL = process.env.DATABASE_URL as string;
-//databaseURL = 'postgresql://postgres:pass@localhost:5432/mawaheb?schema=public';
-// }
-
-// Check if DATABASE_URL is available (for local development)
-if (databaseURL != '') {
+if (databaseURL && databaseURL !== '') {
   console.log('Using DATABASE_URL for connection:', databaseURL);
 
   try {
-    // Parse the URL manually to ensure correct extraction of credentials
     const url = new URL(databaseURL);
     const username = url.username;
     const password = url.password;
@@ -35,7 +26,6 @@ if (databaseURL != '') {
 
     console.log('Parsed connection details:', {
       username,
-      // Don't log actual password
       passwordProvided: !!password,
       host,
       port,
@@ -48,18 +38,18 @@ if (databaseURL != '') {
       username,
       password,
       port,
-      ssl: url.searchParams.get('sslmode') === 'require' ? ('require' as const) : false,
+      ssl: url.searchParams.get('sslmode') === 'require' ? true : false,
     };
   } catch (error) {
     console.error('Error parsing DATABASE_URL:', error);
     throw new Error('Invalid DATABASE_URL format');
   }
 } else {
-  // Fallback to individual environment variables
+  // Fallback: use individual Neon/PG env vars
   const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID }: PoolConfig =
     process.env as unknown as PoolConfig;
 
-  if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID) {
+  if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD) {
     throw new Error('Missing db connection environment variables');
   }
 
@@ -72,9 +62,11 @@ if (databaseURL != '') {
     password: PGPASSWORD,
     port: 5432,
     ssl: 'require' as const,
-    connection: {
-      options: `project=${ENDPOINT_ID}`,
-    },
+    connection: ENDPOINT_ID
+      ? {
+          options: `project=${ENDPOINT_ID}`,
+        }
+      : undefined,
   };
 }
 
@@ -83,7 +75,6 @@ console.log('Final connection config (without sensitive data):', {
   password: connectionConfig.password ? '****' : undefined,
 });
 
-// Create the postgres connector with appropriate configuration
+// Create the postgres connector
 const psqlConnector = postgres(connectionConfig);
-
 export const db = drizzle(psqlConnector, { schema, logger: false });

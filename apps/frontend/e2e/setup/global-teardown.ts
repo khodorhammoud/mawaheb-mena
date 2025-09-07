@@ -1,6 +1,4 @@
-import { execSync } from 'child_process';
 import * as path from 'path';
-import { FullConfig } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { config as loadEnv } from 'dotenv';
 import postgres from 'postgres';
@@ -14,7 +12,7 @@ const projectRoot = path.resolve(currentDir, '../../../../');
  * - Load .env.test
  * - Drop the local test database (terminate connections, drop DB)
  */
-async function globalTeardown(config: FullConfig) {
+async function globalTeardown() {
   console.log('Starting global teardown for tests...');
 
   try {
