@@ -9,6 +9,16 @@
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
+    },
+    {
+      "name": "user",
+      "value": "eyJ1c2VyIjo2NDV9.YjjfOlSpMqem%2F2nRnJ0aMEvjhN9LVlzpMSkA%2FQ%2FGl2U",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1757898121.436843,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
     }
   ],
   "origins": []
