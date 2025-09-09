@@ -54,30 +54,14 @@ test.describe('Employer identification flow', () => {
       const currentUrl = page.url();
       console.log(`Current URL after navigation: ${currentUrl}`);
 
-      // Check if we're properly authenticated and have access
-      if (currentUrl.includes('/identification')) {
-        // Perfect - user can access identification
-        const hasIdentificationContent = await page
-          .locator('text=Identity Verification')
-          .isVisible();
-        const hasPendingContent = await page.locator('text=Account Verification').isVisible();
+      // Must be on /identification; anything else is a failure
+      await expect(page).toHaveURL(/\/identification/);
 
-        expect(hasIdentificationContent || hasPendingContent).toBeTruthy();
-        console.log('✅ Access control test passed - user can access identification');
-      } else if (currentUrl.includes('/dashboard')) {
-        // User already completed identification - also valid
-        console.log('✅ Access control test passed - user completed identification (at dashboard)');
-      } else if (currentUrl.includes('/login')) {
-        // Authentication issue - skip this test since storageState might not be working
-        console.log('⚠️ StorageState authentication issue - skipping test');
-        test.skip();
-      } else {
-        // Some other valid redirect
-        console.log(
-          `✅ Access control test passed - authenticated user redirected to: ${currentUrl}`
-        );
-        expect(currentUrl).not.toMatch(/\/login/);
-      }
+      const hasIdentificationContent = await page.locator('text=Identity Verification').isVisible();
+      const hasPendingContent = await page.locator('text=Account Verification').isVisible();
+
+      expect(hasIdentificationContent || hasPendingContent).toBeTruthy();
+      console.log('✅ Access control test passed - user can access identification');
     });
 
     // Test 3: Form structure and content verification
@@ -111,35 +95,30 @@ test.describe('Employer identification flow', () => {
           '✅ Form structure test passed - user already submitted (showing pending view)'
         );
       } else {
-        console.log('✅ Form structure test passed - user in different valid state');
+        throw new Error('Expected identification form or pending view, but neither was visible');
       }
     });
 
-    // Test 4: Document upload validation - form fails without documents
+    // Test 4: Document upload validation - strict: either error signals or no POST and form still visible
     test('prevents form submission without required documents', async ({ page }) => {
-      console.log('🚀 Testing document validation - submission should fail without documents');
+      await page.goto('/identification?force=true', { waitUntil: 'domcontentloaded' });
 
-      await page.goto('/identification', { waitUntil: 'domcontentloaded' });
+      // Must be on identification; not bounced elsewhere
+      await expect(page).toHaveURL(/\/identification(?:$|\/|\?)/);
+      expect(page.url()).not.toMatch(/\/(login|onboarding|dashboard)(?:$|\/|\?)/);
 
-      // Check if we can access the form
-      const hasForm = await page.locator('text=Identity Verification').isVisible();
+      // Precondition: the form must be visible (force=true ensures this even if Pending)
+      await expect(page.getByText(/Identity Verification/i)).toBeVisible();
 
-      if (!hasForm) {
-        console.log('✅ Document validation test passed - user already submitted documents');
-        return;
-      }
-
-      // Try to submit without uploading documents
-      const submitButton = page.getByRole('button', { name: 'Submit Documents' });
+      // Submit without files
+      const submitButton = page.getByRole('button', { name: /Submit Documents/i });
       await expect(submitButton).toBeVisible();
-
-      // Click submit button without uploading any documents
       await submitButton.click();
 
-      // Should show validation error (toast message)
-      await page.waitForTimeout(3000);
+      // Small wait for UI feedback
+      await page.waitForTimeout(1500);
 
-      // Check for error indication - look for toast or error messages
+      // Error signals (check both messages separately)
       const hasToast = await page
         .locator('[data-radix-toast-viewport]')
         .isVisible()
@@ -148,147 +127,128 @@ test.describe('Employer identification flow', () => {
         .locator('[role="alert"]')
         .isVisible()
         .catch(() => false);
-      const hasErrorText = await page
-        .locator('text=Required Documents Missing, text=Please upload all required documents')
-        .first()
+      const hasErrA = await page
+        .getByText(/Required Documents Missing/i)
+        .isVisible()
+        .catch(() => false);
+      const hasErrB = await page
+        .getByText(/Please upload all required documents/i)
         .isVisible()
         .catch(() => false);
 
-      // If no toast, the form should still be visible (meaning it didn't submit)
-      const formStillVisible = await page
-        .locator('text=Identity Verification')
-        .isVisible()
-        .catch(() => false);
-
-      const hasError = hasToast || hasAlert || hasErrorText || formStillVisible;
-
-      expect(hasError).toBeTruthy();
-      console.log(
-        '✅ Document validation test passed - form prevents submission without documents'
-      );
-    });
-
-    // Test 5: Happy path - successful document upload and submission (2 documents each)
-    test('successfully uploads 2 documents each and submits identification form', async ({
-      page,
-    }) => {
-      console.log('🚀 Testing happy path with 2 documents upload for each category');
-
-      await page.goto('/identification', { waitUntil: 'domcontentloaded' });
-
-      // Check if we can access the form
-      const hasForm = await page.locator('text=Identity Verification').isVisible();
-
-      if (!hasForm) {
-        const isPending = await page.locator('text=Account Verification').isVisible();
-        if (isPending) {
-          console.log(
-            '✅ Happy path test passed - user already submitted documents (in pending state)'
-          );
-          return;
-        }
-        console.log('✅ Happy path test passed - user already completed identification');
-        return;
+      // Optional: detect if a POST happened (navigation submits may not always be caught)
+      let didSubmit = false;
+      try {
+        await page.waitForResponse(
+          res => res.url().includes('/identification') && res.request().method() === 'POST',
+          { timeout: 1000 }
+        );
+        didSubmit = true;
+      } catch {
+        /* no-op */
       }
 
-      // Upload 2 documents for identification
-      const identificationUpload = page.locator('input[name="identification"]').first();
-      const tradeLicenseUpload = page.locator('input[name="trade_license"]').first();
+      const formStillVisible = await page
+        .getByText(/Identity Verification/i)
+        .isVisible()
+        .catch(() => false);
 
-      // Check if direct upload inputs exist
-      if ((await identificationUpload.count()) > 0) {
-        // Create 2 test files for identification
-        const identificationFiles = [
-          {
+      // Must see an explicit error OR (no POST + form still visible)
+      expect(
+        hasToast || hasAlert || hasErrA || hasErrB || (!didSubmit && formStillVisible)
+      ).toBeTruthy();
+    });
+
+    // Test 5: Happy path - strict server-side submission followed by pending/success assertion
+    test('submits identification via server action and shows pending/success', async ({ page }) => {
+      // Ensure session is valid
+      await page.goto('/identification?force=true', { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(/\/identification(?:$|\/|\?)/);
+      expect(page.url()).not.toMatch(/\/(login|onboarding|dashboard)(?:$|\/|\?)/);
+
+      // Server-side submit minimal valid payload
+      const response = await page.request.post('/identification', {
+        multipart: {
+          'target-updated': 'employer-identification',
+          identification: {
             name: 'id-document-1.pdf',
             mimeType: 'application/pdf',
             buffer: Buffer.from('test identification content 1'),
           },
-          {
-            name: 'id-document-2.pdf',
+          trade_license: {
+            name: 'trade-license-1.pdf',
             mimeType: 'application/pdf',
-            buffer: Buffer.from('test identification content 2'),
+            buffer: Buffer.from('test trade license content 1'),
           },
-        ];
+        },
+      });
 
-        // Upload 2 files to identification input
-        await identificationUpload.setInputFiles(identificationFiles);
+      // Accept common OK/redirect codes
+      expect([200, 201, 204, 302, 303]).toContain(response.status());
 
-        // Upload 2 files to trade license input if it exists
-        if ((await tradeLicenseUpload.count()) > 0) {
-          const tradeLicenseFiles = [
-            {
-              name: 'trade-license-1.pdf',
-              mimeType: 'application/pdf',
-              buffer: Buffer.from('test trade license content 1'),
-            },
-            {
-              name: 'trade-license-2.pdf',
-              mimeType: 'application/pdf',
-              buffer: Buffer.from('test trade license content 2'),
-            },
-          ];
+      // Reload without force to let Pending view render
+      await page.goto('/identification', { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(/\/identification(?:$|\/|\?)/);
 
-          await tradeLicenseUpload.setInputFiles(tradeLicenseFiles);
-        }
+      const isPending = await page
+        .getByText(/Account Verification/i)
+        .isVisible()
+        .catch(() => false);
+      const isSuccess = await page
+        .getByText(/Documents Submitted/i)
+        .isVisible()
+        .catch(() => false);
 
-        // Wait for files to be processed
-        await page.waitForTimeout(2000);
-
-        // Submit the form
-        const submitButton = page.getByRole('button', { name: 'Submit Documents' });
-        await expect(submitButton).toBeVisible();
-
-        console.log('Submitting identification form with 2 documents each...');
-        await submitButton.click();
-
-        // Wait for submission to complete
-        await page.waitForTimeout(5000);
-
-        // Check for success - should show pending view after successful submission
-        const isPending = await page.locator('text=Account Verification').isVisible();
-        const isSuccess = await page.locator('text=Documents Submitted').isVisible();
-
-        expect(isPending || isSuccess).toBeTruthy();
-        console.log('✅ Happy path test passed - 2 documents uploaded and submitted successfully');
-      } else {
-        console.log(
-          '✅ Happy path test passed - direct upload inputs not available, form uses different mechanism'
-        );
-      }
+      expect(isPending || isSuccess).toBeTruthy();
     });
 
     // Test 6: Verify pending view after successful submission
     test('shows pending verification view after document submission', async ({ page }) => {
       console.log('🚀 Testing pending view display after submission');
 
+      // Ensure we're authenticated and have a session
       await page.goto('/identification', { waitUntil: 'domcontentloaded' });
 
-      // Check if user is in pending state
-      const isPendingView = await page.locator('text=Account Verification').isVisible();
+      // If not already pending, programmatically submit minimal documents to set account_status to Pending
+      let isPendingView = await page.locator('text=Account Verification').isVisible();
+      if (!isPendingView) {
+        const response = await page.request.post('/identification', {
+          multipart: {
+            'target-updated': 'employer-identification',
+            identification: {
+              name: 'id.pdf',
+              mimeType: 'application/pdf',
+              buffer: Buffer.from('minimal id file'),
+            },
+            trade_license: {
+              name: 'trade.pdf',
+              mimeType: 'application/pdf',
+              buffer: Buffer.from('minimal trade file'),
+            },
+          },
+        });
 
-      if (isPendingView) {
-        // Verify pending view elements
-        await expect(page.locator('text=Account Verification')).toBeVisible();
-        await expect(page.locator('text=Your account is being validated')).toBeVisible();
-        await expect(page.locator("text=We're reviewing your submitted documents")).toBeVisible();
-        await expect(
-          page.locator('text=This process typically takes 1-2 business days')
-        ).toBeVisible();
-        await expect(page.locator("text=You'll receive an email notification")).toBeVisible();
+        // Even if the action returns non-200, the status update happens first; proceed to check UI
+        console.log('POST /identification status:', response.status());
 
-        console.log('✅ Pending view test passed - all pending elements visible');
-      } else {
-        // User might not have submitted yet or in different state
-        const hasForm = await page.locator('text=Identity Verification').isVisible();
-        if (hasForm) {
-          console.log(
-            '✅ Pending view test passed - user not yet submitted (form still accessible)'
-          );
-        } else {
-          console.log('✅ Pending view test passed - user in different valid state');
-        }
+        // Reload identification to reflect new account_status
+        await page.goto('/identification', { waitUntil: 'domcontentloaded' });
+        isPendingView = await page.locator('text=Account Verification').isVisible();
       }
+
+      // Require pending view now
+      expect(isPendingView).toBeTruthy();
+
+      // Verify pending view elements
+      await expect(page.locator('text=Account Verification')).toBeVisible();
+      await expect(page.locator('text=Your account is being validated')).toBeVisible();
+      await expect(page.locator("text=We're reviewing your submitted documents")).toBeVisible();
+      await expect(
+        page.locator('text=This process typically takes 1-2 business days')
+      ).toBeVisible();
+      await expect(page.locator("text=You'll receive an email notification")).toBeVisible();
+
+      console.log('✅ Pending view test passed - pending elements visible after submission');
     });
   });
 });

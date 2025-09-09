@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 
 // Define storage state file
 const employerAuthFile = path.join(__dirname, '../.auth/employer.json');
+const employerOnboardingAuthFile = path.join(__dirname, '../.auth/employer-onboarding.json');
 
 test.describe('Employer onboarding flow', () => {
   test.setTimeout(60000); // Reduced timeout since using storageState
@@ -44,7 +45,7 @@ test.describe('Employer onboarding flow', () => {
 
   // All other tests use storageState for consistent authentication
   test.describe('Authenticated employer tests', () => {
-    // Use the employer authentication state for all tests in this group
+    // Use the seeded employer authentication by default for this group
     test.use({ storageState: employerAuthFile });
 
     // Test 2: Employer sees correct onboarding content when authenticated
@@ -116,40 +117,39 @@ test.describe('Employer onboarding flow', () => {
     });
 
     // Test 4: Complete happy path - submit form and redirect to /identification
-    test('complete onboarding flow redirects to identification page', async ({ page }) => {
-      console.log('🚀 Using storageState authentication - employer');
+    test.describe('Happy path with draft employer', () => {
+      // Use onboarding employer storage for this test only (is_onboarded: false)
+      test.use({ storageState: employerOnboardingAuthFile });
 
-      await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+      test('complete onboarding flow redirects to identification page', async ({ page }) => {
+        console.log('🚀 Using storageState authentication - employer');
 
-      // Handle case where user might already be onboarded
-      const currentUrl = page.url();
-      if (currentUrl.includes('/identification')) {
-        console.log(
-          '✅ Happy path test passed - user already at identification (successful onboarding flow)'
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+
+        // If on onboarding page, complete the flow
+        const proceedButton = page.getByRole('button', { name: 'Proceed' });
+        await expect(proceedButton).toBeVisible();
+
+        console.log('Submitting onboarding form and expecting redirect to /identification...');
+
+        // Capture submit request and then await redirect to /identification
+        const submitResponsePromise = page.waitForResponse(
+          res => res.url().includes('/onboarding') && res.request().method() === 'POST'
         );
-        return;
-      }
+        const navigationPromise = page.waitForURL(/\/identification/, { timeout: 15000 });
 
-      if (currentUrl.includes('/dashboard')) {
-        console.log('✅ Happy path test passed - user at dashboard (completed full flow)');
-        return;
-      }
+        await proceedButton.click();
 
-      // If on onboarding page, complete the flow
-      const proceedButton = page.getByRole('button', { name: 'Proceed' });
-      await expect(proceedButton).toBeVisible();
+        const submitResponse = await submitResponsePromise;
+        const status = submitResponse.status();
+        expect([200, 201, 204, 302, 303].includes(status)).toBeTruthy();
 
-      console.log('Submitting onboarding form and expecting redirect to /identification...');
+        await navigationPromise;
 
-      // Click proceed and wait for redirect (this is the core happy path test)
-      await Promise.all([
-        page.waitForURL(/\/identification/, { timeout: 15000 }),
-        proceedButton.click(),
-      ]);
-
-      // Verify successful redirect to identification page (happy ending)
-      await expect(page).toHaveURL(/\/identification/);
-      console.log('✅ Happy path test completed - successfully redirected to /identification');
+        // Verify successful redirect to identification page (happy ending)
+        await expect(page).toHaveURL(/\/identification/);
+        console.log('✅ Happy path test completed - successfully redirected to /identification');
+      });
     });
 
     // Test 5: Logout functionality works and redirects properly

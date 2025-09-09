@@ -12,10 +12,10 @@
     },
     {
       "name": "user",
-      "value": "eyJ1c2VyIjo2NDR9.gWCfO%2FgEW4RfC%2FfMYqnul5%2B4fN0ld9Ra9SpcB7234MQ",
+      "value": "eyJ1c2VyIjo3MDR9.veU4wfrvwVkt7TCDNzTwDe10Nnt2F5mxwqJQNsgMQ7A",
       "domain": "localhost",
       "path": "/",
-      "expires": 1757898106.358653,
+      "expires": 1757983429.758336,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
