@@ -301,7 +301,7 @@ const AppFormField = forwardRef<
                 spellCheck="false"
                 {...(value !== undefined
                   ? { value: selectedValue }
-                  : { defaultValue: selectedValue })}
+                  : { defaultValue: defaultValue ?? selectedValue })}
                 onChange={e => {
                   const newValue = e.target.value;
                   if (value === undefined) {
@@ -311,7 +311,6 @@ const AppFormField = forwardRef<
                     onChange(e);
                   }
                 }}
-                defaultValue={defaultValue ?? ''}
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
                 required={required}

@@ -136,13 +136,13 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     /* 3. Set isVerified = true for this user (instead of sending verification email) */
-    await verifyUserAccount({ userId }); // ✅ No ts-expect-error, full type safety
+    //await verifyUserAccount({ userId }); // ✅ No ts-expect-error, full type safety
 
     /* 4. Commented out: Finish profile & send verification mail */
-    /*
+
     const newEmployer = (await getProfileInfo({ userId })) as Employer | null;
     if (!newEmployer)
-      return json(
+      return Response.json(
         {
           success: false,
           error: { message: 'Failed to register user. Please try again later.' },
@@ -160,15 +160,20 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
 
-    return json({ success: true, newEmployer });
-    */
+    return Response.json({
+      success: true,
+      newEmployer,
+      message: 'Please check your email for a verification link.',
+      // redirectTo: '/login-employer',
+    });
 
+    /*
     // 5. Return success response instead of immediate redirect
     return Response.json({
       success: true,
       message: 'Account created successfully! You will be redirected to the login page.',
       redirectTo: '/login-employer',
-    });
+    });*/
   } catch (err: unknown) {
     /* final safety‑net – still convert dup‑email to 400 */
     if (err instanceof RegistrationError && err.code === 'Email already exists')

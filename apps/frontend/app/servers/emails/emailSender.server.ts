@@ -5,6 +5,12 @@ import {
   AccountVerificationEmailParams,
 } from './types/accountVerificationEmail';
 
+import { hash } from 'bcrypt-ts';
+
+// import node mailer
+import nodemailer from 'nodemailer';
+import { smtpConfigNodeMailer } from './smtpConfig';
+
 type EmailType = 'accountVerification'; //| 'resetPassword' | 'notification';
 
 interface SendEmailParams {
@@ -17,6 +23,13 @@ interface SendEmailParams {
 interface MailOptions {
   from: string;
   email: string;
+  name: string;
+  subject: string;
+  html: string;
+}
+interface NodeMailerMailOptions {
+  from: string;
+  to: string;
   name: string;
   subject: string;
   html: string;
@@ -34,14 +47,37 @@ export async function sendEmail(params: SendEmailParams) {
       throw new Error('Invalid email type');
   }
 
-  const mailOptions: MailOptions = {
+  const mailOptions: NodeMailerMailOptions = {
     from: process.env.EMAIL_FROM,
-    email: params.email,
+    to: params.email,
     name: params.name,
     subject: params.subject,
     html: htmlContent,
   };
-  await sendEmailWithBrevo(mailOptions);
+
+  console.log('mailOptions', mailOptions);
+  // await sendEmailWithBrevo(mailOptions);
+  await sendEmailWithNodeMailer(mailOptions);
+}
+
+export async function sendEmailWithNodeMailer(mailOptions: NodeMailerMailOptions) {
+  const transporter = nodemailer.createTransport({
+    host: 'mail.smtp2go.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  try {
+    const messageInfo = await transporter.sendMail(mailOptions);
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(messageInfo));
+  } catch (error) {
+    console.error('Failed to send email with NodeMailer', error);
+    throw new Error('Failed to send email with NodeMailer', error);
+  }
 }
 
 // TODO change brevo API
@@ -62,11 +98,8 @@ export async function sendEmailWithBrevo(mailOptions: MailOptions) {
   sendSmtpEmail.htmlContent = mailOptions.html;
   sendSmtpEmail.sender = { name: 'Mawaheb Mena', email: mailOptions.from };
   sendSmtpEmail.to = [{ email: mailOptions.email, name: mailOptions.name }];
-  /* sendSmtpEmail.replyTo = {
-    email: "khodorhammoud94@gmail.com",
-    name: "Shubham Upadhyay",
-  }; */
-  sendSmtpEmail.headers = { MawahebMENA: 'unique-id-1234' };
+  // generate hash
+  sendSmtpEmail.headers = { MawahebMENA: crypto.randomUUID() };
   /* sendSmtpEmail.params = {
     parameter: "My param value",
     subject: "common subject",
