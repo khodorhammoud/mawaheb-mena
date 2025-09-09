@@ -9,7 +9,7 @@ export default function Layout() {
           <h4 className="text-2xl font-semibold">Join our newsletter</h4>
           <div className="lg:ml-[11%] col-span-2">
             <div className="flex w-full gap-4">
-              <AppFormField type="email" label="Enter your email" id="email" name="email" />
+              <AppFormField type="email" label="Enter your email" id="footerEmail" name="email" />
               <button className="px-6 rounded-[10px] text-primaryColor border border-gray-300 hover:bg-primaryColor hover:text-white transition duration-300 not-active-gradient">
                 Subscribe
               </button>

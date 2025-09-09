@@ -49,7 +49,6 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "@getbrevo/brevo": "^2.2.0",
     "@radix-ui/react-select": "^2.1.4",
     "@remix-run/react": "2.16.0",
     "autoprefixer": "^10.4.20",

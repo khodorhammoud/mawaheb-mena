@@ -6,7 +6,7 @@ import {
   verifyUserAccount,
 } from '../../servers/user.server';
 import { RegistrationError } from '../../common/errors/UserError';
-// import { sendEmail } from '../../servers/emails/emailSender.server';
+import { sendEmail } from '../../servers/emails/emailSender.server';
 import { authenticator } from '../../auth/auth.server';
 import { Freelancer } from '@mawaheb/db/types';
 
@@ -93,10 +93,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const userId = await authenticator.authenticate('register', request);
 
     // 2. Set isVerified = true directly in the DB (NO email verification)
-    await verifyUserAccount({ userId });
+    // await verifyUserAccount({ userId });
 
     // 3. Commented out: fetch profile and send verification mail
-    /*
+
     newFreelancer = (await getProfileInfo({ userId })) as Freelancer;
 
     if (!newFreelancer) {
@@ -122,15 +122,20 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
 
-    return Response.json({ success: true, newFreelancer });
-    */
+    return Response.json({
+      success: true,
+      newFreelancer,
+      message: 'Please check your email for a verification link.',
+      // redirectTo: '/login-freelancer',
+    });
 
+    /*
     // 4. Return success response instead of immediate redirect
     return Response.json({
       success: true,
       message: 'Account created successfully! You will be redirected to the login page.',
       redirectTo: '/login-freelancer',
-    });
+    });*/
   } catch (error) {
     if (error instanceof RegistrationError && error.code === 'Email already exists') {
       return Response.json(
