@@ -45,82 +45,150 @@ test.describe('Employer onboarding flow', () => {
 
   // All other tests use storageState for consistent authentication
   test.describe('Authenticated employer tests', () => {
-    // Use the seeded employer authentication by default for this group
-    test.use({ storageState: employerAuthFile });
+    // Storage state will be specified per nested describe to avoid cross-test leakage
 
-    // Test 2: Employer sees correct onboarding content when authenticated
-    test('authenticated employer sees comprehensive onboarding form content', async ({ page }) => {
-      console.log('🚀 Using storageState authentication - employer');
-
-      // Navigate directly to onboarding route (already authenticated via storageState)
-      await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
-
-      // Handle case where user might already be onboarded (seeded users)
-      const currentUrl = page.url();
-      if (currentUrl.includes('/identification') || currentUrl.includes('/dashboard')) {
-        console.log(
-          '✅ Content visibility test passed - user authenticated and redirected (already onboarded)'
-        );
-        return;
-      }
-
-      // If on onboarding page, verify content
-      await expect(page).toHaveURL(/\/onboarding/);
-
-      // Check for employer-specific onboarding content
-      await expect(page.getByText('Add Title')).toBeVisible();
-      await expect(page.getByText('Years in Business').first()).toBeVisible();
-      await expect(page.getByText('Average Project Budget').first()).toBeVisible();
-      await expect(page.locator('.grid').getByText('About').first()).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Proceed' })).toBeVisible();
-      await expect(page.getByText('Add Years in Business')).toBeVisible();
-      await expect(page.getByText('Add Average Budget')).toBeVisible();
-      await expect(page.getByText('Add Bio')).toBeVisible();
-
-      const mainForm = page.locator('form[method="post"]');
-      await expect(mainForm).toBeVisible();
-      await expect(
-        page.locator('input[name="target-updated"][value="employer-onboard"]')
-      ).toBeHidden();
-
-      console.log('✅ Content visibility test passed');
-    });
-
-    // Test 3: Employer can submit form with partial data (not all fields required)
-    test('employer can submit form with partial or no additional data', async ({ page }) => {
-      console.log('🚀 Using storageState authentication - employer');
-
-      await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
-
-      // Handle case where user might already be onboarded
-      const currentUrl = page.url();
-      if (currentUrl.includes('/identification') || currentUrl.includes('/dashboard')) {
-        console.log(
-          '✅ Partial data submission test passed - user already completed onboarding (form accepted submission)'
-        );
-        return;
-      }
-
-      // If on onboarding page, test form submission
-      const proceedButton = page.getByRole('button', { name: 'Proceed' });
-      await expect(proceedButton).toBeVisible();
-
-      // Submit without filling any additional data
-      await proceedButton.click();
-      await page.waitForTimeout(2000);
-
-      // Should not show validation errors (per requirement: not all fields required)
-      const validationErrors = page.locator('.error, [role="alert"], .text-red-500');
-      await expect(validationErrors).toHaveCount(0);
-
-      console.log('✅ Partial data submission test passed - form accepted empty submission');
-    });
-
-    // Test 4: Complete happy path - submit form and redirect to /identification
-    test.describe('Happy path with draft employer', () => {
-      // Use onboarding employer storage for this test only (is_onboarded: false)
+    test.describe('Authenticated content visibility (storageState)', () => {
       test.use({ storageState: employerOnboardingAuthFile });
 
+      test.beforeEach(async ({ page }) => {
+        await page.request.post('/identification', {
+          form: { 'target-updated': 'back-to-account-info' },
+        });
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+      });
+
+      // Test 2: Employer sees correct onboarding content when authenticated
+      test('authenticated employer sees comprehensive onboarding form content', async ({
+        page,
+      }) => {
+        // Must be on /onboarding; explicitly forbid other routes
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+        expect(page.url()).not.toMatch(/\/(login|identification|dashboard)(?:$|[\/?#])/);
+
+        // Employer-specific content
+        await expect(page.getByText(/Add Title/i)).toBeVisible();
+        await expect(page.getByText(/Years in Business/i).first()).toBeVisible();
+        await expect(page.getByText(/Average Project Budget/i).first()).toBeVisible();
+        await expect(page.locator('.grid').getByText(/About/i).first()).toBeVisible();
+        await expect(page.getByText(/Add Years in Business/i)).toBeVisible();
+        await expect(page.getByText(/Add Average Budget/i)).toBeVisible();
+        await expect(page.getByText(/Add Bio/i)).toBeVisible();
+
+        // Form + proceed
+        const mainForm = page.locator('form[method="post"]');
+        await expect(mainForm).toBeVisible();
+        await expect(page.getByRole('button', { name: /Proceed/i })).toBeVisible();
+
+        // Hidden control stays hidden
+        await expect(
+          page.locator('input[name="target-updated"][value="employer-onboard"]')
+        ).toBeHidden();
+
+        console.log(
+          '✅ Onboarding content test passed (strict): on /onboarding with all expected fields visible'
+        );
+      });
+    });
+
+    test.describe('NO data submission (storageState)', () => {
+      test.use({ storageState: employerOnboardingAuthFile });
+
+      test.beforeEach(async ({ page }) => {
+        await page.request.post('/identification', {
+          form: { 'target-updated': 'back-to-account-info' },
+        });
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+      });
+
+      // test 3: NO data submission in its own describe using onboarding storage state
+      test('employer submits with NO data and redirects to /identification', async ({ page }) => {
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+
+        // Must be on /onboarding; forbid other routes
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+        expect(page.url()).not.toMatch(/\/(login|identification|dashboard)(?:$|[\/?#])/);
+
+        const proceedButton = page.getByRole('button', { name: /Proceed/i });
+        await expect(proceedButton).toBeVisible();
+
+        // Observe POST and redirect; do them in one Promise.all to avoid races
+        const post = page.waitForResponse(
+          r => r.url().includes('/onboarding') && r.request().method() === 'POST'
+        );
+        const nav = page.waitForURL(/\/identification(?:$|[\/?#])/, { timeout: 15000 });
+
+        await Promise.all([post, nav, proceedButton.click()]);
+
+        // Validate POST status and final URL
+        const submitResponse = await post;
+        expect([200, 201, 204, 302, 303]).toContain(submitResponse.status());
+        await expect(page).toHaveURL(/\/identification(?:$|[\/?#])/);
+
+        console.log('✅ Onboarding submission (NO data) → /identification');
+      });
+    });
+
+    test.describe('PARTIAL data submission (storageState)', () => {
+      test.use({ storageState: employerOnboardingAuthFile });
+
+      test.beforeEach(async ({ page }) => {
+        await page.request.post('/identification', {
+          form: { 'target-updated': 'back-to-account-info' },
+        });
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+      });
+
+      // Test 4: PARTIAL data submission in its own describe using onboarding storage state
+      test('employer submits with PARTIAL data and redirects to /identification', async ({
+        page,
+      }) => {
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+        expect(page.url()).not.toMatch(/\/(login|identification|dashboard)(?:$|[\/?#])/);
+
+        // Fill minimal field (About/Bio or first textarea fallback)
+        const about = (await page
+          .getByLabel(/About|Bio/i)
+          .first()
+          .count())
+          ? page.getByLabel(/About|Bio/i).first()
+          : page.locator('textarea').first();
+        if (await about.count()) await about.fill('We build amazing projects.');
+
+        const proceed = page.getByRole('button', { name: /Proceed/i });
+        await expect(proceed).toBeVisible();
+
+        const post = page.waitForResponse(
+          r => r.url().includes('/onboarding') && r.request().method() === 'POST'
+        );
+        const nav = page.waitForURL(/\/identification(?:$|[\/?#])/, { timeout: 15000 });
+        await Promise.all([post, nav, proceed.click()]);
+
+        const postResponse = await post;
+        expect([200, 201, 204, 302, 303]).toContain(postResponse.status());
+        await expect(page).toHaveURL(/\/identification(?:$|[\/?#])/);
+
+        console.log('✅ Onboarding submission (PARTIAL) → /identification');
+      });
+    });
+
+    test.describe('Happy path with draft employer', () => {
+      // Reuse the same onboarding employer; reset server-side state first
+      test.use({ storageState: employerOnboardingAuthFile });
+
+      test.beforeEach(async ({ page }) => {
+        await page.request.post('/identification', {
+          form: { 'target-updated': 'back-to-account-info' },
+        });
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+      });
+
+      // Test 5: Complete happy path - submit form and redirect to /identification
       test('complete onboarding flow redirects to identification page', async ({ page }) => {
         console.log('🚀 Using storageState authentication - employer');
 
@@ -152,74 +220,79 @@ test.describe('Employer onboarding flow', () => {
       });
     });
 
-    // Test 5: Logout functionality works and redirects properly
-    test('logout functionality works and redirects to appropriate page', async ({ page }) => {
-      console.log('🚀 Using storageState authentication - employer');
+    test.describe('Logout flow (seeded employer storage)', () => {
+      test.use({ storageState: employerAuthFile });
 
-      // Start from any authenticated page
-      await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+      // Test 6: Logout functionality works and redirects properly
+      test('logout functionality works and redirects to appropriate page', async ({ page }) => {
+        console.log('🚀 Using storageState authentication - employer');
 
-      // If redirected to login, user is not authenticated
-      if (page.url().includes('/login')) {
-        throw new Error('StorageState authentication failed - user not logged in');
-      }
+        // Start from any authenticated page
+        await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
-      console.log('Verified user is authenticated via storageState');
+        // If redirected to login, user is not authenticated
+        if (page.url().includes('/login')) {
+          throw new Error('StorageState authentication failed - user not logged in');
+        }
 
-      // Test logout functionality
-      console.log('Testing logout functionality...');
-      await logoutUser(page);
+        console.log('Verified user is authenticated via storageState');
 
-      // Wait for logout to complete
-      await page.waitForTimeout(2000);
+        // Test logout functionality
+        console.log('Testing logout functionality...');
+        await logoutUser(page);
 
-      // Try to access onboarding again - should be redirected away
-      console.log('Attempting to access /onboarding after logout...');
-      await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        // Wait for logout to complete
+        await page.waitForTimeout(2000);
 
-      // Should NOT be on onboarding page anymore
-      await expect(page).not.toHaveURL(/\/onboarding/);
+        // Try to access onboarding again - should be redirected away
+        console.log('Attempting to access /onboarding after logout...');
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
 
-      // Should be redirected to login page or home
-      const finalUrl = page.url();
-      const isOnLoginOrHome =
-        finalUrl.includes('/login') || finalUrl === '/' || finalUrl.endsWith('/');
-      expect(isOnLoginOrHome).toBeTruthy();
+        // Should NOT be on onboarding page anymore
+        await expect(page).not.toHaveURL(/\/onboarding/);
 
-      console.log(`✅ Logout test passed - redirected to: ${finalUrl}`);
+        // Should be redirected to login page or home
+        const finalUrl = page.url();
+        const isOnLoginOrHome =
+          finalUrl.includes('/login') || finalUrl === '/' || finalUrl.endsWith('/');
+        expect(isOnLoginOrHome).toBeTruthy();
+
+        console.log(`✅ Logout test passed - redirected to: ${finalUrl}`);
+      });
     });
 
-    // Test 6: Form validation test - ensure employer can submit with minimal data
-    test('form accepts submission with minimal or no data filled', async ({ page }) => {
-      console.log('🚀 Using storageState authentication - employer');
+    test.describe('Form validation minimal data (storageState)', () => {
+      test.use({ storageState: employerOnboardingAuthFile });
 
-      await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+      test.beforeEach(async ({ page }) => {
+        await page.request.post('/identification', {
+          form: { 'target-updated': 'back-to-account-info' },
+        });
+        await page.goto('/onboarding', { waitUntil: 'domcontentloaded' });
+        await expect(page).toHaveURL(/\/onboarding(?:$|[\/?#])/);
+      });
 
-      // Handle case where user might already be onboarded
-      const currentUrl = page.url();
-      if (currentUrl.includes('/identification') || currentUrl.includes('/dashboard')) {
-        console.log(
-          '✅ Form validation test passed - user completed onboarding (validates form accepts minimal data)'
-        );
-        return;
-      }
+      // Test 7: Form validation test - ensure employer can submit with minimal data
+      test('form accepts submission with minimal or no data filled', async ({ page }) => {
+        console.log('🚀 Using storageState authentication - employer');
 
-      // If on onboarding page, test form submission
-      const proceedButton = page.getByRole('button', { name: 'Proceed' });
-      await expect(proceedButton).toBeVisible();
+        // If on onboarding page, test form submission
+        const proceedButton = page.getByRole('button', { name: 'Proceed' });
+        await expect(proceedButton).toBeVisible();
 
-      console.log('Testing form submission with no additional data...');
-      await proceedButton.click();
+        console.log('Testing form submission with no additional data...');
+        await proceedButton.click();
 
-      // Should proceed successfully even with no additional data
-      await page.waitForTimeout(3000);
+        // Should proceed successfully even with no additional data
+        await page.waitForTimeout(3000);
 
-      // Verify no validation errors appear (key requirement)
-      const validationErrors = page.locator('.error, [role="alert"], .text-red-500');
-      const errorCount = await validationErrors.count();
-      expect(errorCount).toBe(0);
+        // Verify no validation errors appear (key requirement)
+        const validationErrors = page.locator('.error, [role=\"alert\"], .text-red-500');
+        const errorCount = await validationErrors.count();
+        expect(errorCount).toBe(0);
 
-      console.log('✅ Form validation test passed - no errors with minimal data submission');
+        console.log('✅ Form validation test passed - no errors with minimal data submission');
+      });
     });
   });
 });
