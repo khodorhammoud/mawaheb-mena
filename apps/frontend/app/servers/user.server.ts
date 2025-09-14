@@ -533,6 +533,7 @@ export async function createUserAccount(
     userId,
     accountType,
     provider,
+    accountStatus: AccountStatus.Draft, // Set default account status to 'draft'
   };
 
   const result = (await db

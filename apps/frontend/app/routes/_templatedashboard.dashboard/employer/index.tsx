@@ -142,23 +142,26 @@ export default function Dashboard() {
         <div className="min-h-screen flex flex-col">
           {/* Conditionally render the welcome message and button only if there are no jobs */}
           {totalJobCount === 0 && (
-            <>
-              <h1 className="text-2xl ml-6">
+            <section data-testid="no-jobs-ui" className="ml-6 mt-2">
+              <h1 className="text-2xl">
                 Welcome, <span className="text-primary font-bold">{firstName}!</span>
               </h1>
-              <p className="text-2xl ml-6">Good to hear from you. Are you hiring?</p>
 
-              {/* Centered Button Container */}
-              <div className="flex justify-start ml-6 mt-4">
+              <p data-testid="no-jobs-text" className="text-2xl">
+                Good to hear from you. Are you hiring?
+              </p>
+
+              <div className="flex justify-start mt-4">
                 <Link
                   to="/new-job"
+                  data-testid="no-jobs-cta"
                   onClick={handleCreateJobClick}
                   className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto mr-4"
                 >
                   Create New Job
                 </Link>
               </div>
-            </>
+            </section>
           )}
 
           {/* Main Section */}

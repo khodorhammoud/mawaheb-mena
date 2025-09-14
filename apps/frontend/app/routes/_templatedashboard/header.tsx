@@ -13,14 +13,6 @@ import Availability from '~/common/profileView/availability-form/availability';
 import { AccountStatus, AccountType, NotificationType } from '@mawaheb/db/enums';
 import { useToast } from '~/components/hooks/use-toast';
 import { NotificationBell } from '~/components/notifications/NotificationBell';
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-  MenubarSeparator,
-} from '~/components/ui/menubar';
 
 interface Notification {
   id: number;
@@ -104,7 +96,7 @@ export default function Header() {
   const location = useLocation();
 
   return (
-    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30">
+    <header className="font-['Switzer-Regular'] bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30 overflow-visible">
       <div className="grid lg:grid-cols-[2fr,1fr] grid-cols-[9fr,4fr] md:gap-8 gap-2 items-center justify-around py-4">
         <div className="flex items-center">
           {/* Title */}
@@ -169,41 +161,68 @@ export default function Header() {
         Menubar (Profile + Logout) ONLY if account is Published 
       */}
               {accountStatus === AccountStatus.Published && (
-                <Menubar className="bg-transparent border-none shadow-none">
-                  <MenubarMenu>
-                    <MenubarTrigger asChild>
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="
+                      inline-flex items-center justify-center
+                      p-0 m-0 border-0
+                      bg-transparent
+                      focus:bg-transparent active:bg-transparent hover:rounded-full
+                      rounded-full -ml-4
+                    "
+                    data-testid="profile-trigger"
+                    onClick={e => {
+                      e.stopPropagation();
+                      const dropdown = document.getElementById('profile-dropdown');
+                      if (dropdown) {
+                        dropdown.classList.toggle('hidden');
+                      }
+                    }}
+                  >
+                    <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer mt-1" />
+                  </button>
+
+                  {/* Simple HTML Dropdown */}
+                  <div
+                    id="profile-dropdown"
+                    className="hidden absolute right-0 top-full mt-6 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                    data-testid="profile-dropdown"
+                  >
+                    <div className="py-1">
+                      {/* Profile Settings */}
                       <button
-                        type="button"
-                        className="
-                  inline-flex items-center justify-center
-                  p-0 m-0 border-0
-                  bg-transparent
-                  focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
-                  rounded-full -ml-4
-                "
+                        onClick={() => {
+                          navigate('/settings');
+                          // Hide dropdown after click
+                          const dropdown = document.getElementById('profile-dropdown');
+                          if (dropdown) {
+                            dropdown.classList.add('hidden');
+                          }
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        data-testid="profile-settings"
                       >
-                        <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
-                      </button>
-                    </MenubarTrigger>
-                    <MenubarContent align="end" className="w-48">
-                      {/* Go to Profile Settings */}
-                      <MenubarItem onClick={() => navigate('/settings')}>
                         Profile Settings
-                      </MenubarItem>
-                      <MenubarSeparator />
-                      {/* Logout Button */}
-                      <MenubarItem
+                      </button>
+
+                      {/* Separator */}
+                      <div className="border-t border-gray-100"></div>
+
+                      {/* Logout */}
+                      <button
                         onClick={async () => {
                           await fetch('auth/logout', { method: 'POST' });
                           window.location.href = '/';
                         }}
-                        className="text-red-600"
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        data-testid="logout"
                       >
                         Logout
-                      </MenubarItem>
-                    </MenubarContent>
-                  </MenubarMenu>
-                </Menubar>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* 
@@ -212,74 +231,91 @@ export default function Header() {
       */}
               {(accountStatus === AccountStatus.Pending ||
                 accountStatus === AccountStatus.Draft) && (
-                <Menubar className="bg-transparent border-none shadow-none">
-                  <MenubarMenu>
-                    <MenubarTrigger asChild>
-                      <button
-                        type="button"
-                        className="
-                  inline-flex items-center justify-center
-                  p-0 m-0 border-0
-                  bg-transparent
-                  focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
-                  rounded-full -ml-4
-                "
-                      >
-                        <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
-                      </button>
-                    </MenubarTrigger>
-                    <MenubarContent align="end" className="w-48">
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="
+                      inline-flex items-center justify-center
+                      p-0 m-0 border-0
+                      bg-transparent
+                      focus:bg-transparent active:bg-transparent hover:rounded-full
+                      rounded-full -ml-4
+                    "
+                    onClick={e => {
+                      e.stopPropagation();
+                      const dropdown = document.getElementById('profile-dropdown-limited');
+                      if (dropdown) {
+                        dropdown.classList.toggle('hidden');
+                      }
+                    }}
+                  >
+                    <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer mt-1" />
+                  </button>
+
+                  {/* Simple HTML Dropdown - Limited */}
+                  <div
+                    id="profile-dropdown-limited"
+                    className="hidden absolute right-0 top-full mt-6 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  >
+                    <div className="py-1">
                       {/* Logout Button Only */}
-                      <MenubarItem
+                      <button
                         onClick={async () => {
                           await fetch('auth/logout', { method: 'POST' });
                           window.location.href = '/';
                         }}
-                        className="text-red-600"
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
                         Logout
-                      </MenubarItem>
-                    </MenubarContent>
-                  </MenubarMenu>
-                </Menubar>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
 
-          {/* If user is NOT onboarded, show a minimal menubar with logout only */}
+          {/* If user is NOT onboarded, show a minimal dropdown with logout only */}
           {!isOnboarded && (
-            <div>
-              {/* Menubar (Logout only, minimal state) */}
-              <Menubar className="bg-transparent border-none shadow-none">
-                <MenubarMenu>
-                  <MenubarTrigger asChild>
-                    <button
-                      type="button"
-                      className="
-                inline-flex items-center justify-center
-                p-0 m-0 border-0
-                bg-transparent
-                focus:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:rounded-full
-                rounded-full -ml-4
-              "
-                    >
-                      <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer" />
-                    </button>
-                  </MenubarTrigger>
-                  <MenubarContent align="end" className="w-48">
-                    {/* Logout Button Only */}
-                    <MenubarItem
-                      onClick={async () => {
-                        await fetch('auth/logout', { method: 'POST' });
-                        window.location.href = '/';
-                      }}
-                      className="text-red-600"
-                    >
-                      Logout
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
-              </Menubar>
+            <div className="relative">
+              {/* Simple HTML Dropdown - Minimal state */}
+              <button
+                type="button"
+                className="
+                  inline-flex items-center justify-center
+                  p-0 m-0 border-0
+                  bg-transparent
+                  focus:bg-transparent active:bg-transparent hover:rounded-full
+                  rounded-full -ml-4
+                "
+                onClick={e => {
+                  e.stopPropagation();
+                  const dropdown = document.getElementById('profile-dropdown-minimal');
+                  if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                  }
+                }}
+              >
+                <BsPersonCircle className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer mt-1" />
+              </button>
+
+              <div
+                id="profile-dropdown-minimal"
+                className="hidden absolute right-0 top-full mt-6 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+              >
+                <div className="py-1">
+                  {/* Logout Button Only */}
+                  <button
+                    onClick={async () => {
+                      await fetch('auth/logout', { method: 'POST' });
+                      window.location.href = '/';
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
