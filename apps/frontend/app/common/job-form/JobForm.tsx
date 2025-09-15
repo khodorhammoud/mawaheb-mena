@@ -68,6 +68,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     const description = jobDescription?.trim();
     const wordCount = description.split(/\s+/).filter(word => word).length;
 
+    // Toast notifications
     if (!title || title.length < 10) {
       toast({
         title: 'Validation Error',
@@ -77,6 +78,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       return;
     }
 
+    // Toast notifications
     if (title.length > 100) {
       toast({
         title: 'Title too long',
@@ -86,6 +88,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       return;
     }
 
+    // Toast notifications
     if (wordCount < 20) {
       toast({
         title: 'Validation Error',
@@ -117,6 +120,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       }
     }
 
+    // Toast notifications
     if (!selectedCategory) {
       toast({
         title: 'Missing Category',
@@ -126,6 +130,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       return;
     }
 
+    // Toast notifications
     if (!selectedExperience) {
       toast({
         title: 'Missing Experience Level',
@@ -135,6 +140,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       return;
     }
 
+    // Toast notifications
     if (requiredSkills.length === 0) {
       toast({
         title: 'Missing Skills',
@@ -148,6 +154,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     const budget = Number(form.budget.value);
     const rate = Number(form.expectedHourlyRate.value);
 
+    // Toast notifications
     if (hours <= 0 || budget <= 0 || rate <= 0) {
       toast({
         title: 'Invalid Values',
