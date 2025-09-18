@@ -3,7 +3,7 @@ import brevo from '@getbrevo/brevo';
 import {
   generateAccountVerificationEmail,
   AccountVerificationEmailParams,
-} from './types/accountVerificationEmail';
+} from './accountVerificationEmail';
 
 import { hash } from 'bcrypt-ts';
 
