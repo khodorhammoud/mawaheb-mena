@@ -25,3 +25,5 @@ docker-compose up -d
 
 # Clean up unused images
 docker image prune -f 
+
+# excuse to push
