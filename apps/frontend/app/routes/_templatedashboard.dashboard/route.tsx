@@ -186,6 +186,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return Response.json({
       accountType,
+      accountStatus: currentProfile.account.accountStatus, // Add account status for employers
       bioInfo,
       employerIndustries,
       allIndustries,

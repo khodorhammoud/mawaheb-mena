@@ -1,16 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Form } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
 import AppFormField from '~/common/form-fields';
 import { Badge } from '~/components/ui/badge';
 import RequiredSkills from '~/routes/_templatedashboard.new-job/required-skills';
-import { JobCategory } from '@mawaheb/db/types';
-import { Skill } from '@mawaheb/db/types';
+import { JobCategory, Skill } from '@mawaheb/db/types';
 import RichTextEditor from '~/components/ui/richTextEditor';
 import { getWordCount } from '~/lib/utils';
 import { ExperienceLevel } from '@mawaheb/db/enums';
-import { Placeholder } from 'drizzle-orm';
-import { toast } from '~/components/hooks/use-toast';
 
 interface JobFormProps {
   job?: {
@@ -22,7 +19,7 @@ interface JobFormProps {
     requiredSkills: Skill[];
     projectType: string;
     budget: number;
-    expectedHourlyRate?: number; // ADDED
+    expectedHourlyRate?: number;
     experienceLevel: ExperienceLevel;
     jobCategoryId: number | null;
   };
@@ -36,6 +33,22 @@ const experienceLevelLabels: Record<string, string> = {
   mid_level: 'Mid Level',
   senior_level: 'Expert Level',
 };
+
+type Errs = Partial<
+  Record<
+    | 'jobTitle'
+    | 'workingHours'
+    | 'location'
+    | 'projectType'
+    | 'budget'
+    | 'expectedHourlyRate'
+    | 'jobDescription'
+    | 'jobCategory'
+    | 'experienceLevel'
+    | 'requiredSkills',
+    string
+  >
+>;
 
 export default function JobForm({ job, jobCategories, isEdit = false }: JobFormProps) {
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
@@ -53,122 +66,82 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
   );
   const [selectedExperience, setSelectedExperience] = useState(job?.experienceLevel || '');
   const [jobDescription, setJobDescription] = useState(job?.description || '');
+  const [touched, setTouched] = useState(false);
+  const [errors, setErrors] = useState<Errs>({});
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const targetRef = useRef<HTMLInputElement>(null);
 
   const handleDescriptionChange = (content: string) => setJobDescription(content);
 
-  const [touched, setTouched] = useState(false);
+  // collect all errors without changing layout
+  const collectErrors = (form: HTMLFormElement): Errs => {
+    const e: Errs = {};
 
-  // Submission validations
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    const title = (form as any).jobTitle?.value?.trim() as string;
+    const plainDesc = jobDescription.replace(/<[^>]*>/g, ' ').trim();
+    const words = plainDesc.split(/\s+/).filter(Boolean).length;
 
-    const form = event.currentTarget;
+    if (!title) e.jobTitle = 'Job title is required.';
+    else if (title.length < 10) e.jobTitle = 'Job title must be at least 10 characters.';
+    else if (title.length > 100) e.jobTitle = 'Job title must be less than 100 characters.';
 
-    const title = form.jobTitle.value?.trim();
-    const description = jobDescription?.trim();
-    const wordCount = description.split(/\s+/).filter(word => word).length;
+    if (words < 20) e.jobDescription = 'Description must be at least 20 words.';
 
-    // Toast notifications
-    if (!title || title.length < 10) {
-      toast({
-        title: 'Validation Error',
-        description: 'Job title must be minimum 10 characters',
-        variant: 'destructive',
-      });
+    const workingHours = (form as any).workingHours?.value?.trim();
+    const location = (form as any).location?.value?.trim();
+    const projectType = (form as any).projectType?.value?.trim();
+    const budget = (form as any).budget?.value?.trim();
+    const expectedHourlyRate = (form as any).expectedHourlyRate?.value?.trim();
+
+    if (!workingHours) e.workingHours = 'Working hours are required.';
+    else if (Number(workingHours) <= 0) e.workingHours = 'Working hours must be greater than 0.';
+
+    if (!location) e.location = 'Location preference is required.';
+    if (!projectType) e.projectType = 'Select a project type.';
+
+    if (!budget) e.budget = 'Budget is required.';
+    else if (Number(budget) <= 0) e.budget = 'Budget must be greater than 0.';
+
+    if (!expectedHourlyRate) e.expectedHourlyRate = 'Expected hourly rate is required.';
+    else if (Number(expectedHourlyRate) <= 0)
+      e.expectedHourlyRate = 'Expected rate must be greater than 0.';
+
+    if (!selectedCategory) e.jobCategory = 'Please select a job category.';
+    if (!selectedExperience) e.experienceLevel = 'Please select an experience level.';
+    if (requiredSkills.length === 0) e.requiredSkills = 'Please select at least one skill.';
+
+    return e;
+  };
+
+  const validate = (form: HTMLFormElement): boolean => {
+    const e = collectErrors(form);
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // keep your exact button behavior; we only block submit when invalid
+  const onClickSaveDraft: React.MouseEventHandler<HTMLButtonElement> = e => {
+    const form = formRef.current;
+    if (!form) return;
+    setTouched(true);
+    if (!validate(form)) {
+      e.preventDefault();
       return;
     }
+    if (targetRef.current) targetRef.current.value = 'save-draft';
+  };
 
-    // Toast notifications
-    if (title.length > 100) {
-      toast({
-        title: 'Title too long',
-        description: 'Job title must be less than 100 characters.',
-        variant: 'destructive',
-      });
+  const onClickPostJob: React.MouseEventHandler<HTMLButtonElement> = e => {
+    const form = formRef.current;
+    if (!form) return;
+    setTouched(true);
+    if (!validate(form)) {
+      e.preventDefault();
       return;
     }
-
-    // Toast notifications
-    if (wordCount < 20) {
-      toast({
-        title: 'Validation Error',
-        description: 'Job description shall be minimum of 20 words',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Ensure other fields are filled in
-    const requiredFields = [
-      'jobTitle',
-      'workingHours',
-      'location',
-      'projectType',
-      'budget',
-      'expectedHourlyRate',
-    ];
-
-    for (const fieldName of requiredFields) {
-      const value = form[fieldName]?.value?.trim();
-      if (!value) {
-        toast({
-          title: 'Missing Field',
-          description: `Please fill in all required fields.`,
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
-
-    // Toast notifications
-    if (!selectedCategory) {
-      toast({
-        title: 'Missing Category',
-        description: 'Please select at least one job category.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Toast notifications
-    if (!selectedExperience) {
-      toast({
-        title: 'Missing Experience Level',
-        description: "Please select a the job's experience level.",
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Toast notifications
-    if (requiredSkills.length === 0) {
-      toast({
-        title: 'Missing Skills',
-        description: 'Please select at least one required skill.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const hours = Number(form.workingHours.value);
-    const budget = Number(form.budget.value);
-    const rate = Number(form.expectedHourlyRate.value);
-
-    // Toast notifications
-    if (hours <= 0 || budget <= 0 || rate <= 0) {
-      toast({
-        title: 'Invalid Values',
-        description: 'Working hours, budget, and expected rate must be greater than 0.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setTouched(true); // ✅ triggers visual validation
-
-    // If all good, submit the form
-    form.submit();
-  }
+    if (targetRef.current) targetRef.current.value = 'save-job';
+  };
 
   return (
     <div className="font-['Switzer-Regular'] w-full">
@@ -180,133 +153,189 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
 
           <Form
             method="post"
-            onSubmit={handleSubmit}
+            ref={formRef}
             className="flex flex-col gap-6 md:grid grid-cols-1 md:grid-cols-2 xl:gap-x-12 w-full"
           >
             {/* Hidden Inputs */}
             {job?.id && <input type="hidden" name="jobId" value={job.id} />}
-            <input type="hidden" name="experienceLevel" value={selectedExperience} />
-            <input type="hidden" name="jobCategory" value={selectedCategory} />
+            <input type="hidden" name="experienceLevel" value={String(selectedExperience)} />
+            <input
+              type="hidden"
+              name="jobCategory"
+              value={selectedCategory != null ? String(selectedCategory) : ''}
+            />
             <input type="hidden" name="jobSkills" value={JSON.stringify(requiredSkills)} />
+            <input type="hidden" name="target" ref={targetRef} />
 
-            {/* Job Title */}
-            <AppFormField
-              type="text"
-              id="jobTitle"
-              name="jobTitle"
-              label="Job Title"
-              defaultValue={job?.title || ''}
-              className="w-full"
-              required
-            />
+            {/* LEFT COL (kept): Job Title */}
+            <div>
+              <AppFormField
+                type="text"
+                id="jobTitle"
+                name="jobTitle"
+                label="Job Title"
+                defaultValue={job?.title || ''}
+                className="w-full"
+                aria-invalid={!!errors.jobTitle && touched}
+                aria-describedby={errors.jobTitle ? 'jobTitle-err' : undefined}
+                required
+              />
+              {touched && errors.jobTitle && (
+                <p id="jobTitle-err" className="text-red-500 text-sm mt-1">
+                  {errors.jobTitle}
+                </p>
+              )}
+            </div>
 
-            {/* Working Hours */}
-            <AppFormField
-              type="number"
-              id="workingHours"
-              name="workingHours"
-              label="Working Hours per week"
-              defaultValue={String(job?.workingHoursPerWeek || '')}
-              className="col-span-1 w-full"
-              required
-            />
+            {/* RIGHT COL (kept): Working Hours */}
+            <div>
+              <AppFormField
+                type="number"
+                id="workingHours"
+                name="workingHours"
+                label="Working Hours per week"
+                defaultValue={String(job?.workingHoursPerWeek || '')}
+                className="col-span-1 w-full"
+                aria-invalid={!!errors.workingHours && touched}
+                aria-describedby={errors.workingHours ? 'workingHours-err' : undefined}
+                required
+              />
+              {touched && errors.workingHours && (
+                <p id="workingHours-err" className="text-red-500 text-sm mt-1">
+                  {errors.workingHours}
+                </p>
+              )}
+            </div>
 
-            {/* Job Description */}
-            <div className="flex flex-col gap-2">
+            {/* LEFT COL (kept): Job Description */}
+            <div className={`flex flex-col gap-2`}>
               <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700">
                 Job Description
               </label>
               <input type="hidden" name="jobDescription" value={jobDescription} />
-              {/* the hidden input is needed for the description as a richTextEditor to be saved :) */}
               <RichTextEditor
                 value={jobDescription}
                 onChange={handleDescriptionChange}
                 placeholder="Enter the job description"
-                className="border-gray-300 rounded-md resize-none mt-6 mb-1 text-left break-words whitespace-normal overflow-hidden"
+                className="border-gray-300 rounded-md resize-none text-left break-words whitespace-normal overflow-hidden"
                 style={{ wordBreak: 'break-word', hyphens: 'auto' }}
               />
               <div className="ml-6 text-xs text-gray-500">
                 {getWordCount(jobDescription)} / 2000 characters
               </div>
+              {touched && errors.jobDescription && (
+                <p className="text-red-500 text-sm">{errors.jobDescription}</p>
+              )}
             </div>
 
+            {/* RIGHT COL (kept): stacked fields */}
             <div className="flex flex-col gap-6">
               {/* Location */}
-              <AppFormField
-                type="text"
-                id="location"
-                name="location"
-                label="Location Preferences"
-                defaultValue={job?.locationPreference || ''}
-                className="col-span-1 w-full"
-                required
-              />
+              <div>
+                <AppFormField
+                  type="text"
+                  id="location"
+                  name="location"
+                  label="Location Preferences"
+                  defaultValue={job?.locationPreference || ''}
+                  className="col-span-1 w-full"
+                  aria-invalid={!!errors.location && touched}
+                  aria-describedby={errors.location ? 'location-err' : undefined}
+                  required
+                />
+                {touched && errors.location && (
+                  <p id="location-err" className="text-red-500 text-sm mt-1">
+                    {errors.location}
+                  </p>
+                )}
+              </div>
 
               {/* Skills */}
-              <div
-                className={`p-2 rounded-xl ${touched && requiredSkills.length === 0 ? 'border border-red-500' : ''}`}
-              >
+              <div>
                 <RequiredSkills selectedSkills={requiredSkills} onChange={setRequiredSkills} />
               </div>
-              {touched && requiredSkills.length === 0 && (
-                <p className="text-red-500 text-sm mt-1">
-                  Please select at least one required skill.
-                </p>
+              {touched && errors.requiredSkills && (
+                <p className="text-red-500 text-sm -mt-5">{errors.requiredSkills}</p>
               )}
 
               {/* Project Type */}
-              <AppFormField
-                type="select"
-                id="projectType"
-                name="projectType"
-                label="Project Type"
-                options={[
-                  { value: 'per-project-basis', label: 'Per Project Basis' },
-                  { value: 'long-term', label: 'Long Term' },
-                  { value: 'short-term', label: 'Short Term' },
-                ]}
-                defaultValue={job?.projectType || ''}
-                className="col-span-1 w-full"
-                required
-              />
+              <div>
+                <AppFormField
+                  type="select"
+                  id="projectType"
+                  name="projectType"
+                  label="Project Type"
+                  options={[
+                    { value: 'per-project-basis', label: 'Per Project Basis' },
+                    { value: 'long-term', label: 'Long Term' },
+                    { value: 'short-term', label: 'Short Term' },
+                  ]}
+                  defaultValue={job?.projectType || ''}
+                  className="col-span-1 w-full"
+                  aria-invalid={!!errors.projectType && touched}
+                  aria-describedby={errors.projectType ? 'projectType-err' : undefined}
+                  required
+                />
+              </div>
+              {touched && errors.projectType && (
+                <p id="projectType-err" className="text-red-500 text-sm -mt-5">
+                  {errors.projectType}
+                </p>
+              )}
 
               {/* Budget */}
-              <AppFormField
-                type="number"
-                id="budget"
-                name="budget"
-                label="Budget"
-                placeholder=""
-                currency="$"
-                defaultValue={String(job?.budget || '')}
-                className="col-span-1 w-full"
-                required
-              />
+              <div>
+                <AppFormField
+                  type="number"
+                  id="budget"
+                  name="budget"
+                  label="Budget"
+                  currency="$"
+                  defaultValue={String(job?.budget || '')}
+                  className="col-span-1 w-full"
+                  aria-invalid={!!errors.budget && touched}
+                  aria-describedby={errors.budget ? 'budget-err' : undefined}
+                  required
+                />
+              </div>
+              {touched && errors.budget && (
+                <p id="budget-err" className="text-red-500 text-sm -mt-5">
+                  {errors.budget}
+                </p>
+              )}
 
-              {/* === NEW FIELD: Expected Hourly Rate === */}
-              <AppFormField
-                type="number"
-                id="expectedHourlyRate"
-                name="expectedHourlyRate"
-                label="Expected Hourly Rate"
-                placeholder="Enter expected hourly rate"
-                min={0}
-                defaultValue={job?.expectedHourlyRate ?? ''}
-                className="col-span-1 w-full"
-                required
-              />
-              {/* ====================================== */}
+              {/* Expected Hourly Rate */}
+              <div>
+                <AppFormField
+                  type="number"
+                  id="expectedHourlyRate"
+                  name="expectedHourlyRate"
+                  label="Expected Hourly Rate"
+                  placeholder="Enter expected hourly rate"
+                  min={0}
+                  defaultValue={job?.expectedHourlyRate ?? ''}
+                  className="col-span-1 w-full"
+                  aria-invalid={!!errors.expectedHourlyRate && touched}
+                  aria-describedby={
+                    errors.expectedHourlyRate ? 'expectedHourlyRate-err' : undefined
+                  }
+                  required
+                />
+              </div>
+              {touched && errors.expectedHourlyRate && (
+                <p id="expectedHourlyRate-err" className="text-red-500 text-sm -mt-5">
+                  {errors.expectedHourlyRate}
+                </p>
+              )}
             </div>
 
-            {/* Job Category */}
+            {/* Job Category (kept) */}
             <div className="col-span-2 mt-6">
               <label htmlFor="jobCategory" className="block md:text-2xl text-xl font-semibold mb-4">
                 Job Category
               </label>
               <div
-                className={`flex flex-wrap gap-3 p-2 rounded-xl ${
-                  touched && !selectedCategory ? 'border border-red-500' : ''
-                }`}
+                className={`flex flex-wrap gap-3 p-2 rounded-xl`}
                 id="jobCategory"
                 role="radiogroup"
                 aria-label="Job Category"
@@ -326,18 +355,14 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 ))}
               </div>
             </div>
-            {touched && !selectedCategory && (
-              <p className="text-red-500 text-sm mt-1">Please select a job category.</p>
+            {touched && errors.jobCategory && (
+              <p className="text-red-500 text-sm -mt-6">{'Please select a job category.'}</p>
             )}
 
-            {/* Experience Level */}
+            {/* Experience Level (kept) */}
             <div className="col-span-2 mt-6">
               <h3 className="block md:text-2xl text-xl font-semibold mb-4">Experience Level</h3>
-              <div
-                className={`flex flex-wrap gap-2 p-2 rounded-xl ${
-                  touched && !selectedExperience ? 'border border-red-500' : ''
-                }`}
-              >
+              <div className={`flex flex-wrap gap-2 p-2 rounded-xl`}>
                 {Object.values(ExperienceLevel).map(level => (
                   <Badge
                     key={level}
@@ -353,21 +378,22 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 ))}
               </div>
             </div>
-            {touched && !selectedExperience && (
-              <p className="text-red-500 text-sm mt-1">Please select an experience level.</p>
+            {touched && errors.experienceLevel && (
+              <p className="text-red-500 text-sm -mt-6">{'Please select an experience level.'}</p>
             )}
 
+            {/* Buttons (kept) */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
               <Button
                 type="submit"
-                name="target"
-                value="save-draft"
+                onClick={onClickSaveDraft}
                 className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor bg-white not-active-gradient"
               >
                 {isEdit ? 'Cancel' : 'Save as Draft'}
               </Button>
               <Button
                 type="submit"
+                onClick={onClickPostJob}
                 className="bg-primaryColor text-white rounded-xl hover:text-white hover:bg-primaryColor not-active-gradient"
               >
                 {isEdit ? 'Update Job' : 'Post Job'}

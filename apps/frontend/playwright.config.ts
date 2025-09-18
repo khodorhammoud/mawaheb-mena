@@ -38,32 +38,34 @@ export default defineConfig({
       name: 'setup:nojobs',
       testMatch: /e2e\/setup\/auth\.nojobs\.setup\.ts/,
     },
+    // 3) Deactivated auth setup
+    { name: 'setup:deactivated', testMatch: /e2e\/setup\/auth\.deactivated\.setup\.ts/ },
 
     // --- Browser projects (depend on the setup projects) ---
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup:auth', 'setup:nojobs'],
+      dependencies: ['setup:auth', 'setup:nojobs', 'setup:deactivated'],
     },
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      dependencies: ['setup:auth', 'setup:nojobs'],
+      dependencies: ['setup:auth', 'setup:nojobs', 'setup:deactivated'],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      dependencies: ['setup:auth', 'setup:nojobs'],
+      dependencies: ['setup:auth', 'setup:nojobs', 'setup:deactivated'],
     },
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
-      dependencies: ['setup:auth', 'setup:nojobs'],
+      dependencies: ['setup:auth', 'setup:nojobs', 'setup:deactivated'],
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
-      dependencies: ['setup:auth', 'setup:nojobs'],
+      dependencies: ['setup:auth', 'setup:nojobs', 'setup:deactivated'],
     },
   ],
 

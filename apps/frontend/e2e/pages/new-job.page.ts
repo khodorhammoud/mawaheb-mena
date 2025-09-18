@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 // ---------- helpers ----------
 export const gotoNewJob = async (page: Page) => {
@@ -140,4 +140,33 @@ export async function ensureSkill(page: Page, skillName = 'PlaywrightE2E') {
   // Close the popover so the rest of the test interacts with the page normally
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   await page.keyboard.press('Escape').catch(() => {});
+}
+
+// --------- dashboard helpers ----------
+export async function getDashboardCounts(page: Page) {
+  const get = async (headingExact: string) => {
+    const h = page.getByRole('heading', { name: headingExact, exact: true });
+    await expect(h).toBeVisible();
+    const countEl = h.locator('xpath=./following-sibling::div[1]//p[1]');
+    const txt = (await countEl.textContent())?.trim() ?? '0';
+    return Number(/^\d+$/.test(txt) ? txt : '0');
+  };
+  return {
+    active: await get('Active Jobs'),
+    drafted: await get('Drafted Jobs'),
+    closed: await get('Closed Jobs'),
+    paused: await get('Paused Jobs'),
+  };
+}
+
+// small helper: be tolerant to styling differences
+export async function expectSelectedVisual(el: Locator) {
+  const cls = (await el.getAttribute('class')) || '';
+  const aria = await el.getAttribute('aria-pressed');
+  const dataSel = await el.getAttribute('data-selected');
+  expect(
+    aria === 'true' ||
+      dataSel === 'true' ||
+      /bg-(?:primary|blue)|text-white|ring-(?:primary|blue)|border-(?:primary|blue)/i.test(cls)
+  ).toBeTruthy();
 }
