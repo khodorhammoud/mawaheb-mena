@@ -3,7 +3,6 @@ import SocialLinks from '../../common/registration/socialLinks';
 import { useActionData, useNavigate, Form } from '@remix-run/react';
 import AppFormField from '../../common/form-fields';
 import { AccountType } from '@mawaheb/db/enums';
-import { Checkbox } from '~/components/ui/checkbox';
 import zxcvbn from 'zxcvbn';
 
 interface ActionData {
@@ -290,7 +289,13 @@ export default function SignupLeftComponent() {
 
         <div className="flex flex-col space-y-3">
           <div className="flex items-center space-x-3 ml-3">
-            <Checkbox name="termsAccepted" id="termsAccepted" required className="peer" />
+            <input
+              type="checkbox"
+              id="termsAccepted"
+              name="termsAccepted"
+              required
+              className="h-4 w-4 shrink-0 border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+            />
             <label htmlFor="termsAccepted" className="text-sm tracking-tight text-gray-500">
               I accept the{' '}
               <a

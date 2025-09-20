@@ -140,25 +140,48 @@ export default function Dashboard() {
         </div> */}
       <div className="flex-1 pl-6">
         <div className="min-h-screen flex flex-col">
+          {/* Deactivated Account Banner */}
+          {accountStatus && accountStatus.toString() === AccountStatus.Deactivated.toString() && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-6 mt-4"
+              role="alert"
+              data-testid="account-status-banner"
+            >
+              <strong className="font-bold">Account Deactivated</strong>
+              <span className="block sm:inline">
+                {' '}
+                Your account has been deactivated. You cannot create new jobs or access certain
+                features.
+              </span>
+            </div>
+          )}
           {/* Conditionally render the welcome message and button only if there are no jobs */}
           {totalJobCount === 0 && (
-            <>
-              <h1 className="text-2xl ml-6">
+            <section data-testid="no-jobs-ui" className="ml-6 mt-2">
+              <h1 className="text-2xl">
                 Welcome, <span className="text-primary font-bold">{firstName}!</span>
               </h1>
-              <p className="text-2xl ml-6">Good to hear from you. Are you hiring?</p>
 
-              {/* Centered Button Container */}
-              <div className="flex justify-start ml-6 mt-4">
-                <Link
-                  to="/new-job"
-                  onClick={handleCreateJobClick}
-                  className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto mr-4"
-                >
-                  Create New Job
-                </Link>
-              </div>
-            </>
+              <p data-testid="no-jobs-text" className="text-2xl">
+                Good to hear from you. Are you hiring?
+              </p>
+
+              {/* Only show Create New Job button if account is not deactivated */}
+              {!(
+                accountStatus && accountStatus.toString() === AccountStatus.Deactivated.toString()
+              ) && (
+                <div className="flex justify-start mt-4">
+                  <Link
+                    to="/new-job"
+                    data-testid="no-jobs-cta"
+                    onClick={handleCreateJobClick}
+                    className="bg-primaryColor text-white rounded-md px-4 py-2 hover:bg-primaryColor-dark transition duration-300 w-auto mr-4"
+                  >
+                    Create New Job
+                  </Link>
+                </div>
+              )}
+            </section>
           )}
 
           {/* Main Section */}

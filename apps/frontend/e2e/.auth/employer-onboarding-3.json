@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "lng",
+      "value": "ImVuIg%3D%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "user",
+      "value": "eyJ1c2VyIjo4NDh9.afEERT9f0aBH8U6xwSUIXJXUa%2B5HU2xZudyocMiwaeQ",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1757997431.903434,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

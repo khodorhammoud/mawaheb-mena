@@ -192,7 +192,7 @@ const AppFormField = forwardRef<
                   {/* Label with adjusted left */}
                   <label
                     htmlFor={id}
-                    className="absolute left-10 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                    className="absolute left-10 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform pointer-events-none
                       -translate-y-2/3 md:-translate-y-1/2
                       peer-placeholder-shown:top-6 peer-placeholder-shown:left-10 peer-placeholder-shown:text-gray-500
                       sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
@@ -229,7 +229,7 @@ const AppFormField = forwardRef<
                   {/* Label with normal left */}
                   <label
                     htmlFor={id}
-                    className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform
+                    className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform pointer-events-none
                       -translate-y-2/3 md:-translate-y-1/2
                       peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                       sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
@@ -323,7 +323,7 @@ const AppFormField = forwardRef<
         {type === 'password' ? (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2 pointer-events-none
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
@@ -334,7 +334,7 @@ const AppFormField = forwardRef<
         ) : type === 'textarea' ? (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-1/2 pointer-events-none
                 peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                 sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1
@@ -347,7 +347,7 @@ const AppFormField = forwardRef<
         ) : (
           <label
             htmlFor={id}
-            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2
+            className="absolute left-4 top-0 text-gray-500 sm:text-base text-sm bg-white px-1 transition-all transform -translate-y-2/3 md:-translate-y-1/2 pointer-events-none
                     peer-placeholder-shown:top-6 peer-placeholder-shown:left-4 peer-placeholder-shown:text-gray-500
                     sm:peer-placeholder-shown:text-base peer-placeholder-shown:text-sm
                     peer-focus:top-0 peer-focus:left-4 peer-focus:text-primaryColor peer-focus:px-1

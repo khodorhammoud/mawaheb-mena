@@ -1,4 +1,8 @@
 export async function fetchCMSData(queries: string[]) {
+  // In E2E/test mode, optionally short-circuit CMS calls to avoid external dependency flakiness
+  if (process.env.NODE_ENV === 'test' || process.env.E2E_DISABLE_CMS === 'true') {
+    return queries.map(() => null);
+  }
   const responses = [];
 
   // Iterate over all the queries

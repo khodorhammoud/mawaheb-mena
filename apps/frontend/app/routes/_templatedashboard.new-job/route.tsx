@@ -11,15 +11,30 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData();
     const target = formData.get('target') as string;
-    const employer = (await getCurrentProfileInfo(request)) as Employer;
+    const employer = (await getCurrentProfileInfo(request)) as Employer | null;
 
-    // Check if the employer is deactivated
-    if (employer?.account?.accountStatus === AccountStatus.Deactivated) {
+    // auth required
+    if (!employer?.id) {
       return Response.json(
-        {
-          success: false,
-          error: { message: 'Deactivated accounts cannot create new jobs' },
-        },
+        { success: false, error: { message: 'Not authenticated' } },
+        { status: 401 }
+      );
+    }
+
+    const status = employer.account?.accountStatus;
+
+    // 1) specific block first
+    if (status === AccountStatus.Deactivated) {
+      return Response.json(
+        { success: false, error: { message: 'Deactivated accounts cannot create new jobs' } },
+        { status: 403 }
+      );
+    }
+
+    // 2) generic “not yet allowed”
+    if (status !== AccountStatus.Published) {
+      return Response.json(
+        { success: false, error: { message: 'Your account cannot create jobs yet.' } },
         { status: 403 }
       );
     }
@@ -74,10 +89,22 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }) {
   try {
     // Get current user profile
-    const employer = (await getCurrentProfileInfo(request)) as Employer;
+    const employer = (await getCurrentProfileInfo(request)) as Employer | null;
 
-    // Check if the employer is deactivated
-    if (employer?.account?.accountStatus === AccountStatus.Deactivated) {
+    // guests → login (or dashboard if you prefer)
+    if (!employer?.id) {
+      return redirect('/login-employer');
+    }
+
+    const status = employer.account?.accountStatus;
+
+    // 1) deactivated → dashboard
+    if (status === AccountStatus.Deactivated) {
+      return redirect('/dashboard');
+    }
+
+    // 2) anything not Published → dashboard (onboarding/pending/etc.)
+    if (status !== AccountStatus.Published) {
       return redirect('/dashboard');
     }
 
