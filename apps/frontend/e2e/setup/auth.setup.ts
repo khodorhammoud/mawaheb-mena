@@ -15,13 +15,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Auth files for different user types and states
-const employerAuthFile = path.join(__dirname, '.auth/employer.json');
-const freelancerAuthFile = path.join(__dirname, '.auth/freelancer.json');
+const employerAuthFile = path.join(__dirname, '../.auth/employer.json');
+const freelancerAuthFile = path.join(__dirname, '../.auth/freelancer.json');
 
 // Employer-specific states based on database conditions
-const onboardingEmployerFile = path.join(__dirname, '.auth/employer-onboarding.json'); // is_onboarded: false
-const identificationEmployerFile = path.join(__dirname, '.auth/employer-identification.json'); // is_onboarded: true, account_status: null/draft
-const dashboardEmployerFile = path.join(__dirname, '.auth/employer-dashboard.json'); // is_onboarded: true, account_status: published
+const onboardingEmployerFile = path.join(__dirname, '../.auth/employer-onboarding.json'); // is_onboarded: false
+const identificationEmployerFile = path.join(__dirname, '../.auth/employer-identification.json'); // is_onboarded: true, account_status: null/draft
+const dashboardEmployerFile = path.join(__dirname, '../.auth/employer-dashboard.json'); // is_onboarded: true, account_status: published
 
 // Freelancer-specific states based on database conditions
 // const onboardingFreelancerFile = path.join(__dirname, '.auth/freelancer-onboarding.json'); // is_onboarded: false
@@ -65,7 +65,7 @@ setup('authenticate as employer', async ({ page }) => {
   await page.context().storageState({ path: employerAuthFile });
 
   // Save employer credentials for reference
-  const credentialsFile = path.join(__dirname, '.auth/employer-credentials.json');
+  const credentialsFile = path.join(__dirname, '../.auth/employer-credentials.json');
   await writeFile(
     credentialsFile,
     JSON.stringify(
@@ -121,7 +121,7 @@ setup('authenticate as freelancer', async ({ page }) => {
   await page.context().storageState({ path: freelancerAuthFile });
 
   // Save freelancer credentials for reference
-  const credentialsFile = path.join(__dirname, '.auth/freelancer-credentials.json');
+  const credentialsFile = path.join(__dirname, '../.auth/freelancer-credentials.json');
   await writeFile(
     credentialsFile,
     JSON.stringify(
@@ -195,7 +195,7 @@ setup('authenticate as onboarding employer', async ({ page }) => {
   await page.context().storageState({ path: onboardingEmployerFile });
 
   // Save credentials for reference
-  const credentialsFile = path.join(__dirname, '.auth/employer-onboarding-credentials.json');
+  const credentialsFile = path.join(__dirname, '../.auth/employer-onboarding-credentials.json');
   await writeFile(
     credentialsFile,
     JSON.stringify(
@@ -280,7 +280,7 @@ setup('authenticate as identification employer', async ({ page }) => {
   await page.context().storageState({ path: identificationEmployerFile });
 
   // Save credentials for reference
-  const credentialsFile = path.join(__dirname, '.auth/employer-identification-credentials.json');
+  const credentialsFile = path.join(__dirname, '../.auth/employer-identification-credentials.json');
   await writeFile(
     credentialsFile,
     JSON.stringify(
@@ -369,7 +369,7 @@ setup('authenticate as dashboard employer', async ({ page }) => {
   await page.context().storageState({ path: dashboardEmployerFile });
 
   // 5) Save simple credentials reference
-  const credentialsFile = path.join(__dirname, '.auth/employer-dashboard-credentials.json');
+  const credentialsFile = path.join(__dirname, '../.auth/employer-dashboard-credentials.json');
   await writeFile(
     credentialsFile,
     JSON.stringify(

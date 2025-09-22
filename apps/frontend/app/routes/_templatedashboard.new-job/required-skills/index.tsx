@@ -138,6 +138,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div
+          data-testid="skills-trigger"
           ref={triggerRef}
           className="cursor-pointer border border-slate-300 rounded-xl p-1"
           onClick={() => setOpen(true)}
@@ -153,6 +154,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
         </div>
       </PopoverTrigger>
       <PopoverContent
+        data-testid="skills-popover"
         style={{
           width: `${popoverWidth}px`,
           zIndex: 1000,
@@ -208,6 +210,7 @@ export default function RequiredSkills({ selectedSkills, onChange }: RequiredSki
           {/* ---- ComboBox Search ---- */}
           <Command className="border mt-6">
             <CommandInput
+              data-testid="skills-search"
               placeholder="Search skills…"
               value={searchTerm}
               onValueChange={setSearchTerm}

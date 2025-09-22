@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Form } from '@remix-run/react';
+import { Form, useNavigate } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
 import AppFormField from '~/common/form-fields';
 import { Badge } from '~/components/ui/badge';
@@ -51,6 +51,7 @@ type Errs = Partial<
 >;
 
 export default function JobForm({ job, jobCategories, isEdit = false }: JobFormProps) {
+  const navigate = useNavigate();
   const [requiredSkills, setRequiredSkills] = useState<Skill[]>(
     Array.isArray(job?.requiredSkills)
       ? job.requiredSkills.map((skill: any) => ({
@@ -74,7 +75,6 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
 
   const handleDescriptionChange = (content: string) => setJobDescription(content);
 
-  // collect all errors without changing layout
   const collectErrors = (form: HTMLFormElement): Errs => {
     const e: Errs = {};
 
@@ -83,7 +83,7 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     const words = plainDesc.split(/\s+/).filter(Boolean).length;
 
     if (!title) e.jobTitle = 'Job title is required.';
-    else if (title.length < 10) e.jobTitle = 'Job title must be at least 10 characters.';
+    else if (title.length < 10) e.jobTitle = 'Job title must be at least 10 characters minimum.';
     else if (title.length > 100) e.jobTitle = 'Job title must be less than 100 characters.';
 
     if (words < 20) e.jobDescription = 'Description must be at least 20 words.';
@@ -120,7 +120,6 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
     return Object.keys(e).length === 0;
   };
 
-  // keep your exact button behavior; we only block submit when invalid
   const onClickSaveDraft: React.MouseEventHandler<HTMLButtonElement> = e => {
     const form = formRef.current;
     if (!form) return;
@@ -140,7 +139,24 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
       e.preventDefault();
       return;
     }
+    // IMPORTANT: action expects "save-job" even when editing
     if (targetRef.current) targetRef.current.value = 'save-job';
+  };
+
+  const onClickCancel: React.MouseEventHandler<HTMLButtonElement> = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isEdit) {
+      navigate('/manage-jobs');
+    } else {
+      const form = formRef.current;
+      if (!form) return;
+      setTouched(true);
+      if (!validate(form)) {
+        return;
+      }
+      if (targetRef.current) targetRef.current.value = 'save-draft';
+    }
   };
 
   return (
@@ -224,7 +240,9 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
                 {getWordCount(jobDescription)} / 2000 characters
               </div>
               {touched && errors.jobDescription && (
-                <p className="text-red-500 text-sm">{errors.jobDescription}</p>
+                <p id="jobDescription-err" className="text-red-500 text-sm">
+                  {errors.jobDescription}
+                </p>
               )}
             </div>
 
@@ -385,8 +403,9 @@ export default function JobForm({ job, jobCategories, isEdit = false }: JobFormP
             {/* Buttons (kept) */}
             <div className="flex justify-end space-x-4 mt-8 col-span-2">
               <Button
-                type="submit"
-                onClick={onClickSaveDraft}
+                data-testid="cancel-edit"
+                type={isEdit ? 'button' : 'submit'}
+                onClick={isEdit ? onClickCancel : onClickSaveDraft}
                 className="text-primaryColor border-gray-300 rounded-xl hover:text-white hover:bg-primaryColor bg-white not-active-gradient"
               >
                 {isEdit ? 'Cancel' : 'Save as Draft'}

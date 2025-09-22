@@ -3,7 +3,7 @@
     {
       "name": "lng",
       "value": "ImVuIg%3D%3D",
-      "domain": "localhost",
+      "domain": "127.0.0.1",
       "path": "/",
       "expires": -1,
       "httpOnly": true,
@@ -12,10 +12,10 @@
     },
     {
       "name": "user",
-      "value": "eyJ1c2VyIjoxNzd9.nOmvXNo%2BKBUHeFWrmOo8vTmwkvdT6ILw8y6QvKX%2FvMU",
-      "domain": "localhost",
+      "value": "eyJ1c2VyIjoxMX0%3D.1%2F15VpDlZY46EsjkbqdNnH6QIzWqBj%2BO2miLw4YG3aI",
+      "domain": "127.0.0.1",
       "path": "/",
-      "expires": 1758360394.157084,
+      "expires": 1759111239.225314,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"

@@ -23,6 +23,8 @@ interface AppFormFieldProps {
   maxLength?: number;
   currency?: string;
   required?: boolean;
+  'aria-invalid'?: boolean;
+  'aria-describedby'?: string;
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -50,6 +52,8 @@ const AppFormField = forwardRef<
       maxLength,
       currency,
       required,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedby,
     },
     ref
   ) => {
@@ -153,6 +157,8 @@ const AppFormField = forwardRef<
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
                 required={required}
+                aria-invalid={ariaInvalid}
+                aria-describedby={ariaDescribedby}
               >
                 <option value="" disabled hidden></option>
                 {options.map((option, index) => (
@@ -188,6 +194,10 @@ const AppFormField = forwardRef<
                     min={min}
                     ref={ref as React.Ref<HTMLInputElement>}
                     onBlur={onBlur}
+                    required={required} // ✅ add this
+                    aria-required={required ? true : undefined}
+                    aria-invalid={ariaInvalid}
+                    aria-describedby={ariaDescribedby}
                   />
                   {/* Label with adjusted left */}
                   <label
@@ -225,6 +235,10 @@ const AppFormField = forwardRef<
                     min={min}
                     ref={ref as React.Ref<HTMLInputElement>}
                     onBlur={onBlur}
+                    required={required} // ✅ add this
+                    aria-required={required ? true : undefined}
+                    aria-invalid={ariaInvalid}
+                    aria-describedby={ariaDescribedby}
                   />
                   {/* Label with normal left */}
                   <label
@@ -283,6 +297,8 @@ const AppFormField = forwardRef<
                 maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
                 required={required}
+                aria-invalid={ariaInvalid}
+                aria-describedby={ariaDescribedby}
               ></textarea>
             ) : (
               <input
@@ -314,6 +330,8 @@ const AppFormField = forwardRef<
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
                 required={required}
+                aria-invalid={ariaInvalid}
+                aria-describedby={ariaDescribedby}
               />
             )}
           </>

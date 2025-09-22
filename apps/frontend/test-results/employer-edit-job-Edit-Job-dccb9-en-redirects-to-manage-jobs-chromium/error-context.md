@@ -1,0 +1,132 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e6]: MAWAHEB MENA
+        - generic [ref=e7]:
+          - link "Post Job" [ref=e8] [cursor=pointer]:
+            - /url: /new-job
+          - generic [ref=e9]:
+            - img [ref=e11] [cursor=pointer]
+            - button [ref=e15] [cursor=pointer]:
+              - img [ref=e16] [cursor=pointer]
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e24]: EA
+          - generic [ref=e25]:
+            - heading "Employer1 A." [level=2] [ref=e26]
+            - paragraph
+            - paragraph
+        - navigation [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e30] [cursor=pointer]
+            - generic [ref=e33] [cursor=pointer]: Dashboard
+          - link "Manage Jobs" [ref=e34] [cursor=pointer]:
+            - /url: /manage-jobs
+            - img [ref=e36] [cursor=pointer]
+            - generic [ref=e38] [cursor=pointer]: Manage Jobs
+          - link "Time Sheet" [ref=e39] [cursor=pointer]:
+            - /url: /timesheets
+            - img [ref=e41] [cursor=pointer]
+            - generic [ref=e43] [cursor=pointer]: Time Sheet
+          - link "Settings" [ref=e44] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e46] [cursor=pointer]
+            - generic [ref=e48] [cursor=pointer]: Settings
+      - generic [ref=e53]:
+        - heading "Edit Job Posting" [level=1] [ref=e54]
+        - generic [ref=e55]:
+          - generic [ref=e57]:
+            - textbox "Job Title" [ref=e58]: E2E Edited — 1758506475729
+            - generic: Job Title
+          - generic [ref=e61]:
+            - spinbutton "Working Hours per week" [ref=e62]: "40"
+            - generic: Working Hours per week
+          - generic [ref=e63]:
+            - generic [ref=e64]: Job Description
+            - generic [ref=e66]:
+              - generic [ref=e67]:
+                - button [ref=e70] [cursor=pointer]:
+                  - img [ref=e71] [cursor=pointer]
+                - generic:
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                - generic:
+                  - button:
+                    - img
+                  - button:
+                    - img
+                - generic:
+                  - button:
+                    - img
+              - generic [ref=e89]:
+                - paragraph [ref=e91]: This baseline description contains well over the minimum twenty words needed so that the client side validator always considers it valid for the purpose of reliable testing every single time.
+                - generic [ref=e93]:
+                  - link:
+                    - /url: about:blank
+                  - textbox [ref=e94]
+            - generic [ref=e95]: 191 / 2000 characters
+          - generic [ref=e96]:
+            - generic [ref=e98]:
+              - textbox "Location Preferences" [ref=e99]: remote
+              - generic: Location Preferences
+            - generic [ref=e102] [cursor=pointer]:
+              - generic [ref=e103] [cursor=pointer]:
+                - img [ref=e105] [cursor=pointer]
+                - generic [ref=e107] [cursor=pointer]: JavaScript
+              - generic [ref=e108] [cursor=pointer]:
+                - img [ref=e110] [cursor=pointer]
+                - generic [ref=e112] [cursor=pointer]: React
+              - generic [ref=e113] [cursor=pointer]:
+                - img [ref=e115] [cursor=pointer]
+                - generic [ref=e117] [cursor=pointer]: TypeScript
+              - generic [ref=e118] [cursor=pointer]: +2 more
+            - generic [ref=e120]:
+              - combobox "Project Type" [ref=e121]:
+                - option "Per Project Basis"
+                - option "Long Term" [selected]
+                - option "Short Term"
+              - generic: Project Type
+            - generic [ref=e124]:
+              - generic: $
+              - spinbutton "Budget" [ref=e125]: "8000"
+              - generic: Budget
+            - generic [ref=e128]:
+              - spinbutton "Expected Hourly Rate" [ref=e129]: "48"
+              - generic: Expected Hourly Rate
+          - generic [ref=e130]:
+            - generic [ref=e131]: Job Category
+            - radiogroup "Job Category" [ref=e132]:
+              - generic [ref=e133] [cursor=pointer]: Software Development
+              - generic [ref=e134] [cursor=pointer]: Data Science & Analytics
+              - generic [ref=e135] [cursor=pointer]: DevOps & Cloud
+              - generic [ref=e136] [cursor=pointer]: UI/UX Design
+              - generic [ref=e137] [cursor=pointer]: Cybersecurity
+              - generic [ref=e138] [cursor=pointer]: Mobile Development
+              - generic [ref=e139] [cursor=pointer]: AI & Machine Learning
+              - generic [ref=e140] [cursor=pointer]: Database Administration
+              - generic [ref=e141] [cursor=pointer]: IT Project Management
+              - generic [ref=e142] [cursor=pointer]: Technical Writing
+          - generic [ref=e143]:
+            - heading "Experience Level" [level=3] [ref=e144]
+            - generic [ref=e145]:
+              - generic [ref=e146] [cursor=pointer]: Entry Level
+              - generic [ref=e147] [cursor=pointer]: Mid Level
+              - generic [ref=e148] [cursor=pointer]: Expert Level
+          - generic [ref=e149]:
+            - button "Cancel" [ref=e150] [cursor=pointer]
+            - button "Update Job" [active] [ref=e151] [cursor=pointer]
+  - region "Notifications (F8)":
+    - list
+```
