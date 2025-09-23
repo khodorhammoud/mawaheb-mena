@@ -3,7 +3,7 @@
     {
       "name": "lng",
       "value": "ImVuIg%3D%3D",
-      "domain": "127.0.0.1",
+      "domain": "localhost",
       "path": "/",
       "expires": -1,
       "httpOnly": true,
@@ -13,9 +13,9 @@
     {
       "name": "user",
       "value": "eyJ1c2VyIjoyfQ%3D%3D.nspObQvcL5mPxALyD9ygT82kEVvLrsdIM3zBncIlef0",
-      "domain": "127.0.0.1",
+      "domain": "localhost",
       "path": "/",
-      "expires": 1759111227.807458,
+      "expires": 1759200845.564722,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"

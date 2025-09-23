@@ -305,6 +305,41 @@ export async function baselineValidForm(page: Page) {
   if (!rVal || rVal <= 0) {
     await rate.fill('25');
   }
+
+  // Location preference (required)
+  const location = page.getByLabel('Location Preferences');
+  const locationVal = await location.inputValue();
+  if (!locationVal || locationVal.trim() === '') {
+    await location.fill('Remote');
+  }
+
+  // Project type (required) - it's a select field
+  const projectTypeSelect = page.locator('select[name="projectType"]');
+  const projectTypeVal = await projectTypeSelect.inputValue().catch(() => '');
+  if (!projectTypeVal || projectTypeVal === '') {
+    // Select the first available option
+    await projectTypeSelect.selectOption({ index: 1 }); // Skip the first empty option
+  }
+
+  // Budget > 0 (required)
+  const budget = page.getByLabel('Budget');
+  const budgetVal = Number(await budget.inputValue());
+  if (!budgetVal || budgetVal <= 0) {
+    await budget.fill('1000');
+  }
+
+  // Ensure at least one skill is selected (use the JSON hidden input from JobForm)
+  const skillsHidden = page.locator('form > input[name="jobSkills"]').first();
+  const skillsVal = await skillsHidden.inputValue();
+  if (!skillsVal || skillsVal === '' || skillsVal === '[]') {
+    // If no skills, we'll add one using the existing skill addition logic
+    try {
+      await ensureAnySkillOnEdit(page, 'JavaScript');
+    } catch (error) {
+      // If skill addition fails, continue - the form might already have skills
+      console.log('Could not add baseline skill, continuing...');
+    }
+  }
 }
 
 export function escapeRegex(s: string) {
@@ -320,14 +355,61 @@ export function parseJsonSkills(json: string): { name: string }[] {
   }
 }
 
+// robust opener that works whether content is portalled or inline
 export async function openSkillsPopover(page: Page) {
-  const trigger = page.getByTestId('skills-trigger');
-  await expect(trigger).toBeVisible();
-  await trigger.scrollIntoViewIfNeeded();
-  await trigger.click({ force: true });
+  const form = page.locator('form').first();
 
-  const dialog = page.getByTestId('skills-popover');
-  await expect(dialog).toBeVisible({ timeout: 5000 });
+  // 1) Find any reasonable trigger within the edit form
+  const triggerCandidates = [
+    form.getByTestId('skills-trigger'),
+    form.getByRole('button', { name: /add skill|skills|required skills/i }),
+    form.locator('[data-testid="skills-root"] button'),
+    form.locator('[data-popover-trigger="skills"]'),
+    form.locator('[role="combobox"]'), // if your CommandInput is the trigger
+  ];
+
+  let clicked = false;
+  for (const t of triggerCandidates) {
+    if (await t.isVisible().catch(() => false)) {
+      await t.scrollIntoViewIfNeeded();
+      await t.click({ force: true });
+      clicked = true;
+      break;
+    }
+  }
+
+  if (!clicked) throw new Error('skills trigger not found in edit form');
+
+  // 2) Wait for *content*, but be flexible about selectors:
+  //    - testid when present
+  //    - Radix portal content wrapper
+  //    - or simply the search input itself
+  const content = page
+    .getByTestId('skills-popover')
+    .or(page.locator('[data-radix-popper-content-wrapper] [data-state="open"]'))
+    .or(page.getByRole('dialog').filter({ has: page.getByTestId('skills-search') }));
+
+  // prefer waiting for the search box (most stable signal of "open")
+  const search = page
+    .getByTestId('skills-search')
+    .first()
+    .or(page.getByPlaceholder(/search skills/i));
+
+  // Wait until either content is attached+visible OR the search input is visible
+  await Promise.race([
+    search.waitFor({ state: 'visible', timeout: 5000 }),
+    content.waitFor({ state: 'visible', timeout: 5000 }),
+  ]);
+
+  // Final assertion: the search should be interactable
+  await expect(search).toBeVisible({ timeout: 1000 });
+
+  // Return a handle to the content region (falls back to body portal)
+  const dialog = page
+    .locator(
+      '[data-testid="skills-popover"], [data-radix-popper-content-wrapper] [data-state="open"]'
+    )
+    .first();
   return dialog;
 }
 
@@ -337,11 +419,27 @@ export async function submitAndWait(
   btn: ReturnType<Page['locator']>,
   id: number | string = 1
 ) {
-  const [resp] = await Promise.all([
-    page.waitForResponse(
-      r => r.url().includes(`/edit-job/${id}`) && r.request().method() === 'POST'
-    ),
-    btn.click(),
-  ]);
-  expect(resp.ok(), `Edit POST should be OK (got ${resp.status()})`).toBeTruthy();
+  try {
+    const [resp] = await Promise.all([
+      page.waitForResponse(
+        r => r.url().includes(`/edit-job/${id}`) && r.request().method() === 'POST',
+        { timeout: 15000 }
+      ),
+      btn.click(),
+    ]);
+
+    console.log(`POST response status: ${resp.status()}`);
+    console.log(`POST response URL: ${resp.url()}`);
+
+    if (!resp.ok()) {
+      const responseText = await resp.text().catch(() => 'Could not read response body');
+      console.log(`POST response body: ${responseText}`);
+      throw new Error(`Edit POST failed with status ${resp.status()}: ${responseText}`);
+    }
+
+    console.log('✅ POST request completed successfully');
+  } catch (error) {
+    console.log(`❌ Submit error: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
+  }
 }

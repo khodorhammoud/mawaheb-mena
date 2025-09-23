@@ -3,7 +3,7 @@
     {
       "name": "lng",
       "value": "ImVuIg%3D%3D",
-      "domain": "127.0.0.1",
+      "domain": "localhost",
       "path": "/",
       "expires": -1,
       "httpOnly": true,
