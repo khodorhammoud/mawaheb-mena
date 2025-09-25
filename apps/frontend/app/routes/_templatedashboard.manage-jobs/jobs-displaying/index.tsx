@@ -99,7 +99,7 @@ export default function JobManagement({
   }
 
   return (
-    <div>
+    <div data-testid="job-management-container">
       <Header
         setViewMode={setViewMode}
         activeFilter={activeFilter}
@@ -108,7 +108,7 @@ export default function JobManagement({
         viewMode={viewMode} // <<< ADD THIS PROP!
       />
 
-      <p className="text-black text-sm mt-2 ml-1 mb-2">
+      <p className="text-black text-sm mt-2 ml-1 mb-2" data-testid="job-count-display">
         <span>
           You have <span className="font-bold text-primaryColor text-base">{filteredTotal}</span>{' '}
           job
@@ -117,17 +117,29 @@ export default function JobManagement({
         <br />
       </p>
 
-      <section className="mb-20">
+      <section className="mb-20" data-testid="jobs-section">
         {filteredTotal === 0 ? (
-          <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
+          <p className="text-center text-gray-500 py-8 text-xl" data-testid="no-jobs-message">
+            No jobs found.
+          </p>
         ) : activeFilter === 'all' ? (
           sortedStatuses.length > 0 ? (
             sortedStatuses.map(status => (
-              <div key={status} className="lg:mt-10 md:mt-12 mt-16">
-                <h2 className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl md:ml-1 ml-11">
+              <div
+                key={status}
+                className="lg:mt-10 md:mt-12 mt-16"
+                data-testid={`job-group-${status.toLowerCase()}`}
+              >
+                <h2
+                  className="font-semibold xl:mb-10 mb-8 xl:text-3xl lg:text-2xl text-2xl md:ml-1 ml-11"
+                  data-testid={`group-header-${status.toLowerCase()}`}
+                >
                   {capitalize(status)} Jobs
                 </h2>
-                <div className={getGridClass(viewMode)}>
+                <div
+                  className={getGridClass(viewMode)}
+                  data-testid={`job-grid-${status.toLowerCase()}`}
+                >
                   {groupedJobs[status].map(jobCardData => (
                     <Job
                       key={jobCardData.job.id}
@@ -140,11 +152,13 @@ export default function JobManagement({
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500 py-8 text-xl">No jobs found.</p>
+            <p className="text-center text-gray-500 py-8 text-xl" data-testid="no-jobs-message">
+              No jobs found.
+            </p>
           )
         ) : (
-          <div className="lg:mt-10 md:mt-12 mt-16">
-            <div className={getGridClass(viewMode)}>
+          <div className="lg:mt-10 md:mt-12 mt-16" data-testid="filtered-jobs-container">
+            <div className={getGridClass(viewMode)} data-testid={`job-grid-${activeFilter}`}>
               {filteredJobs.map(jobCardData => (
                 <Job
                   key={jobCardData.job.id}

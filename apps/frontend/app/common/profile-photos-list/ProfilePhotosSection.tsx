@@ -15,7 +15,10 @@ export default function ProfilePhotosSection({
     'https://www.fivebranches.edu/wp-content/uploads/2021/08/default-image.jpg';
   const photos = Array.from({ length: profiles.length }, () => placeholderImg);
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div
+      className={`flex flex-col ${className}`}
+      data-testid={`profile-photos-section-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+    >
       {/* Label and Count */}
       <div className="font-semibold xl:text-base text-sm flex items-center mb-2 gap-1">
         <p>{label}</p>

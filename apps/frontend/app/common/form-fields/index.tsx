@@ -25,6 +25,7 @@ interface AppFormFieldProps {
   required?: boolean;
   'aria-invalid'?: boolean;
   'aria-describedby'?: string;
+  'data-testid'?: string;
 }
 
 // ✅ Updated AppFormField to forward ref to input/select elements
@@ -54,6 +55,7 @@ const AppFormField = forwardRef<
       required,
       'aria-invalid': ariaInvalid,
       'aria-describedby': ariaDescribedby,
+      'data-testid': dataTestId,
     },
     ref
   ) => {
@@ -332,6 +334,7 @@ const AppFormField = forwardRef<
                 required={required}
                 aria-invalid={ariaInvalid}
                 aria-describedby={ariaDescribedby}
+                data-testid={dataTestId}
               />
             )}
           </>

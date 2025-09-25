@@ -1763,7 +1763,7 @@ async function seed() {
             country: faker.location.country(),
             address: faker.location.streetAddress(),
             region: faker.location.state(),
-            accountStatus: AccountStatus.Published,
+            accountStatus: AccountStatus.Published || 'published',
             phone: faker.phone.number(),
             slug: company.name.toLowerCase().replace(/\s+/g, '-'),
           })
@@ -1879,6 +1879,168 @@ async function seed() {
           }
         }
       }
+
+      // Create a dedicated employer with NO jobs (for E2E tests)
+      console.log('Creating E2E test employer with no jobs...');
+
+      // Create user
+      const e2eUserResult = await insertUser(tx, {
+        firstName: 'E2E',
+        lastName: 'Employer',
+        email: 'employer-e2e@example.com',
+        passHash: await hash('123', 10),
+        isVerified: true,
+        isOnboarded: true,
+        provider: Provider.Credentials,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning({ id: UsersTable.id });
+
+      const e2eUserId = e2eUserResult[0].id;
+
+      // Create account
+      const e2eAccountResult = await tx
+        .insert(accountsTable)
+        .values({
+          userId: e2eUserId,
+          accountType: AccountType.Employer,
+          country: faker.location.country(),
+          address: faker.location.streetAddress(),
+          region: faker.location.state(),
+          accountStatus: AccountStatus.Published, // Published so dashboard is accessible
+          phone: faker.phone.number(),
+          slug: 'employer-e2e',
+        })
+        .returning({ id: accountsTable.id });
+
+      const e2eAccountId = e2eAccountResult[0].id;
+
+      // Create employer
+      const e2eEmployerResult = await tx
+        .insert(employersTable)
+        .values({
+          accountId: e2eAccountId,
+          companyName: 'E2E Test Employer',
+          about: 'This employer is dedicated for automated E2E tests. No jobs will be created.',
+          industrySector: 'Software Testing',
+          budget: 5000,
+          employerName: 'E2E Employer',
+          companyEmail: 'info@e2e-employer.com',
+        })
+        .returning({ id: employersTable.id });
+
+      const e2eEmployerId = e2eEmployerResult[0].id;
+      console.log(`E2E employer created with id=${e2eEmployerId}, accountId=${e2eAccountId}`);
+
+      // Create deactivated test users for E2E tests
+      console.log('Creating deactivated E2E test users...');
+
+      // Create deactivated employer
+      const deactivatedEmployerUserResult = await insertUser(tx, {
+        firstName: 'Deactivated',
+        lastName: 'Employer',
+        email: 'employer-deactivated-e2e@example.com',
+        passHash: await hash('123', 10),
+        isVerified: true,
+        isOnboarded: true,
+        provider: Provider.Credentials,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning({ id: UsersTable.id });
+
+      const deactivatedEmployerUserId = deactivatedEmployerUserResult[0].id;
+
+      const deactivatedEmployerAccountResult = await tx
+        .insert(accountsTable)
+        .values({
+          userId: deactivatedEmployerUserId,
+          accountType: AccountType.Employer,
+          country: faker.location.country(),
+          address: faker.location.streetAddress(),
+          region: faker.location.state(),
+          accountStatus: AccountStatus.Deactivated, // Set to deactivated
+          phone: faker.phone.number(),
+          slug: 'employer-deactivated-e2e',
+        })
+        .returning({ id: accountsTable.id });
+
+      const deactivatedEmployerAccountId = deactivatedEmployerAccountResult[0].id;
+
+      const deactivatedEmployerResult = await tx
+        .insert(employersTable)
+        .values({
+          accountId: deactivatedEmployerAccountId,
+          companyName: 'Deactivated E2E Test Employer',
+          about: 'This employer is deactivated for automated E2E tests.',
+          industrySector: 'Software Testing',
+          budget: 5000,
+          employerName: 'Deactivated E2E Employer',
+          companyEmail: 'info@deactivated-e2e-employer.com',
+        })
+        .returning({ id: employersTable.id });
+
+      console.log(
+        `Deactivated employer created with id=${deactivatedEmployerResult[0].id}, accountId=${deactivatedEmployerAccountId}`
+      );
+
+      // Create deactivated freelancer
+      const deactivatedFreelancerUserResult = await insertUser(tx, {
+        firstName: 'Deactivated',
+        lastName: 'Freelancer',
+        email: 'freelancer-deactivated-e2e@example.com',
+        passHash: await hash('123', 10),
+        isVerified: true,
+        isOnboarded: true,
+        provider: Provider.Credentials,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning({ id: UsersTable.id });
+
+      const deactivatedFreelancerUserId = deactivatedFreelancerUserResult[0].id;
+
+      const deactivatedFreelancerAccountResult = await tx
+        .insert(accountsTable)
+        .values({
+          userId: deactivatedFreelancerUserId,
+          accountType: AccountType.Freelancer,
+          country: faker.location.country(),
+          address: faker.location.streetAddress(),
+          region: faker.location.state(),
+          accountStatus: AccountStatus.Deactivated, // Set to deactivated
+          phone: faker.phone.number(),
+          slug: 'freelancer-deactivated-e2e',
+        })
+        .returning({ id: accountsTable.id });
+
+      const deactivatedFreelancerAccountId = deactivatedFreelancerAccountResult[0].id;
+
+      const deactivatedFreelancerResult = await tx
+        .insert(freelancersTable)
+        .values({
+          accountId: deactivatedFreelancerAccountId,
+          about: 'This freelancer is deactivated for automated E2E tests.',
+          fieldsOfExpertise: ['Testing', 'E2E Automation'],
+          portfolio: [],
+          workHistory: [],
+          cvLink: 'https://example.com/cv/deactivated-freelancer.pdf',
+          videoLink: null,
+          certificates: [],
+          educations: [],
+          yearsOfExperience: 2,
+          preferredProjectTypes: [ProjectType.ShortTerm],
+          hourlyRate: 50,
+          compensationType: CompensationType.HourlyRate,
+          availableForWork: false, // Not available since deactivated
+          dateAvailableFrom: null,
+          jobsOpenTo: [JobsOpenTo.PartTimeRoles],
+          hoursAvailableFrom: '09:00:00',
+          hoursAvailableTo: '17:00:00',
+        })
+        .returning({ id: freelancersTable.id });
+
+      console.log(
+        `Deactivated freelancer created with id=${deactivatedFreelancerResult[0].id}, accountId=${deactivatedFreelancerAccountId}`
+      );
 
       // Add job applications
       console.log('Creating job applications...');

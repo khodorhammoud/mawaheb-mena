@@ -48,20 +48,27 @@ export default function Header({
   };
 
   return (
-    <div className="flex items-center xl:gap-6 lg:gap-2 lg:justify-between relative">
+    <div
+      className="flex items-center xl:gap-6 lg:gap-2 lg:justify-between relative"
+      data-testid="header-container"
+    >
       {/* Search */}
-      <div className="space-y-6 xl:-mt-4 -mt-2">
+      <div className="space-y-6 xl:-mt-4 -mt-2" data-testid="search-container">
         <AppFormField
           id="search"
           name="search"
           label="🔍 Hinted search text"
           className=""
           onChange={handleSearchChange}
+          data-testid="search-input"
         />
       </div>
 
       {/* Buttons - Hidden on Medium screens */}
-      <div className="lg:flex hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2">
+      <div
+        className="lg:flex hidden ml-auto lg:ml-0 xl:space-x-2 lg:space-x-1 xl:-mt-4 lg:-mt-2"
+        data-testid="filter-buttons-desktop"
+      >
         <button
           className={`rounded-xl xl:px-3 md:px-2 md:py-2 py-1 transition duration-300 not-active-gradient hover:text-white text-sm lg:text-xs ${
             activeFilter === JobStatus.Active
@@ -69,6 +76,7 @@ export default function Header({
               : 'bg-white text-primaryColor border border-primaryColor'
           }`}
           onClick={() => handleFilterClick(JobStatus.Active)}
+          data-testid="filter-button-active"
         >
           Active Jobs
         </button>
@@ -79,6 +87,7 @@ export default function Header({
               : 'bg-white text-primaryColor border border-primaryColor'
           }`}
           onClick={() => handleFilterClick(JobStatus.Draft)}
+          data-testid="filter-button-draft"
         >
           Drafted Jobs
         </button>
@@ -89,6 +98,7 @@ export default function Header({
               : 'bg-white text-primaryColor border border-primaryColor'
           }`}
           onClick={() => handleFilterClick(JobStatus.Paused)}
+          data-testid="filter-button-paused"
         >
           Paused Jobs
         </button>
@@ -99,6 +109,7 @@ export default function Header({
               : 'bg-white text-primaryColor border border-primaryColor'
           }`}
           onClick={() => handleFilterClick(JobStatus.Closed)}
+          data-testid="filter-button-closed"
         >
           Closed Jobs
         </button>
@@ -109,13 +120,17 @@ export default function Header({
               : 'bg-white text-primaryColor border border-primaryColor'
           }`}
           onClick={() => handleFilterClick('all')}
+          data-testid="filter-button-all"
         >
           All Jobs
         </button>
       </div>
 
       {/* 🍔 Burger Icon - Visible on mediums screens */}
-      <div className="lg:hidden ml-auto md:-mt-[2px] md:mr-4 sm:-mt-2 -mt-10">
+      <div
+        className="lg:hidden ml-auto md:-mt-[2px] md:mr-4 sm:-mt-2 -mt-10"
+        data-testid="mobile-menu-button"
+      >
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
           className="focus:outline-none
@@ -127,6 +142,7 @@ export default function Header({
     focus-visible:ring-offset-0"
           animate={{ rotate: isOpen ? -90 : 0 }}
           transition={{ duration: 0.2 }}
+          data-testid="burger-menu-button"
         >
           {isOpen ? (
             // Close Icon
@@ -226,17 +242,38 @@ export default function Header({
 
         {/* Icons */}
         <div className="sm:flex sm:items-center grid-cols-3 justify-center gap-4 mt-4 md:hidden hidden">
-          <a href="#" onClick={() => setViewMode('one')} className="icon">
+          <a
+            href="#"
+            onClick={e => {
+              e.preventDefault();
+              setViewMode('one');
+            }}
+            className="icon"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6" fill="#27638a">
               <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
             </svg>
           </a>
-          <a href="#" onClick={() => setViewMode('two')} className="icon">
+          <a
+            href="#"
+            onClick={e => {
+              e.preventDefault();
+              setViewMode('two');
+            }}
+            className="icon"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-6 ml-1" fill="#27638a">
               <path d="M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
             </svg>
           </a>
-          <a href="#" onClick={() => setViewMode('three')} className="icon">
+          <a
+            href="#"
+            onClick={e => {
+              e.preventDefault();
+              setViewMode('three');
+            }}
+            className="icon"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-8 h-8"
@@ -255,11 +292,18 @@ export default function Header({
       </motion.div>
 
       {/* Icons inside the burger menu */}
-      <div className="md:flex md:items-center gap-4 xl:-mt-2 lg:-mt-1 hidden">
+      <div
+        className="md:flex md:items-center gap-4 xl:-mt-2 lg:-mt-1 hidden"
+        data-testid="view-mode-icons"
+      >
         <a
           href="#"
-          onClick={() => setViewMode('three')}
+          onClick={e => {
+            e.preventDefault();
+            setViewMode('three');
+          }}
           className={`inline-block transition-transform duration-150 hover:scale-110 ${viewMode === 'three' ? 'scale-110' : ''}`}
+          data-testid="view-mode-three-icon"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -277,10 +321,14 @@ export default function Header({
         </a>
         <a
           href="#"
-          onClick={() => setViewMode('two')}
+          onClick={e => {
+            e.preventDefault();
+            setViewMode('two');
+          }}
           className={`inline-block transition-transform duration-150 hover:scale-110 ${
             viewMode === 'two' ? ' scale-110' : ''
           }`}
+          data-testid="view-mode-two-icon"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -294,10 +342,14 @@ export default function Header({
         </a>
         <a
           href="#"
-          onClick={() => setViewMode('one')}
+          onClick={e => {
+            e.preventDefault();
+            setViewMode('one');
+          }}
           className={`inline-block transition-transform duration-150 hover:scale-110 ${
             viewMode === 'one' ? 'scale-110' : ''
           }`}
+          data-testid="view-mode-one-icon"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

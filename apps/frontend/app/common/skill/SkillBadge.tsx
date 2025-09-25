@@ -17,6 +17,7 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name, isStarred }) => {
       className={`flex items-center gap-2 rounded-full text-xs h-7 ${
         isStarred ? 'bg-[#4BA4A4] text-white' : 'bg-gray-200 text-gray-800'
       }`}
+      data-testid={`skill-badge-${name.toLowerCase().replace(/\s+/g, '-')}`}
     >
       {isStarred && <Star className="w-3 h-3 fill-white text-white" />} {/* Star icon */}
       <span className="font-medium">{name}</span>
@@ -29,7 +30,7 @@ const SkillBadgeList: React.FC<SkillBadgeListProps> = ({ skills = [] }) => {
   const nonStarredSkills = skills?.filter(skill => !skill.isStarred) || [];
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-wrap" data-testid="skill-badge-list">
       {[...starredSkills, ...nonStarredSkills].map((skill, index) => (
         <SkillBadge key={index} name={skill.name} isStarred={skill.isStarred} />
       ))}

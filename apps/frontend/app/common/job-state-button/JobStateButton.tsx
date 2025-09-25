@@ -91,6 +91,7 @@ export default function JobStateButton({
               });
             }
           }}
+          data-testid={`job-state-button-${jobId}`}
         >
           {/* Arrow icon */}
           <FaChevronDown className="w-3 h-3 mr-2 text-white" />
@@ -102,7 +103,10 @@ export default function JobStateButton({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-40 right-0 shadow-md rounded-md bg-white border">
+      <DropdownMenuContent
+        className="w-40 right-0 shadow-md rounded-md bg-white border"
+        data-testid={`job-state-dropdown-${jobId}`}
+      >
         {(Object.values(JobStatus) as JobStatus[]).map(option => (
           <DropdownMenuItem
             key={option}
@@ -115,6 +119,7 @@ export default function JobStateButton({
     focus-visible:ring-offset-0 ${
       option === selectedStatus ? 'font-semibold text-primaryColor' : ''
     }`}
+            data-testid={`job-state-option-${option.toLowerCase()}`}
           >
             {option.charAt(0).toUpperCase() + option.slice(1)}
           </DropdownMenuItem>

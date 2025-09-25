@@ -64,6 +64,7 @@ export default function ReadMore({ html, charPerChunk = 100, className = '' }: R
             isAllVisible ? 'text-red-600' : 'text-primaryColor'
           }`}
           onClick={isAllVisible ? handleHide : handleReadMore}
+          data-testid="read-more-button"
         >
           {isAllVisible ? (
             <div className="flex items-center justify-center gap-1">

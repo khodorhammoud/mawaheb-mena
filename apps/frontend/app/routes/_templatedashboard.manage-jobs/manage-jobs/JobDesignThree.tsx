@@ -59,6 +59,7 @@ export default function JobDesignThree({
         'lg:grid xl:p-8 p-6 bg-white border rounded-xl shadow-xl gap-4 mb-10',
         className
       )}
+      data-testid={`job-card-${job.id}`}
     >
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
       {/* <div className="flex items-center space-x-2 mb-4">
@@ -96,11 +97,12 @@ export default function JobDesignThree({
             <h3
               className="xl:text-2xl lg:text-xl text-base leading-tight mb-4 cursor-pointer hover:underline inline-block transition-transform duration-300"
               onClick={() => setOpen(true)}
+              data-testid={`job-title-${job.id}`}
             >
               {job.title}
             </h3>
           </DialogTrigger>
-          <DialogContent className="max-w-6xl rounded-2xl shadow-lg p-6">
+          <DialogContent className="max-w-6xl rounded-2xl shadow-lg p-6" data-testid="job-dialog">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold">
                 <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300">
@@ -234,12 +236,13 @@ export default function JobDesignThree({
       </div>
 
       {/* STATUS BUTTON AND CONDITIONAL EDIT BUTTON */}
-      <div className="flex items-center space-x-2 mt-5">
+      <div className="flex items-center space-x-2 mt-5" data-testid={`job-actions-${job.id}`}>
         {/* Show Edit button only when the job status is "draft" */}
         {status === JobStatus.Draft && (
           <Link
             to={`/edit-job/${job.id}`}
             className="w-[106px] h-[36px] bg-white text-primaryColor border border-gray-300 text-sm rounded-xl flex items-center justify-center not-active-gradient hover:text-white group"
+            data-testid={`edit-button-${job.id}`}
           >
             <IoPencilSharp className="h-4 w-4 mr-2 text-primaryColor group-hover:text-white" />
             Edit

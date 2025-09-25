@@ -49,6 +49,7 @@ export default function JobDesignTwo({
     <p>Job details are not available.</p>
   ) : (
     <div
+      data-testid={`job-card-${job.id}`}
       className={cn(
         `xl:p-8 p-6 bg-white border rounded-xl shadow-xl ${
           status === JobStatus.Draft ? 'mb-6 flex' : 'mb-6'
@@ -59,7 +60,10 @@ export default function JobDesignTwo({
       <div className="">
         {/* JOB INFO */}
         <div className="flex items-center justify-between">
-          <h3 className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3">
+          <h3
+            data-testid={`job-title-${job.id}`}
+            className="xl:text-2xl md:text-xl text-lg cursor-pointer hover:underline inline-block transition-transform duration-300 mb-3"
+          >
             <Link to={`/jobs/${job.id}`}>{job.title}</Link>
           </h3>
           <div

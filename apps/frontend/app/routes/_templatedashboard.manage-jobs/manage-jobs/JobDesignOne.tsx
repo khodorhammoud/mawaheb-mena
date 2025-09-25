@@ -52,6 +52,7 @@ export default function JobDesignOne({
     <p>Job details are not available.</p>
   ) : (
     <div
+      data-testid={`job-card-${job.id}`}
       className={cn(
         `grid bg-white border rounded-xl shadow-xl mb-10 ${
           status === JobStatus.Draft
@@ -72,7 +73,10 @@ export default function JobDesignOne({
         <>
           <div className="">
             {/* Column 1: Title, budget, experience */}
-            <h3 className="xl:text-2xl md:text-xl text-lg lg:mb-8 mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+            <h3
+              data-testid={`job-title-${job.id}`}
+              className="xl:text-2xl md:text-xl text-lg lg:mb-8 mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
+            >
               <Link to={`/jobs/${job.id}`}>{job.title}</Link>
             </h3>
             <div className="grid grid-cols-2 xl:gap-6 gap-4">
@@ -168,7 +172,10 @@ export default function JobDesignOne({
       {/* All sections but without the Draft section */}
       {/* Left Section */}
       <div className={`mr-2 ${status === JobStatus.Draft ? 'hidden' : ''}`}>
-        <h3 className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300">
+        <h3
+          data-testid={`job-title-${job.id}`}
+          className="xl:text-2xl md:text-xl text-lg mb-2 cursor-pointer hover:underline inline-block transition-transform duration-300"
+        >
           <Link to={`/jobs/${job.id}`}>{job.title}</Link>
         </h3>
 

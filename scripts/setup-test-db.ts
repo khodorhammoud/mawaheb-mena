@@ -137,32 +137,87 @@ async function setupTestDb() {
     console.log('\nAdding test data...');
 
     try {
-      // Check if test user already exists
       const testUserEmail = 'test@example.com';
-      const existingUser = await sql`
-        SELECT id FROM users WHERE email = ${testUserEmail}
-      `;
 
-      // Add test user if it doesn't exist
+      // 1. Ensure test user exists
+      let userId: number;
+      const existingUser = await sql`
+            SELECT id FROM users WHERE email = ${testUserEmail}
+          `;
+
       if (existingUser.length === 0) {
-        await db.insert(schema.UsersTable).values({
-          firstName: 'Test',
-          lastName: 'User',
-          email: testUserEmail,
-          passHash: 'test_hash',
-          isVerified: true,
-          isOnboarded: true,
-        });
-        console.log('Test user created successfully');
+        const [newUser] = await db
+          .insert(schema.UsersTable)
+          .values({
+            firstName: 'Test',
+            lastName: 'User',
+            email: testUserEmail,
+            passHash: 'test_hash',
+            isVerified: true,
+            isOnboarded: true, // 👈 lives in Users table
+          })
+          .returning({ id: schema.UsersTable.id });
+
+        userId = newUser.id;
+        console.log('✅ Test user created with id', userId);
       } else {
-        console.log('Test user already exists');
+        userId = existingUser[0].id;
+        console.log('ℹ️ Test user already exists with id', userId);
       }
 
-      // Verify user was created
-      const users = await sql`SELECT * FROM users`;
-      console.log(`Number of users in database: ${users.length}`);
+      // 2. Ensure employer account exists
+      let accountId: number;
+      const existingAccount = await sql`
+            SELECT id FROM accounts WHERE "userId" = ${userId}
+          `;
+
+      if (existingAccount.length === 0) {
+        const [newAccount] = await db
+          .insert(schema.accountsTable)
+          .values({
+            userId,
+            accountType: 'employer',
+            accountStatus: 'published', // 👈 critical for dropdown test
+            country: 'Test Country',
+            address: 'Test Address',
+            region: 'Test Region',
+            phone: '000-000-0000',
+            websiteURL: 'https://test-employer.com',
+            socialMediaLinks: '{}',
+          })
+          .returning({ id: schema.accountsTable.id });
+
+        accountId = newAccount.id;
+        console.log('✅ Employer account created with id', accountId);
+      } else {
+        accountId = existingAccount[0].id;
+        console.log('ℹ️ Employer account already exists with id', accountId);
+      }
+
+      // 3. Ensure employer profile exists
+      const existingEmployer = await sql`
+            SELECT id FROM employers WHERE "account_id" = ${accountId}
+          `;
+
+      if (existingEmployer.length === 0) {
+        await db.insert(schema.employersTable).values({
+          accountId,
+          companyName: 'Test Employer Inc',
+          employerName: 'Test Owner',
+          companyEmail: 'employer@test.com',
+        });
+        console.log('✅ Employer profile created for account', accountId);
+      } else {
+        console.log('ℹ️ Employer profile already exists for account', accountId);
+      }
+
+      // 4. Debug summary
+      const accounts = await sql`
+            SELECT id, "accountStatus" FROM accounts
+          `;
+      console.log('Accounts in DB:', accounts);
     } catch (error: any) {
-      console.error('Error adding test data:', error.message);
+      console.error('❌ Error adding test data:', error.message);
     }
 
     console.log('\nDatabase setup complete!');
