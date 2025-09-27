@@ -27,11 +27,13 @@ const __dirname = path.dirname(__filename);
  * 14. Job count display updates correctly
  * 15. Grid layouts change based on view mode
  * 16. Job status change persists after reload
+ * 17. Empty state renders correctly
  */
 
 // Reusable storage states — adjust paths if yours differ
 const dashboardEmployerFile = path.join(__dirname, '../.auth/employer-dashboard.json');
 const employerDeactivatedFile = path.join(__dirname, '../.auth/employer-deactivated.json');
+const noJobsEmployerFile = path.join(__dirname, '../.auth/employer-nojobs.json');
 
 // Helper functions
 async function waitForManageJobsHydration(page: Page) {
@@ -700,5 +702,84 @@ test.describe('Manage Jobs — Core Functionality', () => {
         description: `Job ${jobId} moved to paused list but not found by exact ID - status change successful`,
       });
     }
+  });
+
+  // ------------------
+  // Test 17
+  // ------------------
+  test.describe('Manage Jobs — empty state', () => {
+    test.use({ storageState: noJobsEmployerFile });
+
+    test('Test 17: Empty state renders correctly with no jobs', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+
+      // 1) Navigate to manage-jobs with no-jobs employer
+      await page.goto('/manage-jobs', { waitUntil: 'domcontentloaded' });
+      await waitForManageJobsHydration(page);
+
+      // 2) Verify empty state message is visible
+      await expect(page.getByText('No jobs found.')).toBeVisible();
+
+      // 3) Verify job count shows 0
+      const countText = await page.getByTestId('job-count-display').innerText();
+      const jobCount = parseInt((countText.match(/You have\s+(\d+)/i) || [])[1] || '0', 10);
+      expect(jobCount).toBe(0);
+
+      // 4) Verify no job cards are present
+      await expect(page.getByTestId(/job-card-/)).toHaveCount(0);
+
+      // 5) Verify no job state buttons are present
+      await expect(page.getByTestId(/job-state-button-/)).toHaveCount(0);
+
+      // 6) Verify search input is still functional (should be present and enabled)
+      const searchInput = page.getByTestId('search-input');
+      await expect(searchInput).toBeVisible();
+      await expect(searchInput).toBeEnabled();
+
+      // 7) Test that search with empty results still shows "No jobs found"
+      await searchInput.fill('nonexistent search term');
+      await expect(page.getByText('No jobs found.')).toBeVisible();
+
+      // 8) Clear search and verify empty state persists
+      await searchInput.fill('');
+      await expect(page.getByText('No jobs found.')).toBeVisible();
+
+      // 9) Verify filter buttons are still present and clickable
+      const filterButtons = [
+        'Active Jobs',
+        'Drafted Jobs',
+        'Paused Jobs',
+        'Closed Jobs',
+        'All Jobs',
+      ];
+      for (const filterName of filterButtons) {
+        const button = page.getByRole('button', { name: filterName });
+        await expect(button).toBeVisible();
+        await expect(button).toBeEnabled();
+
+        // Click each filter to ensure they work with empty state
+        await button.click();
+        await page.waitForTimeout(300);
+
+        // Verify empty state persists across all filters
+        await expect(page.getByText('No jobs found.')).toBeVisible();
+
+        // Verify job count remains 0
+        const countTextAfterFilter = await page.getByTestId('job-count-display').innerText();
+        const jobCountAfterFilter = parseInt(
+          (countTextAfterFilter.match(/You have\s+(\d+)/i) || [])[1] || '0',
+          10
+        );
+        expect(jobCountAfterFilter).toBe(0);
+      }
+
+      // 10) Verify view mode buttons are present and functional
+      const viewModeButtons = ['view-mode-one-icon', 'view-mode-two-icon', 'view-mode-three-icon'];
+      for (const viewModeId of viewModeButtons) {
+        const viewButton = page.getByTestId(viewModeId);
+        await expect(viewButton).toBeVisible();
+        await expect(viewButton).toBeEnabled();
+      }
+    });
   });
 });
