@@ -17,11 +17,24 @@ interface CountrySelectFieldProps {
   onChange?: (e: any) => void;
   className?: string;
   autoFocus?: boolean;
+  'data-testid'?: string;
 }
 
 // ✅ Wrap component with forwardRef
 const CountrySelectField = forwardRef<HTMLButtonElement, CountrySelectFieldProps>(
-  ({ id, name, value, defaultValue, onChange, className = 'w-full', autoFocus = false }, ref) => {
+  (
+    {
+      id,
+      name,
+      value,
+      defaultValue,
+      onChange,
+      className = 'w-full',
+      autoFocus = false,
+      'data-testid': dataTestId,
+    },
+    ref
+  ) => {
     const [selected, setSelected] = useState(
       COUNTRIES.find(c =>
         value ? c.name === value : defaultValue ? c.name === defaultValue : false
@@ -66,6 +79,7 @@ const CountrySelectField = forwardRef<HTMLButtonElement, CountrySelectFieldProps
           placeholder="Select Country"
           className="border-none hover:bg-transparent w-full "
           ref={buttonRef} // ✅ this is the internal ref
+          data-testid={dataTestId}
         />
         <input type="hidden" id={id} name={name} value={selected || ''} readOnly />
       </div>

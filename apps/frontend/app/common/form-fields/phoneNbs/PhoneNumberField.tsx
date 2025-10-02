@@ -13,7 +13,10 @@ const countryMetaList = COUNTRIES.map(country => ({
 
 // ✅ Wrap with forwardRef
 const PhoneNumberField = forwardRef<HTMLInputElement, any>(
-  ({ id, name, defaultValue = '+961', onChange, className = 'w-full' }, ref) => {
+  (
+    { id, name, defaultValue = '+961', onChange, className = 'w-full', 'data-testid': dataTestId },
+    ref
+  ) => {
     const defaultCountry =
       countryMetaList.find(c => c.code === defaultValue) ||
       countryMetaList.find(c => c.country === Country.Lebanon);
@@ -52,6 +55,7 @@ const PhoneNumberField = forwardRef<HTMLInputElement, any>(
           onChange={handleSelect}
           placeholder="Select code"
           className="border-none hover:bg-transparent w-full"
+          data-testid={dataTestId}
         />
         <input type="hidden" id={id} name={name} value={selected || ''} readOnly />
       </div>

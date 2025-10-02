@@ -26,11 +26,12 @@ interface ComboBoxProps {
   onChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
+  'data-testid'?: string;
 }
 
 // ✅ Use forwardRef to allow external access to the trigger button
 export const ComboBox = React.forwardRef<HTMLButtonElement, ComboBoxProps>(
-  ({ options, value, onChange, placeholder, className }, ref) => {
+  ({ options, value, onChange, placeholder, className, 'data-testid': dataTestId }, ref) => {
     const [open, setOpen] = React.useState(false);
     const selectedOption = options.find(option => option.value === value);
 
@@ -60,6 +61,7 @@ export const ComboBox = React.forwardRef<HTMLButtonElement, ComboBoxProps>(
               'w-full justify-between px-4 md:py-1 border border-gray-300 rounded-xl focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus:ring-0 focus:border-none focus-visible:border-none focus-visible:ring-offset-0 text-l bg-white text-gray-900',
               className
             )}
+            data-testid={dataTestId}
           >
             {selectedOption ? selectedOption.label : placeholder || 'Select...'}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

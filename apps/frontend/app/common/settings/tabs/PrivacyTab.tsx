@@ -71,7 +71,12 @@ type ExportDataResponse = {
 // ----------------------------------------------
 export default function PrivacyTab() {
   // Loader data for user/account status
-  const { user, userAccountStatus: initialAccountStatus } = useLoaderData<LoaderData>();
+  const loaderData = useLoaderData<LoaderData>();
+  const user = loaderData.user;
+  const initialAccountStatus = loaderData.userAccountStatus;
+
+  // Check if account is deactivated
+  const isDeactivated = initialAccountStatus === AccountStatus.Deactivated;
 
   // Fetchers for all async actions
   const settingsFetcher = useFetcher<SettingsFetcherData>();
@@ -189,7 +194,11 @@ export default function PrivacyTab() {
   useEffect(() => {
     if (deleteFetcher.data) {
       const response = deleteFetcher.data;
-      if (response.hasActiveJobs) {
+      // For deactivated users, always allow deletion regardless of active jobs
+      if (isDeactivated) {
+        setDeleteDisabled(false);
+        setDeleteDisabledMessage('');
+      } else if (response.hasActiveJobs) {
         setDeleteDisabled(true);
         setDeleteDisabledMessage(
           'You cannot delete your account while there are active job postings. Please close or complete all active jobs first.'
@@ -203,7 +212,7 @@ export default function PrivacyTab() {
         setErrorMessage(response.error);
       }
     }
-  }, [deleteFetcher.data]);
+  }, [deleteFetcher.data, isDeactivated]);
 
   // Listen for export data response (download json)
   useEffect(() => {
@@ -275,7 +284,13 @@ export default function PrivacyTab() {
   };
 
   const handleDeleteClick = () => {
-    // Re-check if user can delete
+    // For deactivated users, allow deletion regardless of active jobs
+    if (isDeactivated) {
+      setIsDeleteDialogOpen(true);
+      return;
+    }
+
+    // Re-check if user can delete (only for non-deactivated users)
     const formData = new FormData();
     formData.append('formType', 'privacyTab');
     formData.append('action', 'checkDeleteEligibility');
@@ -333,7 +348,7 @@ export default function PrivacyTab() {
   //                 RENDER
   // =====================================================
   return (
-    <div className="">
+    <div className="" data-testid="privacy-tab-content">
       {/* Password Update Form */}
       <settingsFetcher.Form method="post">
         <input type="hidden" name="formType" value="privacyTab" />
@@ -342,21 +357,59 @@ export default function PrivacyTab() {
           {/* Error/Success messages (show after submit) */}
           {/* Top of form, can move below button if you prefer */}
           {settingsFetcher.data?.success && settingsFetcher.data?.message && (
-            <div className="bg-green-100 text-green-700 p-2 rounded-md mt-2">
+            <div
+              className="bg-green-100 text-green-700 p-2 rounded-md mt-2"
+              data-testid="privacy-success-message"
+            >
               {settingsFetcher.data.message}
             </div>
           )}
           {settingsFetcher.data?.error && (
-            <div className="bg-red-100 text-red-700 p-2 rounded-md mt-2">
+            <div
+              className="bg-red-100 text-red-700 p-2 rounded-md mt-2"
+              data-testid="privacy-error-message"
+            >
               {settingsFetcher.data.error}
             </div>
           )}
 
+          {/* 🔥 Deactivated Account Notice for Privacy Tab */}
+          {isDeactivated && (
+            <div
+              className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-md mb-4"
+              data-testid="privacy-deactivated-notice"
+            >
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">Account Deactivated</p>
+                  <p className="text-sm mt-1">
+                    Your account is deactivated. You can reactivate your account or delete it here.
+                    Password changes and data export are disabled until reactivation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Password Section */}
-          <section className="grid lg:grid-cols-[15%_75%] gap-8">
+          <section
+            className="grid lg:grid-cols-[15%_75%] gap-8"
+            data-testid="privacy-password-section"
+          >
             <div className="text-lg font-semibold">Password</div>
             <div>
-              <div className="text-base mt-1 mb-4">Change Password</div>
+              <div className="text-base mt-1 mb-4" data-testid="privacy-password-title">
+                Change Password
+              </div>
               <div className="flex flex-col md:gap-8 gap-6">
                 <AppFormField
                   className="w-1/2"
@@ -366,6 +419,8 @@ export default function PrivacyTab() {
                   type="password"
                   defaultValue={currentPassword}
                   onChange={e => setCurrentPassword(e.target.value)}
+                  data-testid="privacy-current-password"
+                  disabled={isDeactivated}
                 />
                 <div className="flex flex-col gap-4">
                   <div>
@@ -377,6 +432,8 @@ export default function PrivacyTab() {
                       type="password"
                       defaultValue={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
+                      data-testid="privacy-new-password"
+                      disabled={isDeactivated}
                     />
                     {/* Password strength bar + feedback */}
                     {passwordScore < 3 && newPassword && (
@@ -392,6 +449,8 @@ export default function PrivacyTab() {
                       type="password"
                       defaultValue={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
+                      data-testid="privacy-confirm-password"
+                      disabled={isDeactivated}
                     />
                     {/* {passwordScore < 3 && newPassword && (
                       <div className="text-red-500 text-xs mt-1">Password is too weak!</div>
@@ -401,16 +460,28 @@ export default function PrivacyTab() {
               </div>
               <button
                 type="submit"
-                disabled={!isFormValid}
-                className={`bg-primaryColor text-white sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-2 mt-4 focus:outline-none
+                disabled={!isFormValid || isDeactivated}
+                className={`sm:py-3 py-2 sm:px-2 px-1 xl:whitespace-nowrap not-active-gradient gradient-box rounded-xl xl:w-1/4 lg:w-1/3 md:w-2/5 w-1/2 sm:text-sm text-xs mb-2 mt-4 focus:outline-none
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
     focus:border-none
     focus-visible:border-none
-    focus-visible:ring-offset-0 ${isFormValid ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}
+    focus-visible:ring-offset-0 ${
+      isDeactivated
+        ? 'bg-primaryColor/90 text-white cursor-not-allowed opacity-70'
+        : isFormValid
+          ? 'bg-primaryColor text-white opacity-100'
+          : 'bg-primaryColor text-white opacity-50 cursor-not-allowed'
+    }`}
+                data-testid="privacy-save-changes"
+                title={
+                  isDeactivated
+                    ? 'Reactivate your account to change password'
+                    : 'Save password changes'
+                }
               >
-                Save Changes
+                {isDeactivated ? 'Save Changes (Disabled)' : 'Save Changes'}
               </button>
             </div>
           </section>
@@ -421,9 +492,18 @@ export default function PrivacyTab() {
       <section className="grid lg:grid-cols-[15%_75%] gap-8 mb-20">
         <div className="text-lg font-semibold">Account</div>
         <div className="flex flex-col gap-6">
+          {/* Account Status Indicator */}
+          <div className="mb-4">
+            <span className="text-sm text-gray-600">Account Status: </span>
+            <span className="text-sm font-medium" data-testid="privacy-account-status">
+              {currentAccountStatus === AccountStatus.Published ? 'Published' : 'Deactivated'}
+            </span>
+          </div>
           {/* DELETE ACCOUNT */}
-          <div>
-            <div className="text-base mt-1 mb-2">Delete my account</div>
+          <div data-testid="privacy-delete-account-section">
+            <div className="text-base mt-1 mb-2" data-testid="privacy-delete-account-title">
+              Delete my account
+            </div>
             <div className="grid md:grid-cols-[50%_50%] md:gap-6 gap-4 items-center">
               <p className="text-sm text-gray-700">
                 Mawaheb makes it easy to delete your account and all data associated with it.{' '}
@@ -435,15 +515,22 @@ export default function PrivacyTab() {
                     type="button"
                     onClick={handleDeleteClick}
                     disabled={deleteDisabled}
-                    className={`border border-gray-200 text-primaryColor lg:px-6 md:px-4 sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs ${
-                      deleteDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                    className={`border border-gray-200 lg:px-6 md:px-4 sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl sm:text-sm text-xs ${
+                      deleteDisabled
+                        ? 'bg-primaryColor/90 text-white cursor-not-allowed opacity-70'
+                        : 'text-primaryColor hover:text-white'
                     }`}
                     aria-disabled={deleteDisabled}
+                    data-testid="privacy-delete-account-button"
+                    title={deleteDisabled ? deleteDisabledMessage : 'Delete your account'}
                   >
                     Delete Account
                   </button>
                   {deleteDisabled && deleteDisabledMessage && (
-                    <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-normal w-64">
+                    <div
+                      className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-normal w-64"
+                      data-testid="privacy-delete-tooltip"
+                    >
                       {deleteDisabledMessage}
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
                     </div>
@@ -452,17 +539,26 @@ export default function PrivacyTab() {
                 <button
                   type="button"
                   onClick={handleExportData}
-                  className="border border-gray-200 text-primaryColor lg:px-6 md:px-4 sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                  disabled={isDeactivated}
+                  className={`border border-gray-200 lg:px-6 md:px-4 sm:px-3 px-2 py-2 not-active-gradient whitespace-nowrap gradient-box rounded-xl sm:text-sm text-xs ${
+                    isDeactivated
+                      ? 'bg-primaryColor/90 text-white cursor-not-allowed opacity-70'
+                      : 'text-primaryColor hover:text-white'
+                  }`}
+                  data-testid="privacy-export-data-button"
+                  title={
+                    isDeactivated ? 'Reactivate your account to export data' : 'Export your data'
+                  }
                 >
-                  Export Data
+                  {isDeactivated ? 'Export Data (Disabled)' : 'Export Data'}
                 </button>
               </div>
             </div>
           </div>
 
           {/* DEACTIVATE / REACTIVATE ACCOUNT */}
-          <div>
-            <div className="text-base mt-1">
+          <div data-testid="privacy-deactivate-section">
+            <div className="text-base mt-1" data-testid="privacy-deactivate-title">
               {currentAccountStatus === AccountStatus.Published
                 ? 'Deactivate my account'
                 : 'Reactivate my account'}
@@ -478,6 +574,7 @@ export default function PrivacyTab() {
                   variant="outline"
                   onClick={() => setShowDeactivateDialog(true)}
                   className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                  data-testid="privacy-deactivate-button"
                 >
                   Deactivate Account
                 </Button>
@@ -491,7 +588,8 @@ export default function PrivacyTab() {
                   <Button
                     variant="outline"
                     onClick={() => setShowDeactivateDialog(true)}
-                    className="border border-gray-200 text-primaryColor not-active-gradient gradient-box rounded-xl hover:text-white sm:text-sm text-xs"
+                    className="border border-gray-200 text-primaryColor not-active-gradient hover:bg-primaryColor  rounded-xl hover:text-white sm:text-sm text-xs"
+                    data-testid="privacy-deactivate-button"
                   >
                     Reactivate Account
                   </Button>
@@ -506,9 +604,9 @@ export default function PrivacyTab() {
           DIALOG: DELETE ACCOUNT
       ========================================= */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent data-testid="privacy-delete-dialog">
           <DialogHeader>
-            <DialogTitle>Delete Account</DialogTitle>
+            <DialogTitle data-testid="privacy-delete-dialog-title">Delete Account</DialogTitle>
           </DialogHeader>
           <div className="py-4 px-1">
             {deleteDisabled ? (
@@ -528,14 +626,15 @@ export default function PrivacyTab() {
                       defaultValue={feedback}
                       onChange={e => setFeedback(e.target.value)}
                       placeholder="Your feedback helps us improve"
-                      className="w-full !h-[120px]"
+                      className="w-full !h-[120px] border-gray-200"
                     />
                   </div>
                   <div className="flex justify-end gap-4">
                     <Button
                       type="button"
                       onClick={() => setIsDeleteDialogOpen(false)}
-                      className="px-4 py-2 text-sm font-medium border bg-primaryColor/80 hover:bg-primaryColor/90 hover:text-white rounded-xl"
+                      className="px-4 py-2 text-sm font-medium border bg-primaryColor/90 hover:bg-primaryColor/90 hover:text-white rounded-xl"
+                      data-testid="privacy-delete-cancel"
                     >
                       Cancel
                     </Button>
@@ -543,6 +642,7 @@ export default function PrivacyTab() {
                       type="button"
                       onClick={handleDeleteConfirm}
                       className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700"
+                      data-testid="privacy-delete-confirm"
                     >
                       Delete Account
                     </Button>
@@ -558,14 +658,17 @@ export default function PrivacyTab() {
           DIALOG: DEACTIVATE/REACTIVATE ACCOUNT
       ========================================= */}
       <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
-        <DialogContent>
+        <DialogContent data-testid="privacy-deactivate-dialog">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle data-testid="privacy-deactivate-dialog-title">
               {currentAccountStatus === AccountStatus.Published
                 ? 'Deactivate Account'
                 : 'Reactivate Account'}
             </DialogTitle>
-            <DialogDescription className="space-y-4">
+            <DialogDescription
+              className="space-y-4"
+              data-testid="privacy-deactivate-dialog-content"
+            >
               <div className="mt-4">
                 {currentAccountStatus === AccountStatus.Published ? (
                   <>
@@ -579,13 +682,18 @@ export default function PrivacyTab() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeactivateDialog(false)}
+              data-testid="privacy-deactivate-cancel"
+            >
               Cancel
             </Button>
             <Button
               variant={currentAccountStatus === AccountStatus.Published ? 'destructive' : 'default'}
               onClick={handleDeactivateAccount}
               disabled={settingsFetcher.state === 'submitting'}
+              data-testid="privacy-deactivate-confirm"
             >
               {settingsFetcher.state === 'submitting'
                 ? currentAccountStatus === AccountStatus.Published

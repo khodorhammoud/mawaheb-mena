@@ -23,6 +23,7 @@ interface AppFormFieldProps {
   maxLength?: number;
   currency?: string;
   required?: boolean;
+  disabled?: boolean;
   'aria-invalid'?: boolean;
   'aria-describedby'?: string;
   'data-testid'?: string;
@@ -53,6 +54,7 @@ const AppFormField = forwardRef<
       maxLength,
       currency,
       required,
+      disabled,
       'aria-invalid': ariaInvalid,
       'aria-describedby': ariaDescribedby,
       'data-testid': dataTestId,
@@ -120,10 +122,12 @@ const AppFormField = forwardRef<
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
-    focus:border-none
-    focus-visible:border-none
+    focus:border-primaryColor
+    focus-visible:border-primaryColor
     focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLInputElement>} // ✅ Pass the ref!
+            disabled={disabled}
+            data-testid={dataTestId}
           />
         ) : id === 'countryDropdown' ? (
           <CountrySelectField
@@ -136,6 +140,7 @@ const AppFormField = forwardRef<
             }}
             className="peer mt-0 flex w-full px-4 md:py-1 border border-gray-300 rounded-xl placeholder-transparent text-l bg-white text-gray-900 autofill-fix"
             ref={ref as React.Ref<HTMLButtonElement>} // 👈 This matches <CountrySelectField />
+            data-testid={dataTestId}
           />
         ) : (
           <>
@@ -147,8 +152,8 @@ const AppFormField = forwardRef<
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
-    focus:border-none
-    focus-visible:border-none
+    focus:border-primaryColor
+    focus-visible:border-primaryColor
     focus-visible:ring-offset-0 bg-white text-gray-900 autofill-fix`}
                 spellCheck="false"
                 defaultValue={selectedValue}
@@ -159,6 +164,7 @@ const AppFormField = forwardRef<
                 }}
                 ref={ref as React.Ref<HTMLSelectElement>} // ✅ forward ref to select
                 required={required}
+                disabled={disabled}
                 aria-invalid={ariaInvalid}
                 aria-describedby={ariaDescribedby}
               >
@@ -180,13 +186,13 @@ const AppFormField = forwardRef<
                     id={id}
                     name={name}
                     placeholder=" " // <---- this is CRUCIAL
-                    className={`peer mt-0 block w-full pl-10 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix pr-6
+                    className={`peer mt-0 block w-full pl-10 py-3 border border-gray-300 rounded-xl placeholder-transparent focus:outline-none text-l bg-white text-gray-900 autofill-fix
                     focus-visible:ring-0
                     focus-visible:outline-none
                     focus:ring-0
                     focus:border-none
                     focus-visible:border-none
-                    focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix pr-6
+                    focus-visible:ring-offset-0 text-l autofill-fix pr-6
                     `}
                     autoComplete="on"
                     spellCheck="false"
@@ -197,6 +203,7 @@ const AppFormField = forwardRef<
                     ref={ref as React.Ref<HTMLInputElement>}
                     onBlur={onBlur}
                     required={required} // ✅ add this
+                    disabled={disabled}
                     aria-required={required ? true : undefined}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedby}
@@ -238,6 +245,7 @@ const AppFormField = forwardRef<
                     ref={ref as React.Ref<HTMLInputElement>}
                     onBlur={onBlur}
                     required={required} // ✅ add this
+                    disabled={disabled}
                     aria-required={required ? true : undefined}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedby}
@@ -290,8 +298,8 @@ const AppFormField = forwardRef<
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
-    focus:border-none
-    focus-visible:border-none
+    focus:border-primaryColor
+    focus-visible:border-primaryColor
     focus-visible:ring-offset-0 text-l bg-white text-gray-900 autofill-fix resize-none`}
                 spellCheck="false"
                 defaultValue={defaultValue}
@@ -299,6 +307,7 @@ const AppFormField = forwardRef<
                 maxLength={maxLength} // <- add this line!
                 ref={ref as React.Ref<HTMLTextAreaElement>} // ✅ forward ref to textarea
                 required={required}
+                disabled={disabled}
                 aria-invalid={ariaInvalid}
                 aria-describedby={ariaDescribedby}
               ></textarea>
@@ -312,8 +321,8 @@ const AppFormField = forwardRef<
     focus-visible:ring-0
     focus-visible:outline-none
     focus:ring-0
-    focus:border-none
-    focus-visible:border-none
+    focus:border-primaryColor
+    focus-visible:border-primaryColor
     focus-visible:ring-offset-0 text-l bg-white text-gray-900 pr-12 autofill-fix`}
                 autoComplete="off"
                 spellCheck="false"
@@ -332,6 +341,7 @@ const AppFormField = forwardRef<
                 maxLength={maxLength}
                 ref={ref as React.Ref<HTMLInputElement>}
                 required={required}
+                disabled={disabled}
                 aria-invalid={ariaInvalid}
                 aria-describedby={ariaDescribedby}
                 data-testid={dataTestId}
@@ -384,6 +394,7 @@ const AppFormField = forwardRef<
             type="button"
             onClick={togglePasswordVisibility}
             className="absolute inset-y-3 right-3 flex text-xl text-gray-400 cursor-pointer"
+            data-testid={`privacy-password-toggle-${id}`}
           >
             {showPassword ? '🙈' : '👁️'}
           </button>
@@ -393,7 +404,10 @@ const AppFormField = forwardRef<
         {error && <p className="ml-1 mt-2 text-sm text-red-600 font-medium">{error}</p>}
 
         {type === 'password' && showPasswordHint && (
-          <p className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}>
+          <p
+            className={`text-xs text-gray-600 mt-1 ${error ? 'ml-1' : 'ml-4'}`}
+            data-testid="privacy-password-hint"
+          >
             Password must be 8 characters, upper capital, lower case, symbols
           </p>
         )}
