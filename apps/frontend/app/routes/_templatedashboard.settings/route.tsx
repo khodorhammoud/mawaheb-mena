@@ -1,3 +1,5 @@
+// apps/frontend/app/routes/settings._index.tsx
+
 import SettingsHeader from '~/common/settings/header/SettingHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import AccountTab from '~/common/settings/tabs/AccountTab';
@@ -21,6 +23,7 @@ import { AccountType, AccountStatus } from '@mawaheb/db/enums';
 import { hash, compare } from 'bcrypt-ts';
 import { logout } from '~/auth/auth.server';
 import { redirect } from '@remix-run/node';
+import { useSearchParams } from '@remix-run/react';
 
 export const action = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
@@ -82,13 +85,7 @@ export const action = async ({ request }) => {
       }
 
       if (success) {
-        // If the account was deactivated, isDeactivated should be true
-        // If the account was reactivated, isDeactivated should be false
-        const newIsDeactivated = !isDeactivated;
-
-        // Get the updated account status to confirm
         const updatedAccount = await getCurrentUserAccountInfo(request);
-
         return Response.json({
           success: true,
           formType: 'deactivateAccount',
@@ -132,20 +129,16 @@ export const action = async ({ request }) => {
       emailEmpty: !email || email.trim() === '',
     });
 
-    // Check if required fields are empty
     if (!firstName || firstName.trim() === '') {
       return redirect('/settings?error=First name is required.');
     }
-
     if (!lastName || lastName.trim() === '') {
       return redirect('/settings?error=Last name is required.');
     }
-
     if (!email || email.trim() === '') {
       return redirect('/settings?error=Email is required.');
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return redirect('/settings?error=Please enter a valid email address.');
@@ -168,7 +161,9 @@ export const action = async ({ request }) => {
       return redirect('/settings?success=true');
     } catch (error) {
       return redirect(
-        `/settings?error=${encodeURIComponent(error instanceof Error ? error.message : 'An unknown error occurred')}`
+        `/settings?error=${encodeURIComponent(
+          error instanceof Error ? error.message : 'An unknown error occurred'
+        )}`
       );
     }
   } else if (target === 'privacyTab') {
@@ -285,7 +280,8 @@ export const action = async ({ request }) => {
 export const loader = async ({ request }) => {
   const currentUser = await getCurrentUser(request);
   if (!currentUser) {
-    throw new Response('Unauthorized', { status: 401 });
+    // Redirect unauthenticated users to login with a return URL
+    throw redirect(`/login-employer?redirectTo=${encodeURIComponent('/settings')}`);
   }
 
   const userSettings = await getUserSettings(currentUser.id);
@@ -297,7 +293,7 @@ export const loader = async ({ request }) => {
   const accountType = await getCurrentUserAccountType(request);
   const userAccount = await getCurrentUserAccountInfo(request);
 
-  // ⭐️ PROTECTION: Only allow if published OR deactivated (deactivated users need access to reactivate)
+  // Allow published OR deactivated (so user can reactivate from Settings)
   if (
     userAccount?.accountStatus !== AccountStatus.Published &&
     userAccount?.accountStatus !== AccountStatus.Deactivated
@@ -318,10 +314,23 @@ export const loader = async ({ request }) => {
 };
 
 export default function Settings() {
+  const [params, setParams] = useSearchParams();
+
+  // Keep tab in sync with ?tab=; fallback to "account" if not present/invalid
+  const raw = params.get('tab') ?? 'account';
+  const active =
+    raw === 'privacy' || raw === 'notifications' || raw === 'account' ? raw : 'account';
+
+  const onTabChange = (next: string) => {
+    const p = new URLSearchParams(params);
+    p.set('tab', next);
+    setParams(p);
+  };
+
   return (
-    <div className="" data-testid="settings-container">
+    <div data-testid="settings-container">
       <SettingsHeader />
-      <Tabs defaultValue="account" className="">
+      <Tabs value={active} onValueChange={onTabChange} className="">
         <TabsList
           className="flex sm:gap-4 gap-2 mb-4 md:w-[70%] lg:ml-0 md:ml-6 ml-0 bg-white"
           data-testid="settings-tabs"
@@ -349,7 +358,7 @@ export default function Settings() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="">
+        <div>
           <TabsContent value="account" className="w-full">
             <AccountTab />
           </TabsContent>

@@ -10,7 +10,7 @@
     "accountType": "employer",
     "country": "",
     "region": null,
-    "phone": "576-669-5014 x2067||987654321",
+    "phone": "423.554.8079||987654321",
     "accountStatus": "published",
     "isCreationComplete": false,
     "slug": "techsolutions-global"
@@ -43,10 +43,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 8000,
-      "expectedHourlyRate": 46,
+      "expectedHourlyRate": 21,
       "experienceLevel": "senior_level",
       "status": "active",
-      "createdAt": "2025-09-17T22:36:28.847Z",
+      "createdAt": "2025-09-30T02:45:40.113Z",
       "fulfilledAt": null
     },
     {
@@ -59,10 +59,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 7000,
-      "expectedHourlyRate": 65,
+      "expectedHourlyRate": 94,
       "experienceLevel": "mid_level",
       "status": "active",
-      "createdAt": "2025-09-08T06:20:07.429Z",
+      "createdAt": "2025-09-11T02:13:50.881Z",
       "fulfilledAt": null
     },
     {
@@ -75,10 +75,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 6500,
-      "expectedHourlyRate": 70,
+      "expectedHourlyRate": 86,
       "experienceLevel": "mid_level",
       "status": "active",
-      "createdAt": "2025-09-26T05:35:48.167Z",
+      "createdAt": "2025-10-02T13:03:30.665Z",
       "fulfilledAt": null
     },
     {
@@ -91,10 +91,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 7000,
-      "expectedHourlyRate": 73,
+      "expectedHourlyRate": 25,
       "experienceLevel": "mid_level",
       "status": "active",
-      "createdAt": "2025-09-02T14:00:34.197Z",
+      "createdAt": "2025-09-29T22:02:48.814Z",
       "fulfilledAt": null
     },
     {
@@ -107,10 +107,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 6000,
-      "expectedHourlyRate": 17,
+      "expectedHourlyRate": 21,
       "experienceLevel": "mid_level",
       "status": "active",
-      "createdAt": "2025-09-06T15:26:59.981Z",
+      "createdAt": "2025-09-10T12:53:53.782Z",
       "fulfilledAt": null
     },
     {
@@ -123,10 +123,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 5500,
-      "expectedHourlyRate": 83,
+      "expectedHourlyRate": 79,
       "experienceLevel": "mid_level",
       "status": "active",
-      "createdAt": "2025-09-07T03:06:34.576Z",
+      "createdAt": "2025-09-10T11:41:06.181Z",
       "fulfilledAt": null
     },
     {
@@ -139,10 +139,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 6500,
-      "expectedHourlyRate": 32,
+      "expectedHourlyRate": 93,
       "experienceLevel": "mid_level",
       "status": "draft",
-      "createdAt": "2025-09-10T12:01:37.545Z",
+      "createdAt": "2025-10-01T12:00:39.854Z",
       "fulfilledAt": null
     },
     {
@@ -155,10 +155,10 @@
       "locationPreference": "remote",
       "projectType": "long-term",
       "budget": 8000,
-      "expectedHourlyRate": 54,
+      "expectedHourlyRate": 15,
       "experienceLevel": "senior_level",
       "status": "paused",
-      "createdAt": "2025-09-12T14:03:33.734Z",
+      "createdAt": "2025-09-15T13:16:20.215Z",
       "fulfilledAt": null
     },
     {
@@ -171,10 +171,10 @@
       "locationPreference": "remote",
       "projectType": "short-term",
       "budget": 3000,
-      "expectedHourlyRate": 28,
+      "expectedHourlyRate": 23,
       "experienceLevel": "mid_level",
       "status": "closed",
-      "createdAt": "2025-09-19T21:29:08.063Z",
+      "createdAt": "2025-09-04T03:05:12.290Z",
       "fulfilledAt": null
     },
     {
@@ -187,11 +187,11 @@
       "locationPreference": "remote",
       "projectType": "short-term",
       "budget": 4000,
-      "expectedHourlyRate": 13,
+      "expectedHourlyRate": 12,
       "experienceLevel": "mid_level",
       "status": "completed",
-      "createdAt": "2025-09-20T04:41:01.302Z",
-      "fulfilledAt": "2025-09-24T17:27:59.532Z"
+      "createdAt": "2025-10-02T05:29:31.787Z",
+      "fulfilledAt": "2025-10-02T05:46:13.657Z"
     }
   ],
   "jobApplications": [
@@ -200,7 +200,7 @@
       "jobId": 1,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "Senior React Developer",
       "jobStatus": "active"
     },
@@ -209,7 +209,7 @@
       "jobId": 1,
       "freelancerId": 3,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "Senior React Developer",
       "jobStatus": "active"
     },
@@ -218,7 +218,7 @@
       "jobId": 2,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "DevOps Engineer",
       "jobStatus": "active"
     },
@@ -227,7 +227,7 @@
       "jobId": 2,
       "freelancerId": 2,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "DevOps Engineer",
       "jobStatus": "active"
     },
@@ -236,25 +236,25 @@
       "jobId": 3,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "Backend Node.js Developer",
       "jobStatus": "active"
     },
     {
       "id": 6,
-      "jobId": 3,
-      "freelancerId": 2,
+      "jobId": 4,
+      "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
-      "jobTitle": "Backend Node.js Developer",
+      "createdAt": "2025-10-02T23:41:35.370Z",
+      "jobTitle": "Data Engineer",
       "jobStatus": "active"
     },
     {
       "id": 7,
       "jobId": 4,
-      "freelancerId": 1,
+      "freelancerId": 3,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "Data Engineer",
       "jobStatus": "active"
     },
@@ -263,7 +263,7 @@
       "jobId": 5,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "UI/UX Designer",
       "jobStatus": "active"
     },
@@ -272,7 +272,7 @@
       "jobId": 5,
       "freelancerId": 3,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "UI/UX Designer",
       "jobStatus": "active"
     },
@@ -281,25 +281,52 @@
       "jobId": 6,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "QA Automation Engineer",
       "jobStatus": "active"
     },
     {
       "id": 11,
       "jobId": 6,
-      "freelancerId": 4,
+      "freelancerId": 2,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "QA Automation Engineer",
       "jobStatus": "active"
     },
     {
       "id": 12,
+      "jobId": 6,
+      "freelancerId": 3,
+      "status": "pending",
+      "createdAt": "2025-10-02T23:41:35.370Z",
+      "jobTitle": "QA Automation Engineer",
+      "jobStatus": "active"
+    },
+    {
+      "id": 13,
+      "jobId": 6,
+      "freelancerId": 4,
+      "status": "pending",
+      "createdAt": "2025-10-02T23:41:35.370Z",
+      "jobTitle": "QA Automation Engineer",
+      "jobStatus": "active"
+    },
+    {
+      "id": 14,
       "jobId": 8,
       "freelancerId": 1,
       "status": "pending",
-      "createdAt": "2025-10-02T06:27:52.964Z",
+      "createdAt": "2025-10-02T23:41:35.370Z",
+      "jobTitle": "Product Manager",
+      "jobStatus": "paused"
+    },
+    {
+      "id": 15,
+      "jobId": 8,
+      "freelancerId": 2,
+      "status": "pending",
+      "createdAt": "2025-10-02T23:41:35.370Z",
       "jobTitle": "Product Manager",
       "jobStatus": "paused"
     }

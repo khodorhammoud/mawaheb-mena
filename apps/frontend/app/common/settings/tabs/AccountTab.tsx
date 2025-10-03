@@ -21,7 +21,12 @@ export default function AccountTab() {
   const settingsFetcher = useFetcher();
 
   // Check if account is deactivated
-  const isDeactivated = userAccountStatus === 'deactivated';
+  const isDeactivated = userAccountStatus === 'deactivated' || userAccountStatus === 'Deactivated';
+
+  // Debug logging for test
+  if (typeof window !== 'undefined') {
+    console.log('🔍 AccountTab Debug:', { userAccountStatus, isDeactivated });
+  }
 
   // Parse phone number (split by "||" if it exists)
   const storedPhone = settingsInfo.phone || '+961||'; // Ensure it has a default format
