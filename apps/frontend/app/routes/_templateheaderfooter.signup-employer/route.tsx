@@ -156,7 +156,8 @@ export async function action({ request }: ActionFunctionArgs) {
       email,
       name: `${firstName} ${lastName}`,
       data: {
-        verificationLink: `${process.env.HOST_URL}/verify-account?token=${token}`,
+        // verificationLink: `${process.env.HOST_URL}/verify-account?token=${token}`,
+        verificationLink: `http://104.248.131.110/verify-account?token=${token}`,
       },
     });
 

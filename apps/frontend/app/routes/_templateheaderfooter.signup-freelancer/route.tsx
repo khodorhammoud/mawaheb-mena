@@ -118,7 +118,8 @@ export async function action({ request }: ActionFunctionArgs) {
       name: (firstName || lastName) as string,
       data: {
         // TODO: change the verification link to the actual production URL
-        verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
+        // verificationLink: `${process.env.HOST_URL}/verify-account?token=${verificationToken}`,
+        verificationLink: `http://104.248.131.110/verify-account?token=${verificationToken}`,
       },
     });
 
