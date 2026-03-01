@@ -32,69 +32,215 @@ class TimesheetController extends Controller
     private function freelancerTimesheets(Request $request)
     {
         $freelancer = $request->user()->account->freelancer;
-        $jobApplicationId = $request->input('job_application_id');
+        $jobAppId = (int) $request->input('jobAppId', 0);
 
-        $approvedApplications = JobApplication::with(['job.employer.account'])
-            ->where('freelancer_id', $freelancer->id)
-            ->where('status', 'approved')
-            ->get();
+        if ($jobAppId) {
+            $jobApp = JobApplication::with(['job.employer'])->find($jobAppId);
+            if (!$jobApp || $jobApp->freelancer_id !== $freelancer->id) {
+                abort(404);
+            }
 
-        $entries = [];
-        $weekSubmissions = [];
-
-        if ($jobApplicationId) {
-            $weekStart = $request->input('week_start', Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d'));
+            $weekStart = $request->input('weekStart', Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d'));
             $weekEnd = Carbon::parse($weekStart)->addDays(6)->format('Y-m-d');
 
             $entries = TimesheetDayEntry::where('freelancer_id', $freelancer->id)
-                ->where('job_application_id', $jobApplicationId)
+                ->where('job_application_id', $jobAppId)
                 ->whereBetween('work_date', [$weekStart, $weekEnd])
                 ->orderBy('work_date')
                 ->get()
-                ->map(fn ($entry) => $this->formatDayEntry($entry));
+                ->map(fn ($e) => $this->formatDayEntry($e))
+                ->values()
+                ->toArray();
 
-            $weekSubmissions = TimesheetWeekEntry::where('freelancer_id', $freelancer->id)
-                ->where('job_application_id', $jobApplicationId)
-                ->whereIn('status', [
-                    TimesheetStatus::Submitted->value,
-                    TimesheetStatus::Approved->value,
-                    TimesheetStatus::Rejected->value,
-                ])
-                ->get();
+            $submittedDates = TimesheetDayEntry::where('freelancer_id', $freelancer->id)
+                ->where('job_application_id', $jobAppId)
+                ->whereIn('entry_status', [TimesheetStatus::Submitted->value, TimesheetStatus::Approved->value])
+                ->pluck('work_date')
+                ->toArray();
+
+            $weekEntry = TimesheetWeekEntry::where('freelancer_id', $freelancer->id)
+                ->where('job_application_id', $jobAppId)
+                ->where('week_start', $weekStart)
+                ->first();
+
+            return Inertia::render('Dashboard/Timesheets', [
+                'mode' => 'timesheet',
+                'data' => [
+                    'job_application_id' => $jobAppId,
+                    'job_title' => $jobApp->job->title ?? 'Untitled Job',
+                    'employer_name' => $jobApp->job->employer->company_name ?? 'Unknown Employer',
+                    'project_id' => "PROJ-{$jobAppId}",
+                    'entries' => $entries,
+                    'submitted_dates' => $submittedDates,
+                    'week_status' => $weekEntry?->status,
+                    'week_id' => $weekEntry?->id,
+                ],
+            ]);
         }
 
-        return Inertia::render('Timesheets/Index', [
-            'approvedApplications' => $approvedApplications,
-            'entries' => $entries,
-            'weekSubmissions' => $weekSubmissions,
-            'selectedJobApplicationId' => $jobApplicationId,
-            'accountType' => 'freelancer',
+        // List mode: show all active jobs
+        $jobs = JobApplication::with(['job.employer'])
+            ->where('freelancer_id', $freelancer->id)
+            ->where('status', 'approved')
+            ->get()
+            ->map(fn ($app) => [
+                'job_app_id' => $app->id,
+                'job_id' => $app->job_id,
+                'title' => $app->job->title,
+                'description' => $app->job->description,
+                'company_name' => $app->job->employer->company_name ?? null,
+                'employer_first_name' => $app->job->employer->account->user->first_name ?? null,
+                'employer_last_name' => $app->job->employer->account->user->last_name ?? null,
+                'status' => $app->status,
+                'budget' => $app->job->budget,
+                'experience_level' => $app->job->experience_level,
+            ])
+            ->values()
+            ->toArray();
+
+        return Inertia::render('Dashboard/Timesheets', [
+            'mode' => 'list',
+            'jobs' => $jobs,
+            'freelancer_id' => $freelancer->id,
         ]);
     }
 
     private function employerTimesheets(Request $request)
     {
         $employer = $request->user()->account->employer;
+        $jobAppId = (int) $request->input('jobAppId', 0);
 
-        $submissions = TimesheetWeekEntry::with([
-            'freelancer.account.user',
-            'jobApplication.job',
-        ])
-            ->whereHas('jobApplication.job', function ($q) use ($employer) {
-                $q->where('employer_id', $employer->id);
-            })
-            ->whereIn('status', [
-                TimesheetStatus::Submitted->value,
-                TimesheetStatus::Approved->value,
-                TimesheetStatus::Rejected->value,
+        if ($jobAppId) {
+            $jobApp = JobApplication::with(['job.employer', 'freelancer.account.user'])->find($jobAppId);
+            if (!$jobApp || $jobApp->job->employer_id !== $employer->id) {
+                abort(404);
+            }
+
+            $weekStart = $request->input('weekStart', Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d'));
+            $weekEnd = Carbon::parse($weekStart)->addDays(6)->format('Y-m-d');
+
+            $entries = TimesheetDayEntry::where('freelancer_id', $jobApp->freelancer_id)
+                ->where('job_application_id', $jobAppId)
+                ->whereBetween('work_date', [$weekStart, $weekEnd])
+                ->orderBy('work_date')
+                ->get()
+                ->map(fn ($e) => $this->formatDayEntry($e))
+                ->values()
+                ->toArray();
+
+            $submittedDates = TimesheetDayEntry::where('freelancer_id', $jobApp->freelancer_id)
+                ->where('job_application_id', $jobAppId)
+                ->whereIn('entry_status', [TimesheetStatus::Submitted->value, TimesheetStatus::Approved->value])
+                ->pluck('work_date')
+                ->toArray();
+
+            $weekEntry = TimesheetWeekEntry::where('freelancer_id', $jobApp->freelancer_id)
+                ->where('job_application_id', $jobAppId)
+                ->where('week_start', $weekStart)
+                ->first();
+
+            $prevWeekStart = Carbon::parse($weekStart)->subDays(7)->format('Y-m-d');
+            $nextWeekStart = Carbon::parse($weekStart)->addDays(7)->format('Y-m-d');
+
+            $hasPrev = TimesheetWeekEntry::where('freelancer_id', $jobApp->freelancer_id)
+                ->where('job_application_id', $jobAppId)
+                ->where('week_start', $prevWeekStart)
+                ->exists();
+
+            $hasNext = TimesheetWeekEntry::where('freelancer_id', $jobApp->freelancer_id)
+                ->where('job_application_id', $jobAppId)
+                ->where('week_start', $nextWeekStart)
+                ->exists();
+
+            $freelancerUser = $jobApp->freelancer->account->user ?? null;
+
+            return Inertia::render('Dashboard/Timesheets', [
+                'mode' => 'employer-timesheet',
+                'data' => [
+                    'job_application_id' => $jobAppId,
+                    'job_title' => $jobApp->job->title ?? 'Untitled Job',
+                    'employer_name' => $employer->company_name ?? 'Unknown Employer',
+                    'freelancer_name' => ($freelancerUser?->first_name ?? '') . ' ' . ($freelancerUser?->last_name ?? ''),
+                    'project_id' => "PROJ-{$jobAppId}",
+                    'entries' => $entries,
+                    'submitted_dates' => $submittedDates,
+                    'week_status' => $weekEntry?->status ?? 'submitted',
+                    'week_id' => $weekEntry?->id,
+                    'week_submission_date' => $weekEntry?->submission_date?->toISOString(),
+                    'has_previous_week' => $hasPrev,
+                    'has_next_week' => $hasNext,
+                ],
+            ]);
+        }
+
+        // Employer list mode
+        $jobs = JobApplication::with(['job', 'freelancer.account.user'])
+            ->whereHas('job', fn ($q) => $q->where('employer_id', $employer->id))
+            ->where('status', 'approved')
+            ->get()
+            ->map(fn ($app) => [
+                'job_id' => $app->job_id,
+                'title' => $app->job->title,
+                'description' => $app->job->description,
+                'budget' => $app->job->budget,
+                'experience_level' => $app->job->experience_level,
+                'job_application_id' => $app->id,
+                'freelancer_id' => $app->freelancer_id,
+                'freelancer_first_name' => $app->freelancer->account->user->first_name ?? '',
+                'freelancer_last_name' => $app->freelancer->account->user->last_name ?? '',
+                'status' => $app->status,
             ])
-            ->latest('submission_date')
-            ->paginate(20);
+            ->values()
+            ->toArray();
 
-        return Inertia::render('Timesheets/Index', [
-            'submissions' => $submissions,
-            'accountType' => 'employer',
+        return Inertia::render('Dashboard/Timesheets', [
+            'mode' => 'employer',
+            'jobs' => $jobs,
         ]);
+    }
+
+    public function handlePost(Request $request)
+    {
+        $intent = $request->input('intent');
+
+        if ($intent === 'CREATE_ENTRY') {
+            return $this->storeEntry($request);
+        }
+
+        if ($intent === 'UPDATE_ENTRY') {
+            $entryId = $request->input('entry_id');
+            return $this->updateEntry($request, $entryId);
+        }
+
+        if ($intent === 'SUBMIT_WEEK') {
+            return $this->submitWeek($request);
+        }
+
+        return back()->with('error', 'Unknown intent.');
+    }
+
+    public function approveWeekPost(Request $request)
+    {
+        $weekId = $request->input('week_id');
+        return $this->approveWeek($request, $weekId);
+    }
+
+    public function rejectWeekPost(Request $request)
+    {
+        $weekId = $request->input('week_id');
+        $note = $request->input('note', '');
+
+        $week = TimesheetWeekEntry::findOrFail($weekId);
+        $week->update(['status' => TimesheetStatus::Rejected->value]);
+
+        TimesheetDayEntry::where('freelancer_id', $week->freelancer_id)
+            ->where('job_application_id', $week->job_application_id)
+            ->whereBetween('work_date', [$week->week_start, $week->week_end])
+            ->update(['entry_status' => TimesheetStatus::Rejected->value, 'note' => $note]);
+
+        $this->sendTimesheetNotifications($week, $week->freelancer, $request->user()->id, 'reviewed');
+
+        return back()->with('success', 'Week rejected.');
     }
 
     public function storeEntry(Request $request)

@@ -57,6 +57,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/auth/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout.post');
 
 /*
 |--------------------------------------------------------------------------
@@ -120,10 +121,13 @@ Route::middleware('auth')->group(function () {
 
     // Timesheets
     Route::get('/timesheets', [TimesheetController::class, 'index'])->name('timesheets');
+    Route::post('/timesheets', [TimesheetController::class, 'handlePost'])->name('timesheets.post');
     Route::post('/timesheets/entries', [TimesheetController::class, 'storeEntry'])->name('timesheets.entries.store');
     Route::put('/timesheets/entries/{entryId}', [TimesheetController::class, 'updateEntry'])->name('timesheets.entries.update');
     Route::delete('/timesheets/entries/{entryId}', [TimesheetController::class, 'deleteEntry'])->name('timesheets.entries.delete');
     Route::post('/timesheets/submit-week', [TimesheetController::class, 'submitWeek'])->name('timesheets.submit-week');
+    Route::post('/timesheets/approve', [TimesheetController::class, 'approveWeekPost'])->name('timesheets.approve.post');
+    Route::post('/timesheets/reject', [TimesheetController::class, 'rejectWeekPost'])->name('timesheets.reject.post');
     Route::post('/timesheets/{weekId}/approve', [TimesheetController::class, 'approveWeek'])->name('timesheets.approve');
     Route::post('/timesheets/{weekId}/review', [TimesheetController::class, 'reviewWeek'])->name('timesheets.review');
 
@@ -145,10 +149,12 @@ Route::middleware('auth')->group(function () {
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::patch('/settings/account', [SettingsController::class, 'updateAccount'])->name('settings.account');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::patch('/settings/notifications', [SettingsController::class, 'updateNotificationPrefs'])->name('settings.notifications');
     Route::post('/settings/deactivate', [SettingsController::class, 'deactivateAccount'])->name('settings.deactivate');
-    Route::post('/settings/delete', [SettingsController::class, 'requestDeletion'])->name('settings.delete');
-    Route::get('/settings/export', [SettingsController::class, 'exportData'])->name('settings.export');
+    Route::post('/settings/delete-account', [SettingsController::class, 'requestDeletion'])->name('settings.delete');
+    Route::get('/settings/export-data', [SettingsController::class, 'exportData'])->name('settings.export');
 
     // Reports
     Route::get('/reports', fn () => \Inertia\Inertia::render('Reports/Index'))->name('reports');

@@ -1,115 +1,314 @@
 import { Link, usePage, router } from '@inertiajs/react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import clsx from 'clsx';
+import {
+    MdSpaceDashboard,
+} from 'react-icons/md';
+import {
+    FaBriefcase,
+    FaCog,
+    FaFileAlt,
+    FaChartLine,
+    FaUser,
+} from 'react-icons/fa';
+import { BsBell, BsPersonCircle, BsClockHistory } from 'react-icons/bs';
 import { PageProps } from '@/types';
-import { PropsWithChildren, useState } from 'react';
 
-export default function DashboardLayout({ children }: PropsWithChildren) {
-    const { auth, flash } = usePage<PageProps>().props;
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const user = auth.user;
-    const accountType = user?.account?.account_type;
+interface NavItem { label: string; href: string; icon: React.ElementType }
 
-    const handleLogout = () => {
-        router.post('/auth/logout');
-    };
+const freelancerNav: NavItem[] = [
+    { label: 'Dashboard', href: '/dashboard', icon: MdSpaceDashboard },
+    { label: 'Browse Jobs', href: '/browse-jobs', icon: FaBriefcase },
+    { label: 'Time Sheet', href: '/timesheets', icon: FaFileAlt },
+    { label: 'Reports', href: '/reports', icon: FaChartLine },
+    { label: 'Settings', href: '/settings', icon: FaCog },
+];
 
-    const freelancerNav = [
-        { href: '/dashboard', label: 'Dashboard' },
-        { href: '/browse-jobs', label: 'Browse Jobs' },
-        { href: '/timesheets', label: 'Timesheets' },
-        { href: '/notifications', label: 'Notifications' },
-        { href: '/settings', label: 'Settings' },
-    ];
+const employerNav: NavItem[] = [
+    { label: 'Dashboard', href: '/dashboard', icon: MdSpaceDashboard },
+    { label: 'Manage Jobs', href: '/manage-jobs', icon: FaBriefcase },
+    { label: 'Time Sheet', href: '/timesheets', icon: FaFileAlt },
+    { label: 'Settings', href: '/settings', icon: FaCog },
+];
 
-    const employerNav = [
-        { href: '/dashboard', label: 'Dashboard' },
-        { href: '/manage-jobs', label: 'Manage Jobs' },
-        { href: '/new-job', label: 'Post a Job' },
-        { href: '/timesheets', label: 'Timesheets' },
-        { href: '/notifications', label: 'Notifications' },
-        { href: '/settings', label: 'Settings' },
-    ];
+const adminNav: NavItem[] = [
+    { label: 'Dashboard', href: '/admin/dashboard', icon: MdSpaceDashboard },
+    { label: 'Pending Accounts', href: '/admin/accounts', icon: FaUser },
+    { label: 'All Users', href: '/admin/users', icon: FaUser },
+];
 
-    const adminNav = [
-        { href: '/admin/dashboard', label: 'Admin Dashboard' },
-        { href: '/admin/pending-accounts', label: 'Pending Accounts' },
-        { href: '/admin/users', label: 'Users' },
-        { href: '/settings', label: 'Settings' },
-    ];
+function Sidebar({ accountType, profile }: { accountType: string | null; profile: any }) {
+    const { url } = usePage();
+    let nav: NavItem[];
+    if (accountType === 'employer') nav = employerNav;
+    else if (accountType === 'admin') nav = adminNav;
+    else nav = freelancerNav;
 
-    const navItems = user?.role === 'admin' ? adminNav : accountType === 'employer' ? employerNav : freelancerNav;
+    const firstName = profile?.account?.user?.first_name || profile?.first_name || '';
+    const lastName = profile?.account?.user?.last_name || profile?.last_name || '';
+    const initials = firstName && lastName ? `${firstName[0]}${lastName[0]}` : null;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Top bar */}
-            <header className="bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-30">
-                <div className="flex items-center justify-between h-16 px-4 lg:px-8">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <Link href="/dashboard" className="text-xl font-bold text-indigo-600">
-                            Mawaheb
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Link href="/notifications" className="p-2 rounded-full hover:bg-gray-100 relative">
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                        </Link>
-                        {user?.account?.slug && (
-                            <Link href={`/account/${user.account.slug}`} className="text-sm text-gray-600 hover:text-gray-900">
-                                {user.first_name} {user.last_name}
-                            </Link>
+        <div className="md:w-64 w-36 h-full bg-white py-5 lg:px-2 mt-20">
+            <div className="fixed">
+                <div className="flex flex-col xl:ml-7 ml-5">
+                    <div className="bg-gray-300 rounded-full w-20 h-20 flex items-center justify-center mb-2">
+                        {initials ? (
+                            <span className="text-xl font-bold">{initials.toUpperCase()}</span>
+                        ) : (
+                            <FaUser className="text-gray-500 md:text-4xl text-3xl" />
                         )}
-                        <button onClick={handleLogout} className="text-sm text-red-600 hover:text-red-800">
-                            Logout
-                        </button>
+                    </div>
+                    <div className="flex flex-col gap-1 border-b border-gray-400 pb-8">
+                        <h2 className="text-lg font-medium">{firstName} {lastName ? lastName[0].toUpperCase() + '.' : ''}</h2>
+                        <p className="text-sm text-gray-500">{profile?.account?.country || profile?.country || ''}</p>
+                        <p className="text-sm text-gray-500">{profile?.account?.website_url || ''}</p>
                     </div>
                 </div>
-            </header>
-
-            <div className="flex pt-16">
-                {/* Sidebar */}
-                <aside className={`fixed lg:static inset-y-0 left-0 z-20 w-64 bg-white border-r transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 pt-16 lg:pt-0`}>
-                    <nav className="p-4 space-y-1">
-                        {navItems.map((item) => (
+                <nav className="mt-8">
+                    {nav.map((item) => {
+                        const isActive = url === item.href || url.startsWith(item.href + '/');
+                        return (
                             <Link
-                                key={item.href}
+                                key={item.label}
                                 href={item.href}
-                                className="block px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                                className={clsx(
+                                    'flex items-center mb-2 xl:px-4 px-2 md:py-2 py-1 rounded-xl md:text-base text-sm transition-all group hover:translate-x-2 hover:text-[#27638a]'
+                                )}
                             >
-                                {item.label}
+                                <div className={clsx(
+                                    'mr-2 md:py-2 py-2 md:px-4 px-3 rounded-xl transition-colors',
+                                    isActive
+                                        ? 'bg-blue-100 text-[#27638a] translate-x-2'
+                                        : 'text-gray-600 group-hover:bg-[#27638a] group-hover:text-white'
+                                )}>
+                                    <item.icon className="text-xl" />
+                                </div>
+                                <span className={clsx(
+                                    'transition-colors',
+                                    isActive ? 'text-[#27638a] translate-x-2' : 'text-gray-700 group-hover:text-[#27638a]'
+                                )}>
+                                    {item.label}
+                                </span>
                             </Link>
-                        ))}
-                    </nav>
-                </aside>
+                        );
+                    })}
+                </nav>
+            </div>
+        </div>
+    );
+}
 
-                {/* Overlay */}
-                {sidebarOpen && (
-                    <div className="fixed inset-0 bg-black/20 z-10 lg:hidden" onClick={() => setSidebarOpen(false)} />
+function NotificationDropdown({ notifications, onClose }: { notifications: any[]; onClose: () => void }) {
+    const unread = notifications.filter((n) => !n.is_read);
+
+    const getColor = (type: string) => {
+        switch (type) {
+            case 'message': return 'bg-blue-500';
+            case 'alert': return 'bg-red-500';
+            case 'reminder': return 'bg-green-500';
+            case 'status_update': return 'bg-yellow-500';
+            default: return 'bg-gray-500';
+        }
+    };
+
+    return (
+        <div className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+                <h3 className="font-semibold">Notifications</h3>
+                {unread.length > 0 && (
+                    <button onClick={() => router.post('/notifications/read-all')} className="text-xs text-[#27638a] hover:underline">
+                        Mark all read
+                    </button>
                 )}
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                    <p className="text-center text-gray-500 py-6 text-sm">No notifications</p>
+                ) : (
+                    notifications.slice(0, 10).map((n) => (
+                        <div key={n.id} onClick={() => { router.get(`/notification/${n.id}`); onClose(); }}
+                            className={`flex items-start gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-0 ${!n.is_read ? 'bg-blue-50' : ''}`}>
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${getColor(n.type)}`} />
+                            <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{n.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+            <div className="px-4 py-2 border-t">
+                <Link href="/notifications" onClick={onClose} className="text-xs text-[#27638a] hover:underline">
+                    View all notifications
+                </Link>
+            </div>
+        </div>
+    );
+}
 
-                {/* Main content */}
-                <main className="flex-1 p-4 lg:p-8 min-h-[calc(100vh-4rem)]">
-                    {flash?.success && (
-                        <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
-                            {flash.success}
+function DashboardHeader({ accountType, isOnboarded, accountStatus, notifications }: {
+    accountType: string | null;
+    isOnboarded: boolean;
+    accountStatus: string | null;
+    notifications: any[];
+}) {
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const notifRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowUserMenu(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const handleLogout = () => {
+        router.post('/logout');
+    };
+
+    return (
+        <header className="bg-white border-b border-gray-300 pb-1 pt-1 fixed top-0 left-0 w-full z-30">
+            <div className="grid lg:grid-cols-[2fr,1fr] grid-cols-[9fr,4fr] md:gap-8 gap-2 items-center justify-around py-4">
+                <div className="flex items-center">
+                    <Link href="/" className="xl:text-2xl lg:text-lg md:text-base text-sm font-extrabold xl:mr-20 lg:mr-14 xl:ml-10 lg:ml-8 ml-4 md:mr-10 sm:mr-4 mr-2 whitespace-nowrap">
+                        MAWAHEB MENA
+                    </Link>
+                </div>
+
+                <div className="flex items-center lg:gap-6 gap-2 justify-end md:mr-10 sm:mr-4 mr-2">
+                    {accountType === 'employer' && (
+                        <Link href="/new-job"
+                            className="bg-[#27638a] rounded-xl md:text-base text-sm text-white xl:px-6 py-2 px-4 w-fit whitespace-nowrap hover:opacity-90 transition">
+                            Post Job
+                        </Link>
+                    )}
+
+                    {isOnboarded && (
+                        <div className="flex lg:gap-6 gap-1 items-center">
+                            {/* Notification Bell */}
+                            <div ref={notifRef} className="relative">
+                                <button onClick={() => setShowNotifications(!showNotifications)}
+                                    className="relative sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer flex items-center justify-center">
+                                    <BsBell className="w-full h-full" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+                                <AnimatePresence>
+                                    {showNotifications && (
+                                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                                            <NotificationDropdown notifications={notifications} onClose={() => setShowNotifications(false)} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* User Menu */}
+                            <div ref={menuRef} className="relative">
+                                <button onClick={() => setShowUserMenu(!showUserMenu)}
+                                    className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer flex items-center justify-center">
+                                    <BsPersonCircle className="w-full h-full" />
+                                </button>
+                                <AnimatePresence>
+                                    {showUserMenu && (
+                                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                            className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                                            {accountStatus === 'published' && (
+                                                <Link href="/settings" onClick={() => setShowUserMenu(false)}
+                                                    className="block px-4 py-3 text-sm hover:bg-gray-50 transition">Profile Settings</Link>
+                                            )}
+                                            <div className="border-t" />
+                                            <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-50 transition">
+                                                Logout
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     )}
-                    {flash?.error && (
-                        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-                            {flash.error}
+
+                    {!isOnboarded && (
+                        <div className="relative" ref={menuRef}>
+                            <button onClick={() => setShowUserMenu(!showUserMenu)}
+                                className="sm:h-9 sm:w-9 h-8 w-8 text-gray-600 hover:bg-[#E4E3E6] transition-all hover:rounded-full p-2 cursor-pointer flex items-center justify-center">
+                                <BsPersonCircle className="w-full h-full" />
+                            </button>
+                            <AnimatePresence>
+                                {showUserMenu && (
+                                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                        className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                                        <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-50 transition">
+                                            Logout
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     )}
-                    {children}
-                </main>
+                </div>
+            </div>
+        </header>
+    );
+}
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+    const { props } = usePage<PageProps>();
+    const auth = (props as any).auth;
+    const flash = (props as any).flash;
+
+    const user = auth?.user;
+    const accountType = user?.role === 'admin' ? 'admin' : user?.account?.account_type || null;
+    const isOnboarded = Boolean(user?.is_onboarded);
+    const accountStatus = user?.account?.account_status || null;
+    const notifications = (props as any).notifications || [];
+
+    const isPublishedOrDeactivated = accountStatus === 'published' || accountStatus === 'deactivated';
+    const showSidebar = isOnboarded && isPublishedOrDeactivated;
+
+    return (
+        <div className="min-h-screen bg-gray-50 pt-[100px] mb-10">
+            <DashboardHeader
+                accountType={accountType}
+                isOnboarded={isOnboarded}
+                accountStatus={accountStatus}
+                notifications={notifications}
+            />
+
+            {/* Flash messages */}
+            {flash?.success && (
+                <div className="fixed top-20 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-lg">
+                    {flash.success}
+                </div>
+            )}
+            {flash?.error && (
+                <div className="fixed top-20 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-lg">
+                    {flash.error}
+                </div>
+            )}
+
+            <div className="flex">
+                {showSidebar ? (
+                    <>
+                        <Sidebar accountType={accountType} profile={user} />
+                        <div className="container flex-1">
+                            {children}
+                        </div>
+                    </>
+                ) : (
+                    <div className="container w-full mt-10 p-5 mb-10">
+                        {children}
+                    </div>
+                )}
             </div>
         </div>
     );

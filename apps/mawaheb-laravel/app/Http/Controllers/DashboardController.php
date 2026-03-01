@@ -6,6 +6,7 @@ use App\Enums\AccountType;
 use App\Enums\JobApplicationStatus;
 use App\Models\Job;
 use App\Models\JobApplication;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -29,7 +30,7 @@ class DashboardController extends Controller
         }
 
         if ($user->role === 'admin') {
-            return $this->adminDashboard($user);
+            return redirect()->route('admin.dashboard');
         }
 
         return redirect()->route('home');
@@ -42,24 +43,39 @@ class DashboardController extends Controller
             return redirect()->route('onboarding');
         }
 
-        $applications = JobApplication::with(['job.employer.account', 'job.skills'])
-            ->where('freelancer_id', $freelancer->id)
-            ->latest('created_at')
-            ->take(5)
-            ->get();
-
-        $stats = [
-            'total_applications' => JobApplication::where('freelancer_id', $freelancer->id)->count(),
-            'approved_applications' => JobApplication::where('freelancer_id', $freelancer->id)
-                ->where('status', JobApplicationStatus::Approved->value)->count(),
-            'pending_applications' => JobApplication::where('freelancer_id', $freelancer->id)
-                ->where('status', JobApplicationStatus::Pending->value)->count(),
+        $freelancerData = $freelancer->toArray();
+        $freelancerData['first_name'] = $user->first_name;
+        $freelancerData['last_name'] = $user->last_name;
+        $freelancerData['account'] = [
+            'country' => $account->country ?? null,
+            'website_url' => $account->website_url ?? null,
+            'account_status' => $account->account_status,
         ];
 
+        // Decode JSON fields
+        foreach (['portfolio', 'work_history', 'certificates', 'educations', 'languages', 'skills'] as $field) {
+            if (isset($freelancerData[$field]) && is_string($freelancerData[$field])) {
+                $freelancerData[$field] = json_decode($freelancerData[$field], true) ?? [];
+            }
+        }
+
+        // Overall rating
+        $overallRating = 0;
+        $reviewCount = 0;
+        if (class_exists(Review::class)) {
+            $reviews = Review::where('freelancer_id', $freelancer->id)
+                ->where('review_type', 'employer_review')
+                ->get();
+            $reviewCount = $reviews->count();
+            $overallRating = $reviewCount > 0 ? round($reviews->avg('rating'), 1) : 0;
+        }
+
         return Inertia::render('Dashboard/FreelancerDashboard', [
-            'freelancer' => $freelancer,
-            'applications' => $applications,
-            'stats' => $stats,
+            'profile' => $freelancerData,
+            'canEdit' => true,
+            'overallRating' => $overallRating,
+            'reviewCount' => $reviewCount,
+            'myReview' => null,
         ]);
     }
 
@@ -70,30 +86,30 @@ class DashboardController extends Controller
             return redirect()->route('onboarding');
         }
 
-        $jobs = Job::with(['skills', 'applications'])
-            ->where('employer_id', $employer->id)
-            ->latest('created_at')
-            ->take(5)
-            ->get();
+        $jobIds = Job::where('employer_id', $employer->id)->pluck('id');
 
-        $stats = [
-            'total_jobs' => Job::where('employer_id', $employer->id)->count(),
-            'active_jobs' => Job::where('employer_id', $employer->id)->where('status', 'active')->count(),
-            'total_applicants' => JobApplication::whereIn(
-                'job_id',
-                Job::where('employer_id', $employer->id)->pluck('id')
-            )->count(),
+        $jobStats = [
+            'active' => Job::where('employer_id', $employer->id)->where('status', 'active')->count(),
+            'drafted' => Job::where('employer_id', $employer->id)->where('status', 'draft')->count(),
+            'closed' => Job::where('employer_id', $employer->id)->where('status', 'closed')->count(),
+            'paused' => Job::where('employer_id', $employer->id)->where('status', 'paused')->count(),
+            'total' => Job::where('employer_id', $employer->id)->count(),
+        ];
+
+        $applicantStats = [
+            'total' => JobApplication::whereIn('job_id', $jobIds)->count(),
+            'shortlisted' => JobApplication::whereIn('job_id', $jobIds)
+                ->where('status', JobApplicationStatus::Shortlisted->value ?? 'shortlisted')->count(),
+            'interviewed' => JobApplication::whereIn('job_id', $jobIds)
+                ->where('status', JobApplicationStatus::Interviewed->value ?? 'interviewed')->count(),
         ];
 
         return Inertia::render('Dashboard/EmployerDashboard', [
-            'employer' => $employer,
-            'jobs' => $jobs,
-            'stats' => $stats,
+            'firstName' => $user->first_name,
+            'accountStatus' => $account->account_status,
+            'jobStats' => $jobStats,
+            'applicantStats' => $applicantStats,
+            'jobAddedSuccess' => session('job_added') === true,
         ]);
-    }
-
-    private function adminDashboard($user)
-    {
-        return Inertia::render('Dashboard/AdminDashboard');
     }
 }

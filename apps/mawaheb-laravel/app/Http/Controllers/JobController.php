@@ -86,17 +86,28 @@ class JobController extends Controller
         $allSkills = Skill::orderBy('label')->get();
         $categories = JobCategory::orderBy('label')->get();
 
-        return Inertia::render('Jobs/BrowseJobs', [
-            'jobs' => $jobs,
-            'recommendedJobs' => $recommendedJobs,
-            'myJobs' => $myJobs,
-            'allSkills' => $allSkills,
-            'categories' => $categories,
-            'filters' => $request->only([
-                'search', 'project_type', 'experience_level',
-                'min_budget', 'max_budget', 'skills',
-                'working_hours_min', 'working_hours_max',
-            ]),
+        $formatJob = fn ($job) => [
+            'id' => $job->id,
+            'title' => $job->title,
+            'description' => $job->description,
+            'budget' => $job->budget,
+            'working_hours_per_week' => $job->working_hours_per_week,
+            'location_preference' => $job->location_preference,
+            'project_type' => $job->project_type,
+            'experience_level' => $job->experience_level,
+            'status' => $job->status,
+            'expected_hourly_rate' => $job->expected_hourly_rate,
+            'employer_id' => $job->employer_id,
+            'required_skills' => $job->skills->map(fn ($s) => ['name' => $s->label, 'isStarred' => false])->toArray(),
+            'created_at' => $job->created_at?->toISOString(),
+        ];
+
+        return Inertia::render('Dashboard/BrowseJobs', [
+            'jobs' => $jobs->map($formatJob)->values(),
+            'recommendedJobs' => collect($recommendedJobs)->map($formatJob)->values(),
+            'myJobs' => collect($myJobs)->map(fn ($app) => $formatJob($app->job))->values(),
+            'totalCount' => $jobs->total(),
+            'freelancerId' => $freelancer?->id,
         ]);
     }
 

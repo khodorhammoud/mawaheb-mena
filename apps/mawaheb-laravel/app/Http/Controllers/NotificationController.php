@@ -13,9 +13,9 @@ class NotificationController extends Controller
     {
         $notifications = Notification::where('user_id', $request->user()->id)
             ->latest('created_at')
-            ->paginate(20);
+            ->get();
 
-        return Inertia::render('Notifications/Index', [
+        return Inertia::render('Dashboard/Notifications', [
             'notifications' => $notifications,
         ]);
     }
@@ -32,7 +32,7 @@ class NotificationController extends Controller
             ]);
         }
 
-        return Inertia::render('Notifications/Show', [
+        return Inertia::render('Dashboard/NotificationDetail', [
             'notification' => $notification,
         ]);
     }

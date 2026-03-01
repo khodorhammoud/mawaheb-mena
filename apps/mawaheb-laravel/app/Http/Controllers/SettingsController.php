@@ -17,11 +17,38 @@ class SettingsController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $account = $user->account;
         $settings = $this->userService->getUserSettings($user->id);
 
-        return Inertia::render('Settings/Index', [
+        return Inertia::render('Dashboard/Settings', [
             'settings' => $settings,
+            'accountStatus' => $account?->account_status ?? 'published',
+            'accountType' => $account?->account_type ?? 'freelancer',
         ]);
+    }
+
+    public function updateAccount(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => 'nullable|string|max:100',
+            'last_name' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'country' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:255',
+            'region' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:30',
+            'website_url' => 'nullable|url|max:255',
+        ]);
+
+        $user = $request->user();
+        $this->userService->updateUserSettings($user->id, $validated);
+
+        return back()->with('success', 'Account settings updated.');
+    }
+
+    public function updateNotificationPrefs(Request $request)
+    {
+        return back()->with('success', 'Notification preferences saved.');
     }
 
     public function updatePassword(Request $request)
